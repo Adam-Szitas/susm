@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+@use './styles/form' as *;
+
+:root {
+  --space-tiny: 4px;
+  --space-small: 8px;
+  --space: 16px;
+  --space-large: 24px;
+  --space-xlarge: 32px;
+  --font-1: 21px;
+  --font-2: 18px;
+  --font-3: 16px;
+  --font-4: 14px;
+  --font-5: 11px;
+  --button: #0b6357;
+  --button-hover: #138172;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+*, *::after, *::before {
+  box-sizing: border-box;
+}

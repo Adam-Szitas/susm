@@ -1,0 +1,39 @@
+.control {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-small) 0;
+  width: 100%;
+
+  label {
+    font-size: var(--font-4);
+    font-weight: bold;
+  }
+
+  input {
+    padding: var(--space-small) var(--space);
+    border: 1px solid var(--button);
+  }
+
+  button {
+    cursor: pointer;
+    padding: var(--space-small) var(--space);
+    border: 0;
+    background-color: var(--button);
+    color: white;
+
+    &:hover {
+      background-color: var(--button-hover);
+    }
+  }
+}
+
+.buttons {
+  margin-top: var(--space);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+
+  &:has(button:nth-child(2)) {
+    justify-content: space-between;
+  }
+}

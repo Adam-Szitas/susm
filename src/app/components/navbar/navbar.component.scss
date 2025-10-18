@@ -1,0 +1,100 @@
+nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: var(--button);
+  color: white;
+  font-weight: bold;
+
+  span {
+    margin-left: var(--space-large);
+    align-self: anchor-center;
+  }
+}
+
+.mobile-menu {
+  position: absolute;
+  height: 100dvh;
+  top: 0;
+  width: 300px;
+  left: -350px;
+  transition: left 0.5s ease-in-out;
+  background-color: var(--button);
+
+  &.open {
+    left: 0;
+  }
+
+  & > ul {
+    background-color: var(--button);
+    display: flex;
+    flex-direction: column;
+    color: white;
+    margin: 0;
+    height: 100%;
+  }
+
+  .close {
+    cursor: pointer;
+    svg {
+      height: 26px;
+      width: 26px;
+      margin: var(--space);
+    }
+  }
+}
+
+ul {
+  padding: 0;
+  list-style-type: none;
+  display: flex;
+}
+
+.desktop {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+  & > ul {
+    flex-direction: row;
+  }
+}
+
+.mobile {
+  display: none;
+  align-items: center;
+
+  & > ul {
+    flex-direction: column;
+  }
+}
+
+.hamburger-menu {
+  width: 26px;
+  margin: var(--space);
+  color: white;
+  cursor: pointer;
+}
+
+li {
+  cursor: pointer;
+  margin: 0 var(--space-small);
+  padding: var(--space-small) var(--space);
+  font-weight: bold;
+  font-size: var(--font-2);
+
+  &:hover {
+    background-color: var(--button-hover);
+  }
+}
+
+@media screen and (max-width: 799px) {
+
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: flex;
+  }
+}

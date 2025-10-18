@@ -1,0 +1,39 @@
+@if(user()) {
+  <nav>
+    <div class="mobile">
+      <i class="hamburger-menu" (click)="toggleMobileMenu()">
+        <svg viewBox="0 0 100 80" fill="white"><path d="M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z"/></svg>
+      </i>
+    </div>
+    <div class="desktop">
+      <ul>
+        <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">Dashboard</li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/projects'">Projects</li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/streets'">Streets</li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/objects'">Objects</li>
+      </ul>
+    </div>
+    <ul>
+      <li (click)="logout()">Logout</li>
+    </ul>
+  </nav>
+  <div class="mobile-menu" [class.open]="toggledMenu()">
+    <i class="close" (click)="hideMobileMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg"><path fill="white" fill-rule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 1 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd"/></svg>
+    </i>
+    <ul>
+      <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">Dashboard</li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/projects'">Projects</li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/streets'">Streets</li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/objects'">Objects</li>
+    </ul>
+  </div>
+} @else {
+  <nav>
+    <span>LOGO</span>
+    <ul>
+      <li (click)="toggleMobileMenu()" [routerLink]="'/login'">Login</li>
+      <li>Register</li>
+    </ul>
+  </nav>
+}

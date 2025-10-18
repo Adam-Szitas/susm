@@ -1,0 +1,40 @@
+<div>
+  @if(form) {
+    <form [formGroup]="form">
+        <div class="control">
+          <label for="name">Name</label>
+          <input placeholder="Name" type="name" id="name" [formControlName]="'name'">
+        </div>
+        <div class="control">
+          <label for="email">E-mail address:</label>
+          <input placeholder="E-mail" type="email" id="email" [formControlName]="'email'">
+        </div>
+        <div class="control">
+          <label for="password">Password:</label>
+          <input placeholder="Password" type="password" id="password" formControlName="password">
+        </div>
+        <div formGroupName="addresses" class="control">
+          <h3>Address</h3>
+
+          <div class="control">
+            <label for="street">Street:</label>
+            <input type="text" placeholder="street" id="street" formControlName="street" />
+          </div>
+
+          <div class="control">
+            <label for="city">City:</label>
+            <input type="text" placeholder="city" id="city" formControlName="city" />
+          </div>
+
+          <div class="control">
+            <label for="country">Country:</label>
+            <input type="text" placeholder="country" id="country" formControlName="country" />
+          </div>
+        </div>
+        <div class="control buttons">
+          <button type="button" [routerLink]="'/login'">Login</button>
+          <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>
+        </div>
+    </form>
+  }
+</div>

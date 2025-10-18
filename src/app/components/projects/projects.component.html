@@ -1,0 +1,13 @@
+<h1>Projects</h1>
+<div class="projects-wrapper">
+  <div class="container">
+    <button (click)="newProject()" type="button">Add new project</button>
+  </div>
+  @if(projects().length){
+    @for(project of projects(); track project.id){
+
+    }
+  } @else {
+    There are no projects
+  }
+</div>
