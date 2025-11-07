@@ -1,10 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserStore } from '../store/user.store'; // Adjust the path as needed
 
@@ -12,10 +7,7 @@ import { UserStore } from '../store/user.store'; // Adjust the path as needed
 export class AuthInterceptor implements HttpInterceptor {
   #userStore = inject(UserStore);
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.#userStore.token();
 
     // Optionally skip auth for some endpoints
@@ -30,6 +22,11 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(cloned);
     }
 
-    return next.handle(req);
+    const cloned = req.clone({
+      setHeaders: {
+        'Content-type': 'application/json',
+      },
+    });
+    return next.handle(cloned);
   }
 }

@@ -1,12 +1,25 @@
 <h1>Projects</h1>
 <div class="projects-wrapper">
   <div class="container">
-    <button (click)="newProject()" type="button">Add new project</button>
+    <button (click)="newProject()" type="button" class="button button-primary">
+      Add new project
+    </button>
   </div>
-  @if(projects().length){
-    @for(project of projects(); track project.id){
-
-    }
+  @if (projects().length) {
+    <div class="card-wrapper">
+      @for (project of projects(); track project['_id']) {
+        <div class="card" [routerLink]="'tab/' + project._id?.$oid">
+          <h2 class="headline">{{ project.name }}</h2>
+          <div class="content">
+            <ul class="data-list">
+              <li>{{ project.address?.street }}</li>
+              <li>{{ project.address?.city }}</li>
+              <li>{{ project.address?.country }}</li>
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
   } @else {
     There are no projects
   }

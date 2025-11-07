@@ -1,4 +1,7 @@
 @use './styles/form' as *;
+@use './styles/cards' as *;
+@use './styles/buttons' as *;
+@use './styles/headlines' as *;
 
 :root {
   --space-tiny: 4px;
@@ -11,15 +14,20 @@
   --font-3: 16px;
   --font-4: 14px;
   --font-5: 11px;
+  --default-color: #0b6357;
+  --default-color-dark: #00120f;
   --button: #0b6357;
   --button-hover: #138172;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
-*, *::after, *::before {
+*,
+*::after,
+*::before {
   box-sizing: border-box;
 }

@@ -1,0 +1,32 @@
+<div class="wrapper">
+  @if (form) {
+    <form [formGroup]="form">
+      <div class="control">
+        <label for="name">Name</label>
+        <input placeholder="Name" type="name" id="name" formControlName="name" />
+      </div>
+      <div class="control" formGroupName="address">
+        <h4>Address</h4>
+        <div class="control">
+          <label for="country">Country</label>
+          <input placeholder="country" type="country" id="country" formControlName="country" />
+        </div>
+        <div class="control">
+          <label for="city">City</label>
+          <input placeholder="city" type="city" id="city" formControlName="city" />
+        </div>
+        <div class="control">
+          <label for="street">Street</label>
+          <input placeholder="street" type="street" id="street" formControlName="street" />
+        </div>
+      </div>
+      <div class="control">
+        <label for="note">Note</label>
+        <input placeholder="Note" type="note" id="note" formControlName="note" />
+      </div>
+      <div class="control buttons">
+        <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>
+      </div>
+    </form>
+  }
+</div>

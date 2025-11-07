@@ -3,11 +3,12 @@ import { Injectable } from '@angular/core';
 import { User } from '../models/user.model';
 import { HttpService } from '../services/http.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
-  private _user = signal<User | null>((isBrowser() ? this.loadUser(): null));
-  private _token = signal<string | null>((isBrowser() ? this.loadToken(): null));
+  private _user = signal<User | null>(null);
+  private _token = signal<string | null>(null);
   private _loading = signal(false);
   private _error = signal<string | null>(null);
 
@@ -17,8 +18,14 @@ export class UserStore {
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
 
+  constructor() {
+    this._user.set(isBrowser() ? this.loadUser() : null);
+    this._token.set(isBrowser() ? this.loadToken() : null);
+  }
+
   #httpService = inject(HttpService);
   #router = inject(Router);
+  #authService = inject(AuthService);
 
   private loadUser() {
     const user = localStorage.getItem('user');
@@ -34,7 +41,7 @@ export class UserStore {
     this._loading.set(true);
     this._error.set(null);
 
-    this.#httpService.post<string>('login', {email, password}).subscribe({
+    this.#authService.login(email, password).subscribe({
       next: (token: string) => {
         this._token.set(token);
         localStorage.setItem('token', JSON.stringify(token));
@@ -45,16 +52,16 @@ export class UserStore {
         this._error.set(err.error?.message || 'Login failed');
       },
       complete: () => {
-        this._loading.set(false)
+        this._loading.set(false);
       },
-    })
+    });
   }
 
   register(userInput: User) {
     this._loading.set(true);
     this._error.set(null);
 
-    this.#httpService.post<User>('register', userInput).subscribe({
+    this.#authService.register(userInput).subscribe({
       next: (user) => {
         this._user.set(user);
       },
@@ -66,10 +73,17 @@ export class UserStore {
   }
 
   logout() {
-    this._user.set(null);
-    this._token.set(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      this._user.set(null);
+      this._token.set(null);
+      if (isBrowser()) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    this.#router.navigateByUrl('login');
   }
 
   private redirectToProjects(): void {
@@ -83,11 +97,10 @@ export class UserStore {
         localStorage.setItem('user', JSON.stringify(user));
       },
       error: () => this.logout(),
-      complete: () => console.log(this._user())
     });
   }
 }
 
 function isBrowser(): boolean {
-    return typeof window !== 'undefined' && !!window.localStorage;
-  }
+  return typeof window !== 'undefined' && !!window.localStorage;
+}

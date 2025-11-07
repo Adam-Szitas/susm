@@ -1,0 +1,14 @@
+<div class="wrapper filter-wrapper">
+  <form [formGroup]="searchForm">
+    <div class="control">
+      <label for="search">{{ filter().label }}</label>
+      <input
+        title="search"
+        type="text"
+        [formControlName]="'search'"
+        class="filter-input"
+        placeholder="{{ filter().placeholder }}"
+      />
+    </div>
+  </form>
+</div>

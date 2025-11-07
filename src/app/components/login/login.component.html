@@ -1,6 +1,7 @@
 <div>
   @if (form) {
     <form [formGroup]="form">
+      <h2>Log In</h2>
       <div class="control">
         <label for="email">E-mail address</label>
         <input placeholder="E-mail" type="email" id="email" [formControl]="getEmailControl()" />

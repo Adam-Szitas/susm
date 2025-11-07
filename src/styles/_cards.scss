@@ -1,0 +1,27 @@
+.card-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space);
+  padding: var(--space);
+}
+
+.card {
+  cursor: pointer;
+  display: grid;
+  padding: var(--space);
+  border-radius: 6px;
+  border: 1px solid var(--default-color);
+  text-align: center;
+  line-height: 1.2;
+  transition: box-shadow 0.3s ease-in-out;
+
+  & ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &:hover {
+    box-shadow: 0 0 10px var(--default-color-dark);
+  }
+}

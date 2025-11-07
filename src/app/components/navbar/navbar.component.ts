@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
-import { filter } from "rxjs";
-import { FacadeStore } from "../../store/facade.store";
+import { filter } from 'rxjs';
+import { FacadeStore } from '../../store/facade.store';
 
 @Component({
   selector: 'app-navbar',
@@ -24,10 +31,10 @@ export class NavbarComponent implements OnInit {
   #facadeStore = inject(FacadeStore);
 
   ngOnInit(): void {
-      this.#router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
-        this.getRouteParamsAndQueryParams();
-      })
+    this.#router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.getRouteParamsAndQueryParams();
+    });
+    this.getRouteParamsAndQueryParams();
   }
 
   getRouteParamsAndQueryParams(): void {
@@ -44,6 +51,6 @@ export class NavbarComponent implements OnInit {
 
   logout(): void {
     this.#facadeStore.logout();
-    console.log(this.user());
+    this.#router.navigate(['/login']);
   }
 }

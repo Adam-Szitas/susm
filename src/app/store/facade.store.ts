@@ -1,14 +1,12 @@
-import { computed, inject, Injectable, signal, Signal } from "@angular/core";
-import { UserStore } from "./user.store";
-import { User } from "../models/user.model";
+import { computed, inject, Injectable, signal, Signal } from '@angular/core';
+import { UserStore } from './user.store';
+import { User } from '../models/user.model';
 
-
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class FacadeStore {
-
   #userStore = inject(UserStore);
 
-  constructor(){
+  constructor() {
     this.user = this.#userStore.user;
   }
 
@@ -17,5 +15,5 @@ export class FacadeStore {
     return !!this.user();
   });
 
-  public logout = computed(() => this.#userStore.logout)
+  public logout = () => this.#userStore.logout();
 }

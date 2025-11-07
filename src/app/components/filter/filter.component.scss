@@ -1,0 +1,68 @@
+.wrapper.filter-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  max-width: 600px; /* Limit width on larger screens */
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 300px;
+}
+
+.filter-input {
+  border: 1px solid var(--default-color);
+  border-radius: 6px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #094c43; /* Darker shade for focus */
+  box-shadow: 0 0 4px rgba(11, 99, 87, 0.3);
+}
+
+/* Mobile and smaller screens */
+@media (max-width: 768px) {
+  .wrapper.filter-wrapper {
+    padding: 12px;
+  }
+
+  label {
+    font-size: 0.9rem; /* Slightly smaller for mobile */
+  }
+
+  .filter-input {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 44px; /* Ensure touch target size for accessibility */
+  }
+}
+
+/* Extra small screens (e.g., very small phones) */
+@media (max-width: 480px) {
+  .wrapper.filter-wrapper {
+    padding: 8px;
+  }
+
+  form {
+    max-width: 100%; /* Full width on small screens */
+  }
+
+  label {
+    font-size: 0.85rem;
+  }
+
+  .filter-input {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}

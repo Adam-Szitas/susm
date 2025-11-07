@@ -1,0 +1,37 @@
+<div class="wrapper">
+  <app-filter [filter]="filterData()" (filterChange)="filterChanged($event)"></app-filter>
+  @if (project()) {
+    <h1>{{ project()?.name }}</h1>
+    @if (objects()) {
+      <div class="card-wrapper">
+        @for (object of objects(); track object.id) {
+          <div class="card" [routerLink]="'/objects/tab/' + object.id.$oid">
+            <div class="content">
+              <ul class="data-list">
+                <li>{{ object.address.street }}</li>
+                <li>{{ object.address.city }}</li>
+                <li>{{ object.address.country }}</li>
+              </ul>
+            </div>
+            <div class="content">
+              {{ object.note }}
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+  <button type="button" class="add-icon" (click)="addObject()" [tabIndex]="2">
+    <i class="add" role="button" aria-label="Add object">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path
+          stroke="white"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 5v14m-7-7h14"
+        />
+      </svg>
+    </i>
+  </button>
+</div>

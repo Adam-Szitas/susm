@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProjectStore } from '../../../store/project.store';
+import { ModalService } from '../../../services/modal.service';
 
 @Component({
   selector: 'app-modal-project',
@@ -11,14 +13,25 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 })
 export class ModalProjectComponent {
   #formBuilder = inject(FormBuilder);
+  #projectStore = inject(ProjectStore);
+  #modalService = inject(ModalService);
 
   public form: FormGroup = this.#formBuilder.group({
     name: ['', [Validators.required]],
-    address: [''],
+    address: this.#formBuilder.group({
+      city: [''],
+      street: [''],
+      country: [''],
+    }),
+    note: [''],
   });
 
   public Submit(): void {
     const projectData = this.form.getRawValue();
-    console.log('Project Data:', projectData);
+    this.#projectStore.createProject(projectData).subscribe({
+      next: () => {
+        this.#modalService.close();
+      },
+    });
   }
 }
