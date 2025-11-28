@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { ObjectComponent } from './object.component';
+import { ObjectComponent } from './objects.component';
 import { ObjectTabComponent } from './tab/object-tab.component';
 
 export const ObjectRoutes: Route[] = [

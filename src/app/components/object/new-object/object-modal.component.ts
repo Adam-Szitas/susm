@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '@services/modal.service';
 import { ProjectStore } from '@store/project.store';
+import { DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
 
 @Component({
   selector: 'app-new-object',
@@ -15,13 +16,18 @@ export class ObjectModalComponent {
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
 
+  public readonly statuses = WORK_STATUSES;
+  public readonly statusLabel = formatWorkStatus;
+
   public form: FormGroup = this.#formBuilder.group({
     address: this.#formBuilder.group({
-      city: [''],
       street: [''],
-      country: [''],
+      house_number: [''],
+      level: [''],
+      door_number: [''],
     }),
     note: [''],
+    status: [DEFAULT_WORK_STATUS, [Validators.required]],
   });
 
   public Submit(): void {

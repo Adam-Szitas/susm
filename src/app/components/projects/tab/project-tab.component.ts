@@ -1,25 +1,62 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ProjectStore } from '../../../store/project.store';
-import { Filter, FilterComponent } from '../../filter/filter.component';
-import { ModalService } from '../../../services/modal.service';
+import { ProjectStore } from '@store/project.store';
+import { FilterComponent } from '../../filter/filter.component';
+import { Filter, FilterResult, formatWorkStatus, Object, ProtocolRecord } from '@models';
+import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
+import { TranslateModule } from '@ngx-translate/core';
+import { NotificationService } from '@services/notification.service';
+import { TranslationService } from '@services/translation.service';
+import { FileService } from '@services/file.service';
+import { FileListComponent } from '../../file-list/file-list.component';
+import { ProtocolService } from '@services/protocol.service';
+import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
+import { CategoryManagementModalComponent } from '../category-management-modal.component';
 
 @Component({
   selector: 'app-project-tab',
   templateUrl: './project-tab.component.html',
   styleUrl: './project-tab.component.scss',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FilterComponent, RouterLink],
+  imports: [FilterComponent, RouterLink, TranslateModule, FileListComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectTabComponent implements OnInit {
   #route = inject(ActivatedRoute);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
+  #notificationService = inject(NotificationService);
+  #translationService = inject(TranslationService);
+  #fileService = inject(FileService);
+  #protocolService = inject(ProtocolService);
 
-  public project = this.#projectStore.project;
-  public objects = this.#projectStore.objects;
+
+  project = this.#projectStore.project;
+  objects = this.#projectStore.objects;  
+  files = this.#projectStore.files;
+  imagePreviewUrl = signal<string | null>(null);
+  uploading = signal(false);
+  filteredObjects = signal<Object[]>([]);
+  #currentFilter = signal<FilterResult>({});
+  public readonly formatStatus = formatWorkStatus;
+  readonly projectProtocols = computed(() => {
+    const protocols = this.project()?.protocols ?? [];
+    return [...protocols].sort((a, b) => {
+      const aTime = a.generated_at ? new Date(a.generated_at).getTime() : 0;
+      const bTime = b.generated_at ? new Date(b.generated_at).getTime() : 0;
+      return bTime - aTime;
+    });
+  });
+
+  constructor() {
+    effect(() => {
+      const objects = this.objects() || [];
+      const appliedFilter = this.#currentFilter();
+      this.filteredObjects.set(this.#applyFilters(objects, appliedFilter));
+    });
+  }
+
 
   ngOnInit(): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
@@ -27,25 +64,251 @@ export class ProjectTabComponent implements OnInit {
     if (projectId) {
       this.#projectStore.loadProject(projectId);
     }
+    this.#currentFilter.set({});
   }
 
   filterData(): Filter {
+    const project = this.project();
     return {
-      placeholder: 'Search...',
+      placeholder: 'common.search',
       value: '',
-      label: 'Search',
+      label: 'common.search',
+      showDateRange: true,
+      showCategory: true,
+      categories: project?.categories || [],
     };
   }
 
-  filterChanged(event: any) {
-    console.log(event);
-    // this.#projectStore.getObjectsByTerm(event).subscribe();
+  filterChanged(result: FilterResult) {
+    this.#currentFilter.set(result);
   }
 
   addObject(): void {
     this.#modalService.open({
-      title: 'New Project',
+      title: 'objects.newObject',
       component: ObjectModalComponent,
     });
+  }
+
+  manageCategories(): void {
+    const project = this.project();
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!project || !projectId) return;
+
+    this.#modalService.open({
+      title: 'projects.manageCategories',
+      component: CategoryManagementModalComponent,
+      componentInputs: {
+        projectId,
+        categories: project.categories || [],
+      },
+    });
+  }
+
+  generateProtocol(): void {
+    const availableObjects = this.filteredObjects();
+    if (!availableObjects.length) {
+      this.#notificationService.showError(
+        this.#translationService.instant('protocols.noObjectsAvailable')
+      );
+      return;
+    }
+
+    this.#protocolService.getTemplates().subscribe({
+      next: (templates) => {
+        if (templates.length === 0) {
+          this.#notificationService.showError(
+            this.#translationService.instant('protocols.noTemplates')
+          );
+          return;
+        }
+        const projectId = this.#route.snapshot.paramMap.get('id');
+        if (!projectId) {
+          this.#notificationService.showError(
+            this.#translationService.instant('protocols.generateMissingData')
+          );
+          return;
+        }
+        this.#modalService.open({
+          title: 'protocols.generateProtocol',
+          component: ProtocolGenerateModalComponent,
+          componentInputs: {
+            projectId,
+            objects: availableObjects,
+            templates,
+          },
+        });
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('protocols.loadTemplatesFailed')
+        );
+      },
+    });
+  }
+
+  downloadProtocol(protocol: ProtocolRecord): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    const templateId = protocol.template_id?.$oid;
+    const objectIds =
+      protocol.object_ids?.map((objectId) => objectId.$oid).filter((id): id is string => !!id) ||
+      [];
+
+    if (!projectId || !templateId || objectIds.length === 0) {
+      this.#notificationService.showError(
+        this.#translationService.instant('protocols.downloadFailed')
+      );
+      return;
+    }
+
+    this.#protocolService
+      .downloadProtocol({
+        template_id: templateId,
+        project_id: projectId,
+        object_ids: objectIds,
+      })
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('protocols.generated')
+          );
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('protocols.downloadFailed')
+          );
+        },
+      });
+  }
+
+  protocolDescription(protocol: ProtocolRecord): string {
+    if (protocol.object_names?.length) {
+      return protocol.object_names.join(', ');
+    }
+    return this.#translationService.instant('protocols.noObjectsAvailable');
+  }
+
+  protocolGeneratedAt(protocol: ProtocolRecord): string {
+    if (!protocol.generated_at) {
+      return '';
+    }
+    const date = new Date(protocol.generated_at);
+    return date.toLocaleString();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    // Validate file type (images only)
+    if (!file.type.startsWith('image/')) {
+      this.#notificationService.showError(
+        this.#translationService.instant('errors.imageFileRequired')
+      );
+      this.imagePreviewUrl.set(null);
+      input.value = '';
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      this.imagePreviewUrl.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload file
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId) {
+      this.#notificationService.showError(
+        this.#translationService.instant('errors.objectIdNotFound')
+      );
+      return;
+    }
+
+    this.uploadFile(file, projectId);
+  }
+
+  private uploadFile(file: File, projectId: string): void {
+    this.uploading.set(true);
+
+    const form = new FormData();
+    form.append('avatar', file, file.name);
+
+    this.#fileService.uploadFileForProject(form, projectId).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('objects.uploadSuccess')
+        );
+        this.#projectStore.loadProject(projectId);
+        this.uploading.set(false);
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('errors.uploadFailed')
+        );
+        this.uploading.set(false);
+        this.imagePreviewUrl.set(null);
+      },
+    });
+  }
+
+  #applyFilters(objects: Object[], filter: FilterResult): Object[] {
+    let filtered = [...objects];
+
+    if (filter.searchText) {
+      const searchLower = filter.searchText.toLowerCase();
+      filtered = filtered.filter(obj => {
+        const addr = obj.address;
+        const addressText = [
+          addr?.street,
+          addr?.house_number,
+          addr?.level,
+          addr?.door_number,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        const noteText = obj.note?.toLowerCase() ?? '';
+
+        return (
+          addressText.includes(searchLower) ||
+          noteText.includes(searchLower)
+        );
+      });
+    }
+
+    if (filter.category) {
+      filtered = filtered.filter(obj => obj.category === filter.category);
+    }
+
+    if (filter.dateFrom || filter.dateTo) {
+      filtered = filtered.filter(obj => {
+        // Support both createdAt (frontend model) and created_at (backend Mongo field)
+        const createdRaw = obj.createdAt ?? obj.created_at;
+        if (!createdRaw) return false;
+
+        const objDate = new Date(createdRaw);
+        if (Number.isNaN(objDate.getTime())) return false;
+
+        if (filter.dateFrom) {
+          const fromDate = new Date(filter.dateFrom);
+          if (!Number.isNaN(fromDate.getTime()) && objDate < fromDate) return false;
+        }
+        if (filter.dateTo) {
+          const toDate = new Date(filter.dateTo);
+          if (!Number.isNaN(toDate.getTime())) {
+            toDate.setHours(23, 59, 59, 999);
+            if (objDate > toDate) return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    return filtered;
   }
 }

@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserStore } from '../../store/user.store';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
@@ -9,16 +10,19 @@ import { UserStore } from '../../store/user.store';
   styleUrl: './login.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
 })
 export class LoginComponent {
   #userStore = inject(UserStore);
   #router = inject(Router);
+  #route = inject(ActivatedRoute);
 
   constructor() {
     effect(() => {
       if (this.#userStore.isAuthenticated()) {
-        this.#router.navigateByUrl('/projects');
+        // Get returnUrl from query params or default to projects
+        const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/projects';
+        this.#router.navigateByUrl(returnUrl);
       }
     });
   }
@@ -30,7 +34,8 @@ export class LoginComponent {
 
   public Submit() {
     const credentials = this.form.getRawValue();
-    this.#userStore.login(credentials.email, credentials.password);
+    const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/projects';
+    this.#userStore.login(credentials.email, credentials.password, returnUrl);
   }
 
   public getEmailControl(): FormControl {

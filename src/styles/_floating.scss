@@ -1,0 +1,60 @@
+
+.floating-icon {
+    position: fixed;
+    bottom: var(--space);
+    right: var(--space);
+    z-index: 1000;
+    border-radius: 50%;
+    background-color: var(--default-color);
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    border: none;
+    margin: 0;
+    padding: var(--space);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.floating-icon:focus-visible {
+    outline: 2px solid var(--button-hover);
+    outline-offset: 2px;
+}
+
+.floating-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+.upload-icon {
+    bottom: var(--space);
+    left: var(--space);
+    right: auto;
+}
+
+.add-icon {
+    bottom: var(--space);
+    right: var(--space);
+    left: auto;
+    
+    i {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+  .floating-icon {
+    width: 52px;
+    height: 52px;
+    padding: var(--space-small, 8px);
+    bottom: var(--space-small, 8px);
+    right: var(--space-small, 8px);
+  }
+
+  .upload-icon {
+    left: var(--space-small, 8px);
+  }
+}

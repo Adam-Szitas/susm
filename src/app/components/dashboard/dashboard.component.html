@@ -1,7 +1,69 @@
 <div class="wrapper">
-  <!-- @if(project() && projects().lenght) {
-    @for(project of projects(); track project.id){
+  <h1>{{ 'dashboard.title' | translate }}</h1>
 
+  @if (loading()) {
+    <div class="loading">{{ 'dashboard.loading' | translate }}</div>
+  } @else if (stats()) {
+    <div class="dashboard-grid">
+      <!-- Superuser Card -->
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.superuser' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.superuser_name }}</p>
+        </div>
+      </div>
+
+      <!-- Total Projects Card -->
+      <div class="stat-card">
+        <div class="stat-icon">📁</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.totalProjects' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_projects }}</p>
+        </div>
+      </div>
+
+      <!-- Total Objects Card -->
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.totalObjects' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_objects }}</p>
+        </div>
+      </div>
+
+      <!-- Project Files Card -->
+      <div class="stat-card">
+        <div class="stat-icon">📄</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.projectFiles' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.project_files_count }}</p>
+        </div>
+      </div>
+
+      <!-- Object Files Card -->
+      <div class="stat-card">
+        <div class="stat-icon">📎</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.objectFiles' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.object_files_count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Breakdown -->
+    @if (stats()?.projects_with_objects && stats()!.projects_with_objects.length > 0) {
+      <div class="projects-breakdown">
+        <h2>{{ 'dashboard.projectsBreakdown' | translate }}</h2>
+        <div class="breakdown-list">
+          @for (project of stats()!.projects_with_objects; track project.name) {
+            <div class="breakdown-item">
+              <span class="project-name">{{ project.name }}</span>
+              <span class="object-count">{{ project.object_count }} {{ 'dashboard.objects' | translate }}</span>
+            </div>
+          }
+        </div>
+      </div>
     }
-  } -->
+  }
 </div>

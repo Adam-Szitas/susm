@@ -1,71 +1,63 @@
 import { inject, Injectable, Injector } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../environment';
 import { UserStore } from '../store/user.store';
+import { ErrorHandlerService, AppError } from './error-handler.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpService {
-  private readonly apiUrl: string = 'http://localhost:8080';
+  private readonly apiUrl: string;
 
   #http = inject(HttpClient);
-  protected injector = inject(Injector);
+  #injector = inject(Injector);
+  #errorHandler = inject(ErrorHandlerService);
+
   constructor() {
     this.apiUrl = environment.be;
   }
 
   get<T>(url: string): Observable<T> {
-    return this.#http.get<T>(`${this.apiUrl}/${url}`).pipe(catchError(this.errorHandler));
+    return this.#http
+      .get<T>(`${this.apiUrl}/${url}`, {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      })
+      .pipe(catchError((error) => this.handleError(error, url)));
   }
 
-  post<T>(url: string, body: any): Observable<T> {
-    return this.#http.post<T>(`${this.apiUrl}/${url}`, body).pipe(catchError(this.errorHandler));
+  post<T>(url: string, body: unknown, postHeaders?: HttpHeaders): Observable<T> {
+    const headers = postHeaders || new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.#http
+      .post<T>(`${this.apiUrl}/${url}`, body, { headers })
+      .pipe(catchError((error) => this.handleError(error, url)));
   }
 
-  private errorHandler = (error: HttpErrorResponse): Observable<never> => {
-    let errorMessage = 'An unknown error occurred';
+  put<T>(url: string, body: unknown): Observable<T> {
+    return this.#http
+      .put<T>(`${this.apiUrl}/${url}`, body, {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      })
+      .pipe(catchError((error) => this.handleError(error, url)));
+  }
 
-    if (error.error instanceof Error) {
-      // Client-side error (e.g., network failure)
-      errorMessage = `Client error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      switch (error.status) {
-        case 400:
-          errorMessage = `Bad Request: ${error.error.message || 'Invalid input'}`;
-          break;
-        case 401:
-          if (!error.url?.includes('login')) {
-            errorMessage = `Unauthorized: ${error.error.message || 'Invalid credentials'}`;
-            const userStore = this.injector.get(UserStore);
-            userStore.logout();
-          }
-          break;
-        case 404:
-          errorMessage = `Not Found: ${error.error.message || 'Resource not found'}`;
-          break;
-        case 500:
-          errorMessage = `Server Error: ${error.error.message || 'Internal server error'}`;
-          break;
-        default:
-          errorMessage = `Error ${error.status}: ${error.error.message || error.message}`;
-      }
+  delete<T>(url: string): Observable<T> {
+    return this.#http
+      .delete<T>(`${this.apiUrl}/${url}`)
+      .pipe(catchError((error) => this.handleError(error, url)));
+  }
+
+  private handleError(error: unknown, url: string): Observable<never> {
+    const appError = this.#errorHandler.handleHttpError(error);
+
+    // Handle 401 errors by logging out (except for login/register endpoints)
+    if (appError.status === 401 && !url.includes('login') && !url.includes('register')) {
+      const userStore = this.#injector.get(UserStore);
+      userStore.logout();
     }
 
-    // Log for debugging
-    console.error('HTTP Error:', {
-      status: error.status,
-      message: errorMessage,
-      error: error.error,
-    });
-
-    // Return a custom error object
-    return throwError(() => ({
-      status: error.status,
-      message: errorMessage,
-      originalError: error,
-    }));
-  };
+    return throwError(() => appError);
+  }
 }

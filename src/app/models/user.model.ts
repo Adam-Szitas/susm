@@ -1,7 +1,8 @@
 export interface Address {
-  street: string;
-  city: string;
-  country: string;
+  street?: string;
+  house_number?: string;
+  level?: string | null;
+  door_number?: string | null;
 }
 
 export interface User {

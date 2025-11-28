@@ -1,14 +1,56 @@
 <div class="wrapper filter-wrapper">
   <form [formGroup]="searchForm">
-    <div class="control">
-      <label for="search">{{ filter().label }}</label>
-      <input
-        title="search"
-        type="text"
-        [formControlName]="'search'"
-        class="filter-input"
-        placeholder="{{ filter().placeholder }}"
-      />
+    <div class="filter-controls">
+      <div class="control">
+        <label for="search">{{ filter().label | translate }}</label>
+        <input
+          id="search"
+          title="search"
+          type="text"
+          formControlName="search"
+          class="filter-input"
+          [placeholder]="filter().placeholder | translate"
+        />
+      </div>
+
+      @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
+        <div class="control">
+          <label for="category">{{ 'filter.category' | translate }}</label>
+          <select id="category" formControlName="category" class="filter-input">
+            <option value="">{{ 'filter.allCategories' | translate }}</option>
+            @for (category of filter().categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (filter().showDateRange) {
+        <div class="control date-range">
+          <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>
+          <input
+            id="dateFrom"
+            type="date"
+            formControlName="dateFrom"
+            class="filter-input"
+          />
+        </div>
+        <div class="control date-range">
+          <label for="dateTo">{{ 'filter.dateTo' | translate }}</label>
+          <input
+            id="dateTo"
+            type="date"
+            formControlName="dateTo"
+            class="filter-input"
+          />
+        </div>
+      }
+
+      <div class="control control-actions">
+        <button type="button" class="btn btn-secondary btn-small" (click)="clearFilters()">
+          {{ 'filter.clear' | translate }}
+        </button>
+      </div>
     </div>
   </form>
 </div>

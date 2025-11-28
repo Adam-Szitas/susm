@@ -7,7 +7,8 @@
     "types": ["node"],
     "paths": {
       "@services/*": ["./src/app/services/*"],
-      "@store/*": ["./src/app/store/*"]
+      "@store/*": ["./src/app/store/*"],
+      "@models": ["./src/app/models"]
     }
   },
   "include": ["src/**/*.ts"],

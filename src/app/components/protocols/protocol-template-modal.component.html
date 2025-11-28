@@ -1,0 +1,105 @@
+<div class="protocol-template-form">
+  <h2>{{ 'protocols.createTemplate' | translate }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="name">{{ 'protocols.templateName' | translate }} *</label>
+      <input type="text" id="name" formControlName="name" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <span class="error">{{ 'protocols.nameRequired' | translate }}</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="description">{{ 'protocols.description' | translate }}</label>
+      <textarea id="description" formControlName="description" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="header_template">{{ 'protocols.headerTemplate' | translate }}</label>
+      <textarea
+        id="header_template"
+        formControlName="header_template"
+        rows="2"
+        placeholder="{{ 'protocols.headerPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="footer_template">{{ 'protocols.footerTemplate' | translate }}</label>
+      <textarea
+        id="footer_template"
+        formControlName="footer_template"
+        rows="2"
+        placeholder="{{ 'protocols.footerPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+
+    <div class="fields-section">
+      <div class="fields-header">
+        <h3>{{ 'protocols.fields' | translate }}</h3>
+        <button type="button" class="btn btn-secondary" (click)="addField()">
+          {{ 'protocols.addField' | translate }}
+        </button>
+      </div>
+
+      <div formArrayName="fields" class="fields-list">
+        @for (field of fields.controls; track $index) {
+          <div [formGroupName]="$index" class="field-item">
+            <div class="field-row">
+              <div class="form-group">
+                <label>{{ 'protocols.fieldLabel' | translate }} *</label>
+                <input type="text" formControlName="label" />
+              </div>
+
+              <div class="form-group">
+                <label>{{ 'protocols.fieldType' | translate }} *</label>
+                <select formControlName="field_type">
+                  @for (type of fieldTypes; track type) {
+                    <option [value]="type">{{ 'protocols.fieldTypes.' + type | translate }}</option>
+                  }
+                </select>
+              </div>
+
+              @if (isCustomField(field)) {
+                <div class="form-group">
+                  <label>{{ 'protocols.customFieldName' | translate }}</label>
+                  <input type="text" formControlName="custom_field_name" />
+                </div>
+              }
+
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" formControlName="required" />
+                  {{ 'protocols.required' | translate }}
+                </label>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-danger btn-small"
+                (click)="removeField($index)"
+              >
+                {{ 'protocols.remove' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving() || form.invalid">
+        @if (saving()) {
+          {{ 'protocols.saving' | translate }}
+        } @else {
+          {{ 'protocols.create' | translate }}
+        }
+      </button>
+    </div>
+  </form>
+</div>
+

@@ -1,0 +1,55 @@
+<div class="category-management-form">
+  <h2>{{ 'projects.manageCategories' | translate }}</h2>
+
+  <form [formGroup]="form">
+    <div class="form-group">
+      <label for="newCategory">{{ 'projects.addCategory' | translate }}</label>
+      <div class="input-group">
+        <input
+          type="text"
+          id="newCategory"
+          formControlName="newCategory"
+          [placeholder]="'projects.categoryName' | translate"
+        />
+        <button type="button" class="btn btn-secondary" (click)="addCategory()">
+          {{ 'common.add' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="categories-list">
+      <h3>{{ 'projects.categories' | translate }}</h3>
+      <div formArrayName="categories" class="category-items">
+        @for (control of categoryArray.controls; track $index; let idx = $index) {
+          <div class="category-item">
+            <input type="text" [formControlName]="idx" />
+            <button
+              type="button"
+              class="btn btn-danger btn-small"
+              (click)="removeCategory(idx)"
+            >
+              {{ 'common.delete' | translate }}
+            </button>
+          </div>
+        }
+        @if (categoryArray.length === 0) {
+          <p class="empty-message">{{ 'projects.noCategories' | translate }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          {{ 'common.saving' | translate }}
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </div>
+  </form>
+</div>
+

@@ -1,0 +1,64 @@
+.protocols-wrapper {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      margin: 0;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+
+    p {
+      margin-bottom: 1.5rem;
+      color: #666;
+    }
+  }
+
+  .templates-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+
+    .template-card {
+      padding: 1.5rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      transition: box-shadow 0.2s;
+
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      h3 {
+        margin: 0 0 0.5rem 0;
+      }
+
+      .description {
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      .template-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #888;
+      }
+    }
+  }
+}
+

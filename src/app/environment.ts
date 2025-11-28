@@ -1,3 +1,4 @@
 export const environment = {
-  be: 'http://localhost:8080'
+  be: 'https://susm-be-7c4h.shuttle.app',
+  folderBase: '/uploads'
 }

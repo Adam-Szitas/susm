@@ -1,0 +1,11 @@
+{
+  "routes": {
+    "/": {},
+    "/dashboard": {},
+    "/login": {},
+    "/objects": {},
+    "/projects": {},
+    "/protocols": {},
+    "/register": {}
+  }
+}

@@ -15,33 +15,39 @@ export interface ModalConfig {
   confirmText?: string;
   content?: string;
   component?: any;
+  componentInputs?: Record<string, any>;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ModalService {
-  private componentRef!: ComponentRef<ModalComponent>;
-  private container!: HTMLElement;
+  private componentRef: ComponentRef<ModalComponent> | null = null;
+  private container: HTMLElement | null = null;
 
   #injector = inject(Injector);
   #appRef = inject(ApplicationRef);
 
-  private getOrCreateContainer(): HTMLElement {
-    if (this.container) return this.container;
-
-    this.container = document.createElement('div');
-    this.container.style.position = 'relative';
-    this.container.style.zIndex = '9999';
-    document.body.appendChild(this.container);
-
-    return this.container;
+  private createContainer(): HTMLElement {
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.right = '0';
+    container.style.bottom = '0';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
   }
 
   open(config?: ModalConfig): ComponentRef<ModalComponent> {
-    const container = this.getOrCreateContainer();
+    // Close any existing modal first
+    this.close();
+
+    // Create a fresh container each time
+    this.container = this.createContainer();
 
     this.componentRef = createComponent(ModalComponent, {
       environmentInjector: this.#injector as EnvironmentInjector,
-      hostElement: container,
+      hostElement: this.container,
     });
 
     this.#appRef.attachView(this.componentRef.hostView);
@@ -50,13 +56,15 @@ export class ModalService {
     this.componentRef.instance.modalService = this;
 
     if (config?.component) {
-      this.injectComponentIntoModal(config.component);
+      this.injectComponentIntoModal(config.component, config.componentInputs);
     }
 
     return this.componentRef;
   }
 
-  private injectComponentIntoModal(componentType: any) {
+  private injectComponentIntoModal(componentType: any, inputs?: Record<string, any>) {
+    if (!this.componentRef) return;
+    
     const modalBody = this.componentRef.location.nativeElement.querySelector('.modal-body');
     if (!modalBody) return;
 
@@ -69,6 +77,13 @@ export class ModalService {
       hostElement: modalBody,
     });
 
+    // Set inputs if provided - use setInput() for signal inputs
+    if (inputs) {
+      Object.keys(inputs).forEach(key => {
+        childComponent.setInput(key, inputs[key]);
+      });
+    }
+
     this.#appRef.attachView(childComponent.hostView);
   }
 
@@ -76,7 +91,13 @@ export class ModalService {
     if (this.componentRef) {
       this.#appRef.detachView(this.componentRef.hostView);
       this.componentRef.destroy();
-      this.componentRef = null!;
+      this.componentRef = null;
+    }
+    
+    // Remove container from DOM
+    if (this.container && this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container);
+      this.container = null;
     }
   }
 

@@ -1,0 +1,37 @@
+<div class="protocols-wrapper">
+  <div class="header">
+    <h1>{{ 'protocols.title' | translate }}</h1>
+    <button type="button" class="btn btn-primary" (click)="createTemplate()">
+      {{ 'protocols.createTemplate' | translate }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p>{{ 'protocols.loading' | translate }}</p>
+  } @else if (templates().length === 0) {
+    <div class="empty-state">
+      <p>{{ 'protocols.noTemplates' | translate }}</p>
+      <button type="button" class="btn btn-primary" (click)="createTemplate()">
+        {{ 'protocols.createFirstTemplate' | translate }}
+      </button>
+    </div>
+  } @else {
+    <div class="templates-list">
+      @for (template of templates(); track template._id?.$oid) {
+        <div class="template-card">
+          <h3>{{ template.name }}</h3>
+          @if (template.description) {
+            <p class="description">{{ template.description }}</p>
+          }
+          <div class="template-info">
+            <span>{{ 'protocols.fieldsCount' | translate }}: {{ template.fields.length }}</span>
+            @if (template.created_at) {
+              <span>{{ 'protocols.created' | translate }}: {{ template.created_at | date }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+

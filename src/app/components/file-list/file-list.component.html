@@ -1,0 +1,17 @@
+<div class="file-wrapper">
+    <ul class="file-gallery">
+        @for (file of files(); track file._id.$oid) {
+            <li class="file-item" (click)="downloadFile(file.path)">
+                <div class="image-container">
+                    <img [src]="getImageUrl(file.path)" [alt]="file.filename || 'File Preview'" loading="lazy"/>
+                    <div class="overlay">
+                        <span class="download-hint">{{ 'fileList.download' | translate }}</span>
+                    </div>
+                </div>
+                @if (file.filename) {
+                    <p class="file-name">{{ file.filename }}</p>
+                }
+            </li>
+        }
+    </ul>
+</div>

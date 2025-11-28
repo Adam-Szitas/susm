@@ -1,0 +1,62 @@
+<div class="protocol-generate-form">
+  <h2>{{ 'protocols.generateProtocol' | translate }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
+      <select id="template_id" formControlName="template_id">
+        <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
+        @for (template of templates(); track template._id?.$oid) {
+          <option [value]="template._id?.$oid">{{ template.name }}</option>
+        }
+      </select>
+      @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {
+        <span class="error">{{ 'protocols.templateRequired' | translate }}</span>
+      }
+    </div>
+
+    @if (objects().length === 0) {
+      <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+    } @else {
+      <div class="object-selection">
+        <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
+        <p class="helper-text">
+          {{ 'protocols.selectObjectsDescription' | translate }}
+        </p>
+        <div class="object-list">
+          @for (object of objects(); track object._id?.$oid) {
+            <label class="object-item">
+              <input
+                type="checkbox"
+                [checked]="isSelected(object._id?.$oid)"
+                (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+              />
+              <span>{{ formatObjectLabel(object) }}</span>
+            </label>
+          }
+        </div>
+        @if (!hasSelection()) {
+          <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
+        }
+      </div>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="generating() || form.invalid || !hasSelection()"
+      >
+        @if (generating()) {
+          {{ 'protocols.generating' | translate }}
+        } @else {
+          {{ 'protocols.generate' | translate }}
+        }
+      </button>
+    </div>
+  </form>
+</div>
+

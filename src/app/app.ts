@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
@@ -9,12 +9,11 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('susm');
-
-  constructor(private translate: TranslateService){}
+  #translationService = inject(TranslationService);
 
   ngOnInit(): void {
-    this.translate.use('en');
+    this.#translationService.initialize();
   }
 }

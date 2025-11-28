@@ -4,21 +4,43 @@
       <div class="control" formGroupName="address">
         <h4>Address</h4>
         <div class="control">
-          <label for="country">Country</label>
-          <input placeholder="country" type="country" id="country" formControlName="country" />
-        </div>
-        <div class="control">
-          <label for="city">City</label>
-          <input placeholder="city" type="city" id="city" formControlName="city" />
-        </div>
-        <div class="control">
           <label for="street">Street</label>
-          <input placeholder="street" type="street" id="street" formControlName="street" />
+          <input placeholder="street" type="text" id="street" formControlName="street" />
+        </div>
+        <div class="control">
+          <label for="house_number">House number</label>
+          <input
+            placeholder="house number"
+            type="text"
+            id="house_number"
+            formControlName="house_number"
+          />
+        </div>
+        <div class="control">
+          <label for="level">Level / floor</label>
+          <input placeholder="e.g. 3 or 3rd" type="text" id="level" formControlName="level" />
+        </div>
+        <div class="control">
+          <label for="door_number">Door number</label>
+          <input
+            placeholder="door or flat number"
+            type="text"
+            id="door_number"
+            formControlName="door_number"
+          />
         </div>
       </div>
       <div class="control">
         <label for="note">Note</label>
         <input placeholder="Note" type="note" id="note" formControlName="note" />
+      </div>
+      <div class="control">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
       </div>
       <div class="control buttons">
         <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>

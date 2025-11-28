@@ -12,6 +12,7 @@
   transition:
     background-color 0.2s,
     transform 0.1s;
+  margin: 0 var(--space-small);
 }
 
 .button-primary {
@@ -43,4 +44,19 @@
 .button-secondary:focus {
   outline: 2px solid #0b6357;
   outline-offset: 2px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+.btn-secondary {
+  background: #6c757d;
+  color: white;
 }

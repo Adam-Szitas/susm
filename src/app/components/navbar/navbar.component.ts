@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { FacadeStore } from '../../store/facade.store';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-navbar',
@@ -16,7 +17,7 @@ import { FacadeStore } from '../../store/facade.store';
   styleUrl: './navbar.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
 })
 export class NavbarComponent implements OnInit {
   public user = computed(() => {

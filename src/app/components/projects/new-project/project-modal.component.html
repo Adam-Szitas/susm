@@ -24,6 +24,14 @@
         <label for="note">Note</label>
         <input placeholder="Note" type="note" id="note" formControlName="note" />
       </div>
+      <div class="control">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
+      </div>
       <div class="control buttons">
         <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>
       </div>

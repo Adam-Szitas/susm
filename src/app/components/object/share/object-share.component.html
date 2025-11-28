@@ -1,0 +1,51 @@
+<div class="share-wrapper">
+  <h1>{{ 'share.title' | translate }}</h1>
+
+  @if (loading()) {
+    <p>{{ 'share.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <div class="error">
+      {{ loadError() | translate }}
+    </div>
+  } @else if (object()) {
+    <div class="card">
+      <h2>{{ object()?.project_name }}</h2>
+      <p class="address">
+        {{ object()?.address?.street }}
+      </p>
+      @if (object()?.note) {
+        <p class="note">
+          {{ object()?.note }}
+        </p>
+      }
+      <p class="status">
+        {{ 'share.currentStatus' | translate }}: {{ formatStatus(object()?.status || defaultStatus) }}
+      </p>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="primary"
+        (click)="confirmWork()"
+        [disabled]="verifying() || object()?.status === 'verified'"
+      >
+        @if (object()?.status === 'verified') {
+          {{ 'share.alreadyVerified' | translate }}
+        } @else if (verifying()) {
+          {{ 'share.verifying' | translate }}
+        } @else {
+          {{ 'share.markDone' | translate }}
+        }
+      </button>
+    </div>
+
+    @if (success()) {
+      <p class="success">{{ 'share.success' | translate }}</p>
+    }
+    @if (actionError()) {
+      <p class="error">{{ actionError() | translate }}</p>
+    }
+  }
+</div>
+

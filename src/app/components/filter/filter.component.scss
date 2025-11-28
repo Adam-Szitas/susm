@@ -2,23 +2,40 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  margin-bottom: 1rem;
 }
 
 form {
   width: 100%;
-  max-width: 600px; /* Limit width on larger screens */
+  max-width: 100%;
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
 }
 
 .control {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-width: 300px;
+}
+
+.control.date-range {
+  min-width: 150px;
+  flex: 0 1 auto;
+}
+
+.control-actions {
+  min-width: auto;
+  justify-content: flex-end;
 }
 
 .filter-input {
   border: 1px solid var(--default-color);
   border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 1rem;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -28,6 +45,15 @@ form {
   outline: none;
   border-color: #094c43; /* Darker shade for focus */
   box-shadow: 0 0 4px rgba(11, 99, 87, 0.3);
+}
+
+select.filter-input {
+  cursor: pointer;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.9rem;
 }
 
 /* Mobile and smaller screens */

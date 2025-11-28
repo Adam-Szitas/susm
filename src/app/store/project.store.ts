@@ -1,8 +1,7 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpService } from '../services/http.service';
 import { Observable, tap } from 'rxjs';
-import { Address } from '../models/user.model';
-import { Object } from '../components/object/object.component';
+import { Project, Object, ObjectWithProject, File } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectStore {
@@ -11,62 +10,231 @@ export class ProjectStore {
   private _projects = signal<Project[]>([]);
   private _project = signal<Project | null>(null);
   private _objects = signal<Object[]>([]);
+  private _objectsWithProjects = signal<ObjectWithProject[]>([]);
+  private _loading = signal(false);
+  private _error = signal<string | null>(null);
+  private _files = signal<File[]>([]);
 
-  public readonly projects = this._projects;
-  public readonly project = this._project;
-  public readonly objects = this._objects;
+  // Public readonly signals
+  readonly projects = computed(() => this._projects());
+  readonly project = computed(() => this._project());
+  readonly objects = computed(() => this._objects());
+  readonly objectsWithProjects = computed(() => this._objectsWithProjects());
+  readonly loading = computed(() => this._loading());
+  readonly error = computed(() => this._error());
+  readonly files = computed(() => this._files());
 
-  public loadProject(id: string | null): void {
-    this.#httpService
-      .get<Project>(`project/${id}`)
-      .pipe()
-      .subscribe({
-        next: (result) => {
-          this._project.set(result);
-          this.loadObjects();
-        },
-      });
-  }
+  loadProject(id: string | null): void {
+    if (!id) {
+      this._error.set('Project ID is required');
+      return;
+    }
 
-  public loadProjects(): void {
-    this.#httpService.get<Project[]>('projects').subscribe({
-      next: (result) => this._projects.set(result),
-    });
-  }
+    this._loading.set(true);
+    this._error.set(null);
 
-  public createProject(project: Project): Observable<any> {
-    return this.#httpService.post('projects', project).pipe(tap(() => this.loadProjects()));
-  }
-
-  public getObjectsByTerm(term: string): Observable<Object[]> {
-    return this.#httpService
-      .get<Object[]>(`objects/${this.project()?._id}&${term}`)
-      .pipe(tap((objects) => this._objects.set(objects)));
-  }
-
-  public createObject(object: Object & { projectId: string }): Observable<any> {
-    return this.#httpService.post('object', object).pipe(tap(() => this.getObjectsByTerm('')));
-  }
-
-  public loadObjects(): void {
-    this.#httpService.get<Object[]>(`objects/${this.project()?._id?.$oid}`).subscribe({
+    this.#httpService.get<Project>(`project/${id}`).subscribe({
       next: (result) => {
-        this._objects.set(result);
+        this._project.set(result);
+        this.loadObjects();
+        this._loading.set(false);
+      },
+      error: (error) => {
+        this._error.set(error.message || 'Failed to load project');
+        this._loading.set(false);
+      },
+    });
+
+    this.#httpService.get<File[]>(`file/project/${id}`).subscribe({
+      next: (files) => {
+        const mappedFiles = files.map(file => ({
+          ...file,
+          path: file.path,
+          filename: file.path.split(/[\\/]/).pop() || ''
+        }));
+        this._files.set(mappedFiles);
+      }
+    })
+  }
+
+  loadProjects(): void {
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.#httpService.get<Project[]>('projects').subscribe({
+      next: (result) => {
+        this._projects.set(result);
+        this._loading.set(false);
+      },
+      error: (error) => {
+        this._error.set(error.message || 'Failed to load projects');
+        this._loading.set(false);
       },
     });
   }
 
-  public loadObject(objectId: string): Observable<Object> {
+  createProject(project: Project): Observable<Project> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    return this.#httpService.post<Project>('projects', project).pipe(
+      tap({
+        next: () => {
+          this.loadProjects();
+          this._loading.set(false);
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to create project');
+          this._loading.set(false);
+        },
+      })
+    );
+  }
+
+  getObjectsByTerm(term: string): Observable<Object[]> {
+    const projectId = this._project()?._id?.$oid;
+    if (!projectId) {
+      this._error.set('No project selected');
+      return new Observable((observer) => {
+        observer.error(new Error('No project selected'));
+      });
+    }
+
+    return this.#httpService
+      .get<Object[]>(`objects/${projectId}&${term}`)
+      .pipe(tap((objects) => this._objects.set(objects)));
+  }
+
+  createObject(object: Object & { projectId: string }): Observable<Object> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    return this.#httpService.post<Object>('object', object).pipe(
+      tap({
+        next: () => {
+          this.getObjectsByTerm('').subscribe();
+          this._loading.set(false);
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to create object');
+          this._loading.set(false);
+        },
+      })
+    );
+  }
+
+  loadObjects(): void {
+    const projectId = this._project()?._id?.$oid;
+    if (!projectId) {
+      this._error.set('No project selected');
+      return;
+    }
+
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.#httpService.get<Object[]>(`objects/${projectId}`).subscribe({
+      next: (result) => {
+        this._objects.set(result);
+        this._loading.set(false);
+      },
+      error: (error) => {
+        this._error.set(error.message || 'Failed to load objects');
+        this._loading.set(false);
+      },
+    });
+  }
+
+  loadAllObjects(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.#httpService.get<ObjectWithProject[] | any>(`objects`).subscribe({
+      next: (result) => {
+        this._objectsWithProjects.set(result);
+        this._loading.set(false);
+      },
+      error: (error) => {
+        this._error.set(error.message || 'Failed to load objects');
+        this._loading.set(false);
+      },
+    });
+  }
+
+  loadObject(objectId: string): Observable<Object> {
     return this.#httpService.get<Object>(`object/${objectId}`);
   }
-}
 
-export interface Project {
-  _id?: {
-    $oid: string;
-  };
-  name: string;
-  address?: Address;
-  createdAt?: string;
-  inserterId?: number;
+  updateProjectCategories(projectId: string, categories: string[]): Observable<Project> {
+    return this.#httpService.put<Project>(`project/${projectId}/categories`, { categories }).pipe(
+      tap((project) => {
+        this._project.set(project);
+        // Reload objects to refresh filter categories
+        this.loadObjects();
+        // Update projects list if needed
+        const projects = this._projects();
+        const index = projects.findIndex(p => p._id?.$oid === projectId);
+        if (index !== -1) {
+          projects[index] = project;
+          this._projects.set([...projects]);
+        }
+      })
+    );
+  }
+
+  updateObjectCategory(objectId: string, category: string | null): Observable<Object> {
+    return this.#httpService.put<Object>(`object/${objectId}/category`, { category }).pipe(
+      tap((updatedObject) => {
+        // Update object in current project if loaded
+        const project = this._project();
+        if (project?.objects) {
+          const index = project.objects.findIndex(o => o._id?.$oid === objectId);
+          if (index !== -1) {
+            project.objects[index] = updatedObject;
+            this._project.set({ ...project });
+          }
+        }
+        // Update objects list
+        const objects = this._objects();
+        const objIndex = objects.findIndex(o => o._id?.$oid === objectId);
+        if (objIndex !== -1) {
+          objects[objIndex] = updatedObject;
+          this._objects.set([...objects]);
+        }
+      })
+    );
+  }
+
+  updateObjectStatus(objectId: string, status: string): Observable<Object> {
+    return this.#httpService.put<Object>(`object/${objectId}/status`, { status }).pipe(
+      tap((updatedObject) => {
+        // Update object in current project if loaded
+        const project = this._project();
+        if (project?.objects) {
+          const index = project.objects.findIndex(o => o._id?.$oid === objectId);
+          if (index !== -1) {
+            project.objects[index] = updatedObject;
+            this._project.set({ ...project });
+          }
+        }
+        // Update objects list
+        const objects = this._objects();
+        const objIndex = objects.findIndex(o => o._id?.$oid === objectId);
+        if (objIndex !== -1) {
+          objects[objIndex] = updatedObject;
+          this._objects.set([...objects]);
+        }
+        // Update objectsWithProjects if needed
+        const objectsWithProjects = this._objectsWithProjects();
+        const objWithProjectIndex = objectsWithProjects.findIndex(item => item.object._id?.$oid === objectId);
+        if (objWithProjectIndex !== -1) {
+          objectsWithProjects[objWithProjectIndex].object = updatedObject;
+          this._objectsWithProjects.set([...objectsWithProjects]);
+        }
+      })
+    );
+  }
+
+  clearError(): void {
+    this._error.set(null);
+  }
 }

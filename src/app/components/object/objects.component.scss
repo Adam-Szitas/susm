@@ -1,0 +1,57 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-pill {
+  align-self: flex-start;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #e2e3e5;
+  color: #383d41;
+
+  &[data-status='in_progress'] {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  &[data-status='verified'] {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  &[data-status='closed'] {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.project-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: #4a4a4a;
+}
+
+.category {
+  text-decoration: overline;
+  font-size: 0.85rem;
+  color: #4a4a4a;
+  font-weight: bold;
+}
+
+.card-wrapper {
+  align-items: stretch;
+}

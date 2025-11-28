@@ -1,26 +1,47 @@
-<h1>Projects</h1>
+<h1>{{ 'projects.title' | translate }}</h1>
 <div class="projects-wrapper">
-  <div class="container">
-    <button (click)="newProject()" type="button" class="button button-primary">
-      Add new project
-    </button>
-  </div>
   @if (projects().length) {
     <div class="card-wrapper">
       @for (project of projects(); track project['_id']) {
         <div class="card" [routerLink]="'tab/' + project._id?.$oid">
+          <span class="status-pill" [attr.data-status]="project.status || defaultStatus">
+            {{ formatStatus(project.status) }}
+          </span>
           <h2 class="headline">{{ project.name }}</h2>
           <div class="content">
             <ul class="data-list">
-              <li>{{ project.address?.street }}</li>
-              <li>{{ project.address?.city }}</li>
-              <li>{{ project.address?.country }}</li>
+              <li>
+                {{ project.address?.street }} {{ project.address?.house_number }}
+              </li>
+              @if (project.address?.level) {
+                <li>
+                  {{ 'objects.level' | translate }}: {{ project.address?.level }}
+                </li>
+              }
+              @if (project.address?.door_number) {
+                <li>
+                  {{ 'objects.doorNumber' | translate }}: {{ project.address?.door_number }}
+                </li>
+              }
             </ul>
           </div>
         </div>
       }
     </div>
   } @else {
-    There are no projects
+    {{ 'projects.noProjects' | translate }}
   }
+  <button type="button" class="add-icon floating-icon" (click)="newProject()" [tabIndex]="2" [attr.aria-label]="'objects.add' | translate">
+    <i class="add" role="button">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path
+          stroke="white"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 5v14m-7-7h14"
+        />
+      </svg>
+    </i>
+  </button>
 </div>

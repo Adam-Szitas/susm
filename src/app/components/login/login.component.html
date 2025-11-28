@@ -1,23 +1,23 @@
 <div>
   @if (form) {
     <form [formGroup]="form">
-      <h2>Log In</h2>
+      <h2>{{ 'login.title' | translate }}</h2>
       <div class="control">
-        <label for="email">E-mail address</label>
-        <input placeholder="E-mail" type="email" id="email" [formControl]="getEmailControl()" />
+        <label for="email">{{ 'login.email' | translate }}</label>
+        <input [placeholder]="'login.emailPlaceholder' | translate" type="email" id="email" [formControl]="getEmailControl()" />
       </div>
       <div class="control">
-        <label for="password">Password</label>
+        <label for="password">{{ 'login.password' | translate }}</label>
         <input
-          placeholder="Password"
+          [placeholder]="'login.passwordPlaceholder' | translate"
           type="password"
           id="password"
           [formControl]="getPasswordControl()"
         />
       </div>
       <div class="control buttons">
-        <button type="button" [routerLink]="'/register'">Register</button>
-        <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>
+        <button type="button" [routerLink]="'/register'">{{ 'login.register' | translate }}</button>
+        <button type="button" [disabled]="form.invalid" (click)="Submit()">{{ 'common.submit' | translate }}</button>
       </div>
     </form>
   }
