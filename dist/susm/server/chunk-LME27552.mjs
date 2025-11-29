@@ -1,2 +1,0 @@
-import './polyfills.server.mjs';
-import{Hb as s,Jb as a,l as i,p as n}from"./chunk-43FWLFEJ.mjs";var o=class e{#t=n(a);#r=n(s);initialize(){let t=this.#r.user()?.language?.toLowerCase()||"en";this.#t.setDefaultLang("en"),this.#t.use(t)}use(t){return this.#t.use(t)}getCurrentLang(){return this.#t.currentLang||"en"}instant(t,r){return this.#t.instant(t,r)}get(t,r){return this.#t.get(t,r)}static \u0275fac=function(r){return new(r||e)};static \u0275prov=i({token:e,factory:e.\u0275fac,providedIn:"root"})};export{o as a};
