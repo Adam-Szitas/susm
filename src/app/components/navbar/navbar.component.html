@@ -1,4 +1,4 @@
-@if (user()) {
+@if (user() && !isMobile()) {
   <nav>
     <div class="mobile">
       <i class="hamburger-menu" (click)="toggleMobileMenu()">
@@ -37,6 +37,14 @@
       <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">{{ 'navbar.protocols' | translate }}</li>
     </ul>
   </div>
+} @else if (user() && isMobile()) {
+  <nav>
+    <span>{{ 'navbar.logo' | translate }}</span>
+    <ul>
+      <li (click)="toggleMobileMenu()" [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
+      <li [routerLink]="'/register'">{{ 'navbar.register' | translate }}</li>
+    </ul>
+  </nav>
 } @else {
   <nav>
     <span>{{ 'navbar.logo' | translate }}</span>

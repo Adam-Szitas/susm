@@ -27,6 +27,7 @@ export class NavbarComponent implements OnInit {
   public toggledMenu = signal<boolean>(false);
 
   public hideMenuItem = null;
+  public isMobile = signal<boolean>(window.innerWidth < 768);
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #facadeStore = inject(FacadeStore);
