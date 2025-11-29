@@ -23,9 +23,10 @@ export class ModalProjectComponent {
   public form: FormGroup = this.#formBuilder.group({
     name: ['', [Validators.required]],
     address: this.#formBuilder.group({
-      city: [''],
       street: [''],
-      country: [''],
+      house_number: [''],
+      level: [''],
+      door_number: [''],
     }),
     note: [''],
     status: [DEFAULT_WORK_STATUS, [Validators.required]],
