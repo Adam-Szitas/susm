@@ -55,34 +55,36 @@
     }
     @if (project()) {
     <section class="protocols-section">
-      <div class="section-header">
-        <h3>{{ 'protocols.generatedProtocols' | translate }}</h3>
-      </div>
-      @if (projectProtocols().length > 0) {
-        <div class="protocol-list">
-          @for (protocol of projectProtocols(); track protocol._id.$oid) {
-            <div class="protocol-item">
-              <div class="protocol-info">
-                <p class="protocol-name">{{ protocol.template_name }}</p>
-                <p class="protocol-meta">
-                  <span>{{ protocolDescription(protocol) }}</span>
-                  <span class="separator">•</span>
-                  <span>{{ protocolGeneratedAt(protocol) }}</span>
-                </p>
-              </div>
-              <button
-                type="button"
-                class="button button-secondary"
-                (click)="downloadProtocol(protocol)"
-              >
-                {{ 'protocols.download' | translate }}
-              </button>
-            </div>
-          }
+      <div>
+        <div class="section-header">
+          <h3>{{ 'protocols.generatedProtocols' | translate }}</h3>
         </div>
-      } @else {
-        <p class="empty-state">{{ 'protocols.noProtocolsYet' | translate }}</p>
-      }
+        @if (projectProtocols().length > 0) {
+          <div class="protocol-list">
+            @for (protocol of projectProtocols(); track protocol._id.$oid) {
+              <div class="protocol-item">
+                <div class="protocol-info">
+                  <p class="protocol-name">{{ protocol.template_name }}</p>
+                  <p class="protocol-meta">
+                    <span>{{ protocolDescription(protocol) }}</span>
+                    <span class="separator">•</span>
+                    <span>{{ protocolGeneratedAt(protocol) }}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="button button-secondary"
+                  (click)="downloadProtocol(protocol)"
+                >
+                  {{ 'protocols.download' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-state">{{ 'protocols.noProtocolsYet' | translate }}</p>
+        }
+      </div>
     </section>
     }
     @if(files()) {

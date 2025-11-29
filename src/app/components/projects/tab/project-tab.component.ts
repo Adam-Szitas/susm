@@ -1,5 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { FilterComponent } from '../../filter/filter.component';
 import { Filter, FilterResult, formatWorkStatus, Object, ProtocolRecord } from '@models';
@@ -20,9 +31,9 @@ import { CategoryManagementModalComponent } from '../category-management-modal.c
   styleUrl: './project-tab.component.scss',
   standalone: true,
   imports: [FilterComponent, RouterLink, TranslateModule, FileListComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectTabComponent implements OnInit {
+export class ProjectTabComponent implements OnInit, OnDestroy {
   #route = inject(ActivatedRoute);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
@@ -30,10 +41,10 @@ export class ProjectTabComponent implements OnInit {
   #translationService = inject(TranslationService);
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
-
+  #routeSubscription?: Subscription;
 
   project = this.#projectStore.project;
-  objects = this.#projectStore.objects;  
+  objects = this.#projectStore.objects;
   files = this.#projectStore.files;
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
@@ -57,14 +68,22 @@ export class ProjectTabComponent implements OnInit {
     });
   }
 
-
   ngOnInit(): void {
-    const projectId = this.#route.snapshot.paramMap.get('id');
-
-    if (projectId) {
-      this.#projectStore.loadProject(projectId);
-    }
+    // Subscribe to route parameter changes to reload project when route changes
+    this.#routeSubscription = this.#route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        filter((id): id is string => id !== null)
+      )
+      .subscribe((projectId) => {
+        this.#projectStore.loadProject(projectId);
+      });
+    
     this.#currentFilter.set({});
+  }
+
+  ngOnDestroy(): void {
+    this.#routeSubscription?.unsubscribe();
   }
 
   filterData(): Filter {
@@ -109,7 +128,7 @@ export class ProjectTabComponent implements OnInit {
     const availableObjects = this.filteredObjects();
     if (!availableObjects.length) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.noObjectsAvailable')
+        this.#translationService.instant('protocols.noObjectsAvailable'),
       );
       return;
     }
@@ -118,14 +137,14 @@ export class ProjectTabComponent implements OnInit {
       next: (templates) => {
         if (templates.length === 0) {
           this.#notificationService.showError(
-            this.#translationService.instant('protocols.noTemplates')
+            this.#translationService.instant('protocols.noTemplates'),
           );
           return;
         }
         const projectId = this.#route.snapshot.paramMap.get('id');
         if (!projectId) {
           this.#notificationService.showError(
-            this.#translationService.instant('protocols.generateMissingData')
+            this.#translationService.instant('protocols.generateMissingData'),
           );
           return;
         }
@@ -141,7 +160,7 @@ export class ProjectTabComponent implements OnInit {
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.loadTemplatesFailed')
+          error.message || this.#translationService.instant('protocols.loadTemplatesFailed'),
         );
       },
     });
@@ -156,7 +175,7 @@ export class ProjectTabComponent implements OnInit {
 
     if (!projectId || !templateId || objectIds.length === 0) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.downloadFailed')
+        this.#translationService.instant('protocols.downloadFailed'),
       );
       return;
     }
@@ -170,12 +189,12 @@ export class ProjectTabComponent implements OnInit {
       .subscribe({
         next: () => {
           this.#notificationService.showSuccess(
-            this.#translationService.instant('protocols.generated')
+            this.#translationService.instant('protocols.generated'),
           );
         },
         error: (error) => {
           this.#notificationService.showError(
-            error.message || this.#translationService.instant('protocols.downloadFailed')
+            error.message || this.#translationService.instant('protocols.downloadFailed'),
           );
         },
       });
@@ -205,7 +224,7 @@ export class ProjectTabComponent implements OnInit {
     // Validate file type (images only)
     if (!file.type.startsWith('image/')) {
       this.#notificationService.showError(
-        this.#translationService.instant('errors.imageFileRequired')
+        this.#translationService.instant('errors.imageFileRequired'),
       );
       this.imagePreviewUrl.set(null);
       input.value = '';
@@ -223,7 +242,7 @@ export class ProjectTabComponent implements OnInit {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) {
       this.#notificationService.showError(
-        this.#translationService.instant('errors.objectIdNotFound')
+        this.#translationService.instant('errors.objectIdNotFound'),
       );
       return;
     }
@@ -240,14 +259,14 @@ export class ProjectTabComponent implements OnInit {
     this.#fileService.uploadFileForProject(form, projectId).subscribe({
       next: () => {
         this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.uploadSuccess')
+          this.#translationService.instant('objects.uploadSuccess'),
         );
         this.#projectStore.loadProject(projectId);
         this.uploading.set(false);
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('errors.uploadFailed')
+          error.message || this.#translationService.instant('errors.uploadFailed'),
         );
         this.uploading.set(false);
         this.imagePreviewUrl.set(null);
@@ -260,33 +279,25 @@ export class ProjectTabComponent implements OnInit {
 
     if (filter.searchText) {
       const searchLower = filter.searchText.toLowerCase();
-      filtered = filtered.filter(obj => {
+      filtered = filtered.filter((obj) => {
         const addr = obj.address;
-        const addressText = [
-          addr?.street,
-          addr?.house_number,
-          addr?.level,
-          addr?.door_number,
-        ]
+        const addressText = [addr?.street, addr?.house_number, addr?.level, addr?.door_number]
           .filter(Boolean)
           .join(' ')
           .toLowerCase();
 
         const noteText = obj.note?.toLowerCase() ?? '';
 
-        return (
-          addressText.includes(searchLower) ||
-          noteText.includes(searchLower)
-        );
+        return addressText.includes(searchLower) || noteText.includes(searchLower);
       });
     }
 
     if (filter.category) {
-      filtered = filtered.filter(obj => obj.category === filter.category);
+      filtered = filtered.filter((obj) => obj.category === filter.category);
     }
 
     if (filter.dateFrom || filter.dateTo) {
-      filtered = filtered.filter(obj => {
+      filtered = filtered.filter((obj) => {
         // Support both createdAt (frontend model) and created_at (backend Mongo field)
         const createdRaw = obj.createdAt ?? obj.created_at;
         if (!createdRaw) return false;

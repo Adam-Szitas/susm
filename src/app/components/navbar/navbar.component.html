@@ -1,5 +1,5 @@
-@if (user() && !isMobile()) {
-  <nav>
+@if (user()) {
+  <nav [class.mobile]="isMobile()">
     <div class="mobile">
       <i class="hamburger-menu" (click)="toggleMobileMenu()">
         <svg viewBox="0 0 100 80" fill="white">
@@ -15,41 +15,37 @@
         <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">{{ 'navbar.protocols' | translate }}</li>
       </ul>
     </div>
-    <ul>
+    <ul class="logout-menu">
       <li (click)="logout()">{{ 'navbar.logout' | translate }}</li>
     </ul>
   </nav>
+  <div class="mobile-menu-backdrop" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></div>
   <div class="mobile-menu" [class.open]="toggledMenu()">
-    <i class="close" (click)="hideMobileMenu()">
-      <svg xmlns="http://www.w3.org/2000/svg">
-        <path
-          fill="white"
-          fill-rule="evenodd"
-          d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 1 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </i>
-    <ul>
+    <div class="mobile-menu-header">
+      <span>{{ 'navbar.logo' | translate }}</span>
+      <i class="close" (click)="hideMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+          <path
+            fill-rule="evenodd"
+            d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 1 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </i>
+    </div>
+    <ul class="mobile-menu-items">
       <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">{{ 'navbar.dashboard' | translate }}</li>
       <li (click)="hideMobileMenu()" [routerLink]="'/projects'">{{ 'navbar.projects' | translate }}</li>
       <li (click)="hideMobileMenu()" [routerLink]="'/objects'">{{ 'navbar.objects' | translate }}</li>
       <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">{{ 'navbar.protocols' | translate }}</li>
+      <li class="logout-item" (click)="hideMobileMenu(); logout()">{{ 'navbar.logout' | translate }}</li>
     </ul>
   </div>
-} @else if (user() && isMobile()) {
-  <nav>
-    <span>{{ 'navbar.logo' | translate }}</span>
-    <ul>
-      <li (click)="toggleMobileMenu()" [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
-      <li [routerLink]="'/register'">{{ 'navbar.register' | translate }}</li>
-    </ul>
-  </nav>
 } @else {
   <nav>
     <span>{{ 'navbar.logo' | translate }}</span>
     <ul>
-      <li (click)="toggleMobileMenu()" [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
+      <li [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
       <li [routerLink]="'/register'">{{ 'navbar.register' | translate }}</li>
     </ul>
   </nav>

@@ -1,10 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
-import { ProtocolTemplate, ProtocolField, FieldType } from '@models';
+import { ProtocolField, FieldType } from '@models';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -49,7 +56,7 @@ export class ProtocolTemplateModalComponent {
       field_type: ['text', [Validators.required]],
       required: [false],
       order: [this.fields.length],
-      custom_field_name: [''], // For custom field type
+      custom_field_name: [''],
     });
     this.fields.push(fieldGroup);
   }
@@ -74,7 +81,7 @@ export class ProtocolTemplateModalComponent {
   onSubmit(): void {
     if (this.form.invalid) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.formInvalid')
+        this.#translationService.instant('protocols.formInvalid'),
       );
       return;
     }
@@ -86,7 +93,7 @@ export class ProtocolTemplateModalComponent {
       // For custom fields, we need to send the custom field name
       // The backend expects Custom(String) where String is the field name
       let fieldType: FieldType | any = field.field_type;
-      
+
       if (field.field_type === 'custom') {
         // Always send as object format: { custom: "field_name" }
         // Use the custom_field_name if provided, otherwise use the label as fallback
@@ -113,14 +120,14 @@ export class ProtocolTemplateModalComponent {
     this.#protocolService.createTemplate(template).subscribe({
       next: () => {
         this.#notificationService.showSuccess(
-          this.#translationService.instant('protocols.templateCreated')
+          this.#translationService.instant('protocols.templateCreated'),
         );
         this.saving.set(false);
         this.#modalService.close();
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.createFailed')
+          error.message || this.#translationService.instant('protocols.createFailed'),
         );
         this.saving.set(false);
       },
@@ -134,7 +141,7 @@ export class ProtocolTemplateModalComponent {
   preview(): void {
     if (this.form.invalid) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.formInvalid')
+        this.#translationService.instant('protocols.formInvalid'),
       );
       return;
     }
@@ -146,7 +153,7 @@ export class ProtocolTemplateModalComponent {
       // For custom fields, we need to send the custom field name
       // The backend expects Custom(String) where String is the field name
       let fieldType: FieldType | any = field.field_type;
-      
+
       if (field.field_type === 'custom') {
         // Always send as object format: { custom: "field_name" }
         // Use the custom_field_name if provided, otherwise use the label as fallback
@@ -176,11 +183,10 @@ export class ProtocolTemplateModalComponent {
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.previewFailed')
+          error.message || this.#translationService.instant('protocols.previewFailed'),
         );
         this.previewing.set(false);
       },
     });
   }
 }
-

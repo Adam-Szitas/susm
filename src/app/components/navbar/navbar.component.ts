@@ -35,6 +35,7 @@ export class NavbarComponent implements OnInit {
   #facadeStore = inject(FacadeStore);
 
   ngOnInit(): void {
+    console.log(this.user());
     this.#router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.getRouteParamsAndQueryParams();
     });
