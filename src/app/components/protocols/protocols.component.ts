@@ -49,6 +49,7 @@ export class ProtocolsComponent implements OnInit {
     this.#modalService.open({
       title: 'protocols.createTemplate',
       component: ProtocolTemplateModalComponent,
+      wide: true
     });
     // Reload templates after modal closes (you might want to use a subscription for this)
     setTimeout(() => this.loadTemplates(), 500);

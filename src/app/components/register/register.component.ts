@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormGroup, Validators, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { User } from '@models';
 
 @Component({
   selector: 'app-register',
@@ -15,6 +16,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class RegisterComponent {
   #formBuilder = inject(FormBuilder);
   #httpService = inject(HttpService);
+  #router = inject(Router);
 
   public form: FormGroup = this.#formBuilder.group({
     user: this.#formBuilder.group({
@@ -44,8 +46,12 @@ export class RegisterComponent {
       },
     });
     this.#httpService.post('register', userAndCompany).subscribe({
-      next: console.log,
+      next: this.handleSuccess,
       error: (error) => console.error(error),
     });
+  }
+
+  private handleSuccess(): void {
+    this.#router.navigate(['/login']);
   }
 }

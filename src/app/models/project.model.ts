@@ -16,4 +16,5 @@ export interface Project {
   categories?: string[];
   objects?: Object[];
   protocols?: ProtocolRecord[];
+  archived_at?: string;
 }

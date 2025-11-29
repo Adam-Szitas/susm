@@ -1,11 +1,12 @@
 <div class="file-wrapper">
     <ul class="file-gallery">
         @for (file of files(); track file._id.$oid) {
-            <li class="file-item" (click)="downloadFile(file.path)">
+            <li class="file-item">
                 <div class="image-container">
                     <img [src]="getImageUrl(file.path)" [alt]="file.filename || 'File Preview'" loading="lazy"/>
                     <div class="overlay">
-                        <span class="download-hint">{{ 'fileList.download' | translate }}</span>
+                        <span class="download-hint" (click)="downloadFile(file.path)">{{ 'fileList.download' | translate }}</span>
+                        <span class="delete-hint" (click)="deleteFile(file)">{{ 'fileList.delete' | translate }}</span>
                     </div>
                 </div>
                 @if (file.filename) {

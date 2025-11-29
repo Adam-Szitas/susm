@@ -16,6 +16,12 @@ h1 {
   }
 }
 
+.space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .status-pill {
   align-self: flex-start;
   padding: 0.15rem 0.75rem;
@@ -45,6 +51,17 @@ h1 {
     background-color: #e2e3e5;
     color: #383d41;
   }
+}
+
+.archived-pill {
+  align-self: flex-end;
+  padding: 0.15rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #f8d7da;
+  color: #383d41;
 }
 
 .card {

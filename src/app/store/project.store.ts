@@ -47,14 +47,14 @@ export class ProjectStore {
 
     this.#httpService.get<File[]>(`file/project/${id}`).subscribe({
       next: (files) => {
-        const mappedFiles = files.map(file => ({
+        const mappedFiles = files.map((file) => ({
           ...file,
           path: file.path,
-          filename: file.path.split(/[\\/]/).pop() || ''
+          filename: file.path.split(/[\\/]/).pop() || '',
         }));
         this._files.set(mappedFiles);
-      }
-    })
+      },
+    });
   }
 
   loadProjects(): void {
@@ -87,7 +87,7 @@ export class ProjectStore {
           this._error.set(error.message || 'Failed to create project');
           this._loading.set(false);
         },
-      })
+      }),
     );
   }
 
@@ -119,7 +119,7 @@ export class ProjectStore {
           this._error.set(error.message || 'Failed to create object');
           this._loading.set(false);
         },
-      })
+      }),
     );
   }
 
@@ -168,39 +168,35 @@ export class ProjectStore {
     return this.#httpService.put<Project>(`project/${projectId}/categories`, { categories }).pipe(
       tap((project) => {
         this._project.set(project);
-        // Reload objects to refresh filter categories
         this.loadObjects();
-        // Update projects list if needed
         const projects = this._projects();
-        const index = projects.findIndex(p => p._id?.$oid === projectId);
+        const index = projects.findIndex((p) => p._id?.$oid === projectId);
         if (index !== -1) {
           projects[index] = project;
           this._projects.set([...projects]);
         }
-      })
+      }),
     );
   }
 
   updateObjectCategory(objectId: string, category: string | null): Observable<Object> {
     return this.#httpService.put<Object>(`object/${objectId}/category`, { category }).pipe(
       tap((updatedObject) => {
-        // Update object in current project if loaded
         const project = this._project();
         if (project?.objects) {
-          const index = project.objects.findIndex(o => o._id?.$oid === objectId);
+          const index = project.objects.findIndex((o) => o._id?.$oid === objectId);
           if (index !== -1) {
             project.objects[index] = updatedObject;
             this._project.set({ ...project });
           }
         }
-        // Update objects list
         const objects = this._objects();
-        const objIndex = objects.findIndex(o => o._id?.$oid === objectId);
+        const objIndex = objects.findIndex((o) => o._id?.$oid === objectId);
         if (objIndex !== -1) {
           objects[objIndex] = updatedObject;
           this._objects.set([...objects]);
         }
-      })
+      }),
     );
   }
 
@@ -210,7 +206,7 @@ export class ProjectStore {
         // Update object in current project if loaded
         const project = this._project();
         if (project?.objects) {
-          const index = project.objects.findIndex(o => o._id?.$oid === objectId);
+          const index = project.objects.findIndex((o) => o._id?.$oid === objectId);
           if (index !== -1) {
             project.objects[index] = updatedObject;
             this._project.set({ ...project });
@@ -218,20 +214,33 @@ export class ProjectStore {
         }
         // Update objects list
         const objects = this._objects();
-        const objIndex = objects.findIndex(o => o._id?.$oid === objectId);
+        const objIndex = objects.findIndex((o) => o._id?.$oid === objectId);
         if (objIndex !== -1) {
           objects[objIndex] = updatedObject;
           this._objects.set([...objects]);
         }
         // Update objectsWithProjects if needed
         const objectsWithProjects = this._objectsWithProjects();
-        const objWithProjectIndex = objectsWithProjects.findIndex(item => item.object._id?.$oid === objectId);
+        const objWithProjectIndex = objectsWithProjects.findIndex(
+          (item) => item.object._id?.$oid === objectId,
+        );
         if (objWithProjectIndex !== -1) {
           objectsWithProjects[objWithProjectIndex].object = updatedObject;
           this._objectsWithProjects.set([...objectsWithProjects]);
         }
-      })
+      }),
     );
+  }
+
+  public toggleArchiveProject(projectId: string, archive: boolean): void {
+    this.#httpService.put<Project>(`project/${projectId}/archive`, { archive }).subscribe({
+      next: (result) => {
+        this._project.set(result);
+      },
+      error: (error) => {
+        this._error.set(error.message || 'Failed to archive project');
+      },
+    });
   }
 
   clearError(): void {

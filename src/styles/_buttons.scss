@@ -1,4 +1,4 @@
-.button {
+.button, .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -15,48 +15,123 @@
   margin: 0 var(--space-small);
 }
 
-.button-primary {
-  background-color: #0b6357; /* Default app color */
+// Primary Button Styles
+.button-primary, .btn-primary {
+  background-color: var(--primary-default);
   color: white;
+  border: 1px solid var(--primary-default);
 }
-.button-primary:hover {
-  background-color: #139987; /* Darker shade for hover (20% darker) */
-  transform: scale(1.05);
+
+.button-primary:hover, .btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(157, 0, 0, 0.25);
 }
-.button-primary:focus {
-  outline: 2px solid #073b33; /* Even darker shade for focus */
+
+.button-primary:focus, .btn-primary:focus {
+  background-color: var(--primary-focus);
+  border-color: var(--primary-focus);
+  outline: 2px solid var(--primary-focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.2);
 }
-.button-primary:disabled {
-  background-color: #d1d5db; /* Neutral gray for disabled */
+
+.button-primary:active, .btn-primary:active {
+  background-color: var(--primary-active);
+  border-color: var(--primary-active);
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(122, 0, 0, 0.3);
+}
+
+.button-primary:disabled, .btn-primary:disabled {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  color: #666666;
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.button-secondary {
+// Secondary Button Styles
+.button-secondary, .btn-secondary {
   background-color: transparent;
-  border: 1px solid #0b6357; /* Use app color for border */
-  color: #0b6357;
-}
-.button-secondary:hover {
-  background-color: #e6efed; /* Light teal-tinted background for hover */
-}
-.button-secondary:focus {
-  outline: 2px solid #0b6357;
-  outline-offset: 2px;
+  border: 1px solid var(--secondary-default);
+  color: var(--secondary-default);
 }
 
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-primary {
-  background: #007bff;
+.button-secondary:hover, .btn-secondary:hover {
+  background-color: var(--secondary-hover);
+  border-color: var(--secondary-hover);
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(92, 107, 115, 0.2);
 }
-.btn-secondary {
-  background: #6c757d;
+
+.button-secondary:focus, .btn-secondary:focus {
+  background-color: var(--secondary-focus);
+  border-color: var(--secondary-focus);
   color: white;
+  outline: 2px solid var(--secondary-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(61, 71, 82, 0.2);
+}
+
+.button-secondary:active, .btn-secondary:active {
+  background-color: var(--secondary-active);
+  border-color: var(--secondary-active);
+  color: white;
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(45, 52, 57, 0.3);
+}
+
+.button-secondary:disabled, .btn-secondary:disabled {
+  background-color: transparent;
+  border-color: #cccccc;
+  color: #999999;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+// Outline Button Styles (subtle outline variant)
+.button-outline, .btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary-default);
+  color: var(--primary-default);
+}
+
+.button-outline:hover, .btn-outline:hover {
+  background-color: rgba(157, 0, 0, 0.08);
+  border-color: var(--primary-hover);
+  color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.button-outline:focus, .btn-outline:focus {
+  background-color: rgba(196, 30, 58, 0.1);
+  border-color: var(--primary-focus);
+  color: var(--primary-focus);
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.15);
+}
+
+.button-outline:active, .btn-outline:active {
+  background-color: rgba(122, 0, 0, 0.15);
+  border-color: var(--primary-active);
+  color: var(--primary-active);
+  transform: translateY(0);
+}
+
+.button-outline:disabled, .btn-outline:disabled {
+  background-color: transparent;
+  border-color: #cccccc;
+  color: #999999;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

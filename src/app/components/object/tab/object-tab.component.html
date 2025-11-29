@@ -10,18 +10,12 @@
         </span>
       </header>
       <ul>
-        <li>
-          {{ object()?.address?.street }} {{ object()?.address?.house_number }}
-        </li>
+        <li>{{ object()?.address?.street }} {{ object()?.address?.house_number }}</li>
         @if (object()?.address?.level) {
-          <li>
-            {{ 'objects.level' | translate }}: {{ object()?.address?.level }}
-          </li>
+          <li>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</li>
         }
         @if (object()?.address?.door_number) {
-          <li>
-            {{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}
-          </li>
+          <li>{{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
         }
       </ul>
       @if (object()?.note) {
@@ -39,7 +33,9 @@
           >
             <option value="">{{ 'objects.noCategory' | translate }}</option>
             @for (category of projectCategories(); track category) {
-              <option [value]="category" [selected]="category === object()?.category">{{ category }}</option>
+              <option [value]="category" [selected]="category === object()?.category">
+                {{ category }}
+              </option>
             }
           </select>
         </div>
@@ -53,7 +49,9 @@
             class="status-select"
           >
             @for (status of statuses; track status) {
-              <option [value]="status" [selected]="status === object()?.status">{{ formatStatus(status) }}</option>
+              <option [value]="status" [selected]="status === object()?.status">
+                {{ formatStatus(status) }}
+              </option>
             }
           </select>
         </div>
@@ -63,16 +61,15 @@
 
   <div class="content-wrapper">
     <div class="share-block">
-      <button
-        type="button"
-        class="primary"
-        (click)="generateShareQr()"
-        [disabled]="shareLoading()"
-      >
+      <button type="button" class="primary" (click)="generateShareQr()" [disabled]="shareLoading()">
         @if (shareLoading()) {
           {{ 'objects.generatingQr' | translate }}
         } @else {
-          {{ shareQrDataUrl() ? ('objects.regenerateQr' | translate) : ('objects.generateQr' | translate) }}
+          {{
+            shareQrDataUrl()
+              ? ('objects.regenerateQr' | translate)
+              : ('objects.generateQr' | translate)
+          }}
         }
       </button>
       @if (shareUrl()) {
@@ -95,7 +92,7 @@
     }
 
     @if (files().length > 0) {
-      <app-file-list [files]="files()"></app-file-list>
+      <app-file-list [files]="files()" (fileDeleted)="onFileDeleted()"></app-file-list>
     }
   </div>
 
@@ -124,4 +121,3 @@
     }
   </div>
 </div>
- 

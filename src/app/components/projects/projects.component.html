@@ -4,8 +4,15 @@
     <div class="card-wrapper">
       @for (project of projects(); track project['_id']) {
         <div class="card" [routerLink]="'tab/' + project._id?.$oid">
-          <span class="status-pill" [attr.data-status]="project.status || defaultStatus">
-            {{ formatStatus(project.status) }}
+          <span class="space-between">
+            <span class="status-pill" [attr.data-status]="project.status || defaultStatus">
+              {{ formatStatus(project.status) }}
+            </span>
+            @if (project.archived_at) {
+              <span class="archived-pill">
+                {{ 'projects.archived' | translate }}
+              </span>
+            }
           </span>
           <h2 class="headline">{{ project.name }}</h2>
           <div class="content">

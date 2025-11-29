@@ -14,14 +14,26 @@
     #fileInput
   />
   
-  <div class="action-buttons">
-    <button type="button" class="button button-primary" (click)="manageCategories()">
-      {{ 'projects.manageCategories' | translate }}
-    </button>
-    <button type="button" class="button button-primary" (click)="generateProtocol()">
-      {{ 'protocols.generateProtocol' | translate }}
-    </button>
-  </div>
+  @if(!project()?.archived_at) {
+    <div class="action-buttons">
+      <button type="button" class="button button-primary" (click)="manageCategories()">
+        {{ 'projects.manageCategories' | translate }}
+      </button>
+      <button type="button" class="button button-primary" (click)="generateProtocol()">
+        {{ 'protocols.generateProtocol' | translate }}
+      </button>
+      <button type="button" class="button button-primary" (click)="toggleArchiveProject(true)">
+        {{ 'projects.archiveProject' | translate }}
+      </button>
+    </div>
+
+  } @else {
+    <div class="action-buttons">
+      <button type="button" class="button button-primary" (click)="toggleArchiveProject(false)">
+        {{ 'projects.unarchiveProject' | translate }}
+      </button>
+    </div>
+  }
   <div class="content-wrapper">
     @if (filteredObjects().length > 0) {
       <div class="card-wrapper">
@@ -74,7 +86,7 @@
     </section>
     }
     @if(files()) {
-      <app-file-list [files]="files()"></app-file-list>
+      <app-file-list [files]="files()" (fileDeleted)="onFileDeleted()"></app-file-list>
     }
   </div>
   <button type="button" class="add-icon floating-icon" (click)="addObject()" [tabIndex]="2" [attr.aria-label]="'objects.add' | translate">

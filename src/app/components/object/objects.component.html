@@ -1,7 +1,8 @@
 <div class="wrapper">
     <h1>{{ 'objects.title' | translate }}</h1>
+    <app-filter [filter]="filterData()" (filterChange)="onFilterChange($event)"></app-filter>
     <div class="card-wrapper">
-        @for (item of objectsWithProjects(); track item.object?._id?.$oid ?? item.project_name) {
+        @for (item of filteredObjects(); track item.object?._id?.$oid ?? item.project_name) {
             @if (item.object; as objectItem) {
                 @let objectId = objectItem._id?.$oid;
                 <div

@@ -252,4 +252,11 @@ export class ObjectTabComponent implements OnInit {
       },
     });
   }
+
+  onFileDeleted(): void {
+    const objectId = this.#route.snapshot.paramMap.get('id');
+    if (objectId) {
+      this.loadFiles(objectId);
+    }
+  }
 }

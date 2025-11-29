@@ -311,4 +311,18 @@ export class ProjectTabComponent implements OnInit {
 
     return filtered;
   }
+
+  onFileDeleted(): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (projectId) {
+      this.#projectStore.loadProject(projectId);
+    }
+  }
+
+  toggleArchiveProject(archive: boolean): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId) return;
+
+    this.#projectStore.toggleArchiveProject(projectId, archive);
+  }
 }

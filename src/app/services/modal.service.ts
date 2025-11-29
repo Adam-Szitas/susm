@@ -16,6 +16,7 @@ export interface ModalConfig {
   content?: string;
   component?: any;
   componentInputs?: Record<string, any>;
+  wide?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

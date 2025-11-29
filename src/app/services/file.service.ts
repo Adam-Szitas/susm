@@ -77,4 +77,14 @@ export class FileService {
     const endpoint = `file/project/${projectId}`;
     return this.#httpService.get<any[]>(endpoint);
   }
+
+  /**
+   * Deletes a file by its ID
+   * @param fileId - The ID of the file to delete
+   * @returns Observable with the delete result
+   */
+  deleteFile(fileId: string): Observable<{ message: string }> {
+    const endpoint = `file/${fileId}`;
+    return this.#httpService.delete<{ message: string }>(endpoint);
+  }
 }
