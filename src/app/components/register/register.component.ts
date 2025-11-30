@@ -3,7 +3,6 @@ import { FormGroup, Validators, FormBuilder, ReactiveFormsModule } from '@angula
 import { HttpService } from '../../services/http.service';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { User } from '@models';
 
 @Component({
   selector: 'app-register',

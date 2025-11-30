@@ -25,6 +25,14 @@ export class FileListComponent {
     public getImageUrl(path: string): string {
         let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
         
+        // If it's already a full URL (R2 URL), encode it and send through backend proxy
+        // This ensures the backend can fetch from R2 even if the bucket is private
+        if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+            // URL-encode the entire R2 URL so it can be sent through /uploads/ endpoint
+            const encodedPath = encodeURIComponent(normalizedPath);
+            return `${environment.be}${environment.folderBase}/${encodedPath}`;
+        }
+        
         if (normalizedPath.startsWith('uploads/')) {
             normalizedPath = normalizedPath.substring('uploads/'.length);
         }
@@ -37,19 +45,28 @@ export class FileListComponent {
     public downloadFile(path: string): void {
         let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
         
-        if (normalizedPath.startsWith('uploads/')) {
-            normalizedPath = normalizedPath.substring('uploads/'.length);
-        }
+        // If it's already a full URL (R2 URL), encode it and send through backend proxy
+        let url: string;
+        if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+            // URL-encode the entire R2 URL so it can be sent through /uploads/ endpoint
+            const encodedPath = encodeURIComponent(normalizedPath);
+            url = `${environment.be}${environment.folderBase}/${encodedPath}`;
+        } else {
+            if (normalizedPath.startsWith('uploads/')) {
+                normalizedPath = normalizedPath.substring('uploads/'.length);
+            }
 
-        const pathSegments = normalizedPath.split('/').map(segment => encodeURIComponent(segment));
-        const encodedPath = pathSegments.join('/');
-        const url = `${environment.be}${environment.folderBase}/${encodedPath}`;
+            const pathSegments = normalizedPath.split('/').map(segment => encodeURIComponent(segment));
+            const encodedPath = pathSegments.join('/');
+            url = `${environment.be}${environment.folderBase}/${encodedPath}`;
+        }
 
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
         link.rel = 'noopener';
-        link.download = normalizedPath.split('/').pop() || 'file';
+        const filename = path.split(/[\\/]/).pop() || 'file';
+        link.download = filename;
 
         document.body.appendChild(link);
         link.click();
