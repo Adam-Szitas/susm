@@ -39,9 +39,7 @@
       <div class="card-wrapper">
         @for (object of filteredObjects(); track object._id?.$oid) {
           <div class="card" [routerLink]="'/objects/tab/' + object._id?.$oid">
-            <span class="status-pill" [attr.data-status]="object.status">
-              {{ formatStatus(object.status) }}
-            </span>
+            <app-status-pill [status]="object?.status || 'created'" />
             <h2 class="headline">{{ object.address.street }}</h2>
             @if(object.note) {
                 <p class="note">{{ object.note }}</p>

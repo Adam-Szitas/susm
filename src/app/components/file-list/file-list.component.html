@@ -2,9 +2,9 @@
     <ul class="file-gallery">
         @for (file of files(); track file._id.$oid) {
             <li class="file-item">
-                <div class="image-container">
+                <div class="image-container" (click)="showOverlay(file)">
                     <img [src]="getImageUrl(file.path)" [alt]="file.filename || 'File Preview'" loading="lazy"/>
-                    <div class="overlay">
+                    <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
                         <span class="download-hint" (click)="downloadFile(file.path)">{{ 'fileList.download' | translate }}</span>
                         <span class="delete-hint" (click)="deleteFile(file)">{{ 'fileList.delete' | translate }}</span>
                     </div>

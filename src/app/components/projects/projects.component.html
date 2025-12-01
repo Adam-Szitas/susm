@@ -5,9 +5,7 @@
       @for (project of projects(); track project['_id']) {
         <div class="card" [routerLink]="'tab/' + project._id?.$oid">
           <span class="space-between">
-            <span class="status-pill" [attr.data-status]="project.status || defaultStatus">
-              {{ formatStatus(project.status) }}
-            </span>
+            <app-status-pill [status]="project?.status || defaultStatus" />
             @if (project.archived_at) {
               <span class="archived-pill">
                 {{ 'projects.archived' | translate }}

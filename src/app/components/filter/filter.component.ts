@@ -29,6 +29,7 @@ export class FilterComponent implements OnInit {
   searchForm = new FormGroup({
     search: new FormControl(''),
     category: new FormControl(''),
+    status: new FormControl(''),
     dateFrom: new FormControl(''),
     dateTo: new FormControl(''),
   });
@@ -60,6 +61,11 @@ export class FilterComponent implements OnInit {
         this.currentFilter = { ...this.currentFilter, dateTo: value?.toString() };
         this.emitFilterChange()
       });
+      this.searchForm.get('status')?.valueChanges
+      .subscribe((value) => {
+        this.currentFilter = { ...this.currentFilter, status: value?.toString() };
+        this.emitFilterChange()
+      });
   }
 
   ngOnInit(): void {
@@ -76,6 +82,9 @@ export class FilterComponent implements OnInit {
     if (filterData.dateTo) {
       this.searchForm.patchValue({ dateTo: filterData.dateTo });
     }
+    if(filterData.statuses) {
+      this.searchForm.patchValue({ status: filterData.selectedStatus });
+    }
   }
 
   private emitFilterChange(): void {
@@ -86,6 +95,7 @@ export class FilterComponent implements OnInit {
     this.searchForm.reset({
       search: '',
       category: '',
+      status: '',
       dateFrom: '',
       dateTo: '',
     });

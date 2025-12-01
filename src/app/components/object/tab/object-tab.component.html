@@ -5,9 +5,7 @@
     <section class="object-details">
       <header>
         <h2>{{ object()?.address?.street }}</h2>
-        <span class="status-pill" [attr.data-status]="object()?.status || defaultStatus">
-          {{ formatStatus(object()?.status) }}
-        </span>
+        <app-status-pill [status]="object()?.status || defaultStatus" />
       </header>
       <ul>
         <li>{{ object()?.address?.street }} {{ object()?.address?.house_number }}</li>

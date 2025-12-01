@@ -138,31 +138,6 @@
   }
 }
 
-.status-pill {
-  padding: 0.2rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background-color: #e2e3e5;
-  color: #383d41;
-
-  &[data-status='in_progress'] {
-    background-color: #fff3cd;
-    color: #856404;
-  }
-
-  &[data-status='verified'] {
-    background-color: #d4edda;
-    color: #155724;
-  }
-
-  &[data-status='closed'] {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
-}
-
 .section-container {
   display: flex;
   width: 100%;

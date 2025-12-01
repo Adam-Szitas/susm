@@ -1,7 +1,6 @@
 .control {
   display: flex;
   flex-direction: column;
-  margin: var(--space-small) 0;
   width: 100%;
 
   label {
@@ -13,18 +12,6 @@
   select {
     padding: var(--space-small) var(--space);
     border: 1px solid var(--button);
-  }
-
-  button {
-    cursor: pointer;
-    padding: var(--space-small) var(--space);
-    border: 0;
-    background-color: var(--button);
-    color: white;
-
-    &:hover {
-      background-color: var(--button-hover);
-    }
   }
 }
 

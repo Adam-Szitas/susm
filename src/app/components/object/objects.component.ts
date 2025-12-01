@@ -4,13 +4,14 @@ import { ProjectStore } from '@store/project.store';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { FilterComponent } from '../filter/filter.component';
+import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 
 @Component({
   selector: 'app-object',
   templateUrl: './objects.component.html',
   styleUrl: './objects.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, FilterComponent],
+  imports: [RouterLink, TranslateModule, FilterComponent, StatusPillComponent],
 })
 export class ObjectComponent implements OnInit {
   #projectStore = inject(ProjectStore);

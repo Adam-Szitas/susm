@@ -9,11 +9,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
 import { HttpService } from '@services/http.service';
+import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 
 @Component({
   selector: 'app-object-tab',
   standalone: true,
-  imports: [TranslateModule, FileListComponent],
+  imports: [TranslateModule, FileListComponent, StatusPillComponent],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

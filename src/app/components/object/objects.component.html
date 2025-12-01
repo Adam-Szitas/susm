@@ -9,9 +9,7 @@
                     class="card"
                     [routerLink]="objectId ? '/objects/tab/' + objectId : null"
                 >
-                    <span class="status-pill" [attr.data-status]="objectItem.status || defaultStatus">
-                        {{ formatStatus(objectItem.status) }}
-                    </span>
+                    <app-status-pill [status]="objectItem?.status || 'created'" />
                     <div class="project-name">{{ item.project_name }}</div>
                     <h2 class="headline">{{ objectItem.address.street }}</h2>
                     @if(objectItem.note) {

@@ -3,6 +3,9 @@ export interface Filter {
   value: string;
   label: string;
   showDateRange?: boolean;
+  showStatus?: boolean;
+  statuses?: string[];
+  selectedStatus?: string;
   showCategory?: boolean;
   categories?: string[];
   selectedCategory?: string;
@@ -13,6 +16,7 @@ export interface Filter {
 export interface FilterResult {
   searchText?: string;
   category?: string;
+  status?: string;
   dateFrom?: string;
   dateTo?: string;
 }

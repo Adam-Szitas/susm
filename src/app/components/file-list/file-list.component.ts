@@ -20,6 +20,8 @@ export class FileListComponent {
     #translationService = inject(TranslationService);
 
     public files = input<File[]>([]);
+    // Used on mobile to control when the overlay actions are visible/clickable
+    public activeFileId: string | null = null;
     public fileDeleted = output<void>();
 
     public getImageUrl(path: string): string {
@@ -40,6 +42,12 @@ export class FileListComponent {
         const pathSegments = normalizedPath.split('/').map(segment => encodeURIComponent(segment));
         const encodedPath = pathSegments.join('/');
         return `${environment.be}${environment.folderBase}/${encodedPath}`;
+    }
+
+    public showOverlay(file: File): void {
+        const id = file._id?.$oid;
+        if (!id) return;
+        this.activeFileId = id;
     }
 
     public downloadFile(path: string): void {

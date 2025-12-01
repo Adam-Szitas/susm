@@ -25,6 +25,18 @@
         </div>
       }
 
+      @if(filter().showStatus) {
+        <div class="control">
+          <label for="category">{{ 'filter.status' | translate }}</label>
+          <select formControlName="status" id="status" class="filter-input">
+            <option value="">{{ 'filter.allStatuses' | translate }}</option>
+            @for (status of filter().statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        </div>
+      }
+
       @if (filter().showDateRange) {
         <div class="control date-range">
           <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>

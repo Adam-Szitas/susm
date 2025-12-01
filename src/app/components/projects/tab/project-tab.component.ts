@@ -24,13 +24,14 @@ import { FileListComponent } from '../../file-list/file-list.component';
 import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
+import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 
 @Component({
   selector: 'app-project-tab',
   templateUrl: './project-tab.component.html',
   styleUrl: './project-tab.component.scss',
   standalone: true,
-  imports: [FilterComponent, RouterLink, TranslateModule, FileListComponent],
+  imports: [FilterComponent, RouterLink, TranslateModule, FileListComponent, StatusPillComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTabComponent implements OnInit, OnDestroy {

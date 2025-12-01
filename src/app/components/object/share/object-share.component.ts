@@ -14,6 +14,9 @@ interface PublicObjectResponse {
 
 interface VerifyResponse {
   status: WorkStatus;
+  verification_approved?: boolean;
+  verification_note?: string;
+  verification_decided_at?: string;
 }
 
 @Component({
@@ -37,6 +40,7 @@ export class ObjectShareComponent implements OnInit {
   loadError = signal<string | null>(null);
   actionError = signal<string | null>(null);
   success = signal(false);
+  decisionNote = signal('');
   token!: string;
 
   ngOnInit(): void {
@@ -66,25 +70,32 @@ export class ObjectShareComponent implements OnInit {
       });
   }
 
-  confirmWork(): void {
+  submitDecision(approve: boolean): void {
     if (this.verifying() || !this.object()) return;
 
     this.verifying.set(true);
-    this.#httpService.post<VerifyResponse>(`public/object/${this.token}/verify`, {}).subscribe({
-      next: (response) => {
-        const updated = this.object();
-        if (updated) {
-          this.object.set({ ...updated, status: response.status });
-        }
-        this.verifying.set(false);
-        this.success.set(true);
-        this.actionError.set(null);
-      },
-      error: () => {
-        this.verifying.set(false);
-        this.actionError.set('share.errors.verifyFailed');
-      },
-    });
+    const payload = {
+      approve,
+      note: this.decisionNote().trim() || null,
+    };
+
+    this.#httpService
+      .post<VerifyResponse>(`public/object/${this.token}/verify`, payload)
+      .subscribe({
+        next: (response) => {
+          const updated = this.object();
+          if (updated) {
+            this.object.set({ ...updated, status: response.status });
+          }
+          this.verifying.set(false);
+          this.success.set(true);
+          this.actionError.set(null);
+        },
+        error: () => {
+          this.verifying.set(false);
+          this.actionError.set('share.errors.verifyFailed');
+        },
+      });
   }
 }
 

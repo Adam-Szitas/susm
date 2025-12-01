@@ -23,11 +23,23 @@
       </p>
     </div>
 
+    <div class="decision">
+      <label for="decision-note">
+        {{ 'share.reasonLabel' | translate }}
+      </label>
+      <textarea
+        id="decision-note"
+        rows="3"
+        [value]="decisionNote()"
+        (input)="decisionNote.set(($any($event.target).value || ''))"
+      ></textarea>
+    </div>
+
     <div class="actions">
       <button
         type="button"
-        class="primary"
-        (click)="confirmWork()"
+        class="button button-success"
+        (click)="submitDecision(true)"
         [disabled]="verifying() || object()?.status === 'verified'"
       >
         @if (object()?.status === 'verified') {
@@ -36,6 +48,19 @@
           {{ 'share.verifying' | translate }}
         } @else {
           {{ 'share.markDone' | translate }}
+        }
+      </button>
+
+      <button
+        type="button"
+        class="button button-error"
+        (click)="submitDecision(false)"
+        [disabled]="verifying() || object()?.status === 'verified'"
+      >
+        @if (verifying()) {
+          {{ 'share.verifying' | translate }}
+        } @else {
+          {{ 'share.reject' | translate }}
         }
       </button>
     </div>

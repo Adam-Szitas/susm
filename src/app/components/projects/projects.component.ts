@@ -5,6 +5,7 @@ import { ModalProjectComponent } from './new-project/project-modal.component';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { DEFAULT_WORK_STATUS, formatWorkStatus } from '@models';
+import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 
 @Component({
   selector: 'app-projects',
@@ -12,7 +13,7 @@ import { DEFAULT_WORK_STATUS, formatWorkStatus } from '@models';
   styleUrl: './projects.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule],
+  imports: [RouterLink, TranslateModule, StatusPillComponent],
 })
 export class ProjectsComponent implements OnInit {
   #projectStore = inject(ProjectStore);
