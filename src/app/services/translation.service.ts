@@ -47,4 +47,3 @@ export class TranslationService {
     return this.#translateService.get(key, params);
   }
 }
-

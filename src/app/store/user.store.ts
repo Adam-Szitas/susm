@@ -24,15 +24,6 @@ export class UserStore {
   #router = inject(Router);
   #authService = inject(AuthService);
 
-  constructor() {
-    // Don't load in constructor - let APP_INITIALIZER handle it
-    // This prevents blocking and allows proper SSR handling
-  }
-
-  /**
-   * Initialize the store by loading data from localStorage
-   * Should be called via APP_INITIALIZER before app starts
-   */
   initialize(): Promise<void> {
     if (!isBrowser()) {
       this._initialized.set(true);
@@ -103,7 +94,7 @@ export class UserStore {
     }
   }
 
-  login(email: string, password: string, returnUrl: string = '/projects') {
+  login(email: string, password: string, returnUrl = '/projects') {
     this._loading.set(true);
     this._error.set(null);
 

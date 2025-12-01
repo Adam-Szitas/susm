@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserStore } from '../../store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -16,13 +17,19 @@ export class LoginComponent {
   #userStore = inject(UserStore);
   #router = inject(Router);
   #route = inject(ActivatedRoute);
+  #translationService = inject(TranslationService);
 
   constructor() {
     effect(() => {
       if (this.#userStore.isAuthenticated()) {
-        // Get returnUrl from query params or default to projects
-        const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/projects';
+        const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/dashboard';
         this.#router.navigateByUrl(returnUrl);
+      }
+      if (this.#userStore.user()) {
+        const language = this.#userStore.user()?.language;
+        if (language) {
+          this.#translationService.initialize();
+        }
       }
     });
   }
