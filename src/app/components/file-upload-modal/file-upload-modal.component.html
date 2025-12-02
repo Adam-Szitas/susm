@@ -1,0 +1,106 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="onCancel()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ 'fileUpload.title' | translate }}</h2>
+        <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="file-input-wrapper">
+          <label for="file-upload" class="file-label">
+            <div class="upload-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              <span>{{ 'fileUpload.selectFiles' | translate }}</span>
+              <small class="hint-text">{{ 'fileUpload.multipleFilesHint' | translate }}</small>
+            </div>
+          </label>
+          <input
+            type="file"
+            id="file-upload"
+            accept="image/*"
+            multiple
+            (change)="onFileSelected($event)"
+            [disabled]="uploading()"
+          />
+        </div>
+
+        @if (filePreviews().length > 0) {
+          <div class="files-preview">
+            <div class="files-header">
+              <span>{{ 'fileUpload.selectedFiles' | translate }}: {{ filePreviews().length }}</span>
+              <button type="button" class="clear-all-btn" (click)="clearAll()">
+                {{ 'fileUpload.clearAll' | translate }}
+              </button>
+            </div>
+            <div class="files-grid">
+              @for (preview of filePreviews(); track $index) {
+                <div class="file-preview-item">
+                  <img [src]="preview.previewUrl" [alt]="preview.file.name" class="preview-thumbnail" />
+                  <button type="button" class="remove-file-btn" (click)="removeFile($index)" aria-label="Remove file">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <span class="file-name">{{ preview.file.name }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="description">{{ 'fileUpload.description' | translate }}</label>
+          <textarea
+            id="description"
+            rows="3"
+            [(ngModel)]="description"
+            [disabled]="uploading()"
+            placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+          ></textarea>
+        </div>
+
+        @if (categories().length > 0) {
+          <div class="form-group">
+            <label for="category">{{ 'fileUpload.category' | translate }}</label>
+            <select
+              id="category"
+              [(ngModel)]="category"
+              [disabled]="uploading()"
+            >
+              <option value="">{{ 'fileUpload.noCategory' | translate }}</option>
+              @for (cat of categories(); track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="uploading()">
+          {{ 'fileUpload.cancel' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="onUpload()"
+          [disabled]="filePreviews().length === 0 || uploading()"
+        >
+          @if (uploading()) {
+            {{ 'fileUpload.uploading' | translate }}
+          } @else {
+            {{ 'fileUpload.upload' | translate }} ({{ filePreviews().length }})
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

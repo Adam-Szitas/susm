@@ -16,8 +16,8 @@
         />
       </div>
       <div class="control buttons">
-        <button type="button" [routerLink]="'/register'">{{ 'login.register' | translate }}</button>
-        <button type="button" [disabled]="form.invalid" (click)="Submit()">{{ 'common.submit' | translate }}</button>
+        <button type="button" class="button button-secondary" [routerLink]="'/register'">{{ 'login.register' | translate }}</button>
+        <button type="button" class="button button-primary" [disabled]="form.invalid" (click)="Submit()">{{ 'common.submit' | translate }}</button>
       </div>
     </form>
   }

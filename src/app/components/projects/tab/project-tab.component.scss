@@ -98,9 +98,12 @@
 }
 
 .action-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  display: flex;
   gap: var(--space);
+
+  & > * {
+    flex: 1;
+  }
 }
 
 .button.button {

@@ -24,12 +24,28 @@ function getBackendUrl(): string {
 // Use a getter to make it lazy - only evaluated when accessed, not at module load
 let _backendUrl: string | undefined;
 
+// Get the frontend base URL, handling proxy/cluster scenarios
+function getFrontendUrl(): string {
+  if (typeof window === 'undefined') {
+    // SSR fallback - you may want to set this via environment variable
+    return 'https://your-frontend-domain.com';
+  }
+  
+  // In most cases, window.location.origin is correct
+  // But in proxy/cluster scenarios, you might need to check headers
+  // For now, we'll use location.origin which should work in most cases
+  return window.location.origin;
+}
+
 export const environment = {
   get be(): string {
     if (_backendUrl === undefined) {
       _backendUrl = getBackendUrl();
     }
     return _backendUrl;
+  },
+  get frontend(): string {
+    return getFrontendUrl();
   },
   folderBase: '/uploads'
 }

@@ -10,11 +10,13 @@ import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
 import { HttpService } from '@services/http.service';
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
+import { environment } from '../../../environment';
+import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
 
 @Component({
   selector: 'app-object-tab',
   standalone: true,
-  imports: [TranslateModule, FileListComponent, StatusPillComponent],
+  imports: [TranslateModule, FileListComponent, StatusPillComponent, FileUploadModalComponent],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -39,6 +41,8 @@ export class ObjectTabComponent implements OnInit {
   projectCategories = signal<string[]>([]);
   updatingCategory = signal(false);
   updatingStatus = signal(false);
+  uploadModalOpen = signal(false);
+  selectedFiles = signal<globalThis.File[]>([]);
   readonly defaultStatus = DEFAULT_WORK_STATUS;
   readonly formatStatus = formatWorkStatus;
   readonly statuses = WORK_STATUSES;
@@ -155,9 +159,15 @@ export class ObjectTabComponent implements OnInit {
 
     this.#httpService.post<{ token: string }>(`object/${objectId}/share`, {}).subscribe({
       next: ({ token }) => {
-        const url = `${window.location.origin}/share/${token}`;
-        this.shareUrl.set(url);
-        QRCode.toDataURL(url, { width: 256, margin: 1 })
+        // Use Router to create the proper URL that respects base href and routing
+        const urlTree = this.#router.createUrlTree(['/share', token]);
+        const relativeUrl = this.#router.serializeUrl(urlTree);
+        // Use environment.frontend for the base URL, which handles proxy/cluster scenarios
+        // Fallback to window.location.origin if environment.frontend is not set
+        const baseUrl = environment.frontend || (typeof window !== 'undefined' ? window.location.origin : '');
+        const absoluteUrl = new URL(relativeUrl, baseUrl).href;
+        this.shareUrl.set(absoluteUrl);
+        QRCode.toDataURL(absoluteUrl, { width: 256, margin: 1 })
           .then((dataUrl: string) => {
             this.shareQrDataUrl.set(dataUrl);
             this.shareLoading.set(false);
@@ -187,46 +197,50 @@ export class ObjectTabComponent implements OnInit {
       .catch(() => this.#notificationService.showError('objects.qrError'));
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
+  openUploadModal(): void {
+    this.uploadModalOpen.set(true);
+    this.selectedFiles.set([]);
+  }
 
-    const file = input.files[0];
+  onFilesSelected(files: globalThis.File[]): void {
+    this.selectedFiles.set(files);
+  }
 
-    // Validate file type (images only)
-    if (!file.type.startsWith('image/')) {
-      this.#notificationService.showError(
-        this.#translationService.instant('errors.imageFileRequired')
-      );
-      this.imagePreviewUrl.set(null);
-      input.value = '';
-      return;
-    }
-
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      this.imagePreviewUrl.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload file
+  onUploadFile(data: { files: globalThis.File[]; description: string; category: string }): void {
     const objectId = this.#route.snapshot.paramMap.get('id');
     if (!objectId) {
       this.#notificationService.showError(
         this.#translationService.instant('errors.objectIdNotFound')
       );
+      this.uploadModalOpen.set(false);
       return;
     }
 
-    this.uploadFile(file, objectId);
+    this.uploadFiles(data.files, data.description, data.category, objectId);
   }
 
-  private uploadFile(file: File, objectId: string): void {
+  onCancelUpload(): void {
+    this.uploadModalOpen.set(false);
+    this.selectedFiles.set([]);
+    this.imagePreviewUrl.set(null);
+  }
+
+  private uploadFiles(files: globalThis.File[], description: string, category: string, objectId: string): void {
     this.uploading.set(true);
 
     const form = new FormData();
-    form.append('avatar', file, file.name);
+    
+    // Append all files with the same field name (backend will process all)
+    files.forEach((file) => {
+      form.append('avatar', file, file.name);
+    });
+    
+    if (description) {
+      form.append('description', description);
+    }
+    if (category) {
+      form.append('category', category);
+    }
 
     this.#fileService.uploadFileForObject(form, objectId).subscribe({
       next: () => {
@@ -234,13 +248,14 @@ export class ObjectTabComponent implements OnInit {
           this.#translationService.instant('objects.uploadSuccess')
         );
         this.uploading.set(false);
+        this.uploadModalOpen.set(false);
+        this.selectedFiles.set([]);
+        this.imagePreviewUrl.set(null);
         // Reload the object and files to get updated file list
         this.#projectStore.loadObject(objectId).subscribe({
           next: (object) => {
             this.object.set(object);
             this.loadFiles(objectId);
-            this.uploading.set(false);
-            this.imagePreviewUrl.set(null);
           },
         });
       },
@@ -249,7 +264,6 @@ export class ObjectTabComponent implements OnInit {
           error.message || this.#translationService.instant('errors.uploadFailed')
         );
         this.uploading.set(false);
-        this.imagePreviewUrl.set(null);
       },
     });
   }

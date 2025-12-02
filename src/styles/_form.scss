@@ -28,12 +28,20 @@
 
 .content-wrapper {
   display: flex;
-  flex: 1;
   max-height: calc(100dvh - (35px + 74px + 32px + 72px + 16px + 16px));
   > * {
     flex: 1 1 0;
     width: 0;
   }
+  & > * {
+    flex: 1;
+  }
+}
+
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
 }
 
 @media screen and (max-width: 768px) {

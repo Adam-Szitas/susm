@@ -11,6 +11,10 @@ export interface File {
   path: string;
   filename: string;
   description?: string;
+  category?: string;
+  group_id?: {
+    $oid: string;
+  };
   created_at: string;
 }
 
