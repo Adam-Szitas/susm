@@ -1,0 +1,149 @@
+@use '../../../styles/mixins' as *;
+
+.files-page {
+  padding: var(--space, 1rem);
+  max-width: 1400px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 2rem;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--background-color, #fff);
+    border-radius: 8px;
+    border: 1px solid var(--default-color, #e0e0e0);
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 200px;
+
+      label {
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+
+      input,
+      select {
+        padding: 0.5rem;
+        border: 1px solid var(--default-color, #e0e0e0);
+        border-radius: 4px;
+        font-size: 0.875rem;
+      }
+    }
+
+    .btn-secondary {
+      align-self: flex-end;
+      padding: 0.5rem 1rem;
+    }
+  }
+
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    max-height: 100%;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .file-card {
+    background: var(--background-color, #fff);
+    border: 1px solid var(--default-color, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
+    @include card-hover;
+
+    .file-image {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      background: var(--default-color, #f5f5f5);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .file-info {
+      padding: 1rem;
+
+      .file-name {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        @include truncate;
+      }
+
+      .file-description {
+        margin: 0 0 1rem 0;
+        font-size: 0.875rem;
+        color: var(--text-color-secondary, #666);
+        line-height: 1.4;
+      }
+
+      .file-context {
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+
+        .project-info,
+        .object-info {
+          margin-bottom: 0.5rem;
+
+          strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--text-color, #333);
+          }
+
+          span {
+            color: var(--text-color-secondary, #666);
+          }
+        }
+
+        .object-details {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          margin-top: 0.25rem;
+        }
+      }
+
+      .file-category {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background: var(--default-color, #f0f0f0);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: var(--text-color-secondary, #666);
+      }
+    }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-color-secondary, #666);
+  }
+
+  .error {
+    color: var(--error-color, #d32f2f);
+    padding: 1rem;
+    background: rgba(211, 47, 47, 0.1);
+    border-radius: 4px;
+  }
+}
+

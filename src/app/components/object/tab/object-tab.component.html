@@ -90,7 +90,11 @@
     }
 
     @if (files().length > 0) {
-      <app-file-list [files]="files()" (fileDeleted)="onFileDeleted()"></app-file-list>
+      <app-file-list
+        [files]="files()"
+        (fileDeleted)="onFileDeleted()"
+        (metadataUpdated)="onFileDeleted()"
+      ></app-file-list>
     }
   </div>
 

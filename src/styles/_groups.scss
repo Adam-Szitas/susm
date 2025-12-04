@@ -1,0 +1,62 @@
+// ============================================================================
+// Group/Section Headers - Reusable group header patterns
+// ============================================================================
+
+@use 'mixins' as *;
+
+.group-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--default-color, #e0e0e0);
+  margin-bottom: 0.5rem;
+
+  @include mobile {
+    gap: 0.4rem;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .group-description {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    line-height: 1.4;
+
+    @include mobile {
+      font-size: 1rem;
+    }
+  }
+
+  .group-category {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @include mobile {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.file-group {
+  @include flex-column(1rem);
+}
+

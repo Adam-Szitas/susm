@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { File } from '@models';
 import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { FileService } from '../../services/file.service';
 import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
+import { FormsModule } from '@angular/forms';
 
 interface FileGroup {
   groupId: string;
@@ -20,7 +22,7 @@ interface FileGroup {
   styleUrl: './file-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [TranslateModule],
+  imports: [CommonModule, TranslateModule, FormsModule],
 })
 export class FileListComponent {
   #fileService = inject(FileService);
@@ -31,6 +33,16 @@ export class FileListComponent {
   // Used on mobile to control when the overlay actions are visible/clickable
   public activeFileId: string | null = null;
   public fileDeleted = output<void>();
+  public metadataUpdated = output<void>();
+
+  // Inline edit state for group description/category
+  public editingGroupId = signal<string | null>(null);
+  public editDescription = signal<string>('');
+  public editCategory = signal<string>('');
+
+  // Inline edit state for single file description
+  public editingFileId = signal<string | null>(null);
+  public editFileDescription = signal<string>('');
 
   // Group files by group_id
   public fileGroups = computed(() => {
@@ -78,6 +90,85 @@ export class FileListComponent {
 
     return { groups, ungroupedFiles };
   });
+
+  public startEditGroup(group: FileGroup): void {
+    this.editingGroupId.set(group.groupId);
+    this.editDescription.set(group.description ?? '');
+    this.editCategory.set(group.category ?? '');
+  }
+
+  public cancelEditGroup(): void {
+    this.editingGroupId.set(null);
+  }
+
+  public saveGroupMetadata(group: FileGroup): void {
+    const description = this.editDescription().trim();
+    const categoryRaw = this.editCategory().trim();
+    const category = categoryRaw === '' ? null : categoryRaw;
+
+    this.#fileService
+      .updateFileGroup(group.groupId, {
+        description: description || undefined,
+        category,
+      })
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('fileList.updateMetadataSuccess') ||
+              'Message updated successfully',
+          );
+          this.editingGroupId.set(null);
+          this.metadataUpdated.emit();
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('fileList.updateMetadataFailed') ||
+              'Failed to update message',
+          );
+        },
+      });
+  }
+
+  public startEditFile(file: File): void {
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.editingFileId.set(id);
+    this.editFileDescription.set(file.description || '');
+  }
+
+  public cancelEditFile(): void {
+    this.editingFileId.set(null);
+  }
+
+  public saveFileMetadata(file: File): void {
+    const id = file._id?.$oid;
+    if (!id) return;
+
+    const description = this.editFileDescription().trim();
+
+    this.#fileService
+      .updateFileMetadata(id, {
+        description: description || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('fileList.updateMetadataSuccess') ||
+              'Message updated successfully',
+          );
+          this.editingFileId.set(null);
+          this.metadataUpdated.emit();
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('fileList.updateMetadataFailed') ||
+              'Failed to update message',
+          );
+        },
+      });
+  }
 
   public getImageUrl(path: string): string {
     let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');

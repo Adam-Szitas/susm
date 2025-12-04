@@ -44,6 +44,12 @@ export const routes: Routes = [
       import('./components/protocols/protocols.routes').then((router) => router.ProtocolsRoutes),
   },
   {
+    path: 'files',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./components/files/files.routes').then((router) => router.FilesRoutes),
+  },
+  {
     path: 'share/:token',
     loadComponent: () =>
       import('./components/object/share/object-share.component').then(

@@ -33,15 +33,22 @@
     flex: 1 1 0;
     width: 0;
   }
-  & > * {
-    flex: 1;
-  }
 }
 
 .card-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--space);
+}
+
+@media screen and (max-width: 768px) {
+  .content-wrapper.content-wrapper {
+    display: block;
+  }
+  .content-wrapper.content-wrapper > * {
+    display: block;
+    width: 100%;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -59,6 +66,6 @@
   }
 }
 
-input[type="file"] {
+input[type='file'] {
   display: none;
 }

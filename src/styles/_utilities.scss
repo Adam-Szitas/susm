@@ -1,0 +1,144 @@
+// ============================================================================
+// Utility Classes - Common utility classes
+// ============================================================================
+
+@use 'mixins' as *;
+
+// Spacing utilities
+.wrapper {
+  padding: 0 var(--space, 1rem);
+  width: 100%;
+  height: 100%;
+
+  @include mobile {
+    padding: 0.75rem;
+  }
+}
+
+.content-wrapper {
+  display: flex;
+  max-height: calc(100dvh - (35px + 74px + 32px + 72px + 16px + 16px));
+  
+  > * {
+    flex: 1 1 0;
+    width: 0;
+  }
+
+  @include mobile {
+    display: block;
+  }
+}
+
+// Text utilities
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.truncate {
+  @include truncate;
+}
+
+// Display utilities
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  @include flex-column;
+}
+
+.flex-row {
+  @include flex-row;
+}
+
+.flex-center {
+  @include flex-center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Gap utilities
+.gap-small {
+  gap: var(--space-small, 8px);
+}
+
+.gap {
+  gap: var(--space, 16px);
+}
+
+.gap-large {
+  gap: var(--space-large, 24px);
+}
+
+// Button groups
+.buttons {
+  margin-top: var(--space, 1rem);
+  @include flex-row;
+  justify-content: flex-end;
+
+  &:has(button:nth-child(2)) {
+    justify-content: space-between;
+  }
+}
+
+.action-buttons {
+  @include flex-row(var(--space, 1rem));
+
+  > * {
+    flex: 1;
+  }
+}
+
+// Empty states
+.empty-state {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f2f4f7;
+  color: #666;
+  text-align: center;
+}
+
+.empty-message {
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+// Status messages
+.success {
+  color: #0f8a00;
+  background: #e3f5e1;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+}
+
+.error {
+  color: #b10e0e;
+  background: #fdeaea;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+}
+
+// Scrollable containers
+.scrollable {
+  @include scrollable;
+}
+
+.scrollable-small {
+  @include scrollable(50vh);
+}
+

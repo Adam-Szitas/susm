@@ -1,0 +1,144 @@
+@use 'sass:math';
+
+// ============================================================================
+// Mixins - Reusable SCSS functions
+// ============================================================================
+
+// Mobile breakpoint mixin
+@mixin mobile {
+  @media screen and (max-width: var(--mobile-breakpoint, 768px)) {
+    @content;
+  }
+}
+
+// Small mobile breakpoint
+@mixin mobile-small {
+  @media screen and (max-width: 480px) {
+    @content;
+  }
+}
+
+// Tablet breakpoint
+@mixin tablet {
+  @media screen and (min-width: 769px) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+// Desktop breakpoint
+@mixin desktop {
+  @media screen and (min-width: 1025px) {
+    @content;
+  }
+}
+
+// Common transition mixin
+@mixin transition($properties...) {
+  transition: $properties;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+// Focus state mixin
+@mixin focus-state($color: var(--primary-focus, #c41e3a)) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba($color, 0.2);
+}
+
+// Input focus state
+@mixin input-focus($border-color: #111, $shadow-color: rgba(0, 0, 0, 0.05)) {
+  outline: none;
+  border-color: $border-color;
+  box-shadow: 0 0 0 3px $shadow-color;
+}
+
+// Flexbox center mixin
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flexbox column mixin
+@mixin flex-column($gap: var(--space, 1rem)) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+// Flexbox row mixin
+@mixin flex-row($gap: var(--space, 1rem)) {
+  display: flex;
+  flex-direction: row;
+  gap: $gap;
+}
+
+// Flexbox between mixin
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Card hover effect
+@mixin card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Button hover effect
+@mixin button-hover {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// Scrollable container
+@mixin scrollable($max-height: 70vh) {
+  max-height: $max-height;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+// Aspect ratio container
+@mixin aspect-ratio($ratio: 1) {
+  position: relative;
+  width: 100%;
+  padding-top: math.percentage(math.div(1, $ratio));
+  overflow: hidden;
+  
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Truncate text
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Multi-line truncate
+@mixin truncate-lines($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+

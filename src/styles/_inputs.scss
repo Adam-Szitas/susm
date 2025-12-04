@@ -1,0 +1,139 @@
+// ============================================================================
+// Form Inputs - Enhanced input styles
+// ============================================================================
+
+@use 'mixins' as *;
+
+// Base form group
+.form-group {
+  @include flex-column(0.5rem);
+
+  label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+  }
+
+  textarea,
+  select,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    @include transition(border-color, box-shadow);
+
+    &:focus {
+      @include input-focus;
+    }
+
+    &:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  select {
+    cursor: pointer;
+  }
+}
+
+// File input wrapper
+.file-input-wrapper {
+  width: 100%;
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .file-label {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    @include transition(border-color, background-color);
+
+    @include mobile {
+      padding: 1.25rem;
+    }
+
+    &:hover {
+      border-color: #111;
+      background: #fafafa;
+    }
+  }
+
+  .upload-placeholder {
+    @include flex-column(0.5rem);
+    align-items: center;
+    color: #666;
+
+    svg {
+      width: 48px;
+      height: 48px;
+      stroke-width: 1.5;
+    }
+
+    span {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .hint-text {
+      font-size: 0.8rem;
+      color: #999;
+      font-weight: normal;
+    }
+  }
+}
+
+// Filter input styles
+.filter-input {
+  border: 1px solid var(--default-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  @include transition(border-color, box-shadow);
+
+  @include mobile {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 44px; // Touch target size
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #094c43;
+    box-shadow: 0 0 4px rgba(11, 99, 87, 0.3);
+  }
+
+  &.select {
+    cursor: pointer;
+  }
+}
+
+// Input group (for side-by-side inputs)
+.input-group {
+  @include flex-row(0.5rem);
+  align-items: center;
+
+  input {
+    flex: 1;
+  }
+}
+

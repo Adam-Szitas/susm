@@ -1,0 +1,102 @@
+<div class="files-page">
+  <h1>{{ 'files.title' | translate }}</h1>
+
+  @if (loading()) {
+    <p>{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else {
+    <div class="filters">
+      <div class="filter-group">
+        <label for="search">{{ 'common.search' | translate }}</label>
+        <input
+          type="text"
+          id="search"
+          [value]="searchText()"
+          (input)="searchText.set($any($event.target).value)"
+          [placeholder]="'files.searchPlaceholder' | translate"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="project">{{ 'files.filterByProject' | translate }}</label>
+        <select
+          id="project"
+          [value]="selectedProject()"
+          (change)="selectedProject.set($any($event.target).value)"
+        >
+          <option value="">{{ 'files.allProjects' | translate }}</option>
+          @for (project of projects(); track project.id) {
+            <option [value]="project.id">{{ project.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="category">{{ 'files.filterByCategory' | translate }}</label>
+        <select
+          id="category"
+          [value]="selectedCategory()"
+          (change)="selectedCategory.set($any($event.target).value)"
+        >
+          <option value="">{{ 'files.allCategories' | translate }}</option>
+          @for (category of categories(); track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="button" class="btn-secondary" (click)="clearFilters()">
+        {{ 'filter.clear' | translate }}
+      </button>
+    </div>
+
+    <div class="files-grid">
+      @for (fileWithContext of filteredFiles(); track fileWithContext.file._id.$oid) {
+        <div class="file-card">
+          <div class="file-image">
+            <img
+              [src]="getImageUrl(fileWithContext.file.path)"
+              [alt]="fileWithContext.file.filename"
+              loading="lazy"
+            />
+          </div>
+          <div class="file-info">
+            <h3 class="file-name">{{ fileWithContext.file.filename }}</h3>
+            @if (fileWithContext.file.description) {
+              <p class="file-description">{{ fileWithContext.file.description }}</p>
+            }
+            <div class="file-context">
+              <div class="project-info">
+                <strong>{{ 'files.project' | translate }}:</strong>
+                <span>{{ fileWithContext.project?.name || 'N/A' }}</span>
+              </div>
+              @if (fileWithContext.object) {
+                <div class="object-info">
+                  <strong>{{ 'files.object' | translate }}:</strong>
+                  <div class="object-details">
+                    @if (fileWithContext.object.street) {
+                      <span>{{ fileWithContext.object.street }}</span>
+                    }
+                    @if (fileWithContext.object.description) {
+                      <span>{{ fileWithContext.object.description }}</span>
+                    }
+                    @if (fileWithContext.object.house_number) {
+                      <span>{{ fileWithContext.object.house_number }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            @if (fileWithContext.file.category) {
+              <span class="file-category">{{ fileWithContext.file.category }}</span>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty-state">{{ 'files.noFiles' | translate }}</p>
+      }
+    </div>
+  }
+</div>
+

@@ -49,6 +49,9 @@
                     </svg>
                   </button>
                   <span class="file-name">{{ preview.file.name }}</span>
+                  @if (description()) {
+                    <span class="file-message">{{ description() }}</span>
+                  }
                 </div>
               }
             </div>

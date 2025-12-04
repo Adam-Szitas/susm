@@ -59,6 +59,17 @@ export class FileService {
   }
 
   /**
+   * Updates metadata (description/category) for a file group
+   */
+  updateFileGroup(
+    groupId: string,
+    data: { description?: string; category?: string | null }
+  ): Observable<{ message: string }> {
+    const endpoint = `file/group/${groupId}`;
+    return this.#httpService.put<{ message: string }>(endpoint, data);
+  }
+
+  /**
    * Gets all files for a specific object
    * @param objectId - The ID of the object
    * @returns Observable with array of files
@@ -86,5 +97,24 @@ export class FileService {
   deleteFile(fileId: string): Observable<{ message: string }> {
     const endpoint = `file/${fileId}`;
     return this.#httpService.delete<{ message: string }>(endpoint);
+  }
+
+  /**
+   * Updates metadata (description/category) for a single file
+   */
+  updateFileMetadata(
+    fileId: string,
+    data: { description?: string; category?: string | null }
+  ): Observable<{ message: string }> {
+    const endpoint = `file/${fileId}`;
+    return this.#httpService.put<{ message: string }>(endpoint, data);
+  }
+
+  /**
+   * Gets all files with their project and object context
+   */
+  getAllFilesWithContext(): Observable<any[]> {
+    const endpoint = 'files';
+    return this.#httpService.get<any[]>(endpoint);
   }
 }

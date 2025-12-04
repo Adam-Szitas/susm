@@ -1,3 +1,5 @@
+@use '../../../../styles/mixins' as *;
+
 .share-wrapper {
   min-height: 100dvh;
   display: flex;
@@ -66,6 +68,7 @@ h1 {
   margin: 1.5rem auto 0;
   text-align: left;
 
+  // Uses form-group styles from _inputs.scss
   label {
     display: block;
     margin-bottom: 0.5rem;
@@ -83,11 +86,6 @@ h1 {
     font-family: inherit;
     resize: vertical;
     min-height: 3.5rem;
-
-    &:focus {
-      outline: none;
-      border-color: #111;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
-    }
+    @include input-focus(#111, rgba(0, 0, 0, 0.06));
   }
 }
