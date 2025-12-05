@@ -1,6 +1,6 @@
 <div class="wrapper">
-  @if (form) {
-    <form [formGroup]="form">
+  @if (projectForm) {
+    <form [formGroup]="projectForm">
       <div class="control">
         <label for="name">{{ 'projects.name' | translate }}</label>
         <input placeholder="Name" type="name" id="name" formControlName="name" />
@@ -38,20 +38,12 @@
         <label for="note">{{ 'projects.note' | translate }}</label>
         <input placeholder="Note" type="note" id="note" formControlName="note" />
       </div>
-      <div class="control">
-        <label for="status">{{ 'projects.status' | translate }}</label>
-        <select id="status" formControlName="status">
-          @for (status of statuses; track status) {
-            <option [value]="status">{{ statusLabel(status) }}</option>
-          }
-        </select>
-      </div>
       <div class="control buttons">
         <button
           type="button"
-          class="button button-success"
-          [disabled]="form.invalid"
-          (click)="Submit()"
+          class="button button-primary"
+          [disabled]="projectForm.invalid"
+          (click)="submit()"
         >
           {{ 'common.submit' | translate }}
         </button>

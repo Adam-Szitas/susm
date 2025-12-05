@@ -19,40 +19,45 @@
       @if (object()?.note) {
         <p class="note">{{ object()?.note }}</p>
       }
-      <div class="section-container">
-        <div class="category-section">
-          <label for="objectCategory">{{ 'objects.category' | translate }}</label>
-          <select
-            id="objectCategory"
-            [value]="object()?.category"
-            [disabled]="updatingCategory()"
-            (change)="updateCategory($any($event.target).value)"
-            class="category-select"
-          >
-            <option value="">{{ 'objects.noCategory' | translate }}</option>
-            @for (category of projectCategories(); track category) {
-              <option [value]="category" [selected]="category === object()?.category">
-                {{ category }}
-              </option>
-            }
-          </select>
+      <div class="selection-container">
+        <div class="section-container">
+          <div class="category-section">
+            <label for="objectCategory">{{ 'objects.category' | translate }}</label>
+            <select
+              id="objectCategory"
+              [value]="object()?.category"
+              [disabled]="updatingCategory()"
+              (change)="updateCategory($any($event.target).value)"
+              class="category-select"
+            >
+              <option value="">{{ 'objects.noCategory' | translate }}</option>
+              @for (category of projectCategories(); track category) {
+                <option [value]="category" [selected]="category === object()?.category">
+                  {{ category }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="status-section">
+            <label for="objectStatus">{{ 'objects.status' | translate }}</label>
+            <select
+              id="objectStatus"
+              [value]="object()?.status || defaultStatus"
+              [disabled]="updatingStatus()"
+              (change)="updateStatus($any($event.target).value)"
+              class="status-select"
+            >
+              @for (status of statuses; track status) {
+                <option [value]="status" [selected]="status === object()?.status">
+                  {{ formatStatus(status) }}
+                </option>
+              }
+            </select>
+          </div>
         </div>
-        <div class="status-section">
-          <label for="objectStatus">{{ 'objects.status' | translate }}</label>
-          <select
-            id="objectStatus"
-            [value]="object()?.status || defaultStatus"
-            [disabled]="updatingStatus()"
-            (change)="updateStatus($any($event.target).value)"
-            class="status-select"
-          >
-            @for (status of statuses; track status) {
-              <option [value]="status" [selected]="status === object()?.status">
-                {{ formatStatus(status) }}
-              </option>
-            }
-          </select>
-        </div>
+        <button type="button" class="button button-primary edit" (click)="editObjectDetails()">
+          ✎
+        </button>
       </div>
     </section>
   }

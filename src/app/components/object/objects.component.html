@@ -11,13 +11,17 @@
                 >
                     <app-status-pill [status]="objectItem?.status || 'created'" />
                     <div class="project-name">{{ item.project_name }}</div>
-                    <h2 class="headline">{{ objectItem.address.street }}</h2>
+                    <h2 class="headline">{{ objectItem.address.street }} 
+                        {{ objectItem.address.house_number }} 
+                        {{ objectItem.address.house_number && objectItem.address.door_number ? '/' : null }}
+                        {{ objectItem.address.door_number }}</h2>
                     @if(objectItem.note) {
                         <p class="note">{{ objectItem.note }}</p>
                     }
                     @if(objectItem.category) {
                         <div class="category">{{ objectItem.category }}</div>
                     }
+                    <div class="created-at">{{ objectItem.created_at | date: 'dd.MM.yyyy HH:mm' }}</div>
                 </div>
             }
         }

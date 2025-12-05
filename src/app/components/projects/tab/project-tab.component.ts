@@ -25,13 +25,22 @@ import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
+import { DatePipe } from '@angular/common';
+import { EditProjectComponent } from '../edit-project/project-edit.component';
 
 @Component({
   selector: 'app-project-tab',
   templateUrl: './project-tab.component.html',
   styleUrl: './project-tab.component.scss',
   standalone: true,
-  imports: [FilterComponent, RouterLink, TranslateModule, FileListComponent, StatusPillComponent],
+  imports: [
+    FilterComponent,
+    RouterLink,
+    TranslateModule,
+    FileListComponent,
+    StatusPillComponent,
+    DatePipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTabComponent implements OnInit, OnDestroy {
@@ -74,12 +83,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.#routeSubscription = this.#route.paramMap
       .pipe(
         map((params) => params.get('id')),
-        filter((id): id is string => id !== null)
+        filter((id): id is string => id !== null),
       )
       .subscribe((projectId) => {
         this.#projectStore.loadProject(projectId);
       });
-    
+
     this.#currentFilter.set({});
   }
 
@@ -336,5 +345,15 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (!projectId) return;
 
     this.#projectStore.toggleArchiveProject(projectId, archive);
+  }
+
+  startEditingProject(): void {
+    this.#modalService.open({
+      title: 'projects.editProject',
+      component: EditProjectComponent,
+      componentInputs: {
+        projectData: this.project(),
+      },
+    });
   }
 }

@@ -24,6 +24,10 @@ export class ProjectStore {
   readonly error = computed(() => this._error());
   readonly files = computed(() => this._files());
 
+  public setProject(project: Project): void {
+    this._project.set(project);
+  }
+
   loadProject(id: string | null): void {
     if (!id) {
       this._error.set('Project ID is required');

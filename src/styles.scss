@@ -10,6 +10,7 @@
 @use './styles/groups' as *;
 @use './styles/inputs' as *;
 @use './styles/utilities' as *;
+@use './styles/lists' as *;
 
 :root {
   --space-tiny: 4px;
@@ -25,20 +26,20 @@
   --default-color: #9d0000;
   --default-color-dark: #3d0000;
   --mobile-breakpoint: 768px;
-  --background-color: #F0F0F0;
-  
+  --background-color: #f0f0f0;
+
   // Primary button colors (based on --default-color: #9d0000)
   --primary-default: #9d0000;
   --primary-hover: #b30000;
   --primary-focus: #c41e3a;
   --primary-active: #7a0000;
-  
+
   // Secondary button colors (elegant slate-gray complement)
   --secondary-default: #5c6b73;
   --secondary-hover: #4a5560;
   --secondary-focus: #3d4752;
   --secondary-active: #2d3439;
-  
+
   // Legacy button variables (for backward compatibility)
   --button: var(--primary-default);
   --button-hover: var(--primary-hover);
@@ -48,8 +49,18 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Open Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 *,

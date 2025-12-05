@@ -33,3 +33,9 @@
 .card-wrapper {
   align-items: stretch;
 }
+
+.created-at {
+  font-size: var(--font-4);
+  color: rgba(0, 0, 0, 0.6);
+  display: flex;
+}

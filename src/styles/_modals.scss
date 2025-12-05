@@ -93,6 +93,7 @@
     @include flex-center;
     color: #666;
     border-radius: 8px;
+    font-size: 24px;
     @include transition(background-color);
 
     &:hover {
@@ -154,4 +155,3 @@
     }
   }
 }
-

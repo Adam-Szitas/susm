@@ -4,7 +4,13 @@ import { ProjectStore } from '@store/project.store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileService } from '@services/file.service';
 import { NotificationService } from '@services/notification.service';
-import { Object, File as ProjectFile, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
+import {
+  Object,
+  File as ProjectFile,
+  DEFAULT_WORK_STATUS,
+  formatWorkStatus,
+  WORK_STATUSES,
+} from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
@@ -12,14 +18,15 @@ import { HttpService } from '@services/http.service';
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 import { environment } from '../../../environment';
 import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
-
+import { ModalService } from '@services/modal.service';
+import { EditObjectComponent } from '../edit-object/object-edit.component';
 @Component({
   selector: 'app-object-tab',
   standalone: true,
   imports: [TranslateModule, FileListComponent, StatusPillComponent, FileUploadModalComponent],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ObjectTabComponent implements OnInit {
   #projectStore = inject(ProjectStore);
@@ -29,6 +36,7 @@ export class ObjectTabComponent implements OnInit {
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
   #httpService = inject(HttpService);
+  #modalService = inject(ModalService);
 
   object = signal<Object | null>(null);
   files = signal<ProjectFile[]>([]);
@@ -62,7 +70,7 @@ export class ObjectTabComponent implements OnInit {
         },
         error: () => {
           this.#notificationService.showError(
-            this.#translationService.instant('errors.loadObjectFailed')
+            this.#translationService.instant('errors.loadObjectFailed'),
           );
           this.#router.navigate(['/']);
         },
@@ -74,15 +82,17 @@ export class ObjectTabComponent implements OnInit {
 
   private loadProjectCategories(objectId: string): void {
     // Get project categories from object's project
-    this.#httpService.get<{ categories?: string[] }>(`object/${objectId}/project-categories`).subscribe({
-      next: (result) => {
-        this.projectCategories.set(result.categories || []);
-      },
-      error: () => {
-        // Silently fail - categories are optional
-        this.projectCategories.set([]);
-      },
-    });
+    this.#httpService
+      .get<{ categories?: string[] }>(`object/${objectId}/project-categories`)
+      .subscribe({
+        next: (result) => {
+          this.projectCategories.set(result.categories || []);
+        },
+        error: () => {
+          // Silently fail - categories are optional
+          this.projectCategories.set([]);
+        },
+      });
   }
 
   updateCategory(category: string | null): void {
@@ -97,13 +107,13 @@ export class ObjectTabComponent implements OnInit {
       next: (updatedObject) => {
         this.object.set(updatedObject);
         this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.categoryUpdated')
+          this.#translationService.instant('objects.categoryUpdated'),
         );
         this.updatingCategory.set(false);
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('objects.updateCategoryFailed')
+          error.message || this.#translationService.instant('objects.updateCategoryFailed'),
         );
         this.updatingCategory.set(false);
       },
@@ -119,13 +129,13 @@ export class ObjectTabComponent implements OnInit {
       next: (updatedObject) => {
         this.object.set(updatedObject);
         this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.statusUpdated')
+          this.#translationService.instant('objects.statusUpdated'),
         );
         this.updatingStatus.set(false);
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('objects.updateStatusFailed')
+          error.message || this.#translationService.instant('objects.updateStatusFailed'),
         );
         this.updatingStatus.set(false);
       },
@@ -135,9 +145,9 @@ export class ObjectTabComponent implements OnInit {
   private loadFiles(objectId: string): void {
     this.#fileService.getFilesForObject(objectId).subscribe({
       next: (files) => {
-        const mappedFiles = files.map(file => ({
+        const mappedFiles = files.map((file) => ({
           ...file,
-          filename: file.filename ||file.path.split(/[\\/]/).pop() || ''
+          filename: file.filename || file.path.split(/[\\/]/).pop() || '',
         }));
         this.files.set(mappedFiles);
       },
@@ -164,7 +174,8 @@ export class ObjectTabComponent implements OnInit {
         const relativeUrl = this.#router.serializeUrl(urlTree);
         // Use environment.frontend for the base URL, which handles proxy/cluster scenarios
         // Fallback to window.location.origin if environment.frontend is not set
-        const baseUrl = environment.frontend || (typeof window !== 'undefined' ? window.location.origin : '');
+        const baseUrl =
+          environment.frontend || (typeof window !== 'undefined' ? window.location.origin : '');
         const absoluteUrl = new URL(relativeUrl, baseUrl).href;
         this.shareUrl.set(absoluteUrl);
         QRCode.toDataURL(absoluteUrl, { width: 256, margin: 1 })
@@ -178,9 +189,7 @@ export class ObjectTabComponent implements OnInit {
           });
       },
       error: (error) => {
-        this.shareError.set(
-          error.message || this.#translationService.instant('objects.qrError')
-        );
+        this.shareError.set(error.message || this.#translationService.instant('objects.qrError'));
         this.shareLoading.set(false);
       },
     });
@@ -210,7 +219,7 @@ export class ObjectTabComponent implements OnInit {
     const objectId = this.#route.snapshot.paramMap.get('id');
     if (!objectId) {
       this.#notificationService.showError(
-        this.#translationService.instant('errors.objectIdNotFound')
+        this.#translationService.instant('errors.objectIdNotFound'),
       );
       this.uploadModalOpen.set(false);
       return;
@@ -225,16 +234,21 @@ export class ObjectTabComponent implements OnInit {
     this.imagePreviewUrl.set(null);
   }
 
-  private uploadFiles(files: globalThis.File[], description: string, category: string, objectId: string): void {
+  private uploadFiles(
+    files: globalThis.File[],
+    description: string,
+    category: string,
+    objectId: string,
+  ): void {
     this.uploading.set(true);
 
     const form = new FormData();
-    
+
     // Append all files with the same field name (backend will process all)
     files.forEach((file) => {
       form.append('avatar', file, file.name);
     });
-    
+
     if (description) {
       form.append('description', description);
     }
@@ -245,7 +259,7 @@ export class ObjectTabComponent implements OnInit {
     this.#fileService.uploadFileForObject(form, objectId).subscribe({
       next: () => {
         this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.uploadSuccess')
+          this.#translationService.instant('objects.uploadSuccess'),
         );
         this.uploading.set(false);
         this.uploadModalOpen.set(false);
@@ -261,7 +275,7 @@ export class ObjectTabComponent implements OnInit {
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('errors.uploadFailed')
+          error.message || this.#translationService.instant('errors.uploadFailed'),
         );
         this.uploading.set(false);
       },
@@ -269,9 +283,19 @@ export class ObjectTabComponent implements OnInit {
   }
 
   onFileDeleted(): void {
-    const objectId = this.#route.snapshot.paramMap.get('id');
+    const objectId = this.object()?._id?.$oid;
     if (objectId) {
       this.loadFiles(objectId);
     }
+  }
+
+  editObjectDetails(): void {
+    this.#modalService.open({
+      title: 'objects.editObject',
+      component: EditObjectComponent,
+      componentInputs: {
+        objectData: this.object(),
+      },
+    });
   }
 }

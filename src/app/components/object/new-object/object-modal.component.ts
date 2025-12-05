@@ -3,13 +3,15 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ModalService } from '@services/modal.service';
 import { ProjectStore } from '@store/project.store';
 import { DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-new-object',
   templateUrl: './object-modal.component.html',
   styleUrl: './object-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  standalone: true,
+  imports: [ReactiveFormsModule, TranslateModule],
 })
 export class ObjectModalComponent {
   #formBuilder = inject(FormBuilder);

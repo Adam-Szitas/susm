@@ -56,7 +56,6 @@ export class FileListComponent {
   // Group files by group_id
   public fileGroups = computed(() => {
     const allFiles = this.files();
-    console.log(this.files());
     const groupsMap = new Map<string, FileGroup>();
     const ungroupedFiles: File[] = [];
 

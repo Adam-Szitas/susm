@@ -2,13 +2,13 @@
   @if (form) {
     <form [formGroup]="form">
       <div class="control" formGroupName="address">
-        <h4>Address</h4>
+        <h4>{{ 'common.address' | translate }}</h4>
         <div class="control">
-          <label for="street">Street</label>
+          <label for="street">{{ 'common.street' | translate }}</label>
           <input placeholder="street" type="text" id="street" formControlName="street" />
         </div>
         <div class="control">
-          <label for="house_number">House number</label>
+          <label for="house_number">{{ 'common.houseNumber' | translate }}</label>
           <input
             placeholder="house number"
             type="text"
@@ -17,11 +17,11 @@
           />
         </div>
         <div class="control">
-          <label for="level">Level / floor</label>
+          <label for="level">{{ 'common.level' | translate }}</label>
           <input placeholder="e.g. 3 or 3rd" type="text" id="level" formControlName="level" />
         </div>
         <div class="control">
-          <label for="door_number">Door number</label>
+          <label for="door_number">{{ 'common.doorNumber' | translate }}</label>
           <input
             placeholder="door or flat number"
             type="text"
@@ -31,11 +31,11 @@
         </div>
       </div>
       <div class="control">
-        <label for="note">Note</label>
+        <label for="note">{{ 'common.note' | translate }}</label>
         <input placeholder="Note" type="note" id="note" formControlName="note" />
       </div>
       <div class="control">
-        <label for="status">Status</label>
+        <label for="status">{{ 'objects.status' | translate }}</label>
         <select id="status" formControlName="status">
           @for (status of statuses; track status) {
             <option [value]="status">{{ statusLabel(status) }}</option>
@@ -43,7 +43,9 @@
         </select>
       </div>
       <div class="control buttons">
-        <button type="button" [disabled]="form.invalid" (click)="Submit()">Submit</button>
+        <button type="button" [disabled]="form.invalid" (click)="Submit()">
+          {{ 'common.submit' | translate }}
+        </button>
       </div>
     </form>
   }

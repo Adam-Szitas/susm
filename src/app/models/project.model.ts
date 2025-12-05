@@ -17,4 +17,5 @@ export interface Project {
   objects?: Object[];
   protocols?: ProtocolRecord[];
   archived_at?: string;
+  created_at?: string;
 }

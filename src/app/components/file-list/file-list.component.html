@@ -71,6 +71,9 @@
                 <p class="file-name">{{ file.filename }}</p>
               }
             }
+            @if(file.category) {
+                <div class="file-category">{{ file.category }}</div>
+            }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
                 <textarea
@@ -95,12 +98,8 @@
                 <p class="file-description-text" *ngIf="file.description">
                   {{ file.description }}
                 </p>
-                <button type="button" class="file-description-edit" (click)="startEditFile(file)">
-                  {{
-                    file.description
-                      ? ('common.edit' | translate)
-                      : ('fileUpload.description' | translate)
-                  }}
+                <button type="button" class="file-description-edit button button-primary" (click)="startEditFile(file)">
+                  ✎
                 </button>
               }
             </div>
@@ -143,6 +142,9 @@
                 <p class="file-name">{{ file.filename }}</p>
               }
             }
+            @if(file.category) {
+                <div class="file-category">{{ file.category }}</div>
+            }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
                 <textarea
@@ -167,12 +169,8 @@
                 <p class="file-description-text" *ngIf="file.description">
                   {{ file.description }}
                 </p>
-                <button type="button" class="file-description-edit" (click)="startEditFile(file)">
-                  {{
-                    file.description
-                      ? ('common.edit' | translate)
-                      : ('fileUpload.description' | translate)
-                  }}
+                <button type="button" class="file-description-edit button button-primary" (click)="startEditFile(file)">
+                    ✎
                 </button>
               }
             </div>

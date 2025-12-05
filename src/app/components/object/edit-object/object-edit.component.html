@@ -1,0 +1,49 @@
+<div class="wrapper">
+  @if (objectForm) {
+    <form [formGroup]="objectForm">
+      <div class="control">
+        <label for="note">{{ 'objects.note' | translate }}</label>
+        <input placeholder="Note" type="note" id="note" formControlName="note" />
+      </div>
+      <div class="control" formGroupName="address">
+        <h4>{{ 'objects.address' | translate }}</h4>
+        <div class="control">
+          <label for="street">{{ 'objects.street' | translate }}</label>
+          <input placeholder="street" type="street" id="street" formControlName="street" />
+        </div>
+        <div class="control">
+          <label for="house_number">{{ 'objects.houseNumber' | translate }}</label>
+          <input
+            placeholder="house number"
+            type="house_number"
+            id="house_number"
+            formControlName="house_number"
+          />
+        </div>
+        <div class="control">
+          <label for="level">{{ 'objects.level' | translate }}</label>
+          <input placeholder="e.g. 3 or 3rd" type="level" id="level" formControlName="level" />
+        </div>
+        <div class="control">
+            <label for="door_number">{{ 'objects.doorNumber' | translate }}</label>
+          <input
+            placeholder="door or flat number"
+            type="door_number"
+            id="door_number"
+            formControlName="door_number"
+          />
+        </div>
+      </div>
+      <div class="control buttons">
+        <button
+          type="button"
+          class="button button-primary"
+          [disabled]="objectForm.invalid"
+          (click)="submit()"
+        >
+          {{ 'common.submit' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>
