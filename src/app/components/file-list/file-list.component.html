@@ -1,163 +1,184 @@
 <div class="file-wrapper">
-    <!-- File Groups (with group_id) -->
-    @for (group of fileGroups().groups; track group.groupId) {
-        <div class="file-group">
-            <div class="group-header">
-                @if (editingGroupId() === group.groupId) {
-                    <div class="group-edit-form">
-                        <input
-                            type="text"
-                            [(ngModel)]="editDescription"
-                            placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                            class="group-edit-input"
-                        />
-                        <input
-                            type="text"
-                            [(ngModel)]="editCategory"
-                            placeholder="{{ 'fileUpload.category' | translate }}"
-                            class="group-edit-input"
-                        />
-                        <button type="button" class="group-edit-btn" (click)="saveGroupMetadata(group)">
-                            ✓
-                        </button>
-                        <button type="button" class="group-edit-btn" (click)="cancelEditGroup()">
-                            ✕
-                        </button>
-                    </div>
-                } @else {
-                    <div class="group-header-content">
-                        @if (group.description) {
-                            <h3 class="group-description">{{ group.description }}</h3>
-                        }
-                        @if (group.category) {
-                            <span class="group-category">{{ group.category }}</span>
-                        }
-                    </div>
-                    <button
-                        type="button"
-                        class="group-edit-toggle"
-                        (click)="startEditGroup(group)"
-                        aria-label="Edit message"
-                    >
-                        ✎
-                    </button>
-                }
+  <!-- File Groups (with group_id) -->
+  @for (group of fileGroups().groups; track group.groupId) {
+    <div class="file-group">
+      <div class="group-header">
+        @if (editingGroupId() === group.groupId) {
+          <div class="group-edit-form">
+            <input
+              type="text"
+              [(ngModel)]="editDescription"
+              placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+              class="group-edit-input"
+            />
+            <input
+              type="text"
+              [(ngModel)]="editCategory"
+              placeholder="{{ 'fileUpload.category' | translate }}"
+              class="group-edit-input"
+            />
+            <button type="button" class="group-edit-btn" (click)="saveGroupMetadata(group)">
+              ✓
+            </button>
+            <button type="button" class="group-edit-btn" (click)="cancelEditGroup()">✕</button>
+          </div>
+        } @else {
+          <div class="group-header-content">
+            @if (group.description) {
+              <h3 class="group-description">{{ group.description }}</h3>
+            }
+            @if (group.category) {
+              <span class="group-category">{{ group.category }}</span>
+            }
+          </div>
+          <button
+            type="button"
+            class="group-edit-toggle button button-primary"
+            (click)="startEditGroup(group)"
+            aria-label="Edit message"
+          >
+            ✎
+          </button>
+        }
+      </div>
+      <ul class="file-gallery">
+        @for (file of group.files; track file._id.$oid) {
+          <li class="file-item">
+            <div class="image-container" (click)="showOverlay(file)">
+              <img
+                [src]="getImageUrl(file.path)"
+                [alt]="file.filename || 'File Preview'"
+                loading="lazy"
+              />
+              <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
+                <span class="download-hint" (click)="downloadFile(file.path)">{{
+                  'fileList.download' | translate
+                }}</span>
+                <span class="delete-hint" (click)="deleteFile(file)">{{
+                  'fileList.delete' | translate
+                }}</span>
+              </div>
             </div>
-            <ul class="file-gallery">
-                @for (file of group.files; track file._id.$oid) {
-                    <li class="file-item">
-                        <div class="image-container" (click)="showOverlay(file)">
-                            <img [src]="getImageUrl(file.path)" [alt]="file.filename || 'File Preview'" loading="lazy"/>
-                            <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
-                                <span class="download-hint" (click)="downloadFile(file.path)">{{ 'fileList.download' | translate }}</span>
-                                <span class="delete-hint" (click)="deleteFile(file)">{{ 'fileList.delete' | translate }}</span>
-                            </div>
-                        </div>
-                        @if (file.filename) {
-                            <p class="file-name">{{ file.filename }}</p>
-                        }
-                        <div class="file-description-wrapper">
-                            @if (editingFileId() === file._id.$oid) {
-                                <textarea
-                                    class="file-description-input"
-                                    [(ngModel)]="editFileDescription"
-                                    rows="2"
-                                    placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                                ></textarea>
-                                <div class="file-description-actions">
-                                    <button
-                                        type="button"
-                                        class="btn-small btn-primary"
-                                        (click)="saveFileMetadata(file)"
-                                    >
-                                        {{ 'common.save' | translate }}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn-small btn-secondary"
-                                        (click)="cancelEditFile()"
-                                    >
-                                        {{ 'common.cancel' | translate }}
-                                    </button>
-                                </div>
-                            } @else {
-                                <p class="file-description-text" *ngIf="file.description">
-                                    {{ file.description }}
-                                </p>
-                                <button
-                                    type="button"
-                                    class="file-description-edit"
-                                    (click)="startEditFile(file)"
-                                >
-                                    {{ file.description ? ('common.edit' | translate) : ('fileUpload.description' | translate) }}
-                                </button>
-                            }
-                        </div>
-                    </li>
-                }
-            </ul>
-        </div>
-    }
+            @if (editingFileId() === file._id.$oid) {
+              <input
+                type="text"
+                class="file-name-input"
+                [(ngModel)]="editFileName"
+                placeholder="{{ 'fileList.filename' | translate }}"
+              />
+            } @else {
+              @if (file.filename) {
+                <p class="file-name">{{ file.filename }}</p>
+              }
+            }
+            <div class="file-description-wrapper">
+              @if (editingFileId() === file._id.$oid) {
+                <textarea
+                  class="file-description-input"
+                  [(ngModel)]="editFileDescription"
+                  rows="2"
+                  placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+                ></textarea>
+                <div class="file-description-actions">
+                  <button
+                    type="button"
+                    class="btn-small btn-primary"
+                    (click)="saveFileMetadata(file)"
+                  >
+                    {{ 'common.save' | translate }}
+                  </button>
+                  <button type="button" class="btn-small btn-secondary" (click)="cancelEditFile()">
+                    {{ 'common.cancel' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <p class="file-description-text" *ngIf="file.description">
+                  {{ file.description }}
+                </p>
+                <button type="button" class="file-description-edit" (click)="startEditFile(file)">
+                  {{
+                    file.description
+                      ? ('common.edit' | translate)
+                      : ('fileUpload.description' | translate)
+                  }}
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 
-    <!-- Ungrouped Files (no group_id or description) -->
-    @if (fileGroups().ungroupedFiles.length > 0) {
-        <div class="file-group ungrouped">
-            <ul class="file-gallery">
-                @for (file of fileGroups().ungroupedFiles; track file._id.$oid) {
-                    <li class="file-item">
-                        <div class="image-container" (click)="showOverlay(file)">
-                            <img [src]="getImageUrl(file.path)" [alt]="file.filename || 'File Preview'" loading="lazy"/>
-                            <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
-                                <span class="download-hint" (click)="downloadFile(file.path)">{{ 'fileList.download' | translate }}</span>
-                                <span class="delete-hint" (click)="deleteFile(file)">{{ 'fileList.delete' | translate }}</span>
-                            </div>
-                        </div>
-                        @if(file.description) {
-                            <p class="file-description-text">{{ file.description }}</p>
-                        }
-                        @if (file.filename) {
-                            <p class="file-name">{{ file.filename }}</p>
-                        }
-                        <div class="file-description-wrapper">
-                            @if (editingFileId() === file._id.$oid) {
-                                <textarea
-                                    class="file-description-input"
-                                    [(ngModel)]="editFileDescription"
-                                    rows="2"
-                                    placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                                ></textarea>
-                                <div class="file-description-actions">
-                                    <button
-                                        type="button"
-                                        class="btn-small btn-primary"
-                                        (click)="saveFileMetadata(file)"
-                                    >
-                                        {{ 'common.save' | translate }}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn-small btn-secondary"
-                                        (click)="cancelEditFile()"
-                                    >
-                                        {{ 'common.cancel' | translate }}
-                                    </button>
-                                </div>
-                            } @else {
-                                <p class="file-description-text" *ngIf="file.description">
-                                    {{ file.description }}
-                                </p>
-                                <button
-                                    type="button"
-                                    class="file-description-edit"
-                                    (click)="startEditFile(file)"
-                                >
-                                    {{ file.description ? ('common.edit' | translate) : ('fileUpload.description' | translate) }}
-                                </button>
-                            }
-                        </div>
-                    </li>
-                }
-            </ul>
-        </div>
-    }
+  <!-- Ungrouped Files (no group_id or description) -->
+  @if (fileGroups().ungroupedFiles.length > 0) {
+    <div class="file-group ungrouped">
+      <ul class="file-gallery">
+        @for (file of fileGroups().ungroupedFiles; track file._id.$oid) {
+          <li class="file-item">
+            <div class="image-container" (click)="showOverlay(file)">
+              <img
+                [src]="getImageUrl(file.path)"
+                [alt]="file.filename || 'File Preview'"
+                loading="lazy"
+              />
+              <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
+                <span class="download-hint" (click)="downloadFile(file.path)">{{
+                  'fileList.download' | translate
+                }}</span>
+                <span class="delete-hint" (click)="deleteFile(file)">{{
+                  'fileList.delete' | translate
+                }}</span>
+              </div>
+            </div>
+            @if (editingFileId() === file._id.$oid) {
+              <input
+                type="text"
+                class="file-name-input"
+                [(ngModel)]="editFileName"
+                placeholder="{{ 'fileList.filename' | translate }}"
+              />
+            } @else {
+              @if (file.filename) {
+                <p class="file-name">{{ file.filename }}</p>
+              }
+            }
+            <div class="file-description-wrapper">
+              @if (editingFileId() === file._id.$oid) {
+                <textarea
+                  class="file-description-input"
+                  [(ngModel)]="editFileDescription"
+                  rows="2"
+                  placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+                ></textarea>
+                <div class="file-description-actions">
+                  <button
+                    type="button"
+                    class="btn-small btn-primary"
+                    (click)="saveFileMetadata(file)"
+                  >
+                    {{ 'common.save' | translate }}
+                  </button>
+                  <button type="button" class="btn-small btn-secondary" (click)="cancelEditFile()">
+                    {{ 'common.cancel' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <p class="file-description-text" *ngIf="file.description">
+                  {{ file.description }}
+                </p>
+                <button type="button" class="file-description-edit" (click)="startEditFile(file)">
+                  {{
+                    file.description
+                      ? ('common.edit' | translate)
+                      : ('fileUpload.description' | translate)
+                  }}
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 </div>

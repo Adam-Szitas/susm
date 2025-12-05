@@ -100,11 +100,11 @@ export class FileService {
   }
 
   /**
-   * Updates metadata (description/category) for a single file
+   * Updates metadata (description/category/filename) for a single file
    */
   updateFileMetadata(
     fileId: string,
-    data: { description?: string; category?: string | null }
+    data: { description?: string; category?: string | null; filename?: string }
   ): Observable<{ message: string }> {
     const endpoint = `file/${fileId}`;
     return this.#httpService.put<{ message: string }>(endpoint, data);

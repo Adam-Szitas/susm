@@ -12,6 +12,18 @@
   border-bottom: 2px solid var(--default-color, #e0e0e0);
   margin-bottom: 0.5rem;
 
+  &:has(.group-edit-toggle) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  & button.group-edit-toggle {
+    height: 40px;
+    width: 40px;
+    font-size: 22px;
+  }
+
   @include mobile {
     gap: 0.4rem;
     padding-bottom: 0.6rem;
@@ -59,4 +71,3 @@
 .file-group {
   @include flex-column(1rem);
 }
-

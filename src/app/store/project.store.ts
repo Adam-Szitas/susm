@@ -50,7 +50,7 @@ export class ProjectStore {
         const mappedFiles = files.map((file) => ({
           ...file,
           path: file.path,
-          filename: file.path.split(/[\\/]/).pop() || '',
+          filename: file.filename || file.path.split(/[\\/]/).pop() || '',
         }));
         this._files.set(mappedFiles);
       },

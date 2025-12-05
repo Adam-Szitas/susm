@@ -86,7 +86,7 @@
     </section>
     }
     @if(files()) {
-      <app-file-list [files]="files()" (fileDeleted)="onFileDeleted()"></app-file-list>
+      <app-file-list [files]="files()" (fileDeleted)="onFileDeleted()" (metadataUpdated)="onFileDeleted()"></app-file-list>
     }
   </div>
   <button type="button" class="add-icon floating-icon" (click)="addObject()" [tabIndex]="2" [attr.aria-label]="'objects.add' | translate">

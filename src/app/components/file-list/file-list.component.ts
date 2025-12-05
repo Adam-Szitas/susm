@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+  computed,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { File } from '@models';
 import { environment } from '../../environment';
@@ -40,19 +48,21 @@ export class FileListComponent {
   public editDescription = signal<string>('');
   public editCategory = signal<string>('');
 
-  // Inline edit state for single file description
+  // Inline edit state for single file description and filename
   public editingFileId = signal<string | null>(null);
   public editFileDescription = signal<string>('');
+  public editFileName = signal<string>('');
 
   // Group files by group_id
   public fileGroups = computed(() => {
     const allFiles = this.files();
+    console.log(this.files());
     const groupsMap = new Map<string, FileGroup>();
     const ungroupedFiles: File[] = [];
 
     allFiles.forEach((file) => {
       const groupId = file.group_id?.$oid;
-      
+
       if (groupId) {
         if (!groupsMap.has(groupId)) {
           // Create new group with first file's metadata
@@ -80,12 +90,12 @@ export class FileListComponent {
 
     // Convert map to array and sort by creation date (newest first)
     const groups = Array.from(groupsMap.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
     // Sort ungrouped files by creation date (newest first)
     ungroupedFiles.sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     return { groups, ungroupedFiles };
@@ -135,6 +145,7 @@ export class FileListComponent {
     if (!id) return;
     this.editingFileId.set(id);
     this.editFileDescription.set(file.description || '');
+    this.editFileName.set(file.filename || '');
   }
 
   public cancelEditFile(): void {
@@ -146,10 +157,12 @@ export class FileListComponent {
     if (!id) return;
 
     const description = this.editFileDescription().trim();
+    const filename = this.editFileName().trim();
 
     this.#fileService
       .updateFileMetadata(id, {
         description: description || undefined,
+        filename: filename || undefined,
       })
       .subscribe({
         next: () => {

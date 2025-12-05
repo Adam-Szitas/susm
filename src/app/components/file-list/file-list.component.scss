@@ -71,6 +71,24 @@
     border-top: 1px solid var(--default-color, #e0e0e0);
 }
 
+.file-name-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    text-align: center;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--default-color, #e0e0e0);
+    border-bottom: 1px solid var(--default-color, #e0e0e0);
+    background: var(--background-color, #fff);
+    color: var(--text-color, #333);
+    
+    &:focus {
+        outline: 2px solid var(--button, #007bff);
+        outline-offset: -2px;
+    }
+}
+
 .file-description-wrapper {
     padding: 0.5rem 0.75rem 0.75rem;
     display: flex;

@@ -4,6 +4,7 @@ import { User } from '../models/user.model';
 import { HttpService } from '../services/http.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UrlPersistenceService } from '../services/url-persistence.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -23,6 +24,7 @@ export class UserStore {
   #httpService = inject(HttpService);
   #router = inject(Router);
   #authService = inject(AuthService);
+  #urlPersistenceService = inject(UrlPersistenceService);
 
   initialize(): Promise<void> {
     if (!isBrowser()) {
@@ -141,6 +143,8 @@ export class UserStore {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
+      // Clear stored URL on logout
+      this.#urlPersistenceService.clearStoredUrl();
     } catch (error) {
       console.error(error);
     }
