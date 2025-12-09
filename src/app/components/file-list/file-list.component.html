@@ -71,8 +71,11 @@
                 <p class="file-name">{{ file.filename }}</p>
               }
             }
-            @if(file.category) {
-                <div class="file-category">{{ file.category }}</div>
+            @if (file.category) {
+              <div class="file-category">{{ file.category }}</div>
+            }
+            @if (file.created_at) {
+              <div class="file-created-at">{{ file.created_at | date: 'short' }}</div>
             }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
@@ -98,7 +101,11 @@
                 <p class="file-description-text" *ngIf="file.description">
                   {{ file.description }}
                 </p>
-                <button type="button" class="file-description-edit button button-primary" (click)="startEditFile(file)">
+                <button
+                  type="button"
+                  class="file-description-edit button button-primary"
+                  (click)="startEditFile(file)"
+                >
                   ✎
                 </button>
               }
@@ -142,8 +149,8 @@
                 <p class="file-name">{{ file.filename }}</p>
               }
             }
-            @if(file.category) {
-                <div class="file-category">{{ file.category }}</div>
+            @if (file.category) {
+              <div class="file-category">{{ file.category }}</div>
             }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
@@ -169,8 +176,12 @@
                 <p class="file-description-text" *ngIf="file.description">
                   {{ file.description }}
                 </p>
-                <button type="button" class="file-description-edit button button-primary" (click)="startEditFile(file)">
-                    ✎
+                <button
+                  type="button"
+                  class="file-description-edit button button-primary"
+                  (click)="startEditFile(file)"
+                >
+                  ✎
                 </button>
               }
             </div>

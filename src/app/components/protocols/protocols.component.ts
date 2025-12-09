@@ -54,5 +54,49 @@ export class ProtocolsComponent implements OnInit {
     // Reload templates after modal closes (you might want to use a subscription for this)
     setTimeout(() => this.loadTemplates(), 500);
   }
+
+  editTemplate(template: ProtocolTemplate): void {
+    this.#modalService.open({
+      title: 'protocols.editTemplate',
+      component: ProtocolTemplateModalComponent,
+      wide: true,
+      componentInputs: {
+        template: template
+      }
+    });
+    // Reload templates after modal closes
+    setTimeout(() => this.loadTemplates(), 500);
+  }
+
+  deleteTemplate(template: ProtocolTemplate): void {
+    const templateId = template._id?.$oid;
+    if (!templateId) {
+      this.#notificationService.showError(
+        this.#translationService.instant('protocols.invalidTemplateId')
+      );
+      return;
+    }
+
+    const confirmMessage = this.#translationService.instant('protocols.confirmDelete', {
+      name: template.name
+    });
+    if (!confirm(confirmMessage || `Are you sure you want to delete "${template.name}"?`)) {
+      return;
+    }
+
+    this.#protocolService.deleteTemplate(templateId).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('protocols.templateDeleted')
+        );
+        this.loadTemplates();
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('protocols.deleteFailed')
+        );
+      },
+    });
+  }
 }
 

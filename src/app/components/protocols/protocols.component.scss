@@ -42,13 +42,32 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
-      h3 {
-        margin: 0 0 0.5rem 0;
-      }
-
-      .description {
-        color: #666;
+      .template-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
         margin-bottom: 1rem;
+        gap: 1rem;
+
+        .template-title-section {
+          flex: 1;
+
+          h3 {
+            margin: 0 0 0.5rem 0;
+          }
+
+          .description {
+            color: #666;
+            margin: 0;
+          }
+        }
+
+        .template-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          flex-shrink: 0;
+        }
       }
 
       .template-info {
@@ -61,4 +80,3 @@
     }
   }
 }
-

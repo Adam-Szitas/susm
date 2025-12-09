@@ -1,5 +1,5 @@
 <div class="protocol-template-form">
-  <h2>{{ 'protocols.createTemplate' | translate }}</h2>
+  <h2>{{ (isEditing() ? 'protocols.editTemplate' : 'protocols.createTemplate') | translate }}</h2>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-group">
@@ -108,7 +108,7 @@
         @if (saving()) {
           {{ 'protocols.saving' | translate }}
         } @else {
-          {{ 'protocols.create' | translate }}
+          {{ (isEditing() ? 'protocols.update' : 'protocols.create') | translate }}
         }
       </button>
     </div>

@@ -14,8 +14,8 @@ export class TranslationService {
    * Initialize translations based on user's language preference
    */
   initialize(): void {
-    const userLanguage = this.#userStore.user()?.language?.toLowerCase() || 'en';
-    this.#translateService.setDefaultLang('en');
+    const userLanguage = this.#userStore.user()?.language?.toLowerCase() || 'de';
+    this.#translateService.setDefaultLang('de');
     this.#translateService.use(userLanguage);
   }
 

@@ -29,6 +29,14 @@ export class ProtocolService {
     return this.#httpService.post<ProtocolTemplate>('protocols/templates', template);
   }
 
+  updateTemplate(templateId: string, template: CreateProtocolTemplate): Observable<ProtocolTemplate> {
+    return this.#httpService.put<ProtocolTemplate>(`protocols/templates/${templateId}`, template);
+  }
+
+  deleteTemplate(templateId: string): Observable<{ message: string }> {
+    return this.#httpService.delete<{ message: string }>(`protocols/templates/${templateId}`);
+  }
+
   generateProtocol(request: GenerateProtocolRequest): Observable<Blob> {
     // For PDF download, we need to handle blob response
     // Note: We use HttpClient directly here to handle blob response type

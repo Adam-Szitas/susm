@@ -139,6 +139,7 @@ nav {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  margin: var(--space-small) 0;
 
   & > ul {
     flex-direction: row;

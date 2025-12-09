@@ -19,14 +19,39 @@
     <div class="templates-list">
       @for (template of templates(); track template._id?.$oid) {
         <div class="template-card">
-          <h3>{{ template.name }}</h3>
-          @if (template.description) {
-            <p class="description">{{ template.description }}</p>
-          }
+          <div class="template-header">
+            <div class="template-title-section">
+              <h3>{{ template.name }}</h3>
+              @if (template.description) {
+                <p class="description">{{ template.description }}</p>
+              }
+            </div>
+            <div class="template-actions">
+              <button
+                type="button"
+                class="btn btn-secondary btn-small"
+                (click)="editTemplate(template)"
+                [attr.aria-label]="'protocols.editTemplate' | translate"
+              >
+                {{ 'protocols.edit' | translate }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-error btn-small"
+                (click)="deleteTemplate(template)"
+                [attr.aria-label]="'protocols.deleteTemplate' | translate"
+              >
+                {{ 'protocols.delete' | translate }}
+              </button>
+            </div>
+          </div>
           <div class="template-info">
             <span>{{ 'protocols.fieldsCount' | translate }}: {{ template.fields.length }}</span>
             @if (template.created_at) {
               <span>{{ 'protocols.created' | translate }}: {{ template.created_at | date }}</span>
+            }
+            @if (template.updated_at) {
+              <span>{{ 'protocols.updated' | translate }}: {{ template.updated_at | date }}</span>
             }
           </div>
         </div>
@@ -34,4 +59,3 @@
     </div>
   }
 </div>
-
