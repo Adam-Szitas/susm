@@ -4,7 +4,8 @@ function getBackendUrl(): string {
   // Check if we're in a browser environment (not SSR)
   // During SSR, window is undefined, so we default to production URL
   if (typeof window === 'undefined') {
-    return 'https://susm-be-7c4h.shuttle.app';
+    // return 'https://susm-be-7c4h.shuttle.app';
+    return 'https://susm-be.fly.dev';
   }
   
   try {
@@ -18,7 +19,7 @@ function getBackendUrl(): string {
   }
   
   // Default to production URL
-  return 'https://susm-be-7c4h.shuttle.app';
+  return 'https://susm-be.fly.dev';
 }
 
 // Use a getter to make it lazy - only evaluated when accessed, not at module load

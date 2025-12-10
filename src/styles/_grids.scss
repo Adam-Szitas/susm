@@ -65,11 +65,10 @@
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--space, 1rem);
   padding: var(--space, 1rem);
-  @include scrollable(calc(100% - 72px));
+  @include scrollable(calc(100dvh - 72px));
 
   @include mobile {
     display: block;
     width: 100%;
   }
 }
-

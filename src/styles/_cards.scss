@@ -4,7 +4,7 @@
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--space);
   padding: var(--space);
-  max-height: calc(100% - 72px);
+  max-height: calc(100dvh - 20px);
   overflow: auto;
   align-items: self-start;
 }
