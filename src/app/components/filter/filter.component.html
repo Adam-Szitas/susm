@@ -1,6 +1,25 @@
 <div class="wrapper filter-wrapper">
   <form [formGroup]="searchForm">
-    <div class="filter-controls">
+    <div class="filter-header">
+      <button
+        type="button"
+        class="btn btn-ghost toggle-filters"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="areFiltersVisible"
+        aria-controls="filterControls"
+      >
+        <span class="toggle-label">
+          {{ areFiltersVisible ? ('filter.hide' | translate) : ('filter.show' | translate) }}
+        </span>
+        <span class="chevron" [class.collapsed]="areFiltersVisible"></span>
+      </button>
+    </div>
+
+    <div
+      id="filterControls"
+      class="filter-controls"
+      [class.collapsed]="!areFiltersVisible"
+    >
       <div class="control">
         <label for="search">{{ filter().label | translate }}</label>
         <input

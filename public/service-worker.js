@@ -1,4 +1,4 @@
-const CACHE_NAME = 'susm-cache-v1';
+const CACHE_NAME = 'susm-cache-v2'; // Increment version to clear old cache
 const urlsToCache = [
   '/',
   '/index.html',
@@ -63,10 +63,30 @@ self.addEventListener('fetch', (event) => {
                     url.pathname.startsWith('/auth/') ||
                     url.pathname.startsWith('/company/');
   
-  // Only cache same-origin static assets (HTML, CSS, JS, images, fonts, etc.)
-  const isStaticAsset = /\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i.test(url.pathname) ||
+  // Check if this is a JS chunk file (they have hashes and change frequently)
+  const isJsChunk = /\.js$/.test(url.pathname) && (
+    url.pathname.includes('chunk-') || 
+    url.pathname.includes('main.') ||
+    url.pathname.includes('polyfills.') ||
+    url.pathname.includes('runtime.')
+  );
+  
+  // Only cache same-origin static assets (HTML, CSS, images, fonts, etc.)
+  // But NOT JS chunks - they change with every build
+  const isStaticAsset = /\.(html|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i.test(url.pathname) ||
                          url.pathname === '/' ||
                          url.pathname === '/index.html';
+  
+  // Always fetch JS chunks from network (they change with every build)
+  if (isJsChunk) {
+    event.respondWith(
+      fetch(request).catch(() => {
+        // If network fails, try cache as fallback
+        return caches.match(request);
+      })
+    );
+    return;
+  }
   
   if (!isSameOrigin || isApiCall || !isStaticAsset) {
     // For API calls, external resources, and non-static assets, always fetch from network
@@ -74,7 +94,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Cache-first strategy for static assets
+  // Cache-first strategy for static assets (but not JS chunks)
   event.respondWith(
     caches.match(request)
       .then((response) => {

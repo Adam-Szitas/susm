@@ -13,9 +13,11 @@ export interface Project {
   inserterId?: number;
   note?: string;
   status?: WorkStatus;
+  category?: string;
   categories?: string[];
   objects?: Object[];
   protocols?: ProtocolRecord[];
   archived_at?: string;
+  archive_comment?: string;
   created_at?: string;
 }

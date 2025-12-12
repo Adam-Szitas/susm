@@ -1,0 +1,78 @@
+<div class="protocol-preview">
+  <!-- Project Header -->
+  <div class="preview-header">
+    <h1 class="project-name">{{ previewData().project_name }}</h1>
+    @if (previewData().project_address) {
+      <p class="project-address">{{ previewData().project_address }}</p>
+    }
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="preview-section toc-section">
+    <h2 class="section-title">Inhalt</h2>
+    <ul class="toc-list">
+      @for (entry of previewData().table_of_contents; track $index) {
+        <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
+          {{ entry.title }}
+        </li>
+      }
+    </ul>
+  </div>
+
+  <!-- Content Sections -->
+  @for (section of previewData().content_sections; track $index) {
+    <div class="preview-section content-section">
+      <!-- Object Headline -->
+      <h3 class="object-headline">{{ section.headline }}</h3>
+      
+      <!-- Object Address -->
+      @if (section.object_address) {
+        <p class="object-address">{{ section.object_address }}</p>
+      }
+
+      <!-- File Groups -->
+      @for (group of section.file_groups; track $index) {
+        <div class="file-group">
+          @if (group.description) {
+            <h4 class="group-description">{{ group.description }}</h4>
+          }
+          
+          <!-- Images in group -->
+          @for (image of group.images; track $index) {
+            <div class="image-item">
+              <img [src]="getImageUrl(image.path)" [alt]="image.description || ''" />
+              <div class="image-caption">
+                @if (image.object_address) {
+                  <span class="caption-address">{{ image.object_address }}</span>
+                }
+                @if (image.description) {
+                  <span class="caption-description">{{ image.description }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Ungrouped Images -->
+      @if (section.ungrouped_images.length > 0) {
+        <div class="ungrouped-images">
+          @for (image of section.ungrouped_images; track $index) {
+            <div class="image-item">
+              <img [src]="getImageUrl(image.path)" [alt]="image.description || ''" />
+              <div class="image-caption">
+                @if (image.object_address) {
+                  <span class="caption-address">{{ image.object_address }}</span>
+                }
+                @if (image.description) {
+                  <span class="caption-description">{{ image.description }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+

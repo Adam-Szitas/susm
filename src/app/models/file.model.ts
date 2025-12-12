@@ -10,6 +10,7 @@ export interface File {
   };
   path: string;
   filename: string;
+  group_description?: string;
   description?: string;
   category?: string;
   group_id?: {

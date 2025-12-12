@@ -4,6 +4,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environment';
+import { Filter, FilterResult } from '@models';
+import { FilterComponent } from '../filter/filter.component';
 
 export interface FileWithContext {
   file: {
@@ -29,7 +31,7 @@ export interface FileWithContext {
 @Component({
   selector: 'app-files',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, FilterComponent],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,9 +44,8 @@ export class FilesComponent implements OnInit {
   error = signal<string | null>(null);
 
   // Filter state
-  searchText = signal('');
   selectedProject = signal<string>('');
-  selectedCategory = signal<string>('');
+  #currentFilter = signal<FilterResult>({});
 
   // Computed values
   projects = computed(() => {
@@ -71,11 +72,11 @@ export class FilesComponent implements OnInit {
   });
 
   filteredFiles = computed(() => {
+    const filter = this.#currentFilter();
     let result = this.files();
 
-    // Filter by search text
-    const search = this.searchText().toLowerCase().trim();
-    if (search) {
+    if (filter.searchText) {
+      const search = filter.searchText.toLowerCase().trim();
       result = result.filter((f) => {
         const filename = f.file.filename?.toLowerCase() || '';
         const description = f.file.description?.toLowerCase() || '';
@@ -92,14 +93,37 @@ export class FilesComponent implements OnInit {
       });
     }
 
-    // Filter by project
-    if (this.selectedProject()) {
-      result = result.filter((f) => f.project?.id === this.selectedProject());
+    if (filter.category) {
+      result = result.filter((f) => f.file.category === filter.category);
     }
 
-    // Filter by category
-    if (this.selectedCategory()) {
-      result = result.filter((f) => f.file.category === this.selectedCategory());
+    if (filter.dateFrom || filter.dateTo) {
+      result = result.filter((f) => {
+        const created = f.file.created_at;
+        if (!created) return false;
+
+        const createdDate = new Date(created);
+        if (Number.isNaN(createdDate.getTime())) return false;
+
+        if (filter.dateFrom) {
+          const from = new Date(filter.dateFrom);
+          if (!Number.isNaN(from.getTime()) && createdDate < from) return false;
+        }
+
+        if (filter.dateTo) {
+          const to = new Date(filter.dateTo);
+          if (!Number.isNaN(to.getTime())) {
+            to.setHours(23, 59, 59, 999);
+            if (createdDate > to) return false;
+          }
+        }
+
+        return true;
+      });
+    }
+
+    if (this.selectedProject()) {
+      result = result.filter((f) => f.project?.id === this.selectedProject());
     }
 
     return result;
@@ -142,10 +166,23 @@ export class FilesComponent implements OnInit {
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
 
-  clearFilters(): void {
-    this.searchText.set('');
+  filterData(): Filter {
+    return {
+      placeholder: 'common.search',
+      value: '',
+      label: 'common.search',
+      showDateRange: true,
+      showCategory: this.categories().length > 0,
+      categories: this.categories(),
+    };
+  }
+
+  onFilterChange(filter: FilterResult): void {
+    this.#currentFilter.set(filter);
+  }
+
+  clearProjectFilter(): void {
     this.selectedProject.set('');
-    this.selectedCategory.set('');
   }
 }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProjectStore } from '../../../store/project.store';
 import { ModalService } from '../../../services/modal.service';
@@ -21,6 +21,8 @@ export class ModalProjectComponent {
   public readonly statuses = WORK_STATUSES;
   public readonly statusLabel = formatWorkStatus;
 
+  public progressing = signal<boolean>(false);
+
   public form: FormGroup = this.#formBuilder.group({
     name: ['', [Validators.required]],
     address: this.#formBuilder.group({
@@ -28,6 +30,7 @@ export class ModalProjectComponent {
       house_number: [''],
       level: [''],
       door_number: [''],
+      postal_code: [''],
     }),
     note: [''],
     status: [DEFAULT_WORK_STATUS, [Validators.required]],
@@ -35,9 +38,16 @@ export class ModalProjectComponent {
 
   public Submit(): void {
     const projectData = this.form.getRawValue();
+    this.progressing.set(true);
     this.#projectStore.createProject(projectData).subscribe({
       next: () => {
         this.#modalService.close();
+      },
+      error: () => {
+        this.progressing.set(false);
+      },
+      complete: () => {
+        this.progressing.set(false);
       },
     });
   }

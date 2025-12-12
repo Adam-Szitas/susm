@@ -162,6 +162,20 @@ export class UserStore {
       error: () => this.logout(),
     });
   }
+
+  updateLanguage(language: string): void {
+    this.#httpService.put<User>('profile', { language }).subscribe({
+      next: (user) => {
+        this._user.set(user);
+        if (isBrowser()) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      },
+      error: (error) => {
+        console.error('Failed to update language:', error);
+      },
+    });
+  }
 }
 
 function isBrowser(): boolean {

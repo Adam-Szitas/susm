@@ -1,4 +1,13 @@
-<h1>{{ 'projects.title' | translate }}</h1>
+<div class="header-wrapper">
+  <h1>{{ 'projects.title' | translate }}</h1>
+</div>
+<button type="button" class="button button-secondary archive-toggle" (click)="toggleArchived()">
+  @if (showArchived()) {
+    {{ 'projects.hideArchived' | translate }}
+  } @else {
+    {{ 'projects.showArchived' | translate }}
+  }
+</button>
 <div class="projects-wrapper">
   @if (projects().length) {
     <div class="card-wrapper">
@@ -24,7 +33,12 @@
               }
             </ul>
             @if (project?.created_at) {
-              <div class="created-at">{{ project.created_at }}</div>
+              <div class="created-at">{{ project.created_at | date: 'dd.MM.yyyy' }}</div>
+            }
+            @if (project.archive_comment) {
+              <div class="archive-comment-preview">
+                <strong>{{ 'projects.archiveComment' | translate }}:</strong> {{ project.archive_comment }}
+              </div>
             }
           </div>
         </div>

@@ -73,36 +73,8 @@ export class ProtocolService {
     });
   }
 
-  previewTemplate(template: CreateProtocolTemplate, sampleData?: any): Observable<Blob> {
-    const request = {
-      template,
-      sample_data: sampleData || null,
-    };
-    return this.#http.post<Blob>(`${this.apiUrl}/protocols/preview`, request, {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-      responseType: 'blob' as 'json',
-    });
-  }
-
-  openPreview(template: CreateProtocolTemplate, sampleData?: any): Observable<void> {
-    return new Observable((observer) => {
-      this.previewTemplate(template, sampleData).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          window.open(url, '_blank');
-          // Clean up after a delay to allow the browser to load the PDF
-          setTimeout(() => {
-            window.URL.revokeObjectURL(url);
-          }, 1000);
-          observer.next();
-          observer.complete();
-        },
-        error: (error) => {
-          console.error('Failed to preview protocol:', error);
-          observer.error(error);
-        },
-      });
-    });
+  previewProtocolStructure(request: GenerateProtocolRequest): Observable<any> {
+    return this.#httpService.post<any>('protocols/preview', request);
   }
 }
 

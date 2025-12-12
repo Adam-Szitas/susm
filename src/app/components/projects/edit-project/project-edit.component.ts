@@ -34,6 +34,7 @@ export class EditProjectComponent implements OnInit {
         door_number: [this.projectData?.address?.door_number || '', []],
         house_number: [this.projectData?.address?.house_number || '', []],
         level: [this.projectData?.address?.level || '', []],
+        postal_code: [this.projectData?.address?.postal_code || '', []],
       }),
     });
   }

@@ -17,8 +17,9 @@ export class ApiTranslateLoader implements TranslateLoader {
   #translationStore = inject(TranslationStore);
 
   getTranslation(lang: string): Observable<Record<string, string>> {
-    // Use provided lang or fallback to user's language or 'en'
-    const language = this.#userState.user()?.language?.toLowerCase() || 'en';
+    // Use the provided lang parameter (from TranslateService.use()), 
+    // fallback to user's language or 'en'
+    const language = (lang || this.#userState.user()?.language?.toLowerCase() || 'en').toLowerCase();
 
     return this.#httpService
       .get<

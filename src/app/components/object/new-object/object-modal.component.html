@@ -4,10 +4,6 @@
       <div class="control" formGroupName="address">
         <h4>{{ 'common.address' | translate }}</h4>
         <div class="control">
-          <label for="street">{{ 'common.street' | translate }}</label>
-          <input placeholder="street" type="text" id="street" formControlName="street" />
-        </div>
-        <div class="control">
           <label for="house_number">{{ 'common.houseNumber' | translate }}</label>
           <input
             placeholder="house number"
@@ -38,12 +34,12 @@
         <label for="status">{{ 'objects.status' | translate }}</label>
         <select id="status" formControlName="status">
           @for (status of statuses; track status) {
-            <option [value]="status">{{ statusLabel(status) }}</option>
+            <option [value]="status">{{ statusLabel(status) | translate }}</option>
           }
         </select>
       </div>
       <div class="control buttons">
-        <button type="button" [disabled]="form.invalid" (click)="Submit()">
+        <button type="button" [disabled]="form.invalid || progressing()" (click)="Submit()">
           {{ 'common.submit' | translate }}
         </button>
       </div>

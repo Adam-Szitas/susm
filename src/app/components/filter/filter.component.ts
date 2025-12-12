@@ -25,6 +25,7 @@ export class FilterComponent implements OnInit {
   public filterChange = new EventEmitter<FilterResult>();
 
   private currentFilter = <FilterResult>({});
+  public areFiltersVisible = false;
 
   searchForm = new FormGroup({
     search: new FormControl(''),
@@ -89,6 +90,10 @@ export class FilterComponent implements OnInit {
 
   private emitFilterChange(): void {
     this.filterChange.emit(this.currentFilter);
+  }
+
+  toggleFilters(): void {
+    this.areFiltersVisible = !this.areFiltersVisible;
   }
 
   clearFilters(): void {

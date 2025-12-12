@@ -75,7 +75,8 @@
               <div class="file-category">{{ file.category }}</div>
             }
             @if (file.created_at) {
-              <div class="file-created-at">{{ file.created_at | date: 'short' }}</div>
+              <span class="separator">•</span>
+              <span class="file-created-at">{{ file.created_at | date: 'dd.MM.yyyy' }}</span>
             }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
@@ -98,9 +99,11 @@
                   </button>
                 </div>
               } @else {
-                <p class="file-description-text" *ngIf="file.description">
-                  {{ file.description }}
-                </p>
+                @if(file.description) {
+                  <p class="file-description-text">
+                    {{ file.description }}
+                  </p>
+                }
                 <button
                   type="button"
                   class="file-description-edit button button-primary"
@@ -173,9 +176,11 @@
                   </button>
                 </div>
               } @else {
-                <p class="file-description-text" *ngIf="file.description">
-                  {{ file.description }}
-                </p>
+                @if(file.description) {
+                  <p class="file-description-text">
+                    {{ file.description }}
+                  </p>
+                }
                 <button
                   type="button"
                   class="file-description-edit button button-primary"

@@ -67,7 +67,7 @@ export class FileListComponent {
           // Create new group with first file's metadata
           groupsMap.set(groupId, {
             groupId,
-            description: file.description || null,
+            description: file.group_description || file.description || null,
             category: file.category || null,
             files: [file],
             createdAt: file.created_at,

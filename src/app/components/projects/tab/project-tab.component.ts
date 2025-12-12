@@ -58,6 +58,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   files = this.#projectStore.files;
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
+  updatingCategory = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   public readonly formatStatus = formatWorkStatus;
@@ -344,7 +345,17 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) return;
 
-    this.#projectStore.toggleArchiveProject(projectId, archive);
+    if (archive) {
+      // Prompt for archive comment
+      const comment = prompt(
+        this.#translationService.instant('projects.archiveCommentPrompt')
+      );
+      // Allow null/empty comment
+      this.#projectStore.toggleArchiveProject(projectId, archive, comment || undefined);
+    } else {
+      // Unarchiving doesn't need a comment
+      this.#projectStore.toggleArchiveProject(projectId, archive);
+    }
   }
 
   startEditingProject(): void {
@@ -353,6 +364,30 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       component: EditProjectComponent,
       componentInputs: {
         projectData: this.project(),
+      },
+    });
+  }
+
+  updateCategory(category: string | null): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId) return;
+
+    // Handle empty string as null
+    const categoryValue = category === '' ? null : category;
+
+    this.updatingCategory.set(true);
+    this.#projectStore.updateProjectCategory(projectId, categoryValue).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('projects.categoryUpdated'),
+        );
+        this.updatingCategory.set(false);
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('projects.updateCategoryFailed'),
+        );
+        this.updatingCategory.set(false);
       },
     });
   }

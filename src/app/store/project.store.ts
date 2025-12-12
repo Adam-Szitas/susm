@@ -183,6 +183,20 @@ export class ProjectStore {
     );
   }
 
+  updateProjectCategory(projectId: string, category: string | null): Observable<Project> {
+    return this.#httpService.put<Project>(`project/${projectId}/category`, { category }).pipe(
+      tap((updatedProject) => {
+        this._project.set(updatedProject);
+        const projects = this._projects();
+        const index = projects.findIndex((p) => p._id?.$oid === projectId);
+        if (index !== -1) {
+          projects[index] = updatedProject;
+          this._projects.set([...projects]);
+        }
+      }),
+    );
+  }
+
   updateObjectCategory(objectId: string, category: string | null): Observable<Object> {
     return this.#httpService.put<Object>(`object/${objectId}/category`, { category }).pipe(
       tap((updatedObject) => {
@@ -236,8 +250,8 @@ export class ProjectStore {
     );
   }
 
-  public toggleArchiveProject(projectId: string, archive: boolean): void {
-    this.#httpService.put<Project>(`project/${projectId}/archive`, { archive }).subscribe({
+  public toggleArchiveProject(projectId: string, archive: boolean, archive_comment?: string): void {
+    this.#httpService.put<Project>(`project/${projectId}/archive`, { archive, archive_comment }).subscribe({
       next: (result) => {
         this._project.set(result);
       },

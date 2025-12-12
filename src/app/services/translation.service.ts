@@ -23,6 +23,7 @@ export class TranslationService {
    * Change the current language
    */
   use(language: string): Observable<any> {
+    // Reload translations for the new language
     return this.#translateService.use(language);
   }
 

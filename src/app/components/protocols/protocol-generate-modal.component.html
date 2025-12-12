@@ -1,7 +1,29 @@
 <div class="protocol-generate-form">
   <h2>{{ 'protocols.generateProtocol' | translate }}</h2>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+  @if (showingPreview() && previewData()) {
+    <div class="preview-container">
+      <div class="preview-actions">
+        <button type="button" class="btn btn-secondary" (click)="backToForm()">
+          {{ 'common.back' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onSubmit()"
+          [disabled]="generating()"
+        >
+          @if (generating()) {
+            {{ 'protocols.generating' | translate }}
+          } @else {
+            {{ 'protocols.generatePDF' | translate }}
+          }
+        </button>
+      </div>
+      <app-protocol-preview [previewData]="previewData()!" />
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="loadPreview()">
     <div class="form-group">
       <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
       <select id="template_id" formControlName="template_id">
@@ -41,22 +63,23 @@
       </div>
     }
 
-    <div class="form-actions">
-      <button type="button" class="btn btn-secondary" (click)="close()">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="generating() || form.invalid || !hasSelection()"
-      >
-        @if (generating()) {
-          {{ 'protocols.generating' | translate }}
-        } @else {
-          {{ 'protocols.generate' | translate }}
-        }
-      </button>
-    </div>
-  </form>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loadingPreview() || form.invalid || !hasSelection()"
+        >
+          @if (loadingPreview()) {
+            {{ 'protocols.loadingPreview' | translate }}
+          } @else {
+            {{ 'protocols.preview' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+  }
 </div>
 

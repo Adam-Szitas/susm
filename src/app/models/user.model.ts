@@ -3,6 +3,7 @@ export interface Address {
   house_number?: string;
   level?: string | null;
   door_number?: string | null;
+  postal_code?: string;
 }
 
 export interface User {

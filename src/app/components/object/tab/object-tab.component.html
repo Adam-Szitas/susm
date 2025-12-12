@@ -49,7 +49,7 @@
             >
               @for (status of statuses; track status) {
                 <option [value]="status" [selected]="status === object()?.status">
-                  {{ formatStatus(status) }}
+                  {{ formatStatus(status) | translate }}
                 </option>
               }
             </select>

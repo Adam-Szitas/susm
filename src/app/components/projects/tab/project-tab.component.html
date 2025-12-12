@@ -6,6 +6,9 @@
     <div class="project-description">
       <ul>
         <li>{{ 'dashboard.totalObjects' | translate }}: {{ project()?.objects?.length }}</li>
+        @if(project()?.address?.postal_code) {
+          <li>{{ project()?.address?.postal_code }}</li>
+        }
         <li>{{ project()?.address?.street }}</li>
         @if (project()?.address?.house_number) {
           <li>{{ project()?.address?.house_number }}</li>
@@ -28,6 +31,33 @@
       >
         ✎
       </button>
+    </div>
+  </section>
+
+  @if (project()?.archived_at && project()?.archive_comment) {
+    <section class="archive-comment-section">
+      <h3>{{ 'projects.archiveComment' | translate }}</h3>
+      <p class="archive-comment">{{ project()?.archive_comment }}</p>
+    </section>
+  }
+
+  <section class="project-category-section">
+    <div class="category-selector">
+      <label for="projectCategory">{{ 'projects.category' | translate }}</label>
+      <select
+        id="projectCategory"
+        [value]="project()?.category"
+        [disabled]="updatingCategory()"
+        (change)="updateCategory($any($event.target).value)"
+        class="category-select"
+      >
+        <option value="">{{ 'objects.noCategory' | translate }}</option>
+        @for (category of project()?.categories; track category) {
+          <option [value]="category" [selected]="category === project()?.category">
+            {{ category }}
+          </option>
+        }
+      </select>
     </div>
   </section>
 
@@ -69,7 +99,7 @@
             @if (object.category) {
               <div class="category">{{ object.category }}</div>
             }
-            <div class="created-at">{{ object.created_at | date: 'dd.MM.yyyy HH:mm' }}</div>
+            <div class="created-at">{{ object.created_at | date: 'dd.MM.yyyy' }}</div>
           </div>
         }
       </div>

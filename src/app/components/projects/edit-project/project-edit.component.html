@@ -8,6 +8,10 @@
       <div class="control" formGroupName="address">
         <h4>{{ 'projects.address' | translate }}</h4>
         <div class="control">
+          <label for="postal_code">{{ 'projects.postalCode' | translate }}</label>
+          <input placeholder="{{ 'projects.postalCode' | translate }}" type="postal_code" id="postal_code" formControlName="postal_code" />
+        </div>
+        <div class="control">
           <label for="street">{{ 'projects.street' | translate }}</label>
           <input placeholder="street" type="street" id="street" formControlName="street" />
         </div>

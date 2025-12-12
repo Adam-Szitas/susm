@@ -92,18 +92,6 @@
       <button type="button" class="btn btn-secondary" (click)="close()">
         {{ 'common.cancel' | translate }}
       </button>
-      <button
-        type="button"
-        class="btn btn-outline"
-        (click)="preview()"
-        [disabled]="form.invalid || previewing()"
-      >
-        @if (previewing()) {
-          {{ 'protocols.previewing' | translate }}
-        } @else {
-          {{ 'protocols.preview' | translate }}
-        }
-      </button>
       <button type="submit" class="btn btn-primary" [disabled]="saving() || form.invalid">
         @if (saving()) {
           {{ 'protocols.saving' | translate }}

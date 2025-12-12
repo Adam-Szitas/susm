@@ -1,5 +1,20 @@
 <div class="wrapper">
+  <div class="dashboard-header">
   <h1>{{ 'dashboard.title' | translate }}</h1>
+    <div class="language-selector">
+      <label for="language-select">{{ 'dashboard.language' | translate }}:</label>
+      <select
+        id="language-select"
+        [ngModel]="currentLanguage()"
+        (ngModelChange)="onLanguageChange($event)"
+        class="language-select"
+      >
+        @for (lang of availableLanguages; track lang.code) {
+          <option [value]="lang.code">{{ lang.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
 
   @if (loading()) {
     <div class="loading">{{ 'dashboard.loading' | translate }}</div>

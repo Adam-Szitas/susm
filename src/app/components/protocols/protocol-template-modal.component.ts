@@ -214,54 +214,9 @@ export class ProtocolTemplateModalComponent implements OnInit {
   }
 
   preview(): void {
-    if (this.form.invalid) {
-      this.#notificationService.showError(
-        this.#translationService.instant('protocols.formInvalid'),
-      );
-      return;
-    }
-
-    this.previewing.set(true);
-
-    const formValue = this.form.value;
-    const fields: ProtocolField[] = formValue.fields.map((field: any) => {
-      // For custom fields, we need to send the custom field name
-      // The backend expects Custom(String) where String is the field name
-      let fieldType: FieldType | any = field.field_type;
-
-      if (field.field_type === 'custom') {
-        // Always send as object format: { custom: "field_name" }
-        // Use the custom_field_name if provided, otherwise use the label as fallback
-        const customName = field.custom_field_name || field.label || 'custom_field';
-        fieldType = { custom: customName };
-      }
-
-      return {
-        label: field.label,
-        field_type: fieldType,
-        required: field.required || false,
-        order: field.order || 0,
-      };
-    });
-
-    const template = {
-      name: formValue.name,
-      description: formValue.description || undefined,
-      fields,
-      header_template: formValue.header_template || undefined,
-      footer_template: formValue.footer_template || undefined,
-    };
-
-    this.#protocolService.openPreview(template).subscribe({
-      next: () => {
-        this.previewing.set(false);
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.previewFailed'),
-        );
-        this.previewing.set(false);
-      },
-    });
+    // Preview functionality removed - preview is now shown when generating protocols
+    this.#notificationService.showError(
+      'Preview is available when generating protocols, not when creating templates.'
+    );
   }
 }

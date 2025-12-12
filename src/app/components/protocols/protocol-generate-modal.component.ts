@@ -8,11 +8,12 @@ import { TranslationService } from '@services/translation.service';
 import { Object, ProtocolTemplate } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
+import { ProtocolPreviewComponent } from './protocol-preview.component';
 
 @Component({
   selector: 'app-protocol-generate-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ProtocolPreviewComponent],
   templateUrl: './protocol-generate-modal.component.html',
   styleUrl: './protocol-generate-modal.component.scss',
 })
@@ -33,6 +34,9 @@ export class ProtocolGenerateModalComponent {
   selectedObjectIds = signal<string[]>([]);
   hasSelection = computed(() => this.selectedObjectIds().length > 0);
   #selectionInitialized = signal(false);
+  previewData = signal<any>(null);
+  showingPreview = signal(false);
+  loadingPreview = signal(false);
 
   #autoSelectObjects = effect(() => {
     const availableObjects = this.objects();
@@ -62,6 +66,45 @@ export class ProtocolGenerateModalComponent {
     this.form = this.#fb.group({
       template_id: ['', [Validators.required]],
     });
+  }
+
+  loadPreview(): void {
+    if (this.form.invalid || !this.hasSelection()) {
+      return;
+    }
+
+    const templateId = this.form.value.template_id;
+    const projectId = this.projectId();
+    const objectIds = this.selectedObjectIds();
+
+    if (!projectId || objectIds.length === 0) {
+      return;
+    }
+
+    this.loadingPreview.set(true);
+    const request = {
+      template_id: templateId,
+      project_id: projectId,
+      object_ids: objectIds,
+    };
+
+    this.#protocolService.previewProtocolStructure(request).subscribe({
+      next: (data) => {
+        this.previewData.set(data);
+        this.showingPreview.set(true);
+        this.loadingPreview.set(false);
+      },
+      error: (error) => {
+        this.loadingPreview.set(false);
+        this.#notificationService.showError(
+          error.message || 'Failed to load preview'
+        );
+      },
+    });
+  }
+
+  backToForm(): void {
+    this.showingPreview.set(false);
   }
 
   onSubmit(): void {

@@ -7,16 +7,10 @@
     <p class="error">{{ error() }}</p>
   } @else {
     <div class="filters">
-      <div class="filter-group">
-        <label for="search">{{ 'common.search' | translate }}</label>
-        <input
-          type="text"
-          id="search"
-          [value]="searchText()"
-          (input)="searchText.set($any($event.target).value)"
-          [placeholder]="'files.searchPlaceholder' | translate"
-        />
-      </div>
+      <app-filter
+        [filter]="filterData()"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter>
 
       <div class="filter-group">
         <label for="project">{{ 'files.filterByProject' | translate }}</label>
@@ -31,24 +25,6 @@
           }
         </select>
       </div>
-
-      <div class="filter-group">
-        <label for="category">{{ 'files.filterByCategory' | translate }}</label>
-        <select
-          id="category"
-          [value]="selectedCategory()"
-          (change)="selectedCategory.set($any($event.target).value)"
-        >
-          <option value="">{{ 'files.allCategories' | translate }}</option>
-          @for (category of categories(); track category) {
-            <option [value]="category">{{ category }}</option>
-          }
-        </select>
-      </div>
-
-      <button type="button" class="btn-secondary" (click)="clearFilters()">
-        {{ 'filter.clear' | translate }}
-      </button>
     </div>
 
     <div class="files-grid">

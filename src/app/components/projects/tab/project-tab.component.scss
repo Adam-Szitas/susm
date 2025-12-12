@@ -24,6 +24,26 @@
   font-weight: bold;
 }
 
+.archive-comment-section {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #856404;
+  }
+
+  .archive-comment {
+    margin: 0;
+    color: #856404;
+    font-style: italic;
+  }
+}
+
 .card {
   position: relative;
   display: flex;
@@ -138,6 +158,10 @@
     li {
       font-size: 0.95rem;
       color: #444;
+
+      p {
+        white-space: wrap;
+      }
     }
   }
 
@@ -195,4 +219,42 @@
   font-size: var(--font-4);
   color: rgba(0, 0, 0, 0.6);
   display: flex;
+}
+
+.project-category-section,
+.status-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e5e5;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #444;
+  }
+
+  .category-select,
+  .status-select {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: #fff;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #094c43;
+      box-shadow: 0 0 4px rgba(11, 99, 87, 0.3);
+    }
+  }
 }
