@@ -4,6 +4,10 @@
       <div class="control" formGroupName="address">
         <h4>{{ 'common.address' | translate }}</h4>
         <div class="control">
+          <label for="street">{{ 'common.street' | translate }}</label>
+          <input placeholder="street" type="text" id="street" formControlName="street" />
+        </div>
+        <div class="control">
           <label for="house_number">{{ 'common.houseNumber' | translate }}</label>
           <input
             placeholder="house number"

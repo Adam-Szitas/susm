@@ -24,6 +24,7 @@ export class ObjectModalComponent {
 
   public form: FormGroup = this.#formBuilder.group({
     address: this.#formBuilder.group({
+      street: [''],
       house_number: [''],
       level: [''],
       door_number: [''],
