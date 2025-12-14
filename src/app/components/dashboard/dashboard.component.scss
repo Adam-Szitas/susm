@@ -29,14 +29,14 @@
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
-  
+
   label {
     font-size: 0.9rem;
     color: #666;
     font-weight: 500;
     white-space: nowrap;
   }
-  
+
   .language-select {
     display: block !important;
     visibility: visible !important;
@@ -48,13 +48,15 @@
     font-size: 0.9rem;
     color: #333;
     cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
     min-width: 120px;
-    
+
     &:hover {
       border-color: #999;
     }
-    
+
     &:focus {
       outline: none;
       border-color: #4a90e2;
@@ -84,7 +86,9 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
   &:hover {
     transform: translateY(-2px);
@@ -157,10 +161,13 @@
   font-weight: 600;
   color: #333;
   font-size: 1.1rem;
+  white-space: nowrap;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .object-count {
   color: #666;
   font-size: 0.95rem;
 }
-

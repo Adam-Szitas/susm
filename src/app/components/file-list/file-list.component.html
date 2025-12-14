@@ -75,8 +75,10 @@
               <div class="file-category">{{ file.category }}</div>
             }
             @if (file.created_at) {
-              <span class="separator">•</span>
-              <span class="file-created-at">{{ file.created_at | date: 'dd.MM.yyyy' }}</span>
+              <div class="created-at-wrapper">
+                <span class="separator">•</span>
+                <span class="file-created-at">{{ file.created_at | date: 'dd.MM.yyyy' }}</span>
+              </div>
             }
             <div class="file-description-wrapper">
               @if (editingFileId() === file._id.$oid) {
@@ -99,7 +101,7 @@
                   </button>
                 </div>
               } @else {
-                @if(file.description) {
+                @if (file.description) {
                   <p class="file-description-text">
                     {{ file.description }}
                   </p>
@@ -176,7 +178,7 @@
                   </button>
                 </div>
               } @else {
-                @if(file.description) {
+                @if (file.description) {
                   <p class="file-description-text">
                     {{ file.description }}
                   </p>

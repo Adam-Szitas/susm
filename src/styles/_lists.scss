@@ -9,7 +9,7 @@ ul {
 li {
   margin: 0 var(--space-small);
   font-size: var(--font-3);
-  white-space: nowrap;
+  white-space: pre-line;
   display: flex;
   align-items: center;
 }

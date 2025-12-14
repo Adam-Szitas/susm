@@ -25,6 +25,7 @@
   border: 1px solid var(--default-color, #e0e0e0);
   background: var(--background-color, #fff);
   @include card-hover;
+  gap: var(--space-small, 0.5rem);
 }
 
 .download-hint {
@@ -165,4 +166,12 @@
 
 p {
   text-wrap: auto;
+}
+
+.created-at-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--space-small);
+  width: 100%;
+  padding: 0 var(--space-small);
 }

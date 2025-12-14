@@ -2,7 +2,6 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 1rem;
 }
 
 form {
@@ -22,6 +21,7 @@ form {
   gap: 0.35rem;
   font-weight: 600;
   color: var(--default-color);
+  margin: 0;
 }
 
 .chevron {
@@ -89,10 +89,6 @@ select.filter-input {
 
 /* Mobile and smaller screens */
 @media (max-width: 768px) {
-  .wrapper.filter-wrapper {
-    padding: var(--space) 0;
-  }
-
   .filter-header {
     justify-content: flex-start;
     margin-bottom: 0.5rem;
