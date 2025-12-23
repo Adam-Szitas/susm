@@ -143,9 +143,14 @@ export class ObjectTabComponent implements OnInit {
           return {
             ...fileGroup,
             files: fileGroup.files.map((file) => {
+              // Ensure we always have a safe, normalized filename
+              const rawName =
+                file.filename ||
+                (file.path ? file.path.split(/[\\/]/).pop() || '' : '');
+              const normalizedFilename = rawName.split('\\').pop() || rawName;
               return {
                 ...file,
-                filename: file.filename.split('\\')[file.filename.split('\\').length - 1],
+                filename: normalizedFilename,
               };
             }),
           };

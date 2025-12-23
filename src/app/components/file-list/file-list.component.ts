@@ -138,6 +138,41 @@ export class FileListComponent {
       });
   }
 
+  /**
+   * Safely formats created_at for display, handling various backend shapes.
+   */
+  public getCreatedAtDisplay(file: FileGroupItem | ProjectFile): string | null {
+    const raw: any = (file as any).created_at;
+    if (!raw) return null;
+
+    let date: Date | null = null;
+
+    if (raw instanceof Date) {
+      date = raw;
+    } else if (typeof raw === 'string' || typeof raw === 'number') {
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        date = d;
+      }
+    } else if (typeof raw === 'object') {
+      // Handle possible BSON-style or custom objects, e.g. { $date: ... }
+      const candidate = (raw as any).$date ?? (raw as any).date ?? null;
+      if (candidate) {
+        const d = new Date(candidate);
+        if (!Number.isNaN(d.getTime())) {
+          date = d;
+        }
+      }
+    }
+
+    if (!date) return null;
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+
   public getImageUrl(path: string): string {
     let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
 

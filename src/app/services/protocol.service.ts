@@ -50,6 +50,40 @@ export class ProtocolService {
     );
   }
 
+  /**
+   * Downloads an already stored protocol instance by project/protocol id.
+   * This does NOT create/save a new protocol in the backend.
+   */
+  downloadExistingProtocol(
+    projectId: string,
+    protocolId: string
+  ): Observable<void> {
+    return new Observable((observer) => {
+      this.#http
+        .get(`${this.apiUrl}/protocols/${projectId}/${protocolId}`, {
+          responseType: 'blob',
+        })
+        .subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `protocol_${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            observer.next();
+            observer.complete();
+          },
+          error: (error) => {
+            console.error('Failed to download protocol instance:', error);
+            observer.error(error);
+          },
+        });
+    });
+  }
+
   downloadProtocol(request: GenerateProtocolRequest): Observable<void> {
     return new Observable((observer) => {
       this.generateProtocol(request).subscribe({

@@ -179,12 +179,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   downloadProtocol(protocol: ProtocolRecord): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
-    const templateId = protocol.template_id?.$oid;
-    const objectIds =
-      protocol.object_ids?.map((objectId) => objectId.$oid).filter((id): id is string => !!id) ||
-      [];
+    const protocolId = protocol._id?.$oid;
 
-    if (!projectId || !templateId || objectIds.length === 0) {
+    if (!projectId || !protocolId) {
       this.#notificationService.showError(
         this.#translationService.instant('protocols.downloadFailed'),
       );
@@ -192,11 +189,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
 
     this.#protocolService
-      .downloadProtocol({
-        template_id: templateId,
-        project_id: projectId,
-        object_ids: objectIds,
-      })
+      .downloadExistingProtocol(projectId, protocolId)
       .subscribe({
         next: () => {
           this.#notificationService.showSuccess(
