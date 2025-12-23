@@ -1,13 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { Observable } from 'rxjs';
-import { FileUploadTarget } from '../models/file.model';
+import { FileUploadTarget, FileGroup, ProjectFile } from '../models/file.model';
 import { NotificationService } from './notification.service';
 import { HttpHeaders } from '@angular/common/http';
-
-export interface FileUploadResult {
-  path: string;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -17,11 +13,13 @@ export class FileService {
   #notificationService = inject(NotificationService);
 
   /**
-   * Uploads a file for an object or project
-   * @param fileData - FormData containing the file
+   * Uploads files for an object or project
+   * For objects: Creates a new file group
+   * For projects: Creates simple files without groups
+   * @param fileData - FormData containing the file(s)
    * @param target - 'object' or 'project'
    * @param id - The ID of the object or project
-   * @returns Observable with the upload result
+   * @returns Observable with the upload result (array of uploaded file paths)
    */
   uploadFile(
     fileData: FormData,
@@ -39,27 +37,26 @@ export class FileService {
 
     const endpoint = `file/${target}/${id}`;
     // Don't set Content-Type header for FormData - browser will set it with boundary
-    // Pass empty HttpHeaders to prevent default 'application/json' header
     const headers = new HttpHeaders();
     return this.#httpService.post<string[]>(endpoint, fileData, headers);
   }
 
   /**
-   * Uploads a file for an object
+   * Uploads files for an object (creates a new file group)
    */
   uploadFileForObject(fileData: FormData, objectId: string): Observable<string[]> {
     return this.uploadFile(fileData, 'object', objectId);
   }
 
   /**
-   * Uploads a file for a project
+   * Uploads files for a project (simple file storage)
    */
   uploadFileForProject(fileData: FormData, projectId: string): Observable<string[]> {
     return this.uploadFile(fileData, 'project', projectId);
   }
 
   /**
-   * Updates metadata (description/category) for a file group
+   * Updates metadata (description/category) for a file group (object files only)
    */
   updateFileGroup(
     groupId: string,
@@ -70,27 +67,29 @@ export class FileService {
   }
 
   /**
-   * Gets all files for a specific object
+   * Gets all file groups for a specific object
    * @param objectId - The ID of the object
-   * @returns Observable with array of files
+   * @returns Observable with array of file groups
    */
-  getFilesForObject(objectId: string): Observable<any[]> {
+  getFilesForObject(objectId: string): Observable<FileGroup[]> {
     const endpoint = `file/object/${objectId}`;
-    return this.#httpService.get<any[]>(endpoint);
+    return this.#httpService.get<FileGroup[]>(endpoint);
   }
 
   /**
    * Gets all files for a specific project
    * @param projectId - The ID of the project
-   * @returns Observable with array of files
+   * @returns Observable with array of project files
    */
-  getFilesForProject(projectId: string): Observable<any[]> {
+  getFilesForProject(projectId: string): Observable<ProjectFile[]> {
     const endpoint = `file/project/${projectId}`;
-    return this.#httpService.get<any[]>(endpoint);
+    return this.#httpService.get<ProjectFile[]>(endpoint);
   }
 
   /**
    * Deletes a file by its ID
+   * For object files: removes from group
+   * For project files: soft delete
    * @param fileId - The ID of the file to delete
    * @returns Observable with the delete result
    */
@@ -100,11 +99,13 @@ export class FileService {
   }
 
   /**
-   * Updates metadata (description/category/filename) for a single file
+   * Updates metadata for a single file item
+   * @param fileId - The ID of the file
+   * @param data - Updated metadata (description, filename, created_at)
    */
   updateFileMetadata(
     fileId: string,
-    data: { description?: string; category?: string | null; filename?: string }
+    data: { description?: string; filename?: string; created_at?: string }
   ): Observable<{ message: string }> {
     const endpoint = `file/${fileId}`;
     return this.#httpService.put<{ message: string }>(endpoint, data);

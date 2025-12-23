@@ -4,13 +4,7 @@ import { ProjectStore } from '@store/project.store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileService } from '@services/file.service';
 import { NotificationService } from '@services/notification.service';
-import {
-  Object,
-  File as ProjectFile,
-  DEFAULT_WORK_STATUS,
-  formatWorkStatus,
-  WORK_STATUSES,
-} from '@models';
+import { Object, FileGroup, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
@@ -39,7 +33,7 @@ export class ObjectTabComponent implements OnInit {
   #modalService = inject(ModalService);
 
   object = signal<Object | null>(null);
-  files = signal<ProjectFile[]>([]);
+  fileGroups = signal<FileGroup[]>([]);
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
   shareUrl = signal<string | null>(null);
@@ -144,16 +138,23 @@ export class ObjectTabComponent implements OnInit {
 
   private loadFiles(objectId: string): void {
     this.#fileService.getFilesForObject(objectId).subscribe({
-      next: (files) => {
-        const mappedFiles = files.map((file) => ({
-          ...file,
-          filename: file.filename || file.path.split(/[\\/]/).pop() || '',
-        }));
-        this.files.set(mappedFiles);
+      next: (fileGroups) => {
+        const refactoredFileGroups = fileGroups.map((fileGroup) => {
+          return {
+            ...fileGroup,
+            files: fileGroup.files.map((file) => {
+              return {
+                ...file,
+                filename: file.filename.split('\\')[file.filename.split('\\').length - 1],
+              };
+            }),
+          };
+        });
+        this.fileGroups.set(refactoredFileGroups);
       },
       error: (error) => {
-        console.error('Failed to load files:', error);
-        this.files.set([]);
+        console.error('Failed to load file groups:', error);
+        this.fileGroups.set([]);
       },
     });
   }

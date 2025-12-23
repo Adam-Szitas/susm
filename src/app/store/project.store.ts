@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpService } from '../services/http.service';
 import { Observable, tap } from 'rxjs';
-import { Project, Object, ObjectWithProject, File } from '../models';
+import { Project, Object, ObjectWithProject, ProjectFile } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectStore {
@@ -13,7 +13,7 @@ export class ProjectStore {
   private _objectsWithProjects = signal<ObjectWithProject[]>([]);
   private _loading = signal(false);
   private _error = signal<string | null>(null);
-  private _files = signal<File[]>([]);
+  private _files = signal<ProjectFile[]>([]);
 
   // Public readonly signals
   readonly projects = computed(() => this._projects());
@@ -49,14 +49,9 @@ export class ProjectStore {
       },
     });
 
-    this.#httpService.get<File[]>(`file/project/${id}`).subscribe({
+    this.#httpService.get<ProjectFile[]>(`file/project/${id}`).subscribe({
       next: (files) => {
-        const mappedFiles = files.map((file) => ({
-          ...file,
-          path: file.path,
-          filename: file.filename || file.path.split(/[\\/]/).pop() || '',
-        }));
-        this._files.set(mappedFiles);
+        this._files.set(files);
       },
     });
   }
@@ -104,8 +99,9 @@ export class ProjectStore {
       });
     }
 
+    const url = term ? `objects/${projectId}?search=${encodeURIComponent(term)}` : `objects/${projectId}`;
     return this.#httpService
-      .get<Object[]>(`objects/${projectId}&${term}`)
+      .get<Object[]>(url)
       .pipe(tap((objects) => this._objects.set(objects)));
   }
 

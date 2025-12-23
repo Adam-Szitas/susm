@@ -94,9 +94,9 @@
       </div>
     }
 
-    @if (files().length > 0) {
+    @if (fileGroups().length > 0) {
       <app-file-list
-        [files]="files()"
+        [fileGroups]="fileGroups()"
         (fileDeleted)="onFileDeleted()"
         (metadataUpdated)="onFileDeleted()"
       ></app-file-list>

@@ -140,7 +140,7 @@
     }
     @if (files()) {
       <app-file-list
-        [files]="files()"
+        [projectFiles]="files()"
         (fileDeleted)="onFileDeleted()"
         (metadataUpdated)="onFileDeleted()"
       ></app-file-list>
