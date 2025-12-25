@@ -184,7 +184,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   downloadProtocol(protocol: ProtocolRecord): void {
-    const projectId = this.#route.snapshot.paramMap.get('id');
+    const projectId = protocol.project_id?.$oid;
     const protocolId = protocol._id?.$oid;
 
     if (!projectId || !protocolId) {
@@ -200,22 +200,43 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
 
     this.downloadingProtocol.set(protocolId);
-    this.#protocolService
-      .downloadExistingProtocol(projectId, protocolId)
-      .subscribe({
-        next: () => {
-          this.#notificationService.showSuccess(
-            this.#translationService.instant('protocols.generated'),
-          );
-          this.downloadingProtocol.set(null);
-        },
-        error: (error) => {
-          this.#notificationService.showError(
-            error.message || this.#translationService.instant('protocols.downloadFailed'),
-          );
-          this.downloadingProtocol.set(null);
-        },
-      });
+    this.#protocolService.downloadExistingProtocol(projectId, protocolId).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('protocols.generated'),
+        );
+        this.downloadingProtocol.set(null);
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('protocols.downloadFailed'),
+        );
+        this.downloadingProtocol.set(null);
+      },
+    });
+  }
+
+  deleteProtocol(protocol: ProtocolRecord): void {
+    const projectId = protocol.project_id?.$oid;
+    const protocolId = protocol._id?.$oid;
+
+    if (!projectId || !protocolId) {
+      this.#notificationService.showError(
+        this.#translationService.instant('protocol.deleteFailed'),
+      );
+      return;
+    }
+
+    this.#protocolService.deleteProtocol(projectId, protocolId).subscribe({
+      next: (message) => {
+        this.#notificationService.showSuccess(this.#translationService.instant(message));
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('protocol.deleteFailed'),
+        );
+      },
+    });
   }
 
   protocolDescription(protocol: ProtocolRecord): string {
@@ -354,9 +375,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (archive) {
       // Prompt for archive comment
-      const comment = prompt(
-        this.#translationService.instant('projects.archiveCommentPrompt')
-      );
+      const comment = prompt(this.#translationService.instant('projects.archiveCommentPrompt'));
       // Allow null/empty comment
       this.archivingProject.set(true);
       this.#projectStore.toggleArchiveProject(projectId, archive, comment || undefined).subscribe({

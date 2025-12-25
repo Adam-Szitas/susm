@@ -29,7 +29,10 @@ export class ProtocolService {
     return this.#httpService.post<ProtocolTemplate>('protocols/templates', template);
   }
 
-  updateTemplate(templateId: string, template: CreateProtocolTemplate): Observable<ProtocolTemplate> {
+  updateTemplate(
+    templateId: string,
+    template: CreateProtocolTemplate,
+  ): Observable<ProtocolTemplate> {
     return this.#httpService.put<ProtocolTemplate>(`protocols/templates/${templateId}`, template);
   }
 
@@ -40,24 +43,17 @@ export class ProtocolService {
   generateProtocol(request: GenerateProtocolRequest): Observable<Blob> {
     // For PDF download, we need to handle blob response
     // Note: We use HttpClient directly here to handle blob response type
-    return this.#http.post<Blob>(
-      `${this.apiUrl}/protocols/generate`,
-      request,
-      {
-        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-        responseType: 'blob' as 'json',
-      }
-    );
+    return this.#http.post<Blob>(`${this.apiUrl}/protocols/generate`, request, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      responseType: 'blob' as 'json',
+    });
   }
 
   /**
    * Downloads an already stored protocol instance by project/protocol id.
    * This does NOT create/save a new protocol in the backend.
    */
-  downloadExistingProtocol(
-    projectId: string,
-    protocolId: string
-  ): Observable<void> {
+  downloadExistingProtocol(projectId: string, protocolId: string): Observable<void> {
     return new Observable((observer) => {
       this.#http
         .get(`${this.apiUrl}/protocols/${projectId}/${protocolId}`, {
@@ -107,8 +103,11 @@ export class ProtocolService {
     });
   }
 
+  deleteProtocol(projectId: string, protoclId: string): Observable<string> {
+    return this.#http.delete<string>(`${this.apiUrl}/protocols/${projectId}/${protoclId}`);
+  }
+
   previewProtocolStructure(request: GenerateProtocolRequest): Observable<any> {
     return this.#httpService.post<any>('protocols/preview', request);
   }
 }
-
