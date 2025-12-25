@@ -29,7 +29,7 @@
 
     <div class="files-grid">
       @for (fileWithContext of filteredFiles(); track fileWithContext.file._id.$oid) {
-        <div class="file-card">
+        <div class="file-card" (click)="onFileClick(fileWithContext)" [style.cursor]="(fileWithContext.object?.id || fileWithContext.project?.id) ? 'pointer' : 'default'">
           <div class="file-image">
             <img
               [src]="getImageUrl(fileWithContext.file.path)"

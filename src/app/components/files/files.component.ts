@@ -3,6 +3,7 @@ import { FileService } from '../../services/file.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { environment } from '../../environment';
 import { Filter, FilterResult } from '@models';
 import { FilterComponent } from '../filter/filter.component';
@@ -38,6 +39,7 @@ export interface FileWithContext {
 })
 export class FilesComponent implements OnInit {
   #fileService = inject(FileService);
+  #router = inject(Router);
 
   files = signal<FileWithContext[]>([]);
   loading = signal(false);
@@ -150,20 +152,24 @@ export class FilesComponent implements OnInit {
   }
 
   getImageUrl(path: string): string {
-    let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
-
-    if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
-      const encodedPath = encodeURIComponent(normalizedPath);
+    if(path) {
+      let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
+  
+      if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+        const encodedPath = encodeURIComponent(normalizedPath);
+        return `${environment.be}${environment.folderBase}/${encodedPath}`;
+      }
+  
+      if (normalizedPath.startsWith('uploads/')) {
+        normalizedPath = normalizedPath.substring('uploads/'.length);
+      }
+  
+      const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
+      const encodedPath = pathSegments.join('/');
       return `${environment.be}${environment.folderBase}/${encodedPath}`;
+    } else {
+      return path;
     }
-
-    if (normalizedPath.startsWith('uploads/')) {
-      normalizedPath = normalizedPath.substring('uploads/'.length);
-    }
-
-    const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
-    const encodedPath = pathSegments.join('/');
-    return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
 
   filterData(): Filter {
@@ -183,6 +189,17 @@ export class FilesComponent implements OnInit {
 
   clearProjectFilter(): void {
     this.selectedProject.set('');
+  }
+
+  onFileClick(fileWithContext: FileWithContext): void {
+    // If file belongs to an object, navigate to object page
+    if (fileWithContext.object?.id) {
+      this.#router.navigate(['/objects/tab', fileWithContext.object.id]);
+    }
+    // Otherwise, if file belongs to a project, navigate to project page
+    else if (fileWithContext.project?.id) {
+      this.#router.navigate(['/projects/tab', fileWithContext.project.id]);
+    }
   }
 }
 

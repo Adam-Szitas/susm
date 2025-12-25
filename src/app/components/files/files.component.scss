@@ -57,7 +57,19 @@
     border: 1px solid var(--default-color, #e0e0e0);
     border-radius: 8px;
     overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     @include card-hover;
+
+    &[style*="pointer"] {
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
 
     .file-image {
       width: 100%;

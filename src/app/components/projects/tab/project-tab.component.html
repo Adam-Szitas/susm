@@ -68,17 +68,47 @@
       <button type="button" class="button button-primary" (click)="manageCategories()">
         {{ 'projects.manageCategories' | translate }}
       </button>
-      <button type="button" class="button button-primary" (click)="generateProtocol()">
-        {{ 'protocols.generateProtocol' | translate }}
+      <button 
+        type="button" 
+        class="button button-primary" 
+        (click)="generateProtocol()"
+        [disabled]="loadingTemplates()"
+      >
+        @if (loadingTemplates()) {
+          <span class="spinner"></span>
+          {{ 'common.loading' | translate }}
+        } @else {
+          {{ 'protocols.generateProtocol' | translate }}
+        }
       </button>
-      <button type="button" class="button button-primary" (click)="toggleArchiveProject(true)">
-        {{ 'projects.archiveProject' | translate }}
+      <button 
+        type="button" 
+        class="button button-primary" 
+        (click)="toggleArchiveProject(true)"
+        [disabled]="archivingProject()"
+      >
+        @if (archivingProject()) {
+          <span class="spinner"></span>
+          {{ 'common.loading' | translate }}
+        } @else {
+          {{ 'projects.archiveProject' | translate }}
+        }
       </button>
     </div>
   } @else {
     <div class="action-buttons">
-      <button type="button" class="button button-primary" (click)="toggleArchiveProject(false)">
-        {{ 'projects.unarchiveProject' | translate }}
+      <button 
+        type="button" 
+        class="button button-primary" 
+        (click)="toggleArchiveProject(false)"
+        [disabled]="archivingProject()"
+      >
+        @if (archivingProject()) {
+          <span class="spinner"></span>
+          {{ 'common.loading' | translate }}
+        } @else {
+          {{ 'projects.unarchiveProject' | translate }}
+        }
       </button>
     </div>
   }
@@ -126,8 +156,14 @@
                     type="button"
                     class="button button-secondary"
                     (click)="downloadProtocol(protocol)"
+                    [disabled]="downloadingProtocol() === protocol._id.$oid"
                   >
-                    {{ 'protocols.download' | translate }}
+                    @if (downloadingProtocol() === protocol._id.$oid) {
+                      <span class="spinner"></span>
+                      {{ 'common.loading' | translate }}
+                    } @else {
+                      {{ 'protocols.download' | translate }}
+                    }
                   </button>
                 </div>
               }

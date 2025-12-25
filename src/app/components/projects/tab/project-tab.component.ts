@@ -59,6 +59,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
   updatingCategory = signal(false);
+  downloadingProtocol = signal<string | null>(null); // Track which protocol is being downloaded
+  loadingTemplates = signal(false);
+  archivingProject = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   public readonly formatStatus = formatWorkStatus;
@@ -144,8 +147,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.loadingTemplates.set(true);
     this.#protocolService.getTemplates().subscribe({
       next: (templates) => {
+        this.loadingTemplates.set(false);
         if (templates.length === 0) {
           this.#notificationService.showError(
             this.#translationService.instant('protocols.noTemplates'),
@@ -170,6 +175,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
+        this.loadingTemplates.set(false);
         this.#notificationService.showError(
           error.message || this.#translationService.instant('protocols.loadTemplatesFailed'),
         );
@@ -188,6 +194,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent multiple simultaneous downloads
+    if (this.downloadingProtocol() === protocolId) {
+      return;
+    }
+
+    this.downloadingProtocol.set(protocolId);
     this.#protocolService
       .downloadExistingProtocol(projectId, protocolId)
       .subscribe({
@@ -195,11 +207,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
           this.#notificationService.showSuccess(
             this.#translationService.instant('protocols.generated'),
           );
+          this.downloadingProtocol.set(null);
         },
         error: (error) => {
           this.#notificationService.showError(
             error.message || this.#translationService.instant('protocols.downloadFailed'),
           );
+          this.downloadingProtocol.set(null);
         },
       });
   }
@@ -336,7 +350,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   toggleArchiveProject(archive: boolean): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
-    if (!projectId) return;
+    if (!projectId || this.archivingProject()) return;
 
     if (archive) {
       // Prompt for archive comment
@@ -344,10 +358,26 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.#translationService.instant('projects.archiveCommentPrompt')
       );
       // Allow null/empty comment
-      this.#projectStore.toggleArchiveProject(projectId, archive, comment || undefined);
+      this.archivingProject.set(true);
+      this.#projectStore.toggleArchiveProject(projectId, archive, comment || undefined).subscribe({
+        next: () => {
+          this.archivingProject.set(false);
+        },
+        error: () => {
+          this.archivingProject.set(false);
+        },
+      });
     } else {
       // Unarchiving doesn't need a comment
-      this.#projectStore.toggleArchiveProject(projectId, archive);
+      this.archivingProject.set(true);
+      this.#projectStore.toggleArchiveProject(projectId, archive).subscribe({
+        next: () => {
+          this.archivingProject.set(false);
+        },
+        error: () => {
+          this.archivingProject.set(false);
+        },
+      });
     }
   }
 

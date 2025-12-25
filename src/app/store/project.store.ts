@@ -246,15 +246,17 @@ export class ProjectStore {
     );
   }
 
-  public toggleArchiveProject(projectId: string, archive: boolean, archive_comment?: string): void {
-    this.#httpService.put<Project>(`project/${projectId}/archive`, { archive, archive_comment }).subscribe({
-      next: (result) => {
-        this._project.set(result);
-      },
-      error: (error) => {
-        this._error.set(error.message || 'Failed to archive project');
-      },
-    });
+  public toggleArchiveProject(projectId: string, archive: boolean, archive_comment?: string): Observable<Project> {
+    return this.#httpService.put<Project>(`project/${projectId}/archive`, { archive, archive_comment }).pipe(
+      tap({
+        next: (result) => {
+          this._project.set(result);
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to archive project');
+        },
+      }),
+    );
   }
 
   clearError(): void {
