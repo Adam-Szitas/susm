@@ -24,12 +24,11 @@
           <h2 class="headline">{{ project.name }}</h2>
           <div class="content">
             <ul class="data-list">
-              <li>{{ project.address?.street }} {{ project.address?.house_number }}</li>
-              @if (project.address?.level) {
-                <li>{{ 'objects.level' | translate }}: {{ project.address?.level }}</li>
+              @if (project.address?.street) {
+                <li>{{ project.address?.street }}</li>
               }
-              @if (project.address?.door_number) {
-                <li>{{ 'objects.doorNumber' | translate }}: {{ project.address?.door_number }}</li>
+              @if (project.address?.postal_code) {
+                <li>{{ project.address?.postal_code }}</li>
               }
               @if (project.note) {
                 <li>{{ project.note }}</li>

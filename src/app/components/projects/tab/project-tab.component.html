@@ -6,18 +6,11 @@
     <div class="project-description">
       <ul>
         <li>{{ 'dashboard.totalObjects' | translate }}: {{ project()?.objects?.length }}</li>
+        @if (project()?.address?.street) {
+          <li>{{ project()?.address?.street }}</li>
+        }
         @if (project()?.address?.postal_code) {
           <li>{{ project()?.address?.postal_code }}</li>
-        }
-        <li>{{ project()?.address?.street }}</li>
-        @if (project()?.address?.house_number) {
-          <li>{{ project()?.address?.house_number }}</li>
-        }
-        @if (project()?.address?.level) {
-          <li>{{ 'project.level' | translate }}: {{ project()?.address?.level }}</li>
-        }
-        @if (project()?.address?.door_number) {
-          <li>{{ 'project.doorNumber' | translate }}: {{ project()?.address?.door_number }}</li>
         }
         <li>
           <p>{{ project()?.note }}</p>
@@ -119,9 +112,15 @@
           <div class="card" [routerLink]="'/objects/tab/' + object._id?.$oid">
             <app-status-pill [status]="object?.status || 'created'" />
             <h2 class="headline">
-              {{ object.address.street }} {{ object.address.house_number }}
-              {{ object.address.house_number && object.address.door_number ? '/' : null }}
-              {{ object.address.door_number }}
+              @if (object.address.level) {
+                <span>{{ 'objects.level' | translate }}: {{ object.address.level }}</span>
+              }
+              @if (object.address.door_number) {
+                <span>{{ 'objects.doorNumber' | translate }}: {{ object.address.door_number }}</span>
+              }
+              @if (object.address.postal_code) {
+                <span>{{ object.address.postal_code }}</span>
+              }
             </h2>
             @if (object.note) {
               <p class="note">{{ object.note }}</p>

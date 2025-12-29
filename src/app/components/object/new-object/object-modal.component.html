@@ -4,19 +4,6 @@
       <div class="control" formGroupName="address">
         <h4>{{ 'common.address' | translate }}</h4>
         <div class="control">
-          <label for="street">{{ 'common.street' | translate }}</label>
-          <input placeholder="street" type="text" id="street" formControlName="street" />
-        </div>
-        <div class="control">
-          <label for="house_number">{{ 'common.houseNumber' | translate }}</label>
-          <input
-            placeholder="house number"
-            type="text"
-            id="house_number"
-            formControlName="house_number"
-          />
-        </div>
-        <div class="control">
           <label for="level">{{ 'common.level' | translate }}</label>
           <input placeholder="e.g. 3 or 3rd" type="text" id="level" formControlName="level" />
         </div>
@@ -28,6 +15,10 @@
             id="door_number"
             formControlName="door_number"
           />
+        </div>
+        <div class="control">
+          <label for="postal_code">{{ 'common.postalCode' | translate }}</label>
+          <input placeholder="postal code" type="text" id="postal_code" formControlName="postal_code" />
         </div>
       </div>
       <div class="control">

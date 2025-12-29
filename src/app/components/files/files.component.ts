@@ -83,13 +83,12 @@ export class FilesComponent implements OnInit {
         const filename = f.file.filename?.toLowerCase() || '';
         const description = f.file.description?.toLowerCase() || '';
         const projectName = f.project?.name.toLowerCase() || '';
-        const objectStreet = f.object?.street?.toLowerCase() || '';
+        // ObjectAddress doesn't have street, use project name instead
         const objectDesc = f.object?.description?.toLowerCase() || '';
         return (
           filename.includes(search) ||
           description.includes(search) ||
           projectName.includes(search) ||
-          objectStreet.includes(search) ||
           objectDesc.includes(search)
         );
       });

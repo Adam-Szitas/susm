@@ -4,11 +4,10 @@
   @if (object()) {
     <section class="object-details">
       <header>
-        <h2>{{ object()?.address?.street }}</h2>
+        <h2>{{ 'objects.object' | translate }}</h2>
         <app-status-pill [status]="object()?.status || defaultStatus" />
       </header>
       <ul>
-        <li>{{ object()?.address?.street }} {{ object()?.address?.house_number }}</li>
         @if (object()?.address?.level) {
           <li>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</li>
         }

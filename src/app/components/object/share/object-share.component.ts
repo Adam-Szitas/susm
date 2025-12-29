@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpService } from '@services/http.service';
-import { DEFAULT_WORK_STATUS, WorkStatus, formatWorkStatus, Address } from '@models';
+import { DEFAULT_WORK_STATUS, WorkStatus, formatWorkStatus, ObjectAddress } from '@models';
 
 interface PublicObjectResponse {
   id: string;
-  address: Address;
+  address: ObjectAddress;
   note: string;
   status: WorkStatus;
   project_name: string;
@@ -56,18 +56,16 @@ export class ObjectShareComponent implements OnInit {
   private loadObject(): void {
     this.loading.set(true);
     this.loadError.set(null);
-    this.#httpService
-      .get<PublicObjectResponse>(`public/object/${this.token}`)
-      .subscribe({
-        next: (response) => {
-          this.object.set(response);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loadError.set('share.errors.invalidLink');
-          this.loading.set(false);
-        },
-      });
+    this.#httpService.get<PublicObjectResponse>(`public/object/${this.token}`).subscribe({
+      next: (response) => {
+        this.object.set(response);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loadError.set('share.errors.invalidLink');
+        this.loading.set(false);
+      },
+    });
   }
 
   submitDecision(approve: boolean): void {
@@ -98,4 +96,3 @@ export class ObjectShareComponent implements OnInit {
       });
   }
 }
-

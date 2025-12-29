@@ -72,11 +72,11 @@ export class ObjectComponent implements OnInit {
         if (!obj) return false;
 
         const addr = obj.address;
+        // ObjectAddress only has level, door_number, and postal_code (no street/house_number)
         const addressText = [
-          addr?.street,
-          addr?.house_number,
           addr?.level,
           addr?.door_number,
+          addr?.postal_code,
         ]
           .filter(Boolean)
           .join(' ')

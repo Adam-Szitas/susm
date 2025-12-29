@@ -184,11 +184,16 @@ export class ProtocolGenerateModalComponent {
   }
 
   formatObjectLabel(object: Object): string {
-    const street = object.address?.street ?? '';
-    const house = object.address?.house_number ? ` ${object.address?.house_number}` : '';
+    // Get project street from store (project street is used for objects, not project name)
+    const project = this.#projectStore.project();
+    const projectStreet = project?.address?.street ?? '';
+    
+    // ObjectAddress only has level, door_number, and postal_code
     const level = object.address?.level ? `, L${object.address?.level}` : '';
     const door = object.address?.door_number ? `, D${object.address?.door_number}` : '';
-    return `${street}${house}${level}${door}`.trim() || object._id?.$oid || '';
+    const postalCode = object.address?.postal_code ? `, ${object.address?.postal_code}` : '';
+    
+    return `${projectStreet}${level}${door}${postalCode}`.trim() || object._id?.$oid || '';
   }
 }
 

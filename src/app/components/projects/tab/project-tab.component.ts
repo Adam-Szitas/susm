@@ -320,7 +320,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       const searchLower = filter.searchText.toLowerCase();
       filtered = filtered.filter((obj) => {
         const addr = obj.address;
-        const addressText = [addr?.street, addr?.house_number, addr?.level, addr?.door_number]
+        // ObjectAddress only has level, door_number, and postal_code
+        const addressText = [addr?.level, addr?.door_number, addr?.postal_code]
           .filter(Boolean)
           .join(' ')
           .toLowerCase();

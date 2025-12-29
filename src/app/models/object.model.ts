@@ -1,11 +1,11 @@
-import { Address } from './user.model';
+import { ObjectAddress } from './user.model';
 import { WorkStatus } from './status.model';
 
 export interface Object {
   _id?: {
     $oid: string;
   };
-  address: Address;
+  address: ObjectAddress;
   note: string;
   files?: File[];
   status?: WorkStatus;

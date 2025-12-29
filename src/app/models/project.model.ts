@@ -1,4 +1,4 @@
-import { Address } from './user.model';
+import { ProjectAddress } from './user.model';
 import { WorkStatus } from './status.model';
 import { Object } from './object.model';
 import { ProtocolRecord } from './protocol.model';
@@ -8,7 +8,7 @@ export interface Project {
     $oid: string;
   };
   name: string;
-  address?: Address;
+  address?: ProjectAddress;
   createdAt?: string;
   inserterId?: number;
   note?: string;

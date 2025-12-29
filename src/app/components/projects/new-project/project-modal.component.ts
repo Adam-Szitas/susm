@@ -27,9 +27,6 @@ export class ModalProjectComponent {
     name: ['', [Validators.required]],
     address: this.#formBuilder.group({
       street: [''],
-      house_number: [''],
-      level: [''],
-      door_number: [''],
       postal_code: [''],
     }),
     note: [''],

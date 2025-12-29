@@ -11,10 +11,17 @@
                 >
                     <app-status-pill [status]="objectItem?.status || 'created'" />
                     <div class="project-name">{{ item.project_name }}</div>
-                    <h2 class="headline">{{ objectItem.address.street }} 
-                        {{ objectItem.address.house_number }} 
-                        {{ objectItem.address.house_number && objectItem.address.door_number ? '/' : null }}
-                        {{ objectItem.address.door_number }}</h2>
+                    <h2 class="headline">{{ item.project_name }}
+                        @if (objectItem.address.level) {
+                            <span>, {{ 'objects.level' | translate }}: {{ objectItem.address.level }}</span>
+                        }
+                        @if (objectItem.address.door_number) {
+                            <span>, {{ 'objects.doorNumber' | translate }}: {{ objectItem.address.door_number }}</span>
+                        }
+                        @if (objectItem.address.postal_code) {
+                            <span>, {{ objectItem.address.postal_code }}</span>
+                        }
+                    </h2>
                     @if(objectItem.note) {
                         <p class="note">{{ objectItem.note }}</p>
                     }

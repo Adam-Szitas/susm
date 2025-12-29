@@ -29,10 +29,9 @@ export class EditObjectComponent implements OnInit {
     this.objectForm = this.#fb.group({
       note: [this.objectData?.note || '', []],
       address: this.#fb.group({
-        street: [this.objectData?.address?.street || '', []],
         door_number: [this.objectData?.address?.door_number || '', []],
-        house_number: [this.objectData?.address?.house_number || '', []],
         level: [this.objectData?.address?.level || '', []],
+        postal_code: [this.objectData?.address?.postal_code || '', []],
       }),
     });
   }

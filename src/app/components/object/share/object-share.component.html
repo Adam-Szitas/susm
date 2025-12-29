@@ -11,7 +11,15 @@
     <div class="card">
       <h2>{{ object()?.project_name }}</h2>
       <p class="address">
-        {{ object()?.address?.street }}
+        @if (object()?.address?.level) {
+          <span>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</span>
+        }
+        @if (object()?.address?.door_number) {
+          <span>{{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}</span>
+        }
+        @if (object()?.address?.postal_code) {
+          <span>{{ object()?.address?.postal_code }}</span>
+        }
       </p>
       @if (object()?.note) {
         <p class="note">

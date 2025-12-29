@@ -7,10 +7,7 @@
     <p class="error">{{ error() }}</p>
   } @else {
     <div class="filters">
-      <app-filter
-        [filter]="filterData()"
-        (filterChange)="onFilterChange($event)"
-      ></app-filter>
+      <app-filter [filter]="filterData()" (filterChange)="onFilterChange($event)"></app-filter>
 
       <div class="filter-group">
         <label for="project">{{ 'files.filterByProject' | translate }}</label>
@@ -29,7 +26,13 @@
 
     <div class="files-grid">
       @for (fileWithContext of filteredFiles(); track fileWithContext.file._id.$oid) {
-        <div class="file-card" (click)="onFileClick(fileWithContext)" [style.cursor]="(fileWithContext.object?.id || fileWithContext.project?.id) ? 'pointer' : 'default'">
+        <div
+          class="file-card"
+          (click)="onFileClick(fileWithContext)"
+          [style.cursor]="
+            fileWithContext.object?.id || fileWithContext.project?.id ? 'pointer' : 'default'
+          "
+        >
           <div class="file-image">
             <img
               [src]="getImageUrl(fileWithContext.file.path)"
@@ -75,4 +78,3 @@
     </div>
   }
 </div>
-
