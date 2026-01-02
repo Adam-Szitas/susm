@@ -18,7 +18,12 @@
         </div>
         <div class="control">
           <label for="postal_code">{{ 'common.postalCode' | translate }}</label>
-          <input placeholder="postal code" type="text" id="postal_code" formControlName="postal_code" />
+          <input
+            placeholder="postal code"
+            type="text"
+            id="postal_code"
+            formControlName="postal_code"
+          />
         </div>
       </div>
       <div class="control">
@@ -34,7 +39,12 @@
         </select>
       </div>
       <div class="control buttons">
-        <button type="button" [disabled]="form.invalid || progressing()" (click)="Submit()">
+        <button
+          type="button"
+          class="button button-primary"
+          [disabled]="form.invalid || progressing()"
+          (click)="Submit()"
+        >
           {{ 'common.submit' | translate }}
         </button>
       </div>

@@ -5,15 +5,30 @@
         <h2>{{ 'register.user' | translate }}</h2>
         <div class="control">
           <label for="name">{{ 'register.name' | translate }}</label>
-          <input [placeholder]="'register.namePlaceholder' | translate" type="name" id="name" formControlName="name" />
+          <input
+            [placeholder]="'register.namePlaceholder' | translate"
+            type="name"
+            id="name"
+            formControlName="name"
+          />
         </div>
         <div class="control">
           <label for="email">{{ 'register.email' | translate }}</label>
-          <input [placeholder]="'register.emailPlaceholder' | translate" type="email" id="email" formControlName="email" />
+          <input
+            [placeholder]="'register.emailPlaceholder' | translate"
+            type="email"
+            id="email"
+            formControlName="email"
+          />
         </div>
         <div class="control">
           <label for="password">{{ 'register.password' | translate }}</label>
-          <input [placeholder]="'register.passwordPlaceholder' | translate" type="password" id="password" formControlName="password" />
+          <input
+            [placeholder]="'register.passwordPlaceholder' | translate"
+            type="password"
+            id="password"
+            formControlName="password"
+          />
         </div>
         <div class="control">
           <label for="language">{{ 'register.language' | translate }}</label>
@@ -28,17 +43,32 @@
 
           <div class="control">
             <label for="street">{{ 'register.street' | translate }}</label>
-            <input type="text" [placeholder]="'register.streetPlaceholder' | translate" id="street" formControlName="street" />
+            <input
+              type="text"
+              [placeholder]="'register.streetPlaceholder' | translate"
+              id="street"
+              formControlName="street"
+            />
           </div>
 
           <div class="control">
             <label for="city">{{ 'register.city' | translate }}</label>
-            <input type="text" [placeholder]="'register.cityPlaceholder' | translate" id="city" formControlName="city" />
+            <input
+              type="text"
+              [placeholder]="'register.cityPlaceholder' | translate"
+              id="city"
+              formControlName="city"
+            />
           </div>
 
           <div class="control">
             <label for="country">{{ 'register.country' | translate }}</label>
-            <input type="text" [placeholder]="'register.countryPlaceholder' | translate" id="country" formControlName="country" />
+            <input
+              type="text"
+              [placeholder]="'register.countryPlaceholder' | translate"
+              id="country"
+              formControlName="country"
+            />
           </div>
         </div>
       </div>
@@ -46,16 +76,35 @@
         <h3>{{ 'register.company' | translate }}</h3>
         <div class="control">
           <label for="companyName">{{ 'register.companyName' | translate }}</label>
-          <input type="text" [placeholder]="'register.companyNamePlaceholder' | translate" id="companyName" formControlName="name" />
+          <input
+            type="text"
+            [placeholder]="'register.companyNamePlaceholder' | translate"
+            id="companyName"
+            formControlName="name"
+          />
         </div>
         <div class="control">
           <label for="companyAddress">{{ 'register.companyAddress' | translate }}</label>
-          <input type="text" [placeholder]="'register.companyAddressPlaceholder' | translate" id="companyAddress" formControlName="address" />
+          <input
+            type="text"
+            [placeholder]="'register.companyAddressPlaceholder' | translate"
+            id="companyAddress"
+            formControlName="address"
+          />
         </div>
       </div>
       <div class="control buttons">
-        <button type="button" [routerLink]="'/login'">{{ 'register.login' | translate }}</button>
-        <button type="button" [disabled]="form.invalid" (click)="Submit()">{{ 'common.submit' | translate }}</button>
+        <button type="button" class="button button-secondary" [routerLink]="'/login'">
+          {{ 'register.login' | translate }}
+        </button>
+        <button
+          type="button"
+          class="button button-primary"
+          [disabled]="form.invalid"
+          (click)="Submit()"
+        >
+          {{ 'common.submit' | translate }}
+        </button>
       </div>
     </form>
   }

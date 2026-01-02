@@ -156,7 +156,7 @@
 }
 
 .project-details {
-  margin: 1rem 0;
+  margin-top: 1rem;
   padding: 1.5rem;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
@@ -237,6 +237,18 @@
   font-size: var(--font-4);
   color: rgba(0, 0, 0, 0.6);
   display: flex;
+}
+
+.project-category-section .category-selector {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-small);
+
+  & span {
+    flex: 1;
+    width: 100%;
+  }
 }
 
 .project-category-section,

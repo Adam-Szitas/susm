@@ -36,21 +36,28 @@
 
   <section class="project-category-section">
     <div class="category-selector">
-      <label for="projectCategory">{{ 'projects.category' | translate }}</label>
-      <select
-        id="projectCategory"
-        [value]="project()?.category"
-        [disabled]="updatingCategory()"
-        (change)="updateCategory($any($event.target).value)"
-        class="category-select"
-      >
-        <option value="">{{ 'objects.noCategory' | translate }}</option>
-        @for (category of project()?.categories; track category) {
-          <option [value]="category" [selected]="category === project()?.category">
-            {{ category }}
-          </option>
-        }
-      </select>
+      <span>
+        <label for="projectCategory">{{ 'projects.category' | translate }}</label>
+        <select
+          id="projectCategory"
+          [value]="project()?.category"
+          [disabled]="updatingCategory()"
+          (change)="updateCategory($any($event.target).value)"
+          class="category-select"
+        >
+          <option value="">{{ 'objects.noCategory' | translate }}</option>
+          @for (category of project()?.categories; track category) {
+            <option [value]="category" [selected]="category === project()?.category">
+              {{ category }}
+            </option>
+          }
+        </select>
+      </span>
+      <span>
+        <button type="button" class="button button-primary" (click)="manageCategories()">
+          {{ 'projects.manageCategories' | translate }}
+        </button>
+      </span>
     </div>
   </section>
 
@@ -58,9 +65,6 @@
 
   @if (!project()?.archived_at) {
     <div class="action-buttons">
-      <button type="button" class="button button-primary" (click)="manageCategories()">
-        {{ 'projects.manageCategories' | translate }}
-      </button>
       <button
         type="button"
         class="button button-primary"
@@ -116,7 +120,9 @@
                 <span>{{ 'objects.level' | translate }}: {{ object.address.level }}</span>
               }
               @if (object.address.door_number) {
-                <span>{{ 'objects.doorNumber' | translate }}: {{ object.address.door_number }}</span>
+                <span
+                  >{{ 'objects.doorNumber' | translate }}: {{ object.address.door_number }}</span
+                >
               }
               @if (object.address.postal_code) {
                 <span>{{ object.address.postal_code }}</span>
