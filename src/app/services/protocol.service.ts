@@ -1,12 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   ProtocolTemplate,
   CreateProtocolTemplate,
   GenerateProtocolRequest,
 } from '../models/protocol.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { environment } from '../environment';
 
 @Injectable({
@@ -40,13 +41,44 @@ export class ProtocolService {
     return this.#httpService.delete<{ message: string }>(`protocols/templates/${templateId}`);
   }
 
-  generateProtocol(request: GenerateProtocolRequest): Observable<Blob> {
-    // For PDF download, we need to handle blob response
-    // Note: We use HttpClient directly here to handle blob response type
+  generateProtocol(request: GenerateProtocolRequest): Observable<{ blob: Blob; filename: string }> {
+    // For PDF download, we need to handle blob response and extract filename from header
     return this.#http.post<Blob>(`${this.apiUrl}/protocols/generate`, request, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
       responseType: 'blob' as 'json',
-    });
+      observe: 'response',
+    }).pipe(
+      map((response: HttpResponse<Blob>) => {
+        
+        let filename = `protocol_${Date.now()}.pdf`;
+        const contentDisposition = response.headers.get('Content-Disposition');
+        
+        if (contentDisposition) {
+          // Try multiple patterns to extract filename
+          // Pattern 1: filename="value" or filename='value'
+          let match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          if (match && match[1]) {
+            filename = match[1].replace(/['"]/g, '').trim();
+          } else {
+            // Pattern 2: filename*=UTF-8''value or filename*=value
+            match = contentDisposition.match(/filename\*=([^;]+)/);
+            if (match && match[1]) {
+              // Handle UTF-8 encoded filenames: UTF-8''filename or just filename
+              filename = match[1].replace(/^UTF-8''/i, '').trim();
+            } else {
+              // Pattern 3: Just look for filename=value (without quotes)
+              match = contentDisposition.match(/filename=([^;]+)/);
+              if (match && match[1]) {
+                filename = match[1].trim();
+              }
+            }
+          }
+        } else {
+          console.warn('No Content-Disposition header found!');
+        }
+        return { blob: response.body!, filename };
+      })
+    );
   }
 
   /**
@@ -58,13 +90,41 @@ export class ProtocolService {
       this.#http
         .get(`${this.apiUrl}/protocols/${projectId}/${protocolId}`, {
           responseType: 'blob',
+          observe: 'response',
         })
         .subscribe({
-          next: (blob) => {
-            const url = window.URL.createObjectURL(blob);
+          next: (response: HttpResponse<Blob>) => {
+            let filename = `protocol_${Date.now()}.pdf`;
+            const contentDisposition = response.headers.get('Content-Disposition');
+            
+            if (contentDisposition) {
+              // Try multiple patterns to extract filename
+              // Pattern 1: filename="value" or filename='value'
+              let match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+              if (match && match[1]) {
+                filename = match[1].replace(/['"]/g, '').trim();
+              } else {
+                // Pattern 2: filename*=UTF-8''value or filename*=value
+                match = contentDisposition.match(/filename\*=([^;]+)/);
+                if (match && match[1]) {
+                  // Handle UTF-8 encoded filenames: UTF-8''filename or just filename
+                  filename = match[1].replace(/^UTF-8''/i, '').trim();
+                } else {
+                  // Pattern 3: Just look for filename=value (without quotes)
+                  match = contentDisposition.match(/filename=([^;]+)/);
+                  if (match && match[1]) {
+                    filename = match[1].trim();
+                  }
+                }
+              }
+            } else {
+              console.warn('No Content-Disposition header found!');
+            }
+                        
+            const url = window.URL.createObjectURL(response.body!);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `protocol_${Date.now()}.pdf`;
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -83,11 +143,11 @@ export class ProtocolService {
   downloadProtocol(request: GenerateProtocolRequest): Observable<void> {
     return new Observable((observer) => {
       this.generateProtocol(request).subscribe({
-        next: (blob) => {
+        next: ({ blob, filename }) => {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `protocol_${Date.now()}.pdf`;
+          link.download = filename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);

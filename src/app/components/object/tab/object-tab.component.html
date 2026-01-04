@@ -4,17 +4,16 @@
   @if (object()) {
     <section class="object-details">
       <header>
-        <h2>{{ 'objects.object' | translate }}</h2>
+        <ul>
+          @if (object()?.address?.level) {
+            <li>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</li>
+          }
+          @if (object()?.address?.door_number) {
+            <li>{{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
+          }
+        </ul>
         <app-status-pill [status]="object()?.status || defaultStatus" />
       </header>
-      <ul>
-        @if (object()?.address?.level) {
-          <li>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</li>
-        }
-        @if (object()?.address?.door_number) {
-          <li>{{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
-        }
-      </ul>
       @if (object()?.note) {
         <p class="note">{{ object()?.note }}</p>
       }

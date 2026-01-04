@@ -43,5 +43,7 @@ export interface GenerateProtocolRequest {
   project_id: string;
   object_ids: string[];
   data?: Record<string, unknown>;
+  from_date?: string;
+  to_date?: string;
 }
 

@@ -116,25 +116,23 @@
           <div class="card" [routerLink]="'/objects/tab/' + object._id?.$oid">
             <app-status-pill [status]="object?.status || 'created'" />
             <h2 class="headline">
+              @if (object.address.house_number) {
+                <span>{{ object.address.house_number + ', ' }}</span>
+              }
               @if (object.address.level) {
-                <span>{{ 'objects.level' | translate }}: {{ object.address.level }}</span>
+                <span>{{ object.address.level + ', ' }}</span>
               }
               @if (object.address.door_number) {
-                <span
-                  >{{ 'objects.doorNumber' | translate }}: {{ object.address.door_number }}</span
-                >
-              }
-              @if (object.address.postal_code) {
-                <span>{{ object.address.postal_code }}</span>
+                <span>{{ object.address.door_number }}</span>
               }
             </h2>
             @if (object.note) {
-              <p class="note">{{ object.note }}</p>
+              <div class="note">{{ object.note }}</div>
             }
-            @if (object.category) {
-              <div class="category">{{ object.category }}</div>
-            }
-            <div class="created-at">{{ object.created_at | date: 'dd.MM.yyyy' }}</div>
+            <div class="created-at">
+              <span>{{ object.created_at | date: 'dd.MM.yyyy' }}</span>
+              <span>{{ object.category }}</span>
+            </div>
           </div>
         }
       </div>

@@ -109,6 +109,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       showDateRange: true,
       showCategory: true,
       categories: project?.categories || [],
+      showSort: true,
     };
   }
 
@@ -360,7 +361,77 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Apply sorting if sort direction is specified
+    if (filter.sortDirection) {
+      filtered = this.#applySort(filtered, filter.sortDirection);
+    }
+
     return filtered;
+  }
+
+  #applySort(objects: Object[], sortDirection: string): Object[] {
+    const sorted = [...objects];
+    
+    sorted.sort((a, b) => {
+      // Sort by house_number first, then door_number (ignoring level)
+      const aHouseNumber = a.address?.house_number ?? '';
+      const bHouseNumber = b.address?.house_number ?? '';
+      const aDoorNumber = a.address?.door_number ?? '';
+      const bDoorNumber = b.address?.door_number ?? '';
+
+      // Extract numeric values for comparison
+      const aHouseNum = this.#extractNumber(aHouseNumber);
+      const bHouseNum = this.#extractNumber(bHouseNumber);
+      const aDoorNum = this.#extractNumber(aDoorNumber);
+      const bDoorNum = this.#extractNumber(bDoorNumber);
+
+      // Compare house_number first
+      let houseComparison = 0;
+      
+      if (aHouseNum !== null && bHouseNum !== null) {
+        // Both are numeric - compare numerically
+        houseComparison = aHouseNum - bHouseNum;
+      } else if (aHouseNum !== null) {
+        // a is numeric, b is not - numeric comes first
+        houseComparison = -1;
+      } else if (bHouseNum !== null) {
+        // b is numeric, a is not - numeric comes first
+        houseComparison = 1;
+      } else {
+        // Both are non-numeric - compare alphabetically
+        houseComparison = aHouseNumber.localeCompare(bHouseNumber);
+      }
+
+      // If house numbers are equal, compare door numbers
+      if (houseComparison === 0) {
+        if (aDoorNum !== null && bDoorNum !== null) {
+          // Both are numeric - compare numerically
+          houseComparison = aDoorNum - bDoorNum;
+        } else if (aDoorNum !== null) {
+          // a is numeric, b is not - numeric comes first
+          houseComparison = -1;
+        } else if (bDoorNum !== null) {
+          // b is numeric, a is not - numeric comes first
+          houseComparison = 1;
+        } else {
+          // Both are non-numeric or empty - compare alphabetically
+          const aDoor = aDoorNumber || '';
+          const bDoor = bDoorNumber || '';
+          houseComparison = aDoor.localeCompare(bDoor);
+        }
+      }
+
+      // Apply sort direction
+      return sortDirection === 'asc' ? houseComparison : -houseComparison;
+    });
+
+    return sorted;
+  }
+
+  #extractNumber(value: string): number | null {
+    // Extract the first number from a string (e.g., "3" from "3", "3rd" from "3rd", "12" from "12A")
+    const match = value.match(/\d+/);
+    return match ? parseInt(match[0], 10) : null;
   }
 
   onFileDeleted(): void {

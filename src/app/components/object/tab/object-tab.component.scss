@@ -78,7 +78,7 @@
   header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;
   }
@@ -89,6 +89,7 @@
     li {
       font-size: 0.95rem;
       color: #444;
+      font-weight: bold;
     }
   }
 

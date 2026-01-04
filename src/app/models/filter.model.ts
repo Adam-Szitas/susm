@@ -1,3 +1,5 @@
+export type SortDirection = 'asc' | 'desc' | '';
+
 export interface Filter {
   placeholder: string;
   value: string;
@@ -11,6 +13,8 @@ export interface Filter {
   selectedCategory?: string;
   dateFrom?: string;
   dateTo?: string;
+  showSort?: boolean;
+  sortDirection?: SortDirection;
 }
 
 export interface FilterResult {
@@ -19,5 +23,6 @@ export interface FilterResult {
   status?: string;
   dateFrom?: string;
   dateTo?: string;
+  sortDirection?: SortDirection;
 }
 

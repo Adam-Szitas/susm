@@ -24,9 +24,9 @@ export class ObjectModalComponent {
 
   public form: FormGroup = this.#formBuilder.group({
     address: this.#formBuilder.group({
+      house_number: ['', Validators.required],
       level: [''],
       door_number: [''],
-      postal_code: [''],
     }),
     note: [''],
     status: [DEFAULT_WORK_STATUS, [Validators.required]],
@@ -39,7 +39,7 @@ export class ObjectModalComponent {
     };
     this.progressing.set(true);
     this.#projectStore.createObject(projectData).subscribe({
-      next: (result) => {
+      next: () => {
         this.#modalService.close();
         this.#projectStore.loadObjects();
       },

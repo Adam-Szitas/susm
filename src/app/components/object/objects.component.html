@@ -1,36 +1,36 @@
 <div class="wrapper">
-    <h1>{{ 'objects.title' | translate }}</h1>
-    <app-filter [filter]="filterData()" (filterChange)="onFilterChange($event)"></app-filter>
-    <div class="card-wrapper">
-        @for (item of filteredObjects(); track item.object?._id?.$oid ?? item.project_name) {
-            @if (item.object; as objectItem) {
-                @let objectId = objectItem._id?.$oid;
-                <div
-                    class="card"
-                    [routerLink]="objectId ? '/objects/tab/' + objectId : null"
-                >
-                    <app-status-pill [status]="objectItem?.status || 'created'" />
-                    <div class="project-name">{{ item.project_name }}</div>
-                    <h2 class="headline">{{ item.project_name }}
-                        @if (objectItem.address.level) {
-                            <span>, {{ 'objects.level' | translate }}: {{ objectItem.address.level }}</span>
-                        }
-                        @if (objectItem.address.door_number) {
-                            <span>, {{ 'objects.doorNumber' | translate }}: {{ objectItem.address.door_number }}</span>
-                        }
-                        @if (objectItem.address.postal_code) {
-                            <span>, {{ objectItem.address.postal_code }}</span>
-                        }
-                    </h2>
-                    @if(objectItem.note) {
-                        <p class="note">{{ objectItem.note }}</p>
-                    }
-                    @if(objectItem.category) {
-                        <div class="category">{{ objectItem.category }}</div>
-                    }
-                    <div class="created-at">{{ objectItem.created_at | date: 'dd.MM.yyyy HH:mm' }}</div>
-                </div>
+  <h1>{{ 'objects.title' | translate }}</h1>
+  <app-filter [filter]="filterData()" (filterChange)="onFilterChange($event)"></app-filter>
+  <div class="card-wrapper">
+    @for (item of filteredObjects(); track item.object?._id?.$oid ?? item.project_name) {
+      @if (item.object; as objectItem) {
+        @let objectId = objectItem._id?.$oid;
+        <div class="card" [routerLink]="objectId ? '/objects/tab/' + objectId : null">
+          <app-status-pill [status]="objectItem?.status || 'created'" />
+          <div class="project-name">{{ item.project_name }}</div>
+          <h2 class="headline">
+            @if (objectItem.address.house_number) {
+              <span>{{ objectItem.address.house_number + ', ' }}</span>
             }
-        }
-    </div>
+            @if (objectItem.address.level) {
+              <span>{{ objectItem.address.level + ', ' }}</span>
+            }
+            @if (objectItem.address.door_number) {
+              <span>{{ objectItem.address.door_number }}</span>
+            }
+            @if (objectItem.address.postal_code) {
+              <span>, {{ objectItem.address.postal_code }}</span>
+            }
+          </h2>
+          @if (objectItem.note) {
+            <div class="note">{{ objectItem.note }}</div>
+          }
+          <div class="created-at">
+            <span>{{ objectItem.created_at | date: 'dd.MM.yyyy HH:mm' }}</span>
+            <span>{{ objectItem.category || '' }}</span>
+          </div>
+        </div>
+      }
+    }
+  </div>
 </div>

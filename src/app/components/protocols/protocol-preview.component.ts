@@ -4,7 +4,15 @@ import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../environment';
 
 interface ProtocolPreviewData {
-  project_name: string;
+  template_name?: string;
+  header_template?: string;
+  description?: string;
+  field_values?: Array<{
+    label: string;
+    value: string;
+    field_type: string;
+  }>;
+  project_name?: string;
   project_address: string;
   table_of_contents: Array<{ title: string; level: number }>;
   content_sections: Array<{
@@ -18,7 +26,7 @@ interface ProtocolPreviewData {
         object_address: string;
       }>;
     }>;
-    ungrouped_images: Array<{
+    ungrouped_images?: Array<{
       path: string;
       description?: string;
       object_address: string;

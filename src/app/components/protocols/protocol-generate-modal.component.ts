@@ -1,11 +1,12 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
-import { Object, ProtocolTemplate } from '@models';
+import { GenerateProtocolRequest, ProtocolTemplate } from '@models';
+import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
 import { ProtocolPreviewComponent } from './protocol-preview.component';
@@ -38,6 +39,32 @@ export class ProtocolGenerateModalComponent {
   showingPreview = signal(false);
   loadingPreview = signal(false);
 
+  selectedTemplate = computed(() => {
+    const templateId = this.form.get('template_id')?.value;
+    if (!templateId || templateId === '') return null;
+    return this.templates().find((t) => t._id?.$oid === templateId) || null;
+  });
+
+  get fieldControls(): FormArray {
+    return this.form.get('fields') as FormArray;
+  }
+
+  // Get template for preview view (directly from form, not computed signal)
+  get templateForPreview(): ProtocolTemplate | null {
+    const templateId = this.form.get('template_id')?.value;
+    if (!templateId || templateId === '') return null;
+    return this.templates().find((t) => t._id?.$oid === templateId) || null;
+  }
+
+  // Check if form is valid for preview (excluding template fields validation)
+  get isFormValidForPreview(): boolean {
+    const templateIdControl = this.form.get('template_id');
+    const hasValue = !!templateIdControl?.value && templateIdControl.value !== '';
+    // For preview, we just need a value - don't check valid state which might be false due to required fields
+    const isValid = hasValue;
+    return isValid;
+  }
+
   #autoSelectObjects = effect(() => {
     const availableObjects = this.objects();
     if (!availableObjects?.length) {
@@ -50,9 +77,7 @@ export class ProtocolGenerateModalComponent {
       .map((object) => object._id?.$oid)
       .filter((value): value is string => !!value);
 
-    const currentSelection = this.selectedObjectIds().filter((id) =>
-      availableIds.includes(id)
-    );
+    const currentSelection = this.selectedObjectIds().filter((id) => availableIds.includes(id));
 
     if (!this.#selectionInitialized()) {
       this.selectedObjectIds.set(currentSelection.length ? currentSelection : availableIds);
@@ -65,7 +90,52 @@ export class ProtocolGenerateModalComponent {
   constructor() {
     this.form = this.#fb.group({
       template_id: ['', [Validators.required]],
+      from_date: [''],
+      to_date: [''],
+      fields: this.#fb.array([]),
     });
+
+    // Watch for template changes and update fields
+    this.form.get('template_id')?.valueChanges.subscribe(() => {
+      this.updateTemplateFields();
+    });
+  }
+
+  updateTemplateFields(): void {
+    // Get templateId directly from form, not from computed signal
+    const templateId = this.form.get('template_id')?.value;
+    if (!templateId || templateId === '') {
+      // Clear fields if no template selected
+      const fieldsArray = this.fieldControls;
+      while (fieldsArray.length !== 0) {
+        fieldsArray.removeAt(0);
+      }
+      return;
+    }
+
+    // Find template directly
+    const template = this.templates().find((t) => t._id?.$oid === templateId);
+    const fieldsArray = this.fieldControls;
+
+    // Clear existing fields
+    while (fieldsArray.length !== 0) {
+      fieldsArray.removeAt(0);
+    }
+
+    if (template && template.fields) {
+      // Add form controls for each template field
+      for (const field of template.fields) {
+        // Don't add required validators here - we'll validate manually on submit
+        // This allows preview even with empty required fields
+        fieldsArray.push(
+          this.#fb.group({
+            label: [field.label],
+            value: [''],
+            field_type: [field.field_type],
+          }),
+        );
+      }
+    }
   }
 
   loadPreview(): void {
@@ -82,44 +152,112 @@ export class ProtocolGenerateModalComponent {
     }
 
     this.loadingPreview.set(true);
-    const request = {
+    const formValue = this.form.value;
+
+    // Build data object from template fields - include all fields even if empty
+    const data: Record<string, unknown> = {};
+    if (formValue.fields && Array.isArray(formValue.fields)) {
+      for (const field of formValue.fields) {
+        // Include field even if empty, so it shows up in preview
+        data[field.label] = field.value || '';
+      }
+    }
+
+    const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
       object_ids: objectIds,
+      from_date: formValue.from_date ? this.formatDateForBackend(formValue.from_date) : undefined,
+      to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
+      data: Object.keys(data).length > 0 ? data : undefined,
     };
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
-      next: (data) => {
-        this.previewData.set(data);
+      next: (previewResponse) => {
+        console.log(previewResponse);
+        this.previewData.set(previewResponse);
+        // Ensure fields are still populated when showing preview
+        // Use template_id from form to get the template, not selectedTemplate() signal
+        const templateId = formValue.template_id;
+        const template =
+          templateId && templateId !== ''
+            ? this.templates().find((t) => t._id?.$oid === templateId)
+            : null;
+
+        if (template && template.fields) {
+          // Re-populate fields if they were cleared or if count doesn't match
+          if (this.fieldControls.controls.length !== template.fields.length) {
+            this.updateTemplateFields();
+          }
+
+          // Restore field values from the form data that was sent
+          if (formValue.fields && Array.isArray(formValue.fields)) {
+            for (
+              let i = 0;
+              i < formValue.fields.length && i < this.fieldControls.controls.length;
+              i++
+            ) {
+              const fieldControl = this.fieldControls.controls[i] as FormGroup;
+              if (fieldControl && formValue.fields[i]) {
+                fieldControl.patchValue({ value: formValue.fields[i].value || '' });
+              }
+            }
+          }
+        }
         this.showingPreview.set(true);
         this.loadingPreview.set(false);
       },
       error: (error) => {
         this.loadingPreview.set(false);
-        this.#notificationService.showError(
-          error.message || 'Failed to load preview'
-        );
+        this.#notificationService.showError(error.message || 'Failed to load preview');
       },
     });
   }
 
   backToForm(): void {
     this.showingPreview.set(false);
+    // Ensure fields are still populated when going back
+    this.updateTemplateFields();
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
+    // Check template_id
+    if (!this.form.get('template_id')?.valid) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.selectTemplate')
+        this.#translationService.instant('protocols.selectTemplate'),
       );
       return;
     }
 
     if (!this.hasSelection()) {
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.selectObjectsRequired')
+        this.#translationService.instant('protocols.selectObjectsRequired'),
       );
       return;
+    }
+
+    // Validate required template fields manually
+    const fieldsArray = this.fieldControls;
+    const templateIdForValidation = this.form.get('template_id')?.value;
+    const template = templateIdForValidation
+      ? this.templates().find((t) => t._id?.$oid === templateIdForValidation)
+      : null;
+
+    if (template && template.fields) {
+      for (let i = 0; i < template.fields.length; i++) {
+        const field = template.fields[i];
+        if (field.required) {
+          const fieldControl = fieldsArray.controls[i] as FormGroup;
+          const value = fieldControl?.get('value')?.value;
+          if (!value || (typeof value === 'string' && value.trim() === '')) {
+            this.#notificationService.showError(
+              `${this.#translationService.instant('protocols.fieldRequired')}: ${field.label}`,
+            );
+            fieldControl?.get('value')?.markAsTouched();
+            return;
+          }
+        }
+      }
     }
 
     this.generating.set(true);
@@ -131,15 +269,29 @@ export class ProtocolGenerateModalComponent {
     if (!projectId || objectIds.length === 0) {
       this.generating.set(false);
       this.#notificationService.showError(
-        this.#translationService.instant('protocols.generateMissingData')
+        this.#translationService.instant('protocols.generateMissingData'),
       );
       return;
     }
 
-    const request = {
+    const formValue = this.form.value;
+
+    // Build data object from template fields - include all fields even if empty
+    const data: Record<string, unknown> = {};
+    if (formValue.fields && Array.isArray(formValue.fields)) {
+      for (const field of formValue.fields) {
+        // Include field even if empty, so it shows up in PDF
+        data[field.label] = field.value || '';
+      }
+    }
+
+    const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
       object_ids: objectIds,
+      from_date: formValue.from_date ? this.formatDateForBackend(formValue.from_date) : undefined,
+      to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
+      data: Object.keys(data).length > 0 ? data : undefined,
     };
 
     this.#protocolService.downloadProtocol(request).subscribe({
@@ -147,14 +299,14 @@ export class ProtocolGenerateModalComponent {
         this.#projectStore.loadProject(projectId);
         this.generating.set(false);
         this.#notificationService.showSuccess(
-          this.#translationService.instant('protocols.generated')
+          this.#translationService.instant('protocols.generated'),
         );
         this.#modalService.close();
       },
       error: (error) => {
         this.generating.set(false);
         this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.generateFailed')
+          error.message || this.#translationService.instant('protocols.generateFailed'),
         );
       },
     });
@@ -184,16 +336,39 @@ export class ProtocolGenerateModalComponent {
   }
 
   formatObjectLabel(object: Object): string {
-    // Get project street from store (project street is used for objects, not project name)
-    const project = this.#projectStore.project();
-    const projectStreet = project?.address?.street ?? '';
-    
     // ObjectAddress only has level, door_number, and postal_code
-    const level = object.address?.level ? `, L${object.address?.level}` : '';
-    const door = object.address?.door_number ? `, D${object.address?.door_number}` : '';
-    const postalCode = object.address?.postal_code ? `, ${object.address?.postal_code}` : '';
-    
-    return `${projectStreet}${level}${door}${postalCode}`.trim() || object._id?.$oid || '';
+    const houseNumber = object.address?.house_number ? `${object.address?.house_number}, ` : '';
+    const level = object.address?.level ? `${object.address?.level}, ` : '';
+    const door = object.address?.door_number ? `${object.address?.door_number}` : '';
+
+    return `${houseNumber}${level}${door}`.trim() || object._id?.$oid || '';
+  }
+
+  private formatDateForBackend(dateString: string, isEndDate = false): string {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+
+    if (isEndDate) {
+      // Set to end of day for to_date
+      date.setHours(23, 59, 59, 999);
+    } else {
+      // Set to start of day for from_date
+      date.setHours(0, 0, 0, 0);
+    }
+
+    return date.toISOString();
+  }
+
+  getFieldInputType(fieldType: string): string {
+    switch (fieldType) {
+      case 'date':
+        return 'date';
+      case 'number':
+        return 'number';
+      default:
+        return 'text';
+    }
   }
 }
-

@@ -1,6 +1,4 @@
 <div class="protocol-template-form">
-  <h2>{{ (isEditing() ? 'protocols.editTemplate' : 'protocols.createTemplate') | translate }}</h2>
-
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="name">{{ 'protocols.templateName' | translate }} *</label>
@@ -75,11 +73,7 @@
                 </label>
               </div>
 
-              <button
-                type="button"
-                class="btn btn-danger btn-small"
-                (click)="removeField($index)"
-              >
+              <button type="button" class="btn btn-danger btn-small" (click)="removeField($index)">
                 {{ 'protocols.remove' | translate }}
               </button>
             </div>
@@ -102,4 +96,3 @@
     </div>
   </form>
 </div>
-

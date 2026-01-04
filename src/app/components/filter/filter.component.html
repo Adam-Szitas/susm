@@ -77,6 +77,17 @@
         </div>
       }
 
+      @if (filter().showSort) {
+        <div class="control">
+          <label for="sortDirection">{{ 'filter.sortDirection' | translate }}</label>
+          <select id="sortDirection" formControlName="sortDirection" class="filter-input">
+            <option value="">{{ 'filter.noSort' | translate }}</option>
+            <option value="asc">{{ 'filter.ascending' | translate }}</option>
+            <option value="desc">{{ 'filter.descending' | translate }}</option>
+          </select>
+        </div>
+      }
+
       <div class="control control-actions">
         <button type="button" class="btn btn-secondary btn-small" (click)="clearFilters()">
           {{ 'filter.clear' | translate }}

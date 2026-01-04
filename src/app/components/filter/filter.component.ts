@@ -8,7 +8,7 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { Filter, FilterResult } from '@models';
+import { Filter, FilterResult, SortDirection } from '@models';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -33,6 +33,7 @@ export class FilterComponent implements OnInit {
     status: new FormControl(''),
     dateFrom: new FormControl(''),
     dateTo: new FormControl(''),
+    sortDirection: new FormControl(''),
   });
 
   constructor() {
@@ -67,6 +68,12 @@ export class FilterComponent implements OnInit {
         this.currentFilter = { ...this.currentFilter, status: value?.toString() };
         this.emitFilterChange()
       });
+      
+      this.searchForm.get('sortDirection')?.valueChanges
+      .subscribe((value) => {
+        this.currentFilter = { ...this.currentFilter, sortDirection: (value?.toString() || '') as SortDirection };
+        this.emitFilterChange()
+      });
   }
 
   ngOnInit(): void {
@@ -86,6 +93,9 @@ export class FilterComponent implements OnInit {
     if(filterData.statuses) {
       this.searchForm.patchValue({ status: filterData.selectedStatus });
     }
+    if (filterData.sortDirection) {
+      this.searchForm.patchValue({ sortDirection: filterData.sortDirection });
+    }
   }
 
   private emitFilterChange(): void {
@@ -103,6 +113,7 @@ export class FilterComponent implements OnInit {
       status: '',
       dateFrom: '',
       dateTo: '',
+      sortDirection: '',
     });
   }
 }

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FileGroup, ProjectFile, FileGroupItem } from '@models';
 import { environment } from '../../environment';
@@ -32,7 +25,7 @@ export class FileListComponent {
   public fileGroups = input<FileGroup[]>([]);
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
-  
+
   public activeFileId: string | null = null;
   public fileDeleted = output<void>();
   public metadataUpdated = output<void>();
@@ -98,7 +91,43 @@ export class FileListComponent {
     this.editingFileId.set(id);
     this.editFileDescription.set(file.description || '');
     this.editFileName.set(file.filename || '');
-    this.editFileCreatedAt.set(file.created_at || '');
+    
+    // Format created_at for date input (YYYY-MM-DD format)
+    let dateValue = '';
+    if (file.created_at) {
+      const raw: any = (file as any).created_at;
+      let date: Date | null = null;
+      
+      if (raw instanceof Date) {
+        date = raw;
+      } else if (typeof raw === 'string') {
+        date = new Date(raw);
+        if (isNaN(date.getTime())) {
+          date = null;
+        }
+      } else if (typeof raw === 'object' && raw !== null) {
+        // Handle BSON-style objects
+        const candidate = (raw as any).$date ?? (raw as any).date ?? null;
+        if (candidate) {
+          const timestamp = typeof candidate === 'number' 
+            ? candidate 
+            : (candidate.$numberLong ? Number(candidate.$numberLong) : null);
+          if (timestamp) {
+            date = new Date(timestamp);
+          }
+        }
+      }
+      
+      if (date && !isNaN(date.getTime())) {
+        // Format as YYYY-MM-DD for date input
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        dateValue = `${year}-${month}-${day}`;
+      }
+    }
+    
+    this.editFileCreatedAt.set(dateValue);
   }
 
   public cancelEditFile(): void {
@@ -111,13 +140,29 @@ export class FileListComponent {
 
     const description = this.editFileDescription().trim();
     const filename = this.editFileName().trim();
-    const createdAt = this.editFileCreatedAt().trim();
+    const createdAtRaw = this.editFileCreatedAt().trim();
+    
+    // Convert date string to ISO 8601 format (RFC3339) for backend
+    // Backend expects format like "2026-01-01T00:00:00Z"
+    let createdAt: string | undefined = undefined;
+    if (createdAtRaw) {
+      // Date input returns YYYY-MM-DD format
+      // Parse it explicitly to avoid timezone issues
+      const [year, month, day] = createdAtRaw.split('-').map(Number);
+      if (year && month && day) {
+        // Create date in UTC to avoid timezone conversion issues
+        const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+        if (!isNaN(date.getTime())) {
+          createdAt = date.toISOString();
+        }
+      }
+    }
 
     this.#fileService
       .updateFileMetadata(id, {
         description: description || undefined,
         filename: filename || undefined,
-        created_at: createdAt || undefined,
+        created_at: createdAt,
       })
       .subscribe({
         next: () => {
@@ -158,7 +203,7 @@ export class FileListComponent {
       // Handle possible BSON-style or custom objects, e.g. { $date: ... }
       const candidate = (raw as any).$date ?? (raw as any).date ?? null;
       if (candidate) {
-        const d = new Date(candidate);
+        const d = new Date(Number(candidate.$numberLong));
         if (!Number.isNaN(d.getTime())) {
           date = d;
         }
