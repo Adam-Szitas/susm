@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FileGroup, ProjectFile, FileGroupItem } from '@models';
 import { environment } from '../../environment';
@@ -26,9 +26,61 @@ export class FileListComponent {
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
 
+  constructor() {
+    // Clean up failed file IDs when data changes (files that are no longer present)
+    effect(() => {
+      const groups = this.fileGroups();
+      const projectFiles = this.projectFiles();
+      
+      // Collect all current file IDs
+      const currentFileIds = new Set<string>();
+      groups.forEach((group) => {
+        group.files.forEach((file) => {
+          const id = file._id?.$oid;
+          if (id) currentFileIds.add(id);
+        });
+      });
+      projectFiles.forEach((file) => {
+        const id = file._id?.$oid;
+        if (id) currentFileIds.add(id);
+      });
+      
+      // Remove failed file IDs that are no longer in the current data
+      // (this handles the case where files were successfully deleted and reloaded)
+      this.failedFileIds.forEach((id) => {
+        if (!currentFileIds.has(id)) {
+          this.failedFileIds.delete(id);
+        }
+      });
+    });
+  }
+
+  // Computed filtered file groups (excluding empty groups and failed files)
+  public filteredFileGroups = computed(() => {
+    const groups = this.fileGroups();
+    return groups
+      .map((group) => ({
+        ...group,
+        files: group.files.filter(
+          (file) => !this.failedFileIds.has(file._id?.$oid || ''),
+        ),
+      }))
+      .filter((group) => group.files.length > 0);
+  });
+
+  // Computed filtered project files (excluding failed files)
+  public filteredProjectFiles = computed(() => {
+    return this.projectFiles().filter(
+      (file) => !this.failedFileIds.has(file._id?.$oid || ''),
+    );
+  });
+
   public activeFileId: string | null = null;
   public fileDeleted = output<void>();
   public metadataUpdated = output<void>();
+
+  // Track files that failed to load
+  private failedFileIds = new Set<string>();
 
   // Inline edit state for group description/category
   public editingGroupId = signal<string | null>(null);
@@ -289,6 +341,9 @@ export class FileListComponent {
       return;
     }
 
+    // Mark as failed immediately to hide it from UI
+    this.failedFileIds.add(fileId);
+
     this.#fileService.deleteFile(fileId).subscribe({
       next: () => {
         this.#notificationService.showSuccess(
@@ -297,6 +352,8 @@ export class FileListComponent {
         this.fileDeleted.emit();
       },
       error: (error) => {
+        // Remove from failed list if deletion failed (so it can be shown again)
+        this.failedFileIds.delete(fileId);
         this.#notificationService.showError(
           error.message ||
             this.#translationService.instant('fileList.deleteFailed') ||
@@ -304,5 +361,18 @@ export class FileListComponent {
         );
       },
     });
+  }
+
+  public onImageError(file: FileGroupItem | ProjectFile, event: Event): void {
+    const fileId = file._id?.$oid;
+    if (fileId) {
+      // Mark file as failed to load
+      this.failedFileIds.add(fileId);
+      // Hide the image element
+      const img = event.target as HTMLImageElement;
+      if (img) {
+        img.style.display = 'none';
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 <div class="file-wrapper">
   <!-- Object File Groups -->
-  @for (group of fileGroups(); track group._id.$oid) {
+  @for (group of filteredFileGroups(); track group._id.$oid) {
     <div class="file-group">
       <div class="group-header">
         @if (editingGroupId() === group._id.$oid) {
@@ -49,6 +49,7 @@
                 [src]="getImageUrl(file.path)"
                 [alt]="file.filename || 'File Preview'"
                 loading="lazy"
+                (error)="onImageError(file, $event)"
               />
               <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
                 <span class="download-hint" (click)="downloadFile(file.path, file.filename)">{{
@@ -125,16 +126,17 @@
   }
 
   <!-- Project Files (simple, no groups) -->
-  @if (projectFiles().length > 0) {
+  @if (filteredProjectFiles().length > 0) {
     <div class="file-group ungrouped">
       <ul class="file-gallery">
-        @for (file of projectFiles(); track file._id.$oid) {
+        @for (file of filteredProjectFiles(); track file._id.$oid) {
           <li class="file-item">
             <div class="image-container" (click)="showOverlay(file)">
               <img
                 [src]="getImageUrl(file.path)"
                 [alt]="file.filename || 'File Preview'"
                 loading="lazy"
+                (error)="onImageError(file, $event)"
               />
               <div class="overlay" [class.visible]="activeFileId === file._id.$oid">
                 <span class="download-hint" (click)="downloadFile(file.path, file.filename)">{{
