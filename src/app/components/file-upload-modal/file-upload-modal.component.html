@@ -27,8 +27,13 @@
             accept="image/*"
             multiple
             (change)="onFileSelected($event)"
-            [disabled]="uploading()"
+            [disabled]="uploading() || compressing()"
           />
+          @if (compressing()) {
+            <div class="compressing-indicator">
+              <span>Compressing images...</span>
+            </div>
+          }
         </div>
 
         @if (filePreviews().length > 0) {

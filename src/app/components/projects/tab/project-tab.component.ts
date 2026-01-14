@@ -27,6 +27,7 @@ import { CategoryManagementModalComponent } from '../category-management-modal.c
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
+import { ImageCompressionService } from '@services/image-compression.service';
 
 @Component({
   selector: 'app-project-tab',
@@ -51,6 +52,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #translationService = inject(TranslationService);
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
+  #imageCompressionService = inject(ImageCompressionService);
   #routeSubscription?: Subscription;
 
   project = this.#projectStore.project;
@@ -255,14 +257,17 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     return date.toLocaleString();
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
+    if (!input.files?.length) {
+      input.value = '';
+      return;
+    }
 
     const file = input.files[0];
 
     // Validate file type (images only)
-    if (!file.type.startsWith('image/')) {
+    if (!this.#imageCompressionService.isImageFile(file)) {
       this.#notificationService.showError(
         this.#translationService.instant('errors.imageFileRequired'),
       );
@@ -271,26 +276,51 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      this.imagePreviewUrl.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
     // Upload file
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) {
       this.#notificationService.showError(
         this.#translationService.instant('errors.objectIdNotFound'),
       );
+      input.value = '';
       return;
     }
 
-    this.uploadFile(file, projectId);
+    try {
+      // Compress image before upload
+      const compressedFile = await this.#imageCompressionService.compressImage(file);
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onerror = () => {
+        this.#notificationService.showError(
+          this.#translationService.instant('errors.fileReadFailed'),
+        );
+        input.value = '';
+      };
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.imagePreviewUrl.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+
+      // Upload compressed file
+      this.uploadFile(compressedFile, projectId);
+    } catch (error) {
+      this.#notificationService.showError(
+        error instanceof Error
+          ? error.message
+          : this.#translationService.instant('errors.imageCompressionFailed'),
+      );
+      input.value = '';
+    }
   }
 
   private uploadFile(file: File, projectId: string): void {
+    // Prevent multiple simultaneous uploads
+    if (this.uploading()) {
+      return;
+    }
+
     this.uploading.set(true);
 
     const form = new FormData();
@@ -303,6 +333,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         );
         this.#projectStore.loadProject(projectId);
         this.uploading.set(false);
+        this.imagePreviewUrl.set(null);
+        // Reset file input
+        const fileInput = document.getElementById('file') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
       },
       error: (error) => {
         this.#notificationService.showError(
@@ -310,6 +346,11 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         );
         this.uploading.set(false);
         this.imagePreviewUrl.set(null);
+        // Reset file input on error
+        const fileInput = document.getElementById('file') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
       },
     });
   }
