@@ -295,13 +295,50 @@ export class ObjectTabComponent implements OnInit {
     }
   }
 
+  private reloadObject(): void {
+    const objectId = this.#route.snapshot.paramMap.get('id');
+    if (!objectId) return;
+
+    this.#projectStore.loadObject(objectId).subscribe({
+      next: (reloadedObject) => {
+        if (reloadedObject) {
+          // Create a new object reference to ensure change detection
+          this.object.set({ ...reloadedObject });
+        }
+      },
+      error: () => {
+        this.#notificationService.showError(
+          this.#translationService.instant('errors.loadObjectFailed'),
+        );
+      },
+    });
+  }
+
   editObjectDetails(): void {
-    this.#modalService.open({
+    const objectId = this.#route.snapshot.paramMap.get('id');
+    if (!objectId) return;
+
+    const currentObject = this.object();
+    if (!currentObject) return;
+
+    const { childRef } = this.#modalService.open({
       title: 'objects.editObject',
       component: EditObjectComponent,
       componentInputs: {
-        objectData: this.object(),
+        objectData: currentObject,
       },
     });
+
+    // Subscribe to the output event from the edit component
+    if (childRef) {
+      const editComponent = childRef.instance as EditObjectComponent;
+      editComponent.objectUpdated.subscribe((updatedObject: Object) => {
+        console.log('Object tab: Received objectUpdated event', updatedObject);
+        // Immediately update the object signal with the new data
+        this.object.set(updatedObject);
+        // Also reload from server to ensure consistency
+        this.reloadObject();
+      });
+    }
   }
 }

@@ -5,11 +5,14 @@
     <section class="object-details">
       <header>
         <ul>
+          @if (object()?.address?.house_number) {
+            <li>{{ 'common.houseNumber' | translate }}: {{ object()?.address?.house_number }}</li>
+          }
           @if (object()?.address?.level) {
-            <li>{{ 'objects.level' | translate }}: {{ object()?.address?.level }}</li>
+            <li>{{ 'common.level' | translate }}: {{ object()?.address?.level }}</li>
           }
           @if (object()?.address?.door_number) {
-            <li>{{ 'objects.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
+            <li>{{ 'common.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
           }
         </ul>
         <app-status-pill [status]="object()?.status || defaultStatus" />

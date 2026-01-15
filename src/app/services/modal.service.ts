@@ -39,7 +39,7 @@ export class ModalService {
     return container;
   }
 
-  open(config?: ModalConfig): ComponentRef<ModalComponent> {
+  open(config?: ModalConfig): { modalRef: ComponentRef<ModalComponent>; childRef?: ComponentRef<any> } {
     // Close any existing modal first
     this.close();
 
@@ -56,18 +56,19 @@ export class ModalService {
     Object.assign(this.componentRef.instance, config || {});
     this.componentRef.instance.modalService = this;
 
+    let childRef: ComponentRef<any> | undefined;
     if (config?.component) {
-      this.injectComponentIntoModal(config.component, config.componentInputs);
+      childRef = this.injectComponentIntoModal(config.component, config.componentInputs) || undefined;
     }
 
-    return this.componentRef;
+    return { modalRef: this.componentRef, childRef };
   }
 
-  private injectComponentIntoModal(componentType: any, inputs?: Record<string, any>) {
-    if (!this.componentRef) return;
+  private injectComponentIntoModal(componentType: any, inputs?: Record<string, any>): ComponentRef<any> | null {
+    if (!this.componentRef) return null;
     
     const modalBody = this.componentRef.location.nativeElement.querySelector('.modal-body');
-    if (!modalBody) return;
+    if (!modalBody) return null;
 
     // Clear ng-content
     modalBody.innerHTML = '';
@@ -86,6 +87,7 @@ export class ModalService {
     }
 
     this.#appRef.attachView(childComponent.hostView);
+    return childComponent;
   }
 
   close() {
