@@ -8,6 +8,7 @@ import { TranslationService } from '@services/translation.service';
 interface FilePreview {
   file: globalThis.File;
   previewUrl: string;
+  uniqueId: string; // Unique identifier for each file to prevent duplicates
 }
 
 @Component({
@@ -52,18 +53,24 @@ export class FileUploadModalComponent {
       return;
     }
 
-    // Get existing files to avoid duplicates
-    const existingFiles = this.filePreviews().map(p => p.file);
-    const existingFileKeys = new Set(
-      existingFiles.map(f => `${f.name}-${f.size}-${f.lastModified}`)
+    // Get existing unique IDs to avoid duplicates
+    const existingUniqueIds = new Set(
+      this.filePreviews().map(p => p.uniqueId)
     );
 
-    // Filter out files that are already selected
-    const newFiles = imageFiles.filter(
-      file => !existingFileKeys.has(`${file.name}-${file.size}-${file.lastModified}`)
+    // Create unique identifiers for new files
+    // For camera photos, we need to ensure each file gets a unique ID even if they have the same name/size
+    const newFilesWithIds = imageFiles.map((file, index) => ({
+      file,
+      uniqueId: `${Date.now()}-${index}-${Math.random().toString(36).substring(2, 15)}-${file.name}-${file.size}`
+    }));
+
+    // Filter out files that might be duplicates (though camera photos should all be unique)
+    const filesToProcess = newFilesWithIds.filter(
+      ({ uniqueId }) => !existingUniqueIds.has(uniqueId)
     );
 
-    if (newFiles.length === 0) {
+    if (filesToProcess.length === 0) {
       // Reset input to allow selecting the same file again if needed
       input.value = '';
       return;
@@ -72,21 +79,34 @@ export class FileUploadModalComponent {
     // Compress images and create previews
     this.compressing.set(true);
     try {
-      const compressedFiles = await this.#imageCompressionService.compressImages(newFiles);
+      // Compress all files
+      const filesToCompress = filesToProcess.map(({ file }) => file);
+      const compressedFiles = await this.#imageCompressionService.compressImages(filesToCompress);
 
-      // Create previews for compressed files - fix race condition by using Promise.all
+      // Create previews for compressed files with unique IDs
+      // CRITICAL FIX: Ensure each compressed file gets its own unique File object
+      // This prevents the issue where multiple camera photos end up referencing the same file
       const currentPreviews = [...this.filePreviews()];
-      const previewPromises = compressedFiles.map((file) => {
+      const previewPromises = compressedFiles.map((compressedFile, index) => {
         return new Promise<FilePreview>((resolve, reject) => {
           const reader = new FileReader();
-          reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
+          reader.onerror = () => reject(new Error(`Failed to read file: ${compressedFile.name}`));
           reader.onload = (e: ProgressEvent<FileReader>) => {
+            // Create a new File object with a unique name and timestamp to ensure it's treated as a separate file
+            // This is critical for camera photos which might have the same original filename
+            const uniqueFileName = `${Date.now()}-${index}-${compressedFile.name}`;
+            const uniqueFile = new File([compressedFile], uniqueFileName, {
+              type: compressedFile.type,
+              lastModified: Date.now() + index, // Ensure unique timestamp for each file
+            });
+            
             resolve({
-              file,
+              file: uniqueFile,
               previewUrl: e.target?.result as string,
+              uniqueId: filesToProcess[index].uniqueId, // Use the original unique ID
             });
           };
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(compressedFile);
         });
       });
 
@@ -130,9 +150,9 @@ export class FileUploadModalComponent {
 
   removeFile(index: number): void {
     const previews = this.filePreviews();
-    previews.splice(index, 1);
-    this.filePreviews.set([...previews]);
-    this.filesSelected.emit(previews.map(p => p.file));
+    const updatedPreviews = previews.filter((_, i) => i !== index);
+    this.filePreviews.set(updatedPreviews);
+    this.filesSelected.emit(updatedPreviews.map(p => p.file));
   }
 
   clearAll(): void {
