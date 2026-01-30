@@ -314,7 +314,9 @@ export class FileListComponent {
   public handleOverlayDelete(event: Event, file: FileGroupItem | ProjectFile): void {
     event.stopPropagation();
     event.preventDefault();
-    this.deleteFile(file);
+    // Defer so the touch/click completes before showing confirm() - fixes iOS Safari
+    // where synchronous native dialogs inside tap handlers can prevent the action from running
+    setTimeout(() => this.deleteFile(file), 0);
   }
 
   public downloadFile(path: string, filename?: string): void {
