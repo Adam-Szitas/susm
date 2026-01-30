@@ -19,5 +19,6 @@ export interface Project {
   protocols?: ProtocolRecord[];
   archived_at?: string;
   archive_comment?: string;
+  deleted_at?: string;
   created_at?: string;
 }

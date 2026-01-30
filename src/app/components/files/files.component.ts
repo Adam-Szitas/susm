@@ -45,27 +45,43 @@ export class FilesComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
 
+  // Track file IDs that failed to load (e.g. deleted, 404) so we don't show them
+  #failedFileIds = new Set<string>();
+  #failedFileIdsVersion = signal(0);
+
   // Filter state
   selectedProject = signal<string>('');
   #currentFilter = signal<FilterResult>({});
 
+  // Exclude deleted and failed-to-load files from the list we work with
+  #filesForDisplay = computed(() => {
+    this.#failedFileIdsVersion();
+    return this.files().filter((f) => {
+      const id = f?.file?._id?.$oid;
+      if (!id || this.#failedFileIds.has(id)) return false;
+      if ((f.file as { deleted_at?: string })?.deleted_at) return false;
+      if (!f.file?.path) return false;
+      return true;
+    });
+  });
+
   // Computed values
   projects = computed(() => {
     const allProjects = new Set<string>();
-    this.files().forEach((f) => {
+    this.#filesForDisplay().forEach((f) => {
       if (f.project) {
         allProjects.add(f.project.id);
       }
     });
     return Array.from(allProjects).map((id) => {
-      const file = this.files().find((f) => f.project?.id === id);
+      const file = this.#filesForDisplay().find((f) => f.project?.id === id);
       return { id, name: file?.project?.name || 'Unknown' };
     });
   });
 
   categories = computed(() => {
     const allCategories = new Set<string>();
-    this.files().forEach((f) => {
+    this.#filesForDisplay().forEach((f) => {
       if (f.file.category) {
         allCategories.add(f.file.category);
       }
@@ -75,7 +91,7 @@ export class FilesComponent implements OnInit {
 
   filteredFiles = computed(() => {
     const filter = this.#currentFilter();
-    let result = this.files();
+    let result = this.#filesForDisplay();
 
     if (filter.searchText) {
       const search = filter.searchText.toLowerCase().trim();
@@ -137,10 +153,11 @@ export class FilesComponent implements OnInit {
   loadFiles(): void {
     this.loading.set(true);
     this.error.set(null);
+    this.#failedFileIds.clear();
 
     this.#fileService.getAllFilesWithContext().subscribe({
       next: (files) => {
-        this.files.set(files);
+        this.files.set(Array.isArray(files) ? files : []);
         this.loading.set(false);
       },
       error: (error) => {
@@ -151,23 +168,29 @@ export class FilesComponent implements OnInit {
   }
 
   getImageUrl(path: string): string {
-    if(path) {
-      let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
-  
-      if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
-        const encodedPath = encodeURIComponent(normalizedPath);
-        return `${environment.be}${environment.folderBase}/${encodedPath}`;
-      }
-  
-      if (normalizedPath.startsWith('uploads/')) {
-        normalizedPath = normalizedPath.substring('uploads/'.length);
-      }
-  
-      const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
-      const encodedPath = pathSegments.join('/');
-      return `${environment.be}${environment.folderBase}/${encodedPath}`;
-    } else {
-      return path;
+    if (!path || typeof path !== 'string') {
+      return '';
+    }
+    let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
+
+    if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+      return normalizedPath;
+    }
+
+    if (normalizedPath.startsWith('uploads/')) {
+      normalizedPath = normalizedPath.substring('uploads/'.length);
+    }
+
+    const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
+    const encodedPath = pathSegments.join('/');
+    return `${environment.be}${environment.folderBase}/${encodedPath}`;
+  }
+
+  onImageError(fileWithContext: FileWithContext): void {
+    const id = fileWithContext?.file?._id?.$oid;
+    if (id) {
+      this.#failedFileIds.add(id);
+      this.#failedFileIdsVersion.update((v) => v + 1);
     }
   }
 

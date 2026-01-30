@@ -2,6 +2,7 @@
   "routes": {
     "/": {},
     "/dashboard": {},
+    "/files": {},
     "/login": {},
     "/objects": {},
     "/projects": {},

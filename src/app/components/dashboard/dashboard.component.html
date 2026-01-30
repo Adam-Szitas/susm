@@ -19,6 +19,14 @@
   @if (loading()) {
     <div class="loading">{{ 'dashboard.loading' | translate }}</div>
   } @else if (stats()) {
+    <!-- At a glance summary -->
+    <section class="dashboard-summary">
+      <h2>{{ 'dashboard.atAGlance' | translate }}</h2>
+      <p class="summary-text">
+        {{ 'dashboard.summaryText' | translate: { projects: stats()!.total_projects, objects: stats()!.total_objects, files: (stats()!.project_files_count + stats()!.object_files_count) } }}
+      </p>
+    </section>
+
     <div class="dashboard-grid">
       <!-- Superuser Card -->
       <div class="stat-card">
@@ -38,12 +46,30 @@
         </div>
       </div>
 
+      <!-- Archived Projects Card -->
+      <div class="stat-card stat-card-muted">
+        <div class="stat-icon">📂</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.archivedProjects' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.archived_projects_count ?? 0 }}</p>
+        </div>
+      </div>
+
       <!-- Total Objects Card -->
       <div class="stat-card">
         <div class="stat-icon">📦</div>
         <div class="stat-content">
           <h3>{{ 'dashboard.totalObjects' | translate }}</h3>
           <p class="stat-value">{{ stats()?.total_objects }}</p>
+        </div>
+      </div>
+
+      <!-- Team Users Card -->
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.teamUsers' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_users ?? 0 }}</p>
         </div>
       </div>
 
@@ -62,6 +88,33 @@
         <div class="stat-content">
           <h3>{{ 'dashboard.objectFiles' | translate }}</h3>
           <p class="stat-value">{{ stats()?.object_files_count }}</p>
+        </div>
+      </div>
+
+      <!-- File Groups Card -->
+      <div class="stat-card stat-card-muted">
+        <div class="stat-icon">🗂️</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.fileGroups' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_file_groups ?? 0 }}</p>
+        </div>
+      </div>
+
+      <!-- Protocol Templates Card -->
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.protocolTemplates' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_protocol_templates ?? 0 }}</p>
+        </div>
+      </div>
+
+      <!-- Protocols Generated Card -->
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <h3>{{ 'dashboard.protocolsGenerated' | translate }}</h3>
+          <p class="stat-value">{{ stats()?.total_protocols_generated ?? 0 }}</p>
         </div>
       </div>
     </div>

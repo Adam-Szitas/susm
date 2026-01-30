@@ -75,7 +75,7 @@ export class FileListComponent {
     );
   });
 
-  public activeFileId: string | null = null;
+  public activeFileId = signal<string | null>(null);
   public fileDeleted = output<void>();
   public metadataUpdated = output<void>();
 
@@ -252,12 +252,19 @@ export class FileListComponent {
         date = d;
       }
     } else if (typeof raw === 'object') {
-      // Handle possible BSON-style or custom objects, e.g. { $date: ... }
+      // Handle possible BSON-style or custom objects, e.g. { $date: ... } or { $numberLong: "..." }
       const candidate = (raw as any).$date ?? (raw as any).date ?? null;
       if (candidate) {
-        const d = new Date(Number(candidate.$numberLong));
-        if (!Number.isNaN(d.getTime())) {
-          date = d;
+        if (typeof candidate === 'string' || typeof candidate === 'number') {
+          const d = new Date(candidate);
+          if (!Number.isNaN(d.getTime())) {
+            date = d;
+          }
+        } else if (candidate.$numberLong != null) {
+          const d = new Date(Number(candidate.$numberLong));
+          if (!Number.isNaN(d.getTime())) {
+            date = d;
+          }
         }
       }
     }
@@ -290,7 +297,24 @@ export class FileListComponent {
   public showOverlay(file: FileGroupItem | ProjectFile): void {
     const id = file._id?.$oid;
     if (!id) return;
-    this.activeFileId = id;
+    // Toggle: if this overlay is already open, close it; otherwise open it
+    this.activeFileId.update((current) => (current === id ? null : id));
+  }
+
+  public hideOverlay(): void {
+    this.activeFileId.set(null);
+  }
+
+  public handleOverlayDownload(event: Event, path: string, filename?: string): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.downloadFile(path, filename);
+  }
+
+  public handleOverlayDelete(event: Event, file: FileGroupItem | ProjectFile): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.deleteFile(file);
   }
 
   public downloadFile(path: string, filename?: string): void {

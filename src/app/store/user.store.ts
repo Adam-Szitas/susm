@@ -17,6 +17,7 @@ export class UserStore {
   readonly user = computed(() => this._user());
   readonly token = computed(() => this._token());
   readonly isAuthenticated = computed(() => !!this._token());
+  readonly isAdmin = computed(() => this._user()?.role === 'admin');
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
   readonly initialized = computed(() => this._initialized());

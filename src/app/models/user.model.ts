@@ -19,4 +19,6 @@ export interface User {
   email: string;
   addresses?: ProjectAddress;
   language: string;
+  /** Set by backend for super_user (company admin). Used to show delete project etc. */
+  role?: string;
 }

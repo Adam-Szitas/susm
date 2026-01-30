@@ -64,7 +64,7 @@
   }
 
   <div class="content-wrapper">
-    <div class="share-block">
+    <!-- <div class="share-block">
       <button type="button" class="primary" (click)="generateShareQr()" [disabled]="shareLoading()">
         @if (shareLoading()) {
           {{ 'objects.generatingQr' | translate }}
@@ -81,7 +81,7 @@
           {{ 'objects.copyLink' | translate }}
         </button>
       }
-    </div>
+    </div> -->
 
     @if (shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>

@@ -259,6 +259,21 @@ export class ProjectStore {
     );
   }
 
+  /** Soft-delete project (sets deleted_at). Project will no longer appear in list. */
+  public deleteProject(projectId: string): Observable<{ message: string }> {
+    return this.#httpService.put<{ message: string }>(`project/${projectId}/delete`, {}).pipe(
+      tap({
+        next: () => {
+          this._project.set(null);
+          this.loadProjects();
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to delete project');
+        },
+      }),
+    );
+  }
+
   clearError(): void {
     this._error.set(null);
   }

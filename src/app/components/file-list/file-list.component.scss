@@ -17,6 +17,11 @@
   }
 }
 
+.image-container .overlay {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .file-item {
   cursor: pointer;
   @include flex-column;
@@ -28,37 +33,52 @@
   gap: var(--space-small, 0.5rem);
 }
 
-.download-hint {
-  color: #fff;
+// Overlay action buttons: use button for reliable touch on mobile
+.download-hint,
+.delete-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
   font-weight: 500;
   font-size: 0.9rem;
   text-align: center;
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   @include transition(background-color);
+}
+
+.download-hint {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
 
   &:hover {
     background: rgba(255, 255, 255, 0.5);
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.6);
   }
 }
 
 .delete-hint {
   color: #fff;
-  font-weight: 500;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 0.5rem 1rem;
   background: rgba(255, 0, 0, 0.3);
-  border-radius: 4px;
   backdrop-filter: blur(4px);
-  cursor: pointer;
-  @include transition(background-color);
 
   &:hover {
     background: rgba(255, 0, 0, 0.5);
+  }
+
+  &:active {
+    background: rgba(255, 0, 0, 0.6);
   }
 }
 
