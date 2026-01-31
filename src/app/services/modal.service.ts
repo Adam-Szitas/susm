@@ -8,6 +8,8 @@ import {
   EnvironmentInjector,
 } from '@angular/core';
 import { ModalComponent } from '../components/modal/modal.component';
+import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
+import { TranslationService } from './translation.service';
 
 export interface ModalConfig {
   title?: string;
@@ -19,13 +21,24 @@ export interface ModalConfig {
   wide?: boolean;
 }
 
+export interface ConfirmConfig {
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  /** 'danger' for delete actions, 'primary' for normal confirm */
+  confirmKind?: 'danger' | 'primary';
+}
+
 @Injectable({ providedIn: 'root' })
 export class ModalService {
   private componentRef: ComponentRef<ModalComponent> | null = null;
   private container: HTMLElement | null = null;
+  private pendingConfirmResolve: ((value: boolean) => void) | null = null;
 
   #injector = inject(Injector);
   #appRef = inject(ApplicationRef);
+  #translationService = inject(TranslationService);
 
   private createContainer(): HTMLElement {
     const container = document.createElement('div');
@@ -91,17 +104,59 @@ export class ModalService {
   }
 
   close() {
+    if (this.pendingConfirmResolve) {
+      this.pendingConfirmResolve(false);
+      this.pendingConfirmResolve = null;
+    }
     if (this.componentRef) {
       this.#appRef.detachView(this.componentRef.hostView);
       this.componentRef.destroy();
       this.componentRef = null;
     }
-    
+
     // Remove container from DOM
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
       this.container = null;
     }
+  }
+
+  /** Opens a confirm modal. Returns a promise that resolves to true if user confirmed, false if cancelled or closed. */
+  openConfirm(config: ConfirmConfig): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      this.pendingConfirmResolve = resolve;
+      const onConfirm = () => {
+        if (this.pendingConfirmResolve) {
+          this.pendingConfirmResolve(true);
+          this.pendingConfirmResolve = null;
+        }
+        this.close();
+      };
+      const onCancel = () => {
+        if (this.pendingConfirmResolve) {
+          this.pendingConfirmResolve(false);
+          this.pendingConfirmResolve = null;
+        }
+        this.close();
+      };
+      // Resolve translations so they display correctly in the dynamically created confirm dialog
+      const title = this.#translationService.instant(config.title);
+      const message = this.#translationService.instant(config.message);
+      const confirmText = this.#translationService.instant(config.confirmText ?? 'common.delete');
+      const cancelText = this.#translationService.instant(config.cancelText ?? 'common.cancel');
+      this.open({
+        title,
+        component: ConfirmDialogComponent,
+        componentInputs: {
+          message,
+          confirmText,
+          cancelText,
+          confirmKind: config.confirmKind ?? 'primary',
+          onConfirm,
+          onCancel,
+        },
+      });
+    });
   }
 
   confirm(): boolean {

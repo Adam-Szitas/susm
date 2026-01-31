@@ -4,6 +4,7 @@ import { FileGroup, ProjectFile, FileGroupItem } from '@models';
 import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { FileService } from '../../services/file.service';
+import { ModalService } from '../../services/modal.service';
 import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class FileListComponent {
   #fileService = inject(FileService);
+  #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
 
@@ -314,9 +316,7 @@ export class FileListComponent {
   public handleOverlayDelete(event: Event, file: FileGroupItem | ProjectFile): void {
     event.stopPropagation();
     event.preventDefault();
-    // Defer so the touch/click completes before showing confirm() - fixes iOS Safari
-    // where synchronous native dialogs inside tap handlers can prevent the action from running
-    setTimeout(() => this.deleteFile(file), 0);
+    this.deleteFile(file)
   }
 
   public downloadFile(path: string, filename?: string): void {
@@ -348,7 +348,7 @@ export class FileListComponent {
     document.body.removeChild(link);
   }
 
-  public deleteFile(file: FileGroupItem | ProjectFile): void {
+  public async deleteFile(file: FileGroupItem | ProjectFile): Promise<void> {
     const fileId = file._id?.$oid;
     if (!fileId) {
       this.#notificationService.showError(
@@ -357,13 +357,21 @@ export class FileListComponent {
       return;
     }
 
-    const fileName = file.filename || file.path.split(/[\\/]/).pop() || 'file';
+    const fileName = file.filename || file.path?.split(/[\\/]/).pop() || 'file';
     let confirmMessage = this.#translationService.instant('fileList.confirmDelete', { fileName });
     if (confirmMessage === 'fileList.confirmDelete') {
       confirmMessage = `Are you sure you want to delete "${fileName}"?`;
     }
+    const title = this.#translationService.instant('fileList.deleteFile') || 'Delete file';
 
-    if (!confirm(confirmMessage)) {
+    const confirmed = await this.#modalService.openConfirm({
+      title,
+      message: confirmMessage,
+      confirmText: 'common.delete',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
 

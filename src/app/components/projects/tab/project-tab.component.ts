@@ -528,10 +528,18 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.fileListSectionOpen.update((v) => !v);
   }
 
-  confirmDeleteProject(): void {
+  async confirmDeleteProject(): Promise<void> {
     const projectName = this.project()?.name ?? '';
     const message = this.#translationService.instant('projects.deleteProjectConfirm', { name: projectName });
-    if (!confirm(message)) {
+    const title = this.#translationService.instant('projects.deleteProject') || 'Delete project';
+    const confirmed = await this.#modalService.openConfirm({
+      title,
+      message,
+      confirmText: 'common.delete',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
     const projectId = this.#route.snapshot.paramMap.get('id');
