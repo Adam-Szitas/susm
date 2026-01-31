@@ -3,7 +3,7 @@ import { FileService } from '../../services/file.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../environment';
 import { Filter, FilterResult } from '@models';
 import { FilterComponent } from '../filter/filter.component';
@@ -32,7 +32,7 @@ export interface FileWithContext {
 @Component({
   selector: 'app-files',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, FilterComponent],
+  imports: [CommonModule, TranslateModule, FormsModule, FilterComponent, RouterLink],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

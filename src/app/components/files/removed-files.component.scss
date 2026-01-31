@@ -1,0 +1,84 @@
+@use '../../../styles/mixins' as *;
+
+.removed-files-page {
+  padding: var(--space, 1rem);
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .back-link {
+      font-size: 0.95rem;
+      color: var(--primary-color, #2563eb);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .loading,
+  .error {
+    padding: 1rem;
+  }
+
+  .error {
+    color: var(--error-color, #d32f2f);
+    background: rgba(211, 47, 47, 0.1);
+    border-radius: 8px;
+  }
+
+  .removed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+
+    @include mobile {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+
+  .removed-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    background: var(--background-color, #fff);
+    border: 1px solid var(--default-color, #e0e0e0);
+    border-radius: 8px;
+    min-height: 0;
+
+    .removed-object {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-color-secondary, #666);
+      @include truncate;
+    }
+
+    .removed-filename {
+      font-size: 0.85rem;
+      color: var(--text-color, #333);
+      @include truncate;
+    }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color-secondary, #666);
+  }
+}

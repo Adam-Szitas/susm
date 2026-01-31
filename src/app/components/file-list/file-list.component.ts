@@ -387,7 +387,6 @@ export class FileListComponent {
     // Mark as failed immediately to hide it from UI
     this.failedFileIds.add(fileId);
 
-    this.#notificationService.showInfo('Deletion is triggered here: :391');
     this.#fileService.deleteFile(fileId).subscribe({
       next: () => {
         this.#notificationService.showSuccess(

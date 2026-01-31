@@ -1,5 +1,8 @@
 <div class="files-page">
-  <h1>{{ 'files.title' | translate }}</h1>
+  <header class="page-header">
+    <h1>{{ 'files.title' | translate }}</h1>
+    <a routerLink="/files/removed" class="removed-link">{{ 'files.viewRemoved' | translate }}</a>
+  </header>
 
   @if (loading()) {
     <p>{{ 'common.loading' | translate }}</p>

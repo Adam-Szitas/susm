@@ -1,0 +1,23 @@
+<div class="removed-files-page">
+  <header class="page-header">
+    <h1>{{ 'files.removedTitle' | translate }}</h1>
+    <a routerLink="/files" class="back-link">{{ 'common.back' | translate }}</a>
+  </header>
+
+  @if (loading()) {
+    <p class="loading">{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else {
+    <div class="removed-grid">
+      @for (item of removed(); track item.filename + item.object_name) {
+        <div class="removed-card">
+          <span class="removed-object">{{ item.object_name }}</span>
+          <span class="removed-filename">{{ item.filename }}</span>
+        </div>
+      } @empty {
+        <p class="empty-state">{{ 'files.noRemovedFiles' | translate }}</p>
+      }
+    </div>
+  }
+</div>

@@ -5,6 +5,31 @@
   max-width: 1400px;
   margin: 0 auto;
 
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .removed-link {
+      font-size: 0.95rem;
+      color: var(--primary-color, #2563eb);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
   .filters {
     display: flex;
     flex-direction: column;
