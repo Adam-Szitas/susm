@@ -382,6 +382,7 @@ export class FileListComponent {
       confirmKind: 'danger',
     });
     if (!confirmed) {
+      this.#notificationService.showInfo('File deletion cancelled');
       return;
     }
 
