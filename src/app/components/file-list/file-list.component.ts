@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FileGroup, ProjectFile, FileGroupItem } from '@models';
 import { environment } from '../../environment';
@@ -33,7 +42,7 @@ export class FileListComponent {
     effect(() => {
       const groups = this.fileGroups();
       const projectFiles = this.projectFiles();
-      
+
       // Collect all current file IDs
       const currentFileIds = new Set<string>();
       groups.forEach((group) => {
@@ -46,7 +55,7 @@ export class FileListComponent {
         const id = file._id?.$oid;
         if (id) currentFileIds.add(id);
       });
-      
+
       // Remove failed file IDs that are no longer in the current data
       // (this handles the case where files were successfully deleted and reloaded)
       this.failedFileIds.forEach((id) => {
@@ -63,18 +72,14 @@ export class FileListComponent {
     return groups
       .map((group) => ({
         ...group,
-        files: group.files.filter(
-          (file) => !this.failedFileIds.has(file._id?.$oid || ''),
-        ),
+        files: group.files.filter((file) => !this.failedFileIds.has(file._id?.$oid || '')),
       }))
       .filter((group) => group.files.length > 0);
   });
 
   // Computed filtered project files (excluding failed files)
   public filteredProjectFiles = computed(() => {
-    return this.projectFiles().filter(
-      (file) => !this.failedFileIds.has(file._id?.$oid || ''),
-    );
+    return this.projectFiles().filter((file) => !this.failedFileIds.has(file._id?.$oid || ''));
   });
 
   public activeFileId = signal<string | null>(null);
@@ -145,13 +150,13 @@ export class FileListComponent {
     this.editingFileId.set(id);
     this.editFileDescription.set(file.description || '');
     this.editFileName.set(file.filename || '');
-    
+
     // Format created_at for date input (YYYY-MM-DD format)
     let dateValue = '';
     if (file.created_at) {
       const raw: any = (file as any).created_at;
       let date: Date | null = null;
-      
+
       if (raw instanceof Date) {
         date = raw;
       } else if (typeof raw === 'string') {
@@ -163,15 +168,18 @@ export class FileListComponent {
         // Handle BSON-style objects
         const candidate = (raw as any).$date ?? (raw as any).date ?? null;
         if (candidate) {
-          const timestamp = typeof candidate === 'number' 
-            ? candidate 
-            : (candidate.$numberLong ? Number(candidate.$numberLong) : null);
+          const timestamp =
+            typeof candidate === 'number'
+              ? candidate
+              : candidate.$numberLong
+                ? Number(candidate.$numberLong)
+                : null;
           if (timestamp) {
             date = new Date(timestamp);
           }
         }
       }
-      
+
       if (date && !isNaN(date.getTime())) {
         // Format as YYYY-MM-DD for date input
         const year = date.getFullYear();
@@ -180,7 +188,7 @@ export class FileListComponent {
         dateValue = `${year}-${month}-${day}`;
       }
     }
-    
+
     this.editFileCreatedAt.set(dateValue);
   }
 
@@ -195,7 +203,7 @@ export class FileListComponent {
     const description = this.editFileDescription().trim();
     const filename = this.editFileName().trim();
     const createdAtRaw = this.editFileCreatedAt().trim();
-    
+
     // Convert date string to ISO 8601 format (RFC3339) for backend
     // Backend expects format like "2026-01-01T00:00:00Z"
     let createdAt: string | undefined = undefined;
@@ -316,7 +324,8 @@ export class FileListComponent {
   public handleOverlayDelete(event: Event, file: FileGroupItem | ProjectFile): void {
     event.stopPropagation();
     event.preventDefault();
-    this.deleteFile(file)
+    this.#notificationService.showInfo(`Deleting file: ${file.path}`);
+    this.deleteFile(file);
   }
 
   public downloadFile(path: string, filename?: string): void {
@@ -364,6 +373,7 @@ export class FileListComponent {
     }
     const title = this.#translationService.instant('fileList.deleteFile') || 'Delete file';
 
+    this.#notificationService.showInfo(`Handling deletion here: :376`);
     const confirmed = await this.#modalService.openConfirm({
       title,
       message: confirmMessage,
@@ -378,6 +388,7 @@ export class FileListComponent {
     // Mark as failed immediately to hide it from UI
     this.failedFileIds.add(fileId);
 
+    this.#notificationService.showInfo('Deletion is triggered here: :391');
     this.#fileService.deleteFile(fileId).subscribe({
       next: () => {
         this.#notificationService.showSuccess(
