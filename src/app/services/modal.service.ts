@@ -132,7 +132,6 @@ export class ModalService {
   /** Opens a confirm modal. Returns a promise that resolves to true if user confirmed, false if cancelled or closed. */
   openConfirm(config: ConfirmConfig): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-      this.pendingConfirmResolve = resolve;
       // Resolve translations so they display correctly in the dynamically created confirm dialog
       const title = this.#translationService.instant(config.title);
       const message = this.#translationService.instant(config.message);
@@ -149,6 +148,8 @@ export class ModalService {
           modalService: this,
         },
       });
+      // Set after open() so the close() inside open() (which clears any previous modal) doesn't resolve this promise
+      this.pendingConfirmResolve = resolve;
     });
   }
 

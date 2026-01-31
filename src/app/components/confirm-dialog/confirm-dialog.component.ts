@@ -1,7 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../services/modal.service';
+
+/** Delay before accepting button taps so the tap that opened the modal isn't treated as Cancel (e.g. on mobile). */
+const IGNORE_INPUT_MS = 400;
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -10,7 +13,7 @@ import { ModalService } from '../../services/modal.service';
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.scss',
 })
-export class ConfirmDialogComponent {
+export class ConfirmDialogComponent implements OnInit {
   @Input() message = '';
   @Input() confirmText = 'common.delete';
   @Input() cancelText = 'common.cancel';
@@ -18,14 +21,43 @@ export class ConfirmDialogComponent {
   @Input() confirmKind: 'danger' | 'primary' = 'primary';
   @Input() modalService!: ModalService;
 
-  /** Resolve promise immediately so nothing else can override; defer close so touch completes on mobile. */
-  handleConfirm(): void {
+  private handled = false;
+  private ready = false;
+
+  ngOnInit(): void {
+    setTimeout(() => {
+      this.ready = true;
+    }, IGNORE_INPUT_MS);
+  }
+
+  private canAct(): boolean {
+    return this.ready && !this.handled;
+  }
+
+  onConfirmTouch(): void {
+    if (!this.canAct()) return;
+    this.handled = true;
     this.modalService.resolveConfirm(true);
     setTimeout(() => this.modalService.close(), 0);
   }
 
-  /** Resolve promise immediately; defer close so touch completes on mobile. */
+  handleConfirm(): void {
+    if (!this.canAct()) return;
+    this.handled = true;
+    this.modalService.resolveConfirm(true);
+    setTimeout(() => this.modalService.close(), 0);
+  }
+
+  onCancelTouch(): void {
+    if (!this.canAct()) return;
+    this.handled = true;
+    this.modalService.resolveConfirm(false);
+    setTimeout(() => this.modalService.close(), 0);
+  }
+
   handleCancel(): void {
+    if (!this.canAct()) return;
+    this.handled = true;
     this.modalService.resolveConfirm(false);
     setTimeout(() => this.modalService.close(), 0);
   }

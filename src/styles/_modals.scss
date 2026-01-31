@@ -25,6 +25,8 @@
 }
 
 .modal-content {
+  position: relative;
+  z-index: 1;
   background: #fff;
   border-radius: 16px;
   width: 100%;

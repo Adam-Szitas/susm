@@ -1,5 +1,10 @@
 <div class="modal-overlay">
-  <div class="modal-content" [class.wide]="wide" (click)="$event.stopPropagation()">
+  <div
+    class="modal-content"
+    [class.wide]="wide"
+    (click)="$event.stopPropagation()"
+    (touchend)="$event.stopPropagation()"
+  >
     <div class="modal-header">
       <h2>{{ title | translate }}</h2>
       <button class="close-btn" (click)="close()">×</button>
