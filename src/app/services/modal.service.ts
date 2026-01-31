@@ -121,24 +121,18 @@ export class ModalService {
     }
   }
 
+  /** Resolve the pending confirm promise without closing. Used by confirm dialog so the result is fixed before any deferred close(). */
+  resolveConfirm(value: boolean): void {
+    if (this.pendingConfirmResolve) {
+      this.pendingConfirmResolve(value);
+      this.pendingConfirmResolve = null;
+    }
+  }
+
   /** Opens a confirm modal. Returns a promise that resolves to true if user confirmed, false if cancelled or closed. */
   openConfirm(config: ConfirmConfig): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
       this.pendingConfirmResolve = resolve;
-      const onConfirm = () => {
-        if (this.pendingConfirmResolve) {
-          this.pendingConfirmResolve(true);
-          this.pendingConfirmResolve = null;
-        }
-        this.close();
-      };
-      const onCancel = () => {
-        if (this.pendingConfirmResolve) {
-          this.pendingConfirmResolve(false);
-          this.pendingConfirmResolve = null;
-        }
-        this.close();
-      };
       // Resolve translations so they display correctly in the dynamically created confirm dialog
       const title = this.#translationService.instant(config.title);
       const message = this.#translationService.instant(config.message);
@@ -152,8 +146,7 @@ export class ModalService {
           confirmText,
           cancelText,
           confirmKind: config.confirmKind ?? 'primary',
-          onConfirm,
-          onCancel,
+          modalService: this,
         },
       });
     });

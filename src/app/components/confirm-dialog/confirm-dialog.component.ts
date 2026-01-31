@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -15,16 +16,17 @@ export class ConfirmDialogComponent {
   @Input() cancelText = 'common.cancel';
   /** 'danger' for delete actions, 'primary' for normal confirm */
   @Input() confirmKind: 'danger' | 'primary' = 'primary';
-  @Input() onConfirm: () => void = () => {};
-  @Input() onCancel: () => void = () => {};
+  @Input() modalService!: ModalService;
 
-  /** Defer callback to next tick so touch/click completes on mobile (e.g. iOS Safari). */
+  /** Resolve promise immediately so nothing else can override; defer close so touch completes on mobile. */
   handleConfirm(): void {
-    setTimeout(() => this.onConfirm(), 0);
+    this.modalService.resolveConfirm(true);
+    setTimeout(() => this.modalService.close(), 0);
   }
 
-  /** Defer callback to next tick so touch/click completes on mobile. */
+  /** Resolve promise immediately; defer close so touch completes on mobile. */
   handleCancel(): void {
-    setTimeout(() => this.onCancel(), 0);
+    this.modalService.resolveConfirm(false);
+    setTimeout(() => this.modalService.close(), 0);
   }
 }

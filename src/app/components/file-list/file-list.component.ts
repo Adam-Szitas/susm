@@ -324,7 +324,6 @@ export class FileListComponent {
   public handleOverlayDelete(event: Event, file: FileGroupItem | ProjectFile): void {
     event.stopPropagation();
     event.preventDefault();
-    this.#notificationService.showInfo(`Deleting file: ${file.path}`);
     this.deleteFile(file);
   }
 
@@ -373,7 +372,6 @@ export class FileListComponent {
     }
     const title = this.#translationService.instant('fileList.deleteFile') || 'Delete file';
 
-    this.#notificationService.showInfo(`Handling deletion here: :376`);
     const confirmed = await this.#modalService.openConfirm({
       title,
       message: confirmMessage,
