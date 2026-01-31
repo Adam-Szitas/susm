@@ -17,4 +17,14 @@ export class ConfirmDialogComponent {
   @Input() confirmKind: 'danger' | 'primary' = 'primary';
   @Input() onConfirm: () => void = () => {};
   @Input() onCancel: () => void = () => {};
+
+  /** Defer callback to next tick so touch/click completes on mobile (e.g. iOS Safari). */
+  handleConfirm(): void {
+    setTimeout(() => this.onConfirm(), 0);
+  }
+
+  /** Defer callback to next tick so touch/click completes on mobile. */
+  handleCancel(): void {
+    setTimeout(() => this.onCancel(), 0);
+  }
 }
