@@ -120,10 +120,10 @@ export class FileService {
   }
 
   /**
-   * Gets removed (soft-deleted) files – object name and filename only, for the removed-files page.
+   * Gets removed (soft-deleted) files – object name, filename, and optional path for thumbnails.
    */
-  getRemovedFiles(): Observable<{ object_name: string; filename: string }[]> {
+  getRemovedFiles(): Observable<{ object_name: string; filename: string; path?: string }[]> {
     const endpoint = 'files/removed';
-    return this.#httpService.get<{ object_name: string; filename: string }[]>(endpoint);
+    return this.#httpService.get<{ object_name: string; filename: string; path?: string }[]>(endpoint);
   }
 }

@@ -12,6 +12,16 @@
     <div class="removed-grid">
       @for (item of removed(); track item.filename + item.object_name) {
         <div class="removed-card">
+          @if (showImage(item)) {
+            <div class="removed-thumb">
+              <img
+                [src]="getImageUrl(item.path)"
+                [alt]="item.filename"
+                loading="lazy"
+                (error)="onImageError(item)"
+              />
+            </div>
+          }
           <span class="removed-object">{{ item.object_name }}</span>
           <span class="removed-filename">{{ item.filename }}</span>
         </div>

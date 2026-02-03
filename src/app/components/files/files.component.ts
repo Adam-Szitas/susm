@@ -171,17 +171,15 @@ export class FilesComponent implements OnInit {
     if (!path || typeof path !== 'string') {
       return '';
     }
-    let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
-
+    // Normalize: strip leading . / and \, then backslashes to slashes (handles Windows paths)
+    let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
     if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
       return normalizedPath;
     }
-
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.substring('uploads/'.length);
     }
-
-    const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
+    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
     const encodedPath = pathSegments.join('/');
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }

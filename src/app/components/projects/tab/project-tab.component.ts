@@ -29,6 +29,7 @@ import { StatusPillComponent } from '../../status-pill/app-status-pill.component
 import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { ImageCompressionService } from '@services/image-compression.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-project-tab',
@@ -42,6 +43,7 @@ import { ImageCompressionService } from '@services/image-compression.service';
     FileListComponent,
     StatusPillComponent,
     DatePipe,
+    BreadcrumbComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -81,6 +83,18 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       const bTime = b.generated_at ? new Date(b.generated_at).getTime() : 0;
       return bTime - aTime;
     });
+  });
+
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const p = this.project();
+    const projectsLabel = this.#translationService.instant('navbar.projects');
+    if (!p?.name) {
+      return [{ label: projectsLabel, url: '/projects' }, { label: '…' }];
+    }
+    return [
+      { label: projectsLabel, url: '/projects' },
+      { label: p.name },
+    ];
   });
 
   constructor() {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import QRCode from 'qrcode';
 import { ProjectStore } from '@store/project.store';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,10 +14,18 @@ import { environment } from '../../../environment';
 import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
 import { ModalService } from '@services/modal.service';
 import { EditObjectComponent } from '../edit-object/object-edit.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
+
 @Component({
   selector: 'app-object-tab',
   standalone: true,
-  imports: [TranslateModule, FileListComponent, StatusPillComponent, FileUploadModalComponent],
+  imports: [
+    TranslateModule,
+    FileListComponent,
+    StatusPillComponent,
+    FileUploadModalComponent,
+    BreadcrumbComponent,
+  ],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +56,36 @@ export class ObjectTabComponent implements OnInit {
   readonly defaultStatus = DEFAULT_WORK_STATUS;
   readonly formatStatus = formatWorkStatus;
   readonly statuses = WORK_STATUSES;
+
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const obj = this.object();
+    const project = this.#projectStore.project();
+    const objectsLabel = this.#translationService.instant('navbar.objects');
+    const projectsLabel = this.#translationService.instant('navbar.projects');
+    const objectLabel = this.#objectDisplayName(obj);
+
+    if (!objectLabel) {
+      return [{ label: objectsLabel, url: '/objects' }, { label: '…' }];
+    }
+
+    if (project?._id?.$oid && project?.name) {
+      return [
+        { label: projectsLabel, url: '/projects' },
+        { label: project.name, url: `/projects/tab/${project._id.$oid}` },
+        { label: objectLabel },
+      ];
+    }
+
+    return [{ label: objectsLabel, url: '/objects' }, { label: objectLabel }];
+  });
+
+  /** Short display name for the object (e.g. address parts or "Object"). */
+  #objectDisplayName(obj: Object | null): string {
+    if (!obj?.address) return obj ? this.#translationService.instant('objects.title') : '';
+    const a = obj.address;
+    const parts = [a.house_number, a.level, a.door_number].filter(Boolean) as string[];
+    return parts.length > 0 ? parts.join(', ') : this.#translationService.instant('objects.title');
+  }
 
   ngOnInit(): void {
     const objectId = this.#route.snapshot.paramMap.get('id');

@@ -66,20 +66,30 @@ export class FileListComponent {
     });
   }
 
-  // Computed filtered file groups (excluding empty groups and failed files)
+  /** True if the file is soft-deleted (has deleted_at). */
+  private hasDeletedAt(file: FileGroupItem | ProjectFile): boolean {
+    return !!(file as { deleted_at?: string }).deleted_at;
+  }
+
+  // Computed filtered file groups (excluding empty groups, failed files, and soft-deleted files)
   public filteredFileGroups = computed(() => {
     const groups = this.fileGroups();
     return groups
       .map((group) => ({
         ...group,
-        files: group.files.filter((file) => !this.failedFileIds.has(file._id?.$oid || '')),
+        files: group.files.filter(
+          (file) =>
+            !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+        ),
       }))
       .filter((group) => group.files.length > 0);
   });
 
-  // Computed filtered project files (excluding failed files)
+  // Computed filtered project files (excluding failed and soft-deleted files)
   public filteredProjectFiles = computed(() => {
-    return this.projectFiles().filter((file) => !this.failedFileIds.has(file._id?.$oid || ''));
+    return this.projectFiles().filter(
+      (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+    );
   });
 
   public activeFileId = signal<string | null>(null);
@@ -288,18 +298,16 @@ export class FileListComponent {
   }
 
   public getImageUrl(path: string): string {
-    let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
-
+    // Normalize: strip leading . / and \, then backslashes to slashes (handles Windows paths)
+    let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
     if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
       const encodedPath = encodeURIComponent(normalizedPath);
       return `${environment.be}${environment.folderBase}/${encodedPath}`;
     }
-
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.substring('uploads/'.length);
     }
-
-    const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
+    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
     const encodedPath = pathSegments.join('/');
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
@@ -328,8 +336,8 @@ export class FileListComponent {
   }
 
   public downloadFile(path: string, filename?: string): void {
-    let normalizedPath = path.replace(/^\.?\/*/, '').replace(/\\/g, '/');
-
+    // Normalize: strip leading . / and \, then backslashes to slashes (handles Windows paths)
+    let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
     let url: string;
     if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
       const encodedPath = encodeURIComponent(normalizedPath);
@@ -338,8 +346,7 @@ export class FileListComponent {
       if (normalizedPath.startsWith('uploads/')) {
         normalizedPath = normalizedPath.substring('uploads/'.length);
       }
-
-      const pathSegments = normalizedPath.split('/').map((segment) => encodeURIComponent(segment));
+      const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
       const encodedPath = pathSegments.join('/');
       url = `${environment.be}${environment.folderBase}/${encodedPath}`;
     }
