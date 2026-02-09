@@ -87,6 +87,19 @@ export class FileService {
   }
 
   /**
+   * Moves a file from its current group to another group (object files only)
+   */
+  moveFileToGroup(
+    fileId: string,
+    targetGroupId: string
+  ): Observable<{ message: string }> {
+    const endpoint = `file/${fileId}/move`;
+    return this.#httpService.post<{ message: string }>(endpoint, {
+      target_group_id: targetGroupId,
+    });
+  }
+
+  /**
    * Deletes a file by its ID
    * For object files: removes from group
    * For project files: soft delete

@@ -92,6 +92,31 @@ export class FileListComponent {
     );
   });
 
+  // All unique categories from file groups (for group edit select)
+  public allCategories = computed(() => {
+    const groups = this.filteredFileGroups();
+    const cats = new Set<string>();
+    groups.forEach((g) => {
+      if (g.category?.trim()) {
+        cats.add(g.category.trim());
+      }
+    });
+    return Array.from(cats).sort();
+  });
+
+  // Category options for the group edit select (includes current value if not in list)
+  public categoryOptionsForEdit = computed(() => {
+    const cats = this.allCategories();
+    const current = this.editCategory();
+    if (current?.trim() && !cats.includes(current.trim())) {
+      return [current.trim(), ...cats];
+    }
+    return cats;
+  });
+
+  // All groups for move dropdown (object files only)
+  public moveTargetGroups = computed(() => this.filteredFileGroups());
+
   public activeFileId = signal<string | null>(null);
   public fileDeleted = output<void>();
   public metadataUpdated = output<void>();
@@ -103,6 +128,11 @@ export class FileListComponent {
   public editingGroupId = signal<string | null>(null);
   public editDescription = signal<string>('');
   public editCategory = signal<string>('');
+
+  // Picture selection for moving between groups (object files only)
+  public selectionMode = signal<boolean>(false);
+  public selectedFileIds = signal<Set<string>>(new Set());
+  public selectedMoveTargetGroupId = signal<string>('');
 
   // Inline edit state for single file description, filename, and created_at
   public editingFileId = signal<string | null>(null);
@@ -122,6 +152,85 @@ export class FileListComponent {
     this.editingGroupId.set(null);
   }
 
+  public getGroupDisplayName(group: FileGroup): string {
+    const parts: string[] = [];
+    if (group.description?.trim()) parts.push(group.description.trim());
+    if (group.category?.trim()) parts.push(`(${group.category.trim()})`);
+    return parts.length > 0 ? parts.join(' ') : `Group ${group._id?.$oid?.slice(-6) || ''}`;
+  }
+
+  public toggleSelectionMode(): void {
+    this.selectionMode.update((v) => !v);
+    if (!this.selectionMode()) {
+      this.selectedFileIds.set(new Set());
+    }
+  }
+
+  public toggleFileSelection(file: FileGroupItem | ProjectFile, event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.selectedFileIds.update((set) => {
+      const next = new Set(set);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  public isFileSelected(file: FileGroupItem | ProjectFile): boolean {
+    return this.selectedFileIds().has(file._id?.$oid || '');
+  }
+
+  public clearSelection(): void {
+    this.selectedFileIds.set(new Set());
+    this.selectionMode.set(false);
+    this.selectedMoveTargetGroupId.set('');
+  }
+
+  public moveSelectedToGroup(targetGroupId?: string): void {
+    const id = targetGroupId ?? this.selectedMoveTargetGroupId();
+    if (!id) return;
+    const ids = Array.from(this.selectedFileIds());
+    if (ids.length === 0) return;
+
+    let completed = 0;
+    const total = ids.length;
+    const groupId = id;
+    const moveNext = () => {
+      if (completed >= total) {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('fileList.moveSuccess', { count: total }) ||
+            `Moved ${total} file(s) successfully`,
+        );
+        this.clearSelection();
+        this.metadataUpdated.emit();
+        return;
+      }
+      const fileId = ids[completed];
+      this.#fileService.moveFileToGroup(fileId, groupId).subscribe({
+        next: () => {
+          completed++;
+          moveNext();
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('fileList.moveFailed') ||
+              'Failed to move file',
+          );
+          this.clearSelection();
+          this.metadataUpdated.emit();
+        },
+      });
+    };
+    moveNext();
+  }
+
   public saveGroupMetadata(group: FileGroup): void {
     const id = group._id?.$oid;
     if (!id) return;
@@ -130,9 +239,10 @@ export class FileListComponent {
     const categoryRaw = this.editCategory().trim();
     const category = categoryRaw === '' ? null : categoryRaw;
 
+    // Always send description and category (even when empty) so the backend persists removals
     this.#fileService
       .updateFileGroup(id, {
-        description: description || undefined,
+        description,
         category,
       })
       .subscribe({
@@ -230,9 +340,10 @@ export class FileListComponent {
       }
     }
 
+    // Always send description (even when empty) so the backend persists removals
     this.#fileService
       .updateFileMetadata(id, {
-        description: description || undefined,
+        description,
         filename: filename || undefined,
         created_at: createdAt,
       })

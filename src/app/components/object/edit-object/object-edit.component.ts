@@ -66,8 +66,13 @@ export class EditObjectComponent implements OnInit {
     }
 
     this.progressing.set(true);
-    const data = this.form.getRawValue();
-    
+    const raw = this.form.getRawValue();
+    // Explicitly include note (even when empty) so the backend persists the removal
+    const data = {
+      ...raw,
+      note: raw.note ?? '',
+    };
+
     this.#httpService.put<Object>(`object/${this.objectData._id.$oid}`, data).subscribe({
       next: (response: Object) => {
         this.#modalService.close();

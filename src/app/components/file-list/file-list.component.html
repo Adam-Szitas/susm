@@ -1,4 +1,53 @@
 <div class="file-wrapper">
+  <!-- Selection mode toolbar (object files only) -->
+  @if (filteredFileGroups().length > 0 && (selectionMode() || selectedFileIds().size > 0)) {
+    <div class="selection-toolbar">
+      <span class="selection-count">
+        {{ selectedFileIds().size }} {{ (selectedFileIds().size === 1 ? 'fileList.fileSelected' : 'fileList.filesSelected') | translate }}
+      </span>
+      <div class="selection-actions">
+        @if (selectedFileIds().size > 0 && moveTargetGroups().length > 1) {
+          <select
+            class="selection-move-select"
+            [ngModel]="selectedMoveTargetGroupId()"
+            (ngModelChange)="selectedMoveTargetGroupId.set($event)"
+            [attr.aria-label]="'fileList.moveToGroup' | translate"
+          >
+            <option value="">{{ 'fileList.moveToGroup' | translate }}</option>
+            @for (g of moveTargetGroups(); track g._id.$oid) {
+              <option [value]="g._id.$oid">{{ getGroupDisplayName(g) }}</option>
+            }
+          </select>
+          <button
+            type="button"
+            class="button button-primary selection-move-btn"
+            (click)="moveSelectedToGroup()"
+            [disabled]="!selectedMoveTargetGroupId()"
+          >
+            {{ 'fileList.move' | translate }}
+          </button>
+        }
+        <button type="button" class="button button-secondary" (click)="clearSelection()">
+          {{ selectionMode() && selectedFileIds().size === 0 ? ('fileList.cancelSelect' | translate) : ('fileList.clearSelection' | translate) }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Select mode toggle (object files only) -->
+  @if (filteredFileGroups().length > 0) {
+    <div class="selection-mode-toggle">
+      <button
+        type="button"
+        class="button button-outline"
+        [class.active]="selectionMode()"
+        (click)="toggleSelectionMode()"
+      >
+        {{ selectionMode() ? ('fileList.doneSelecting' | translate) : ('fileList.selectFiles' | translate) }}
+      </button>
+    </div>
+  }
+
   <!-- Object File Groups -->
   @for (group of filteredFileGroups(); track group._id.$oid) {
     <div class="file-group">
@@ -7,20 +56,43 @@
           <div class="group-edit-form">
             <input
               type="text"
-              [(ngModel)]="editDescription"
+              [ngModel]="editDescription()"
+              (ngModelChange)="editDescription.set($event)"
               placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
               class="group-edit-input"
+              [attr.aria-label]="'fileUpload.descriptionPlaceholder' | translate"
             />
-            <input
-              type="text"
-              [(ngModel)]="editCategory"
-              placeholder="{{ 'fileUpload.category' | translate }}"
-              class="group-edit-input"
-            />
-            <button type="button" class="group-edit-btn" (click)="saveGroupMetadata(group)">
-              ✓
-            </button>
-            <button type="button" class="group-edit-btn" (click)="cancelEditGroup()">✕</button>
+            <select
+              class="group-edit-input group-edit-select"
+              [ngModel]="editCategory()"
+              (ngModelChange)="editCategory.set($event)"
+              [attr.aria-label]="'fileUpload.category' | translate"
+            >
+              <option value="">{{ 'objects.noCategory' | translate }}</option>
+              @for (cat of categoryOptionsForEdit(); track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            <div class="group-edit-actions">
+              <button
+                type="button"
+                class="group-edit-btn group-edit-btn-save"
+                (click)="saveGroupMetadata(group)"
+                [attr.aria-label]="'common.save' | translate"
+                title="{{ 'common.save' | translate }}"
+              >
+                <span class="group-edit-btn-icon">✓</span>
+              </button>
+              <button
+                type="button"
+                class="group-edit-btn group-edit-btn-cancel"
+                (click)="cancelEditGroup()"
+                [attr.aria-label]="'common.cancel' | translate"
+                title="{{ 'common.cancel' | translate }}"
+              >
+                <span class="group-edit-btn-icon">✕</span>
+              </button>
+            </div>
           </div>
         } @else {
           <div class="group-header-content">
@@ -43,30 +115,43 @@
       </div>
       <ul class="file-gallery">
         @for (file of group.files; track file._id.$oid) {
-          <li class="file-item">
-            <div class="image-container" (click)="showOverlay(file)">
+          <li class="file-item" [class.selected]="isFileSelected(file)">
+            <div
+              class="image-container"
+              (click)="selectionMode() ? toggleFileSelection(file, $event) : showOverlay(file)"
+            >
               <img
                 [src]="getImageUrl(file.path)"
                 [alt]="file.filename || 'File Preview'"
                 loading="lazy"
                 (error)="onImageError(file, $event)"
               />
-              <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
-                <button
-                  type="button"
-                  class="download-hint"
-                  (click)="handleOverlayDownload($event, file.path, file.filename)"
-                >
-                  {{ 'fileList.download' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="delete-hint"
-                  (click)="handleOverlayDelete($event, file)"
-                >
-                  {{ 'fileList.delete' | translate }}
-                </button>
-              </div>
+              @if (selectionMode()) {
+                <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
+                  @if (isFileSelected(file)) {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  }
+                </div>
+              } @else {
+                <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="download-hint"
+                    (click)="handleOverlayDownload($event, file.path, file.filename)"
+                  >
+                    {{ 'fileList.download' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="delete-hint"
+                    (click)="handleOverlayDelete($event, file)"
+                  >
+                    {{ 'fileList.delete' | translate }}
+                  </button>
+                </div>
+              }
             </div>
             @if (editingFileId() === file._id.$oid) {
               <input
