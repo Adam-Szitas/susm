@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../environment';
 
-interface ProtocolPreviewData {
+export interface ProtocolPreviewData {
   template_name?: string;
   header_template?: string;
   description?: string;
@@ -32,6 +32,10 @@ interface ProtocolPreviewData {
       object_address: string;
     }>;
   }>;
+  /** When present, older protocol(s) to be included after the current one in the PDF. */
+  linked_previews?: ProtocolPreviewData[];
+  /** ISO date string for linked protocol (shown in preview). */
+  generated_at?: string;
 }
 
 @Component({

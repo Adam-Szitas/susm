@@ -80,6 +80,53 @@
     color: #555;
   }
 
+  .linked-protocols-selection {
+    margin-bottom: 1.5rem;
+
+    .section-title {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .helper-text {
+      margin: 0 0 0.75rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .protocol-list.linked-list {
+      max-height: 180px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .protocol-item.linked-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #333;
+
+      input {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      .protocol-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;

@@ -243,6 +243,27 @@
       </div>
     }
 
+    @if (existingProtocols().length > 0) {
+      <div class="linked-protocols-selection">
+        <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+        <p class="helper-text">
+          {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+        </p>
+        <div class="protocol-list linked-list">
+          @for (protocol of existingProtocols(); track protocol._id.$oid) {
+            <label class="protocol-item linked-item">
+              <input
+                type="checkbox"
+                [checked]="isLinkedProtocolSelected(protocol)"
+                (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
+              />
+              <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
+            </label>
+          }
+        </div>
+      </div>
+    }
+
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="close()">
           {{ 'common.cancel' | translate }}

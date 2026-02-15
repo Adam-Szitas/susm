@@ -117,4 +117,40 @@
       margin-top: 20px;
     }
   }
+
+  .linked-previews-intro {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #333;
+  }
+
+  .linked-protocol-block {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #666;
+
+    .linked-header {
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+
+      .template-name {
+        font-size: 1.25rem;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .linked-generated-at {
+        font-size: 0.875rem;
+        color: #666;
+        margin: 0 0 0.5rem 0;
+      }
+    }
+
+    .toc-section .section-title {
+      font-size: 1rem;
+    }
+  }
 }

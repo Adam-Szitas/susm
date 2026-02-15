@@ -99,4 +99,86 @@
       }
     </div>
   }
+
+  <!-- Linked (older) protocols included after the current one -->
+  @if (previewData().linked_previews && previewData().linked_previews!.length > 0) {
+    <div class="linked-previews-intro">
+      <h2 class="section-title">{{ 'protocols.alsoIncludedInPdf' | translate }}</h2>
+    </div>
+    @for (linked of previewData().linked_previews!; track $index) {
+      <div class="protocol-preview linked-protocol-block">
+        <div class="preview-header linked-header">
+          <h3 class="template-name">{{ linked.template_name || linked.project_name }}</h3>
+          @if (linked.generated_at) {
+            <p class="linked-generated-at">{{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | date:'medium' }}</p>
+          }
+          @if (linked.description) {
+            <p class="template-description">{{ linked.description }}</p>
+          }
+          @if (linked.field_values && linked.field_values.length > 0) {
+            <div class="template-fields">
+              @for (field of linked.field_values; track field.label) {
+                <div class="template-field">
+                  <strong>{{ field.label }}:</strong>
+                  @if (field.value) {
+                    {{ field.value }}
+                  } @else {
+                    <span class="empty-value">-</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (linked.table_of_contents && linked.table_of_contents.length > 0) {
+          <div class="preview-section toc-section">
+            <h4 class="section-title">{{ 'protocol.pdf.tableOfContents' | translate }}</h4>
+            <ul class="toc-list">
+              @for (entry of linked.table_of_contents; track $index) {
+                <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
+                  {{ entry.title }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (linked.content_sections) {
+          @for (section of linked.content_sections; track $index) {
+            <div class="preview-section content-section">
+              <h3 class="object-headline">{{ section.headline }}</h3>
+              @if (section.object_address) {
+                <p class="object-address">{{ section.object_address }}</p>
+              }
+              @for (group of section.file_groups; track $index) {
+                <div class="file-group">
+                  @if (group.description) {
+                    <h4 class="group-description">{{ group.description }}</h4>
+                  }
+                  @for (image of group.images; track $index) {
+                    <div class="image-item">
+                      <img
+                        [src]="getImageUrl(image.path)"
+                        [title]="image.description"
+                        [alt]="image.description || ''"
+                      />
+                      <div class="image-caption">
+                        @if (image.object_address) {
+                          <span class="caption-address">{{ image.object_address }}</span>
+                        }
+                        @if (image.description) {
+                          <span class="caption-description">{{ image.description }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  }
 </div>

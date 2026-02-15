@@ -195,6 +195,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
             projectId,
             objects: availableObjects,
             templates,
+            existingProtocols: this.projectProtocols(),
           },
         });
       },

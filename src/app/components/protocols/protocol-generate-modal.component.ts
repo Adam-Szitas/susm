@@ -5,7 +5,7 @@ import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
-import { GenerateProtocolRequest, ProtocolTemplate } from '@models';
+import { GenerateProtocolRequest, ProtocolRecord, ProtocolTemplate } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
@@ -29,10 +29,14 @@ export class ProtocolGenerateModalComponent {
   projectId = input.required<string>();
   objects = input.required<Object[]>();
   templates = input.required<ProtocolTemplate[]>();
+  /** Existing protocols for this project (older versions to optionally include in the new PDF). */
+  existingProtocols = input<ProtocolRecord[]>([]);
 
   form: FormGroup;
   generating = signal(false);
   selectedObjectIds = signal<string[]>([]);
+  /** IDs of older protocols to include in the generated PDF (rendered first, then new content). */
+  selectedLinkedProtocolIds = signal<string[]>([]);
   hasSelection = computed(() => this.selectedObjectIds().length > 0);
   #selectionInitialized = signal(false);
   previewData = signal<any>(null);
@@ -163,6 +167,7 @@ export class ProtocolGenerateModalComponent {
       }
     }
 
+    const linkedIds = this.selectedLinkedProtocolIds();
     const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
@@ -170,6 +175,7 @@ export class ProtocolGenerateModalComponent {
       from_date: formValue.from_date ? this.formatDateForBackend(formValue.from_date) : undefined,
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
+      linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
     };
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
@@ -285,6 +291,7 @@ export class ProtocolGenerateModalComponent {
       }
     }
 
+    const linkedIds = this.selectedLinkedProtocolIds();
     const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
@@ -292,6 +299,7 @@ export class ProtocolGenerateModalComponent {
       from_date: formValue.from_date ? this.formatDateForBackend(formValue.from_date) : undefined,
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
+      linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
     };
 
     this.#protocolService.downloadProtocol(request).subscribe({
@@ -333,6 +341,33 @@ export class ProtocolGenerateModalComponent {
   isSelected(objectId: string | undefined): boolean {
     if (!objectId) return false;
     return this.selectedObjectIds().includes(objectId);
+  }
+
+  toggleLinkedProtocol(protocolId: string | undefined, checked: boolean): void {
+    if (!protocolId) return;
+    const current = new Set(this.selectedLinkedProtocolIds());
+    if (checked) {
+      current.add(protocolId);
+    } else {
+      current.delete(protocolId);
+    }
+    this.selectedLinkedProtocolIds.set(Array.from(current));
+  }
+
+  isLinkedProtocolSelected(protocol: ProtocolRecord): boolean {
+    const id = protocol._id?.$oid;
+    return !!id && this.selectedLinkedProtocolIds().includes(id);
+  }
+
+  formatProtocolLabel(protocol: ProtocolRecord): string {
+    const name = protocol.template_name || '';
+    const date = protocol.generated_at
+      ? new Date(protocol.generated_at).toLocaleDateString()
+      : '';
+    const objects = protocol.object_names?.length
+      ? protocol.object_names.join(', ')
+      : '';
+    return [name, date, objects].filter(Boolean).join(' · ');
   }
 
   formatObjectLabel(object: Object): string {

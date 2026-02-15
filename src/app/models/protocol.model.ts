@@ -45,5 +45,7 @@ export interface GenerateProtocolRequest {
   data?: Record<string, unknown>;
   from_date?: string;
   to_date?: string;
+  /** Optional: include these older protocol IDs in the same PDF (older first, then new content). */
+  linked_protocol_ids?: string[];
 }
 
