@@ -6,21 +6,19 @@
       @if (isAdmin()) {
         <button
           type="button"
-          class="delete-project-icon"
+          class="button button-error delete-icon"
           (click)="confirmDeleteProject()"
+          [disabled]="deletingProject()"
           [attr.aria-label]="'projects.deleteProject' | translate"
           [title]="'projects.deleteProject' | translate"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
-            <circle cx="10" cy="10" r="10" fill="#e85e6c" />
-            <path d="M7 7L13 13M13 7L7 13" stroke="#fff" stroke-width="2" stroke-linecap="round" />
-          </svg>
+          ✕
         </button>
       }
     </header>
     <div class="project-description">
       <ul>
-        <li>{{ 'dashboard.totalObjects' | translate }}: {{ project()?.objects?.length }}</li>
+        <li>{{ 'dashboard.totalObjects' | translate }}: {{ objects().length }}</li>
         @if (project()?.address?.street) {
           <li>{{ project()?.address?.street }}</li>
         }

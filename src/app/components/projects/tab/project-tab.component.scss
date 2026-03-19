@@ -297,30 +297,11 @@
     }
   }
 
-  .delete-project-icon {
+  .delete-icon {
     flex-shrink: 0;
-    padding: 0.25rem;
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-radius: 50%;
-    transition:
-      opacity 0.2s,
-      transform 0.15s;
-
-    &:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--color-primary, #333);
-      outline-offset: 2px;
-    }
-
-    svg {
-      display: block;
-    }
+    width: 40px;
+    height: 40px;
+    padding: 0;
   }
 
   ul {

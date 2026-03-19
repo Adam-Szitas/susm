@@ -274,6 +274,31 @@ export class ProjectStore {
     );
   }
 
+  deleteObject(objectId: string): Observable<{ message: string }> {
+    return this.#httpService.delete<{ message: string }>(`object/${objectId}`).pipe(
+      tap({
+        next: () => {
+          const objects = this._objects();
+          this._objects.set(objects.filter((o) => o._id?.$oid !== objectId));
+
+          const objectsWithProjects = this._objectsWithProjects();
+          this._objectsWithProjects.set(
+            objectsWithProjects.filter((item) => item.object._id?.$oid !== objectId),
+          );
+
+          const project = this._project();
+          if (project?.objects) {
+            project.objects = project.objects.filter((o) => o._id?.$oid !== objectId);
+            this._project.set({ ...project });
+          }
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to delete object');
+        },
+      }),
+    );
+  }
+
   clearError(): void {
     this._error.set(null);
   }

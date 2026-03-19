@@ -78,6 +78,26 @@
   header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .object-title {
+      margin: 0;
+      flex: 1;
+    }
+
+    .delete-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+    }
+  }
+
+  .object-address {
+    display: flex;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;

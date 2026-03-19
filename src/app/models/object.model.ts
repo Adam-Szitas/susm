@@ -13,6 +13,7 @@ export interface Object {
   category?: string;
   createdAt?: string;
   created_at?: string;
+  deleted_at?: string;
 }
 
 export interface ObjectWithProject {

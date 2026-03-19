@@ -1,10 +1,24 @@
 <div class="wrapper">
   <app-breadcrumb [items]="breadcrumbItems()" />
-  <h1>{{ 'objects.title' | translate }}</h1>
 
   @if (object()) {
     <section class="object-details">
       <header>
+        <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
+        @if (isAdmin()) {
+          <button
+            type="button"
+            class="button button-error delete-icon"
+            (click)="deleteObject()"
+            [disabled]="deleting()"
+            [attr.aria-label]="'objects.deleteObject' | translate"
+            [title]="'objects.deleteObject' | translate"
+          >
+            ✕
+          </button>
+        }
+      </header>
+      <div class="object-address">
         <ul>
           @if (object()?.address?.house_number) {
             <li>{{ 'common.houseNumber' | translate }}: {{ object()?.address?.house_number }}</li>
@@ -17,7 +31,7 @@
           }
         </ul>
         <app-status-pill [status]="object()?.status || defaultStatus" />
-      </header>
+      </div>
       @if (object()?.note) {
         <p class="note">{{ object()?.note }}</p>
       }

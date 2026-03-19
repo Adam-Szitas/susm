@@ -1,5 +1,5 @@
 .breadcrumb {
-  margin-bottom: var(--space, 16px);
+  margin: var(--space, 16px) 0;
   font-size: var(--font-4, 14px);
 
   ol {
@@ -24,7 +24,9 @@
     font-weight: 600;
     padding: var(--space-tiny, 4px) 0;
     border-radius: 4px;
-    transition: background-color 0.2s, color 0.2s;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
 
     &:hover {
       color: var(--primary-hover, #b30000);
