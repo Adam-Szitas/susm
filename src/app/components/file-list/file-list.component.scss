@@ -297,6 +297,20 @@
   min-width: 140px;
 }
 
+.group-edit-note {
+  width: 100%;
+  resize: vertical;
+  min-height: 44px;
+}
+
+.group-note {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #666;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 // ============================================================================
 // Picture Selection for Move
 // ============================================================================

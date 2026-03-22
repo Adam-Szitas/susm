@@ -270,7 +270,7 @@ export class ObjectTabComponent implements OnInit {
     this.selectedFiles.set(files);
   }
 
-  onUploadFile(data: { files: globalThis.File[]; description: string; category: string }): void {
+  onUploadFile(data: { files: globalThis.File[]; description: string; category: string; note: string }): void {
     const objectId = this.#route.snapshot.paramMap.get('id');
     if (!objectId) {
       this.#notificationService.showError(
@@ -280,7 +280,7 @@ export class ObjectTabComponent implements OnInit {
       return;
     }
 
-    this.uploadFiles(data.files, data.description, data.category, objectId);
+    this.uploadFiles(data.files, data.description, data.category, objectId, data.note);
   }
 
   onCancelUpload(): void {
@@ -294,12 +294,12 @@ export class ObjectTabComponent implements OnInit {
     description: string,
     category: string,
     objectId: string,
+    note?: string,
   ): void {
     this.uploading.set(true);
 
     const form = new FormData();
 
-    // Append all files with the same field name (backend will process all)
     files.forEach((file) => {
       form.append('avatar', file, file.name);
     });
@@ -309,6 +309,9 @@ export class ObjectTabComponent implements OnInit {
     }
     if (category) {
       form.append('category', category);
+    }
+    if (note) {
+      form.append('note', note);
     }
 
     this.#fileService.uploadFileForObject(form, objectId).subscribe({

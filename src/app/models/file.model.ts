@@ -32,6 +32,7 @@ export interface FileGroup {
   };
   description: string;
   category?: string;
+  note?: string;
   files: FileGroupItem[];
   created_at: string;
 }

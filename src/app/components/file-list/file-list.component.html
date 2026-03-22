@@ -73,6 +73,14 @@
                 <option [value]="cat">{{ cat }}</option>
               }
             </select>
+            <textarea
+              class="group-edit-input group-edit-note"
+              [ngModel]="editNote()"
+              (ngModelChange)="editNote.set($event)"
+              rows="2"
+              placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
+              [attr.aria-label]="'fileUpload.note' | translate"
+            ></textarea>
             <div class="group-edit-actions">
               <button
                 type="button"
@@ -101,6 +109,9 @@
             }
             @if (group.category) {
               <span class="group-category">{{ group.category }}</span>
+            }
+            @if (group.note) {
+              <p class="group-note">{{ group.note }}</p>
             }
           </div>
           <button

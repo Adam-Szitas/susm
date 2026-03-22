@@ -1,5 +1,7 @@
 .preview-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .protocol-generate-form {
@@ -138,5 +140,14 @@
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid #ddd;
+
+    &.top-actions {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      padding-top: 0;
+      padding-bottom: 1rem;
+      border-top: none;
+      border-bottom: 1px solid #ddd;
+    }
   }
 }

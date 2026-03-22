@@ -124,10 +124,11 @@ export class FileListComponent {
   // Track files that failed to load
   private failedFileIds = new Set<string>();
 
-  // Inline edit state for group description/category
+  // Inline edit state for group description/category/note
   public editingGroupId = signal<string | null>(null);
   public editDescription = signal<string>('');
   public editCategory = signal<string>('');
+  public editNote = signal<string>('');
 
   // Picture selection for moving between groups (object files only)
   public selectionMode = signal<boolean>(false);
@@ -146,6 +147,7 @@ export class FileListComponent {
     this.editingGroupId.set(id);
     this.editDescription.set(group.description ?? '');
     this.editCategory.set(group.category ?? '');
+    this.editNote.set(group.note ?? '');
   }
 
   public cancelEditGroup(): void {
@@ -238,12 +240,14 @@ export class FileListComponent {
     const description = this.editDescription().trim();
     const categoryRaw = this.editCategory().trim();
     const category = categoryRaw === '' ? null : categoryRaw;
+    const noteRaw = this.editNote().trim();
+    const note = noteRaw === '' ? null : noteRaw;
 
-    // Always send description and category (even when empty) so the backend persists removals
     this.#fileService
       .updateFileGroup(id, {
         description,
         category,
+        note,
       })
       .subscribe({
         next: () => {

@@ -109,6 +109,23 @@
     </div>
   } @else {
     <form [formGroup]="form" (ngSubmit)="loadPreview()">
+    <div class="form-actions top-actions">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="loadingPreview() || !isFormValidForPreview || !hasSelection()"
+      >
+        @if (loadingPreview()) {
+          {{ 'protocols.loadingPreview' | translate }}
+        } @else {
+          {{ 'protocols.preview' | translate }}
+        }
+      </button>
+    </div>
+
     <div class="form-group">
       <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
       <select id="template_id" formControlName="template_id">
@@ -264,23 +281,6 @@
       </div>
     }
 
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" (click)="close()">
-          {{ 'common.cancel' | translate }}
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="loadingPreview() || !isFormValidForPreview || !hasSelection()"
-          [title]="'Debug: loading=' + loadingPreview() + ', valid=' + isFormValidForPreview + ', hasSelection=' + hasSelection()"
-        >
-          @if (loadingPreview()) {
-            {{ 'protocols.loadingPreview' | translate }}
-          } @else {
-            {{ 'protocols.preview' | translate }}
-          }
-        </button>
-      </div>
     </form>
   }
 </div>

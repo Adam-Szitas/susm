@@ -60,7 +60,7 @@ export class FileService {
    */
   updateFileGroup(
     groupId: string,
-    data: { description?: string; category?: string | null }
+    data: { description?: string; category?: string | null; note?: string | null }
   ): Observable<{ message: string }> {
     const endpoint = `file/group/${groupId}`;
     return this.#httpService.put<{ message: string }>(endpoint, data);

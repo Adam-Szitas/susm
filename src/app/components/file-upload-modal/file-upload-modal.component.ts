@@ -30,11 +30,12 @@ export class FileUploadModalComponent {
   uploading = input<boolean>(false);
 
   filesSelected = output<globalThis.File[]>();
-  upload = output<{ files: globalThis.File[]; description: string; category: string }>();
+  upload = output<{ files: globalThis.File[]; description: string; category: string; note: string }>();
   cancel = output<void>();
 
   description = signal('');
   category = signal('');
+  note = signal('');
   filePreviews = signal<FilePreview[]>([]);
   compressing = signal(false);
 
@@ -137,12 +138,14 @@ export class FileUploadModalComponent {
       files,
       description: this.description().trim(),
       category: this.category().trim(),
+      note: this.note().trim(),
     });
   }
 
   onCancel(): void {
     this.description.set('');
     this.category.set('');
+    this.note.set('');
     this.filePreviews.set([]);
     this.compressing.set(false);
     this.cancel.emit();
@@ -159,6 +162,7 @@ export class FileUploadModalComponent {
     this.filePreviews.set([]);
     this.description.set('');
     this.category.set('');
+    this.note.set('');
     this.compressing.set(false);
   }
 }
