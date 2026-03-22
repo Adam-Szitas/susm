@@ -35,9 +35,54 @@
         </ul>
         <app-status-pill [status]="object()?.status || defaultStatus" />
       </div>
-      @if (object()?.note) {
-        <p class="note">{{ object()?.note }}</p>
-      }
+      <div class="note-section">
+        @if (editingNote()) {
+          <div class="note-edit-form">
+            <textarea
+              class="note-input"
+              [ngModel]="editNoteValue()"
+              (ngModelChange)="editNoteValue.set($event)"
+              rows="3"
+              [placeholder]="'common.note' | translate"
+              [title]="'common.note' | translate"
+            ></textarea>
+            <div class="note-edit-actions">
+              <button
+                type="button"
+                class="button button-primary"
+                (click)="saveNote()"
+                [disabled]="savingNote()"
+              >
+                {{ 'common.save' | translate }}
+              </button>
+              <button
+                type="button"
+                class="button button-secondary"
+                (click)="cancelEditNote()"
+                [disabled]="savingNote()"
+              >
+                {{ 'common.cancel' | translate }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="note-display">
+            @if (object()?.note) {
+              <p class="note">{{ object()?.note }}</p>
+            } @else {
+              <p class="note note-empty">{{ 'objects.noNote' | translate }}</p>
+            }
+            <button
+              type="button"
+              class="button button-primary edit-note-btn"
+              (click)="startEditNote()"
+              [attr.aria-label]="'objects.editNote' | translate"
+            >
+              ✎
+            </button>
+          </div>
+        }
+      </div>
       <div class="selection-container">
         <div class="section-container">
           <div class="category-section">

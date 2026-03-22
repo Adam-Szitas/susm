@@ -113,9 +113,61 @@
     }
   }
 
+  .note-section {
+    margin-bottom: 0.5rem;
+  }
+
+  .note-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
   .note {
     font-size: 0.9rem;
     color: #4a4a4a;
+    flex: 1;
+    margin: 0;
+  }
+
+  .note-empty {
+    font-style: italic;
+    color: #999;
+  }
+
+  .edit-note-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0.85rem;
+  }
+
+  .note-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .note-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: vertical;
+
+      &:focus {
+        outline: none;
+        border-color: #094c43;
+        box-shadow: 0 0 4px rgba(11, 99, 87, 0.3);
+      }
+    }
+
+    .note-edit-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
   }
 
   .category-section,

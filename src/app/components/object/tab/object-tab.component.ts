@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
 import { ProjectStore } from '@store/project.store';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,6 +27,7 @@ import { UserStore } from '@store/user.store';
     StatusPillComponent,
     FileUploadModalComponent,
     BreadcrumbComponent,
+    FormsModule,
   ],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
@@ -55,6 +57,9 @@ export class ObjectTabComponent implements OnInit {
   projectCategories = signal<string[]>([]);
   updatingCategory = signal(false);
   updatingStatus = signal(false);
+  editingNote = signal(false);
+  editNoteValue = signal('');
+  savingNote = signal(false);
   uploadModalOpen = signal(false);
   selectedFiles = signal<globalThis.File[]>([]);
   readonly defaultStatus = DEFAULT_WORK_STATUS;
@@ -387,6 +392,40 @@ export class ObjectTabComponent implements OnInit {
           error.message || this.#translationService.instant('objects.deleteObjectFailed'),
         );
         this.deleting.set(false);
+      },
+    });
+  }
+
+  startEditNote(): void {
+    this.editNoteValue.set(this.object()?.note || '');
+    this.editingNote.set(true);
+  }
+
+  cancelEditNote(): void {
+    this.editingNote.set(false);
+  }
+
+  saveNote(): void {
+    const objectId = this.object()?._id?.$oid;
+    if (!objectId) return;
+
+    const note = this.editNoteValue().trim();
+    this.savingNote.set(true);
+
+    this.#httpService.put<Object>(`object/${objectId}`, { note }).subscribe({
+      next: (updated) => {
+        this.object.set(updated);
+        this.editingNote.set(false);
+        this.savingNote.set(false);
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('objects.noteUpdated'),
+        );
+      },
+      error: (err) => {
+        this.savingNote.set(false);
+        this.#notificationService.showError(
+          err.message || this.#translationService.instant('objects.updateNoteFailed'),
+        );
       },
     });
   }
