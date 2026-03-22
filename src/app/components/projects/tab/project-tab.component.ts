@@ -14,7 +14,7 @@ import { filter, map } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { UserStore } from '@store/user.store';
 import { FilterComponent } from '../../filter/filter.component';
-import { Filter, FilterResult, formatWorkStatus, Object, ProtocolRecord } from '@models';
+import { Filter, FilterResult, formatWorkStatus, Object, parseDateValue, ProtocolRecord } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -30,6 +30,7 @@ import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
+import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
 
 @Component({
   selector: 'app-project-tab',
@@ -58,6 +59,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
   #imageCompressionService = inject(ImageCompressionService);
+  #filterPersistence = inject(FilterPersistenceService);
   #routeSubscription?: Subscription;
 
   project = this.#projectStore.project;
@@ -67,7 +69,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
   updatingCategory = signal(false);
-  downloadingProtocol = signal<string | null>(null); // Track which protocol is being downloaded
+  downloadingProtocol = signal<string | null>(null);
   loadingTemplates = signal(false);
   archivingProject = signal(false);
   deletingProject = signal(false);
@@ -75,6 +77,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   fileListSectionOpen = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
+  #filtersVisible = false;
+  #projectFilterKey = '';
+  restoredFilterState = signal<PersistedFilterState | null>(null);
   public readonly formatStatus = formatWorkStatus;
   readonly projectProtocols = computed(() => {
     const protocols = this.project()?.protocols ?? [];
@@ -106,7 +111,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Subscribe to route parameter changes to reload project when route changes
     this.#routeSubscription = this.#route.paramMap
       .pipe(
         map((params) => params.get('id')),
@@ -114,9 +118,18 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       )
       .subscribe((projectId) => {
         this.#projectStore.loadProject(projectId);
-      });
 
-    this.#currentFilter.set({});
+        this.#projectFilterKey = `project_${projectId}`;
+        const restored = this.#filterPersistence.restore(this.#projectFilterKey);
+        if (restored) {
+          this.restoredFilterState.set(restored);
+          this.#currentFilter.set(restored.filter);
+          this.#filtersVisible = restored.filtersVisible;
+        } else {
+          this.restoredFilterState.set(null);
+          this.#currentFilter.set({});
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -138,6 +151,16 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   filterChanged(result: FilterResult) {
     this.#currentFilter.set(result);
+    if (this.#projectFilterKey) {
+      this.#filterPersistence.save(this.#projectFilterKey, { filter: result, filtersVisible: this.#filtersVisible });
+    }
+  }
+
+  onFiltersVisibleChange(visible: boolean): void {
+    this.#filtersVisible = visible;
+    if (this.#projectFilterKey) {
+      this.#filterPersistence.save(this.#projectFilterKey, { filter: this.#currentFilter(), filtersVisible: visible });
+    }
   }
 
   addObject(): void {
@@ -402,12 +425,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (filter.dateFrom || filter.dateTo) {
       filtered = filtered.filter((obj) => {
-        // Support both createdAt (frontend model) and created_at (backend Mongo field)
-        const createdRaw = obj.createdAt ?? obj.created_at;
-        if (!createdRaw) return false;
-
-        const objDate = new Date(createdRaw);
-        if (Number.isNaN(objDate.getTime())) return false;
+        const objDate = parseDateValue(obj.createdAt ?? obj.created_at);
+        if (!objDate) return false;
 
         if (filter.dateFrom) {
           const fromDate = new Date(filter.dateFrom);

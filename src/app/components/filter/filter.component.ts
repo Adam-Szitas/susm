@@ -10,6 +10,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { Filter, FilterResult, SortDirection } from '@models';
 import { CommonModule } from '@angular/common';
+import { PersistedFilterState } from '@services/filter-persistence.service';
 
 @Component({
   selector: 'app-filter',
@@ -20,9 +21,13 @@ import { CommonModule } from '@angular/common';
 })
 export class FilterComponent implements OnInit {
   public filter = input.required<Filter>();
+  public initialState = input<PersistedFilterState | null>();
 
   @Output()
   public filterChange = new EventEmitter<FilterResult>();
+
+  @Output()
+  public filtersVisibleChange = new EventEmitter<boolean>();
 
   private currentFilter = <FilterResult>({});
   public areFiltersVisible = false;
@@ -96,6 +101,20 @@ export class FilterComponent implements OnInit {
     if (filterData.sortDirection) {
       this.searchForm.patchValue({ sortDirection: filterData.sortDirection });
     }
+
+    const restored = this.initialState();
+    if (restored) {
+      const f = restored.filter;
+      this.searchForm.patchValue({
+        search: f.searchText ?? '',
+        category: f.category ?? '',
+        status: f.status ?? '',
+        dateFrom: f.dateFrom ?? '',
+        dateTo: f.dateTo ?? '',
+        sortDirection: f.sortDirection ?? '',
+      });
+      this.areFiltersVisible = restored.filtersVisible;
+    }
   }
 
   private emitFilterChange(): void {
@@ -104,6 +123,7 @@ export class FilterComponent implements OnInit {
 
   toggleFilters(): void {
     this.areFiltersVisible = !this.areFiltersVisible;
+    this.filtersVisibleChange.emit(this.areFiltersVisible);
   }
 
   clearFilters(): void {

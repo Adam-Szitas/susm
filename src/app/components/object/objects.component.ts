@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { DEFAULT_WORK_STATUS, Filter, FilterResult, formatWorkStatus, ObjectWithProject } from '@models';
+import { DEFAULT_WORK_STATUS, Filter, FilterResult, formatWorkStatus, ObjectWithProject, parseDateValue } from '@models';
 import { ProjectStore } from '@store/project.store';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { FilterComponent } from '../filter/filter.component';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 import { DatePipe } from '@angular/common';
+import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+
+const FILTER_KEY = 'objects';
 
 @Component({
   selector: 'app-object',
@@ -16,13 +19,15 @@ import { DatePipe } from '@angular/common';
 })
 export class ObjectComponent implements OnInit {
   #projectStore = inject(ProjectStore);
+  #filterPersistence = inject(FilterPersistenceService);
   public objects = this.#projectStore.objectsWithProjects;
   public filteredObjects = signal<ObjectWithProject[]>([]);
   #currentFilter = signal<FilterResult>({});
+  #filtersVisible = false;
+  restoredFilterState = signal<PersistedFilterState | null>(null);
   public readonly defaultStatus = DEFAULT_WORK_STATUS;
   public readonly formatStatus = formatWorkStatus;
 
-  // Get all unique categories from all projects
   readonly allCategories = computed(() => {
     const objects = this.objects() || [];
     const categories = new Set<string>();
@@ -55,11 +60,24 @@ export class ObjectComponent implements OnInit {
 
   public ngOnInit(): void {
     this.#projectStore.loadAllObjects();
-    this.#currentFilter.set({});
+    const restored = this.#filterPersistence.restore(FILTER_KEY);
+    if (restored) {
+      this.restoredFilterState.set(restored);
+      this.#currentFilter.set(restored.filter);
+      this.#filtersVisible = restored.filtersVisible;
+    } else {
+      this.#currentFilter.set({});
+    }
   }
 
   public onFilterChange(filter: FilterResult): void {
     this.#currentFilter.set(filter);
+    this.#filterPersistence.save(FILTER_KEY, { filter, filtersVisible: this.#filtersVisible });
+  }
+
+  public onFiltersVisibleChange(visible: boolean): void {
+    this.#filtersVisible = visible;
+    this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
   }
 
   #applyFilters(objects: ObjectWithProject[], filter: FilterResult): ObjectWithProject[] {
@@ -102,12 +120,8 @@ export class ObjectComponent implements OnInit {
         const obj = item.object;
         if (!obj) return false;
 
-        // Support both createdAt (frontend model) and created_at (backend Mongo field)
-        const createdRaw = obj.createdAt ?? obj.created_at;
-        if (!createdRaw) return false;
-
-        const objDate = new Date(createdRaw);
-        if (Number.isNaN(objDate.getTime())) return false;
+        const objDate = parseDateValue(obj.createdAt ?? obj.created_at);
+        if (!objDate) return false;
 
         if (filter.dateFrom) {
           const fromDate = new Date(filter.dateFrom);

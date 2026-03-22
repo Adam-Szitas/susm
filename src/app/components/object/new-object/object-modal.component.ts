@@ -30,6 +30,7 @@ export class ObjectModalComponent {
     }),
     note: [''],
     status: [DEFAULT_WORK_STATUS, [Validators.required]],
+    prefix: [''],
   });
 
   public Submit(): void {

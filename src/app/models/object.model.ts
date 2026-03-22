@@ -14,6 +14,7 @@ export interface Object {
   createdAt?: string;
   created_at?: string;
   deleted_at?: string;
+  prefix?: string;
 }
 
 export interface ObjectWithProject {

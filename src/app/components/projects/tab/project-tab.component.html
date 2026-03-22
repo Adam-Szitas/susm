@@ -74,7 +74,12 @@
     </div>
   </section>
 
-  <app-filter [filter]="filterData()" (filterChange)="filterChanged($event)"></app-filter>
+  <app-filter
+    [filter]="filterData()"
+    [initialState]="restoredFilterState()"
+    (filterChange)="filterChanged($event)"
+    (filtersVisibleChange)="onFiltersVisibleChange($event)"
+  ></app-filter>
 
   @if (!project()?.archived_at) {
     <div class="action-buttons">

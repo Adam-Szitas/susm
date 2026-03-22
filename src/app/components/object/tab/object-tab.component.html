@@ -29,6 +29,9 @@
           @if (object()?.address?.door_number) {
             <li>{{ 'common.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
           }
+          @if (object()?.prefix) {
+            <li>{{ 'objects.prefix' | translate }}: {{ object()?.prefix }}</li>
+          }
         </ul>
         <app-status-pill [status]="object()?.status || defaultStatus" />
       </div>

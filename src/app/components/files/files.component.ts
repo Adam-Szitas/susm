@@ -5,8 +5,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../environment';
-import { Filter, FilterResult } from '@models';
+import { Filter, FilterResult, parseDateValue } from '@models';
 import { FilterComponent } from '../filter/filter.component';
+import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
 
 export interface FileWithContext {
   file: {
@@ -29,6 +30,8 @@ export interface FileWithContext {
   } | null;
 }
 
+const FILTER_KEY = 'files';
+
 @Component({
   selector: 'app-files',
   standalone: true,
@@ -40,18 +43,19 @@ export interface FileWithContext {
 export class FilesComponent implements OnInit {
   #fileService = inject(FileService);
   #router = inject(Router);
+  #filterPersistence = inject(FilterPersistenceService);
 
   files = signal<FileWithContext[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
 
-  // Track file IDs that failed to load (e.g. deleted, 404) so we don't show them
   #failedFileIds = new Set<string>();
   #failedFileIdsVersion = signal(0);
 
-  // Filter state
   selectedProject = signal<string>('');
   #currentFilter = signal<FilterResult>({});
+  #filtersVisible = false;
+  restoredFilterState = signal<PersistedFilterState | null>(null);
 
   // Exclude deleted and failed-to-load files from the list we work with
   #filesForDisplay = computed(() => {
@@ -116,11 +120,8 @@ export class FilesComponent implements OnInit {
 
     if (filter.dateFrom || filter.dateTo) {
       result = result.filter((f) => {
-        const created = f.file.created_at;
-        if (!created) return false;
-
-        const createdDate = new Date(created);
-        if (Number.isNaN(createdDate.getTime())) return false;
+        const createdDate = parseDateValue(f.file.created_at);
+        if (!createdDate) return false;
 
         if (filter.dateFrom) {
           const from = new Date(filter.dateFrom);
@@ -147,6 +148,12 @@ export class FilesComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const restored = this.#filterPersistence.restore(FILTER_KEY);
+    if (restored) {
+      this.restoredFilterState.set(restored);
+      this.#currentFilter.set(restored.filter);
+      this.#filtersVisible = restored.filtersVisible;
+    }
     this.loadFiles();
   }
 
@@ -205,6 +212,12 @@ export class FilesComponent implements OnInit {
 
   onFilterChange(filter: FilterResult): void {
     this.#currentFilter.set(filter);
+    this.#filterPersistence.save(FILTER_KEY, { filter, filtersVisible: this.#filtersVisible });
+  }
+
+  onFiltersVisibleChange(visible: boolean): void {
+    this.#filtersVisible = visible;
+    this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
   }
 
   clearProjectFilter(): void {

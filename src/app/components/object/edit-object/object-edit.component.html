@@ -31,6 +31,10 @@
         <input placeholder="Note" type="text" id="note" formControlName="note" />
       </div>
       <div class="control">
+        <label for="prefix">{{ 'objects.prefix' | translate }}</label>
+        <input placeholder="{{ 'objects.prefixPlaceholder' | translate }}" type="text" id="prefix" formControlName="prefix" />
+      </div>
+      <div class="control">
         <label for="status">{{ 'objects.status' | translate }}</label>
         <select id="status" formControlName="status">
           @for (status of statuses; track status) {

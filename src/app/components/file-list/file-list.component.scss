@@ -90,6 +90,7 @@
   color: var(--text-color, #333);
   @include truncate;
   border-top: 1px solid var(--default-color, #e0e0e0);
+  text-wrap: auto;
 }
 
 .file-name-input {

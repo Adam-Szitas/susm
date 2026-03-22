@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, Input, OnInit, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+  OnInit,
+  output,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Object, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
 import { HttpService } from '@services/http.service';
@@ -35,18 +43,13 @@ export class EditObjectComponent implements OnInit {
     // Match the same structure as create object modal
     this.form = this.#fb.group({
       address: this.#fb.group({
-        house_number: [
-          this.objectData?.address?.house_number || '',
-          Validators.required,
-        ],
+        house_number: [this.objectData?.address?.house_number || '', Validators.required],
         level: [this.objectData?.address?.level || ''],
         door_number: [this.objectData?.address?.door_number || ''],
       }),
       note: [this.objectData?.note || ''],
-      status: [
-        this.objectData?.status || DEFAULT_WORK_STATUS,
-        [Validators.required],
-      ],
+      status: [this.objectData?.status || DEFAULT_WORK_STATUS, [Validators.required]],
+      prefix: [this.objectData?.prefix || ''],
     });
   }
 
@@ -59,9 +62,7 @@ export class EditObjectComponent implements OnInit {
     }
 
     if (this.form.invalid) {
-      this.#notificationService.showError(
-        this.#translationService.instant('errors.formInvalid'),
-      );
+      this.#notificationService.showError(this.#translationService.instant('errors.formInvalid'));
       return;
     }
 
@@ -79,7 +80,7 @@ export class EditObjectComponent implements OnInit {
         this.#notificationService.showSuccess(
           this.#translationService.instant('objects.updateSuccess'),
         );
-        
+
         // Trigger store to refetch the object data
         if (response && response._id?.$oid) {
           this.#projectStore.loadObject(response._id.$oid).subscribe({
