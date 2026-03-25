@@ -9,11 +9,19 @@
     </div>
     <div class="desktop">
       <ul>
-        <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">{{ 'navbar.dashboard' | translate }}</li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/projects'">{{ 'navbar.projects' | translate }}</li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/objects'">{{ 'navbar.objects' | translate }}</li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">
+          {{ 'navbar.dashboard' | translate }}
+        </li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/projects'">
+          {{ 'navbar.projects' | translate }}
+        </li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/objects'">
+          {{ 'navbar.objects' | translate }}
+        </li>
         <li (click)="hideMobileMenu()" [routerLink]="'/files'">{{ 'navbar.files' | translate }}</li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">{{ 'navbar.protocols' | translate }}</li>
+        <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">
+          {{ 'navbar.protocols' | translate }}
+        </li>
       </ul>
     </div>
     <ul class="logout-menu">
@@ -35,12 +43,22 @@
       </i>
     </div>
     <ul class="mobile-menu-items">
-      <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">{{ 'navbar.dashboard' | translate }}</li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/projects'">{{ 'navbar.projects' | translate }}</li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/objects'">{{ 'navbar.objects' | translate }}</li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">
+        {{ 'navbar.dashboard' | translate }}
+      </li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/projects'">
+        {{ 'navbar.projects' | translate }}
+      </li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/objects'">
+        {{ 'navbar.objects' | translate }}
+      </li>
       <li (click)="hideMobileMenu()" [routerLink]="'/files'">{{ 'navbar.files' | translate }}</li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">{{ 'navbar.protocols' | translate }}</li>
-      <li class="logout-item" (click)="hideMobileMenu(); logout()">{{ 'navbar.logout' | translate }}</li>
+      <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">
+        {{ 'navbar.protocols' | translate }}
+      </li>
+      <li class="logout-item" (click)="hideMobileMenu(); logout()">
+        {{ 'navbar.logout' | translate }}
+      </li>
     </ul>
   </div>
 } @else {
@@ -48,7 +66,6 @@
     <span>{{ 'navbar.logo' | translate }}</span>
     <ul>
       <li [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
-      <li [routerLink]="'/register'">{{ 'navbar.register' | translate }}</li>
     </ul>
   </nav>
 }

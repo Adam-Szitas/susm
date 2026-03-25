@@ -361,12 +361,8 @@ export class ProtocolGenerateModalComponent {
 
   formatProtocolLabel(protocol: ProtocolRecord): string {
     const name = protocol.template_name || '';
-    const date = protocol.generated_at
-      ? new Date(protocol.generated_at).toLocaleDateString()
-      : '';
-    const objects = protocol.object_names?.length
-      ? protocol.object_names.join(', ')
-      : '';
+    const date = protocol.generated_at ? new Date(protocol.generated_at).toLocaleDateString() : '';
+    const objects = protocol.object_names?.length ? protocol.object_names.join(', ') : '';
     return [name, date, objects].filter(Boolean).join(' · ');
   }
 

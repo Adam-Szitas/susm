@@ -12,7 +12,7 @@
       <div class="template-fields">
         @for (field of previewData().field_values; track field.label) {
           <div class="template-field">
-            <strong>{{ field.label }}:</strong> 
+            <strong>{{ field.label }}:</strong>
             @if (field.value) {
               {{ field.value }}
             } @else {
@@ -110,7 +110,9 @@
         <div class="preview-header linked-header">
           <h3 class="template-name">{{ linked.template_name || linked.project_name }}</h3>
           @if (linked.generated_at) {
-            <p class="linked-generated-at">{{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | date:'medium' }}</p>
+            <p class="linked-generated-at">
+              {{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | date: 'medium' }}
+            </p>
           }
           @if (linked.description) {
             <p class="template-description">{{ linked.description }}</p>

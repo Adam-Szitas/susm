@@ -48,4 +48,3 @@ export interface GenerateProtocolRequest {
   /** Optional: include these older protocol IDs in the same PDF (older first, then new content). */
   linked_protocol_ids?: string[];
 }
-

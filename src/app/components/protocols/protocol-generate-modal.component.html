@@ -32,7 +32,7 @@
           }
         </button>
       </div>
-      
+
       <!-- Editable Fields Section in Preview -->
       @if (fieldControls.controls.length > 0 && templateForPreview) {
         <div class="template-fields-section preview-fields">
@@ -51,50 +51,49 @@
                       }
                     </label>
                     @if (field.field_type === 'text' || field.field_type === 'custom') {
-                    <input
-                      [id]="'preview_field_' + i"
-                      type="text"
-                      formControlName="value"
-                      [placeholder]="field.label"
-                    />
-                  } @else if (field.field_type === 'number') {
-                    <input
-                      [id]="'preview_field_' + i"
-                      type="number"
-                      formControlName="value"
-                      [placeholder]="field.label"
-                    />
-                  } @else if (field.field_type === 'date') {
-                    <input
-                      [id]="'preview_field_' + i"
-                      type="date"
-                      formControlName="value"
-                    />
-                  } @else if (field.field_type === 'address') {
-                    <input
-                      [id]="'preview_field_' + i"
-                      type="text"
-                      formControlName="value"
-                      [placeholder]="'common.address' | translate"
-                    />
-                  } @else if (field.field_type === 'status') {
-                    <select [id]="'preview_field_' + i" formControlName="value">
-                      <option value="">{{ 'objects.status' | translate }}</option>
-                      <option value="created">{{ 'status.created' | translate }}</option>
-                      <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
-                      <option value="rejected">{{ 'status.rejected' | translate }}</option>
-                      <option value="verified">{{ 'status.verified' | translate }}</option>
-                      <option value="closed">{{ 'status.closed' | translate }}</option>
-                    </select>
-                  } @else if (field.field_type === 'note') {
-                    <textarea
-                      [id]="'preview_field_' + i"
-                      formControlName="value"
-                      rows="3"
-                      [placeholder]="'common.note' | translate"
-                    ></textarea>
-                  }
-                    @if ($any(fieldControl).get('value')?.invalid && $any(fieldControl).get('value')?.touched) {
+                      <input
+                        [id]="'preview_field_' + i"
+                        type="text"
+                        formControlName="value"
+                        [placeholder]="field.label"
+                      />
+                    } @else if (field.field_type === 'number') {
+                      <input
+                        [id]="'preview_field_' + i"
+                        type="number"
+                        formControlName="value"
+                        [placeholder]="field.label"
+                      />
+                    } @else if (field.field_type === 'date') {
+                      <input [id]="'preview_field_' + i" type="date" formControlName="value" />
+                    } @else if (field.field_type === 'address') {
+                      <input
+                        [id]="'preview_field_' + i"
+                        type="text"
+                        formControlName="value"
+                        [placeholder]="'common.address' | translate"
+                      />
+                    } @else if (field.field_type === 'status') {
+                      <select [id]="'preview_field_' + i" formControlName="value">
+                        <option value="">{{ 'objects.status' | translate }}</option>
+                        <option value="created">{{ 'status.created' | translate }}</option>
+                        <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
+                        <option value="rejected">{{ 'status.rejected' | translate }}</option>
+                        <option value="verified">{{ 'status.verified' | translate }}</option>
+                        <option value="closed">{{ 'status.closed' | translate }}</option>
+                      </select>
+                    } @else if (field.field_type === 'note') {
+                      <textarea
+                        [id]="'preview_field_' + i"
+                        formControlName="value"
+                        rows="3"
+                        [placeholder]="'common.note' | translate"
+                      ></textarea>
+                    }
+                    @if (
+                      $any(fieldControl).get('value')?.invalid &&
+                      $any(fieldControl).get('value')?.touched
+                    ) {
                       <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
                     }
                   </div>
@@ -104,184 +103,181 @@
           </form>
         </div>
       }
-      
+
       <app-protocol-preview [previewData]="previewData()!" />
     </div>
   } @else {
     <form [formGroup]="form" (ngSubmit)="loadPreview()">
-    <div class="form-actions top-actions">
-      <button type="button" class="btn btn-secondary" (click)="close()">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="loadingPreview() || !isFormValidForPreview || !hasSelection()"
-      >
-        @if (loadingPreview()) {
-          {{ 'protocols.loadingPreview' | translate }}
-        } @else {
-          {{ 'protocols.preview' | translate }}
+      <div class="form-actions top-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loadingPreview() || !isFormValidForPreview || !hasSelection()"
+        >
+          @if (loadingPreview()) {
+            {{ 'protocols.loadingPreview' | translate }}
+          } @else {
+            {{ 'protocols.preview' | translate }}
+          }
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
+        <select id="template_id" formControlName="template_id">
+          <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
+          @for (template of templates(); track template._id?.$oid) {
+            <option [value]="template._id?.$oid || ''">{{ template.name }}</option>
+          }
+        </select>
+        @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {
+          <span class="error">{{ 'protocols.templateRequired' | translate }}</span>
         }
-      </button>
-    </div>
+      </div>
 
-    <div class="form-group">
-      <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
-      <select id="template_id" formControlName="template_id">
-        <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
-        @for (template of templates(); track template._id?.$oid) {
-          <option [value]="template._id?.$oid || ''">{{ template.name }}</option>
-        }
-      </select>
-      @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {
-        <span class="error">{{ 'protocols.templateRequired' | translate }}</span>
-      }
-    </div>
+      <div class="form-group">
+        <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
+        <input
+          id="from_date"
+          type="date"
+          formControlName="from_date"
+          [title]="'protocols.dateRangeHint' | translate"
+        />
+        <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+      </div>
 
-    <div class="form-group">
-      <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
-      <input
-        id="from_date"
-        type="date"
-        formControlName="from_date"
-        [title]="'protocols.dateRangeHint' | translate"
-      />
-      <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
-    </div>
+      <div class="form-group">
+        <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
+        <input
+          id="to_date"
+          type="date"
+          formControlName="to_date"
+          [title]="'protocols.dateRangeHint' | translate"
+        />
+        <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+      </div>
 
-    <div class="form-group">
-      <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
-      <input
-        id="to_date"
-        type="date"
-        formControlName="to_date"
-        [title]="'protocols.dateRangeHint' | translate"
-      />
-      <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
-    </div>
-
-    @if (selectedTemplate()) {
-      @if (selectedTemplate()!.fields && selectedTemplate()!.fields.length > 0) {
-        <div class="template-fields-section">
-          <h3>{{ 'protocols.templateFields' | translate }}</h3>
-          <p class="helper-text">{{ 'protocols.fillFieldsBeforePreview' | translate }}</p>
-          <div formArrayName="fields">
-          @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
-            @let field = selectedTemplate()!.fields[i];
-            <div [formGroup]="$any(fieldControl)" class="template-field">
-              <label [for]="'field_' + i">
-                {{ field.label }}
-                @if (field.required) {
-                  <span class="required">*</span>
-                }
-              </label>
-              @if (field.field_type === 'text' || field.field_type === 'custom') {
-                <input
-                  [id]="'field_' + i"
-                  type="text"
-                  formControlName="value"
-                  [placeholder]="field.label"
-                />
-              } @else if (field.field_type === 'number') {
-                <input
-                  [id]="'field_' + i"
-                  type="number"
-                  formControlName="value"
-                  [placeholder]="field.label"
-                />
-              } @else if (field.field_type === 'date') {
-                <input
-                  [id]="'field_' + i"
-                  type="date"
-                  formControlName="value"
-                />
-              } @else if (field.field_type === 'address') {
-                <input
-                  [id]="'field_' + i"
-                  type="text"
-                  formControlName="value"
-                  [placeholder]="'common.address' | translate"
-                />
-              } @else if (field.field_type === 'status') {
-                <select [id]="'field_' + i" formControlName="value">
-                  <option value="">{{ 'objects.status' | translate }}</option>
-                  <option value="created">{{ 'status.created' | translate }}</option>
-                  <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
-                  <option value="rejected">{{ 'status.rejected' | translate }}</option>
-                  <option value="verified">{{ 'status.verified' | translate }}</option>
-                  <option value="closed">{{ 'status.closed' | translate }}</option>
-                </select>
-              } @else if (field.field_type === 'note') {
-                <textarea
-                  [id]="'field_' + i"
-                  formControlName="value"
-                  rows="3"
-                  [placeholder]="'common.note' | translate"
-                ></textarea>
-              }
-              @if ($any(fieldControl).get('value')?.invalid && $any(fieldControl).get('value')?.touched) {
-                <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
+      @if (selectedTemplate()) {
+        @if (selectedTemplate()!.fields && selectedTemplate()!.fields.length > 0) {
+          <div class="template-fields-section">
+            <h3>{{ 'protocols.templateFields' | translate }}</h3>
+            <p class="helper-text">{{ 'protocols.fillFieldsBeforePreview' | translate }}</p>
+            <div formArrayName="fields">
+              @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
+                @let field = selectedTemplate()!.fields[i];
+                <div [formGroup]="$any(fieldControl)" class="template-field">
+                  <label [for]="'field_' + i">
+                    {{ field.label }}
+                    @if (field.required) {
+                      <span class="required">*</span>
+                    }
+                  </label>
+                  @if (field.field_type === 'text' || field.field_type === 'custom') {
+                    <input
+                      [id]="'field_' + i"
+                      type="text"
+                      formControlName="value"
+                      [placeholder]="field.label"
+                    />
+                  } @else if (field.field_type === 'number') {
+                    <input
+                      [id]="'field_' + i"
+                      type="number"
+                      formControlName="value"
+                      [placeholder]="field.label"
+                    />
+                  } @else if (field.field_type === 'date') {
+                    <input [id]="'field_' + i" type="date" formControlName="value" />
+                  } @else if (field.field_type === 'address') {
+                    <input
+                      [id]="'field_' + i"
+                      type="text"
+                      formControlName="value"
+                      [placeholder]="'common.address' | translate"
+                    />
+                  } @else if (field.field_type === 'status') {
+                    <select [id]="'field_' + i" formControlName="value">
+                      <option value="">{{ 'objects.status' | translate }}</option>
+                      <option value="created">{{ 'status.created' | translate }}</option>
+                      <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
+                      <option value="rejected">{{ 'status.rejected' | translate }}</option>
+                      <option value="verified">{{ 'status.verified' | translate }}</option>
+                      <option value="closed">{{ 'status.closed' | translate }}</option>
+                    </select>
+                  } @else if (field.field_type === 'note') {
+                    <textarea
+                      [id]="'field_' + i"
+                      formControlName="value"
+                      rows="3"
+                      [placeholder]="'common.note' | translate"
+                    ></textarea>
+                  }
+                  @if (
+                    $any(fieldControl).get('value')?.invalid &&
+                    $any(fieldControl).get('value')?.touched
+                  ) {
+                    <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
+                  }
+                </div>
               }
             </div>
-          }
           </div>
-        </div>
+        } @else {
+          <div class="template-fields-section">
+            <p class="helper-text">{{ 'protocols.noFieldsInTemplate' | translate }}</p>
+          </div>
+        }
+      }
+
+      @if (objects().length === 0) {
+        <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
       } @else {
-        <div class="template-fields-section">
-          <p class="helper-text">{{ 'protocols.noFieldsInTemplate' | translate }}</p>
+        <div class="object-selection">
+          <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
+          <p class="helper-text">
+            {{ 'protocols.selectObjectsDescription' | translate }}
+          </p>
+          <div class="object-list">
+            @for (object of objects(); track object._id?.$oid) {
+              <label class="object-item">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(object._id?.$oid)"
+                  (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+                />
+                <span>{{ formatObjectLabel(object) }}</span>
+              </label>
+            }
+          </div>
+          @if (!hasSelection()) {
+            <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
+          }
         </div>
       }
-    }
 
-    @if (objects().length === 0) {
-      <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
-    } @else {
-      <div class="object-selection">
-        <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
-        <p class="helper-text">
-          {{ 'protocols.selectObjectsDescription' | translate }}
-        </p>
-        <div class="object-list">
-          @for (object of objects(); track object._id?.$oid) {
-            <label class="object-item">
-              <input
-                type="checkbox"
-                [checked]="isSelected(object._id?.$oid)"
-                (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
-              />
-              <span>{{ formatObjectLabel(object) }}</span>
-            </label>
-          }
+      @if (existingProtocols().length > 0) {
+        <div class="linked-protocols-selection">
+          <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+          <p class="helper-text">
+            {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+          </p>
+          <div class="protocol-list linked-list">
+            @for (protocol of existingProtocols(); track protocol._id.$oid) {
+              <label class="protocol-item linked-item">
+                <input
+                  type="checkbox"
+                  [checked]="isLinkedProtocolSelected(protocol)"
+                  (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
+                />
+                <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
+              </label>
+            }
+          </div>
         </div>
-        @if (!hasSelection()) {
-          <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
-        }
-      </div>
-    }
-
-    @if (existingProtocols().length > 0) {
-      <div class="linked-protocols-selection">
-        <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
-        <p class="helper-text">
-          {{ 'protocols.includeOlderProtocolsDescription' | translate }}
-        </p>
-        <div class="protocol-list linked-list">
-          @for (protocol of existingProtocols(); track protocol._id.$oid) {
-            <label class="protocol-item linked-item">
-              <input
-                type="checkbox"
-                [checked]="isLinkedProtocolSelected(protocol)"
-                (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
-              />
-              <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
-            </label>
-          }
-        </div>
-      </div>
-    }
-
+      }
     </form>
   }
 </div>
-

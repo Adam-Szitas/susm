@@ -7,31 +7,31 @@ export interface ProtocolPreviewData {
   template_name?: string;
   header_template?: string;
   description?: string;
-  field_values?: Array<{
+  field_values?: {
     label: string;
     value: string;
     field_type: string;
-  }>;
+  }[];
   project_name?: string;
   project_address: string;
-  table_of_contents: Array<{ title: string; level: number }>;
-  content_sections: Array<{
+  table_of_contents: { title: string; level: number }[];
+  content_sections: {
     object_address: string;
     headline: string;
-    file_groups: Array<{
+    file_groups: {
       description?: string;
-      images: Array<{
+      images: {
         path: string;
         description?: string;
         object_address: string;
-      }>;
-    }>;
-    ungrouped_images?: Array<{
+      }[];
+    }[];
+    ungrouped_images?: {
       path: string;
       description?: string;
       object_address: string;
-    }>;
-  }>;
+    }[];
+  }[];
   /** When present, older protocol(s) to be included after the current one in the PDF. */
   linked_previews?: ProtocolPreviewData[];
   /** ISO date string for linked protocol (shown in preview). */
@@ -58,9 +58,11 @@ export class ProtocolPreviewComponent {
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.substring('uploads/'.length);
     }
-    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
+    const pathSegments = normalizedPath
+      .split('/')
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment));
     const encodedPath = pathSegments.join('/');
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
 }
-
