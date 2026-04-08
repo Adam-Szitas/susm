@@ -36,6 +36,8 @@ export interface ProtocolRecord {
   generated_at: string;
   generated_by: string;
   data?: Record<string, unknown>;
+  /** Present when the PDF was uploaded by the user rather than generated from a template. */
+  uploaded_pdf_path?: string;
 }
 
 export interface GenerateProtocolRequest {

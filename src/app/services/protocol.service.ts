@@ -163,8 +163,16 @@ export class ProtocolService {
     });
   }
 
-  deleteProtocol(projectId: string, protoclId: string): Observable<string> {
-    return this.#http.delete<string>(`${this.apiUrl}/protocols/${projectId}/${protoclId}`);
+  deleteProtocol(projectId: string, protocolId: string): Observable<{ message: string }> {
+    return this.#httpService.delete<{ message: string }>(`protocols/${projectId}/${protocolId}`);
+  }
+
+  /** Attach a user-selected PDF as a protocol on the project (multipart). */
+  uploadProtocolPdf(projectId: string, file: File): Observable<{ message: string }> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    const headers = new HttpHeaders();
+    return this.#httpService.post<{ message: string }>(`protocols/upload/${projectId}`, form, headers);
   }
 
   previewProtocolStructure(request: GenerateProtocolRequest): Observable<any> {

@@ -28,6 +28,15 @@ export class ProjectStore {
     this._project.set(project);
   }
 
+  /** Remove a protocol from the in-memory project after a successful delete (list + reload stay in sync). */
+  removeProtocolInstance(protocolId: string): void {
+    const project = this._project();
+    if (!project?.protocols?.length) return;
+    const next = project.protocols.filter((p) => p._id?.$oid !== protocolId);
+    if (next.length === project.protocols.length) return;
+    this._project.set({ ...project, protocols: next });
+  }
+
   loadProject(id: string | null): void {
     if (!id) {
       this._error.set('Project ID is required');

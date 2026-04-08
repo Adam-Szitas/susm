@@ -14,7 +14,14 @@ import { filter, map } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { UserStore } from '@store/user.store';
 import { FilterComponent } from '../../filter/filter.component';
-import { Filter, FilterResult, formatWorkStatus, Object, parseDateValue, ProtocolRecord } from '@models';
+import {
+  Filter,
+  FilterResult,
+  formatWorkStatus,
+  Object,
+  parseDateValue,
+  ProtocolRecord,
+} from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -30,7 +37,10 @@ import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
-import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+import {
+  FilterPersistenceService,
+  PersistedFilterState,
+} from '@services/filter-persistence.service';
 
 @Component({
   selector: 'app-project-tab',
@@ -73,8 +83,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   loadingTemplates = signal(false);
   archivingProject = signal(false);
   deletingProject = signal(false);
-  protocolsSectionOpen = signal(false);
-  fileListSectionOpen = signal(false);
+  uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
@@ -96,10 +105,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (!p?.name) {
       return [{ label: projectsLabel, url: '/projects' }, { label: '…' }];
     }
-    return [
-      { label: projectsLabel, url: '/projects' },
-      { label: p.name },
-    ];
+    return [{ label: projectsLabel, url: '/projects' }, { label: p.name }];
   });
 
   constructor() {
@@ -152,14 +158,20 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   filterChanged(result: FilterResult) {
     this.#currentFilter.set(result);
     if (this.#projectFilterKey) {
-      this.#filterPersistence.save(this.#projectFilterKey, { filter: result, filtersVisible: this.#filtersVisible });
+      this.#filterPersistence.save(this.#projectFilterKey, {
+        filter: result,
+        filtersVisible: this.#filtersVisible,
+      });
     }
   }
 
   onFiltersVisibleChange(visible: boolean): void {
     this.#filtersVisible = visible;
     if (this.#projectFilterKey) {
-      this.#filterPersistence.save(this.#projectFilterKey, { filter: this.#currentFilter(), filtersVisible: visible });
+      this.#filterPersistence.save(this.#projectFilterKey, {
+        filter: this.#currentFilter(),
+        filtersVisible: visible,
+      });
     }
   }
 
@@ -276,8 +288,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
 
     this.#protocolService.deleteProtocol(projectId, protocolId).subscribe({
-      next: (message) => {
-        this.#notificationService.showSuccess(this.#translationService.instant(message));
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('protocol.deleted'),
+        );
+        this.#projectStore.removeProtocolInstance(protocolId);
+        this.#projectStore.loadProject(projectId);
       },
       error: (error) => {
         this.#notificationService.showError(
@@ -285,13 +301,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         );
       },
     });
-  }
-
-  protocolDescription(protocol: ProtocolRecord): string {
-    if (protocol.object_names?.length) {
-      return protocol.object_names.join(', ');
-    }
-    return this.#translationService.instant('protocols.noObjectsAvailable');
   }
 
   protocolGeneratedAt(protocol: ProtocolRecord): string {
@@ -453,7 +462,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   #applySort(objects: Object[], sortDirection: string): Object[] {
     const sorted = [...objects];
-    
+
     sorted.sort((a, b) => {
       // Sort by house_number first, then door_number (ignoring level)
       const aHouseNumber = a.address?.house_number ?? '';
@@ -469,7 +478,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
       // Compare house_number first
       let houseComparison = 0;
-      
+
       if (aHouseNum !== null && bHouseNum !== null) {
         // Both are numeric - compare numerically
         houseComparison = aHouseNum - bHouseNum;
@@ -554,17 +563,50 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleProtocolsSection(): void {
-    this.protocolsSectionOpen.update((v) => !v);
-  }
+  onProtocolPdfSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
 
-  toggleFileListSection(): void {
-    this.fileListSectionOpen.update((v) => !v);
+    if (!file) return;
+
+    const lower = file.name.toLowerCase();
+    const isPdf =
+      file.type === 'application/pdf' || lower.endsWith('.pdf');
+    if (!isPdf) {
+      this.#notificationService.showError(
+        this.#translationService.instant('protocols.pdfOnly'),
+      );
+      return;
+    }
+
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId || this.uploadingProtocolPdf()) return;
+
+    this.uploadingProtocolPdf.set(true);
+    this.#protocolService.uploadProtocolPdf(projectId, file).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('protocols.uploadPdfSuccess'),
+        );
+        this.#projectStore.loadProject(projectId);
+        this.uploadingProtocolPdf.set(false);
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message ||
+            this.#translationService.instant('protocols.uploadPdfFailed'),
+        );
+        this.uploadingProtocolPdf.set(false);
+      },
+    });
   }
 
   async confirmDeleteProject(): Promise<void> {
     const projectName = this.project()?.name ?? '';
-    const message = this.#translationService.instant('projects.deleteProjectConfirm', { name: projectName });
+    const message = this.#translationService.instant('projects.deleteProjectConfirm', {
+      name: projectName,
+    });
     const title = this.#translationService.instant('projects.deleteProject') || 'Delete project';
     const confirmed = await this.#modalService.openConfirm({
       title,
