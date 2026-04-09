@@ -149,6 +149,30 @@
                 <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
                   <button
                     type="button"
+                    class="zoom-hint"
+                    (click)="openImageLightbox($event, file)"
+                    [attr.aria-label]="'fileList.zoom' | translate"
+                    [title]="'fileList.zoom' | translate"
+                  >
+                    <svg
+                      class="zoom-hint-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <path d="M11 8v6M8 11h6" />
+                    </svg>
+                    <span class="zoom-hint-label">{{ 'fileList.zoom' | translate }}</span>
+                  </button>
+                  <button
+                    type="button"
                     class="download-hint"
                     (click)="handleOverlayDownload($event, file.path, file.filename)"
                   >
@@ -245,6 +269,30 @@
               <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
                 <button
                   type="button"
+                  class="zoom-hint"
+                  (click)="openImageLightbox($event, file)"
+                  [attr.aria-label]="'fileList.zoom' | translate"
+                  [title]="'fileList.zoom' | translate"
+                >
+                  <svg
+                    class="zoom-hint-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                    <path d="M11 8v6M8 11h6" />
+                  </svg>
+                  <span class="zoom-hint-label">{{ 'fileList.zoom' | translate }}</span>
+                </button>
+                <button
+                  type="button"
                   class="download-hint"
                   (click)="handleOverlayDownload($event, file.path, file.filename)"
                 >
@@ -322,6 +370,31 @@
           </li>
         }
       </ul>
+    </div>
+  }
+
+  @if (imageLightboxUrl(); as lightboxSrc) {
+    <div
+      class="image-lightbox-backdrop"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'fileList.imagePreview' | translate"
+      (click)="closeImageLightbox()"
+    >
+      <button
+        type="button"
+        class="image-lightbox-close"
+        (click)="closeImageLightbox(); $event.stopPropagation()"
+        [attr.aria-label]="'fileList.closeImagePreview' | translate"
+      >
+        ×
+      </button>
+      <img
+        class="image-lightbox-img"
+        [src]="lightboxSrc"
+        [alt]="imageLightboxAlt()"
+        (click)="$event.stopPropagation()"
+      />
     </div>
   }
 </div>

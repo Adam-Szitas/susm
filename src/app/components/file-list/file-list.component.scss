@@ -34,6 +34,7 @@
 }
 
 // Overlay action buttons: use button for reliable touch on mobile
+.zoom-hint,
 .download-hint,
 .delete-hint {
   display: inline-flex;
@@ -52,6 +53,32 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   @include transition(background-color);
+}
+
+.zoom-hint {
+  flex-direction: row;
+  gap: 0.5rem;
+  color: #fff;
+  background: rgba(40, 167, 69, 0.45);
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background: rgba(40, 167, 69, 0.65);
+  }
+
+  &:active {
+    background: rgba(40, 167, 69, 0.75);
+  }
+}
+
+.zoom-hint-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.zoom-hint-label {
+  white-space: nowrap;
 }
 
 .download-hint {

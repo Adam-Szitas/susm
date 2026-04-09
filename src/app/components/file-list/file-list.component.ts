@@ -3,8 +3,10 @@ import {
   Component,
   computed,
   effect,
+  HostListener,
   inject,
   input,
+  OnDestroy,
   output,
   signal,
 } from '@angular/core';
@@ -26,7 +28,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, TranslateModule, FormsModule],
 })
-export class FileListComponent {
+export class FileListComponent implements OnDestroy {
   #fileService = inject(FileService);
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
@@ -118,6 +120,9 @@ export class FileListComponent {
   public moveTargetGroups = computed(() => this.filteredFileGroups());
 
   public activeFileId = signal<string | null>(null);
+  /** Full-resolution image URL when lightbox is open */
+  public imageLightboxUrl = signal<string | null>(null);
+  public imageLightboxAlt = signal<string>('');
   public fileDeleted = output<void>();
   public metadataUpdated = output<void>();
 
@@ -436,6 +441,40 @@ export class FileListComponent {
 
   public hideOverlay(): void {
     this.activeFileId.set(null);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeCloseLightbox(): void {
+    if (this.imageLightboxUrl()) {
+      this.closeImageLightbox();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.#restoreBodyScroll();
+  }
+
+  #lockBodyScroll(): void {
+    document.body.style.overflow = 'hidden';
+  }
+
+  #restoreBodyScroll(): void {
+    document.body.style.removeProperty('overflow');
+  }
+
+  public openImageLightbox(event: Event, file: FileGroupItem | ProjectFile): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.imageLightboxUrl.set(this.getImageUrl(file.path));
+    this.imageLightboxAlt.set(file.filename || '');
+    this.activeFileId.set(null);
+    this.#lockBodyScroll();
+  }
+
+  public closeImageLightbox(): void {
+    this.imageLightboxUrl.set(null);
+    this.imageLightboxAlt.set('');
+    this.#restoreBodyScroll();
   }
 
   public handleOverlayDownload(event: Event, path: string, filename?: string): void {
