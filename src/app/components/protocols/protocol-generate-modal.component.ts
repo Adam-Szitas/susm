@@ -143,11 +143,11 @@ export class ProtocolGenerateModalComponent {
   }
 
   loadPreview(): void {
-    if (this.form.invalid || !this.hasSelection()) {
+    const templateId = this.form.get('template_id')?.value;
+    if (!templateId || templateId === '' || !this.hasSelection()) {
       return;
     }
 
-    const templateId = this.form.value.template_id;
     const projectId = this.projectId();
     const objectIds = this.selectedObjectIds();
 
@@ -184,11 +184,9 @@ export class ProtocolGenerateModalComponent {
         this.previewData.set(previewResponse);
         // Ensure fields are still populated when showing preview
         // Use template_id from form to get the template, not selectedTemplate() signal
-        const templateId = formValue.template_id;
+        const tid = formValue.template_id;
         const template =
-          templateId && templateId !== ''
-            ? this.templates().find((t) => t._id?.$oid === templateId)
-            : null;
+          tid && tid !== '' ? this.templates().find((t) => t._id?.$oid === tid) : null;
 
         if (template && template.fields) {
           // Re-populate fields if they were cleared or if count doesn't match
@@ -375,20 +373,34 @@ export class ProtocolGenerateModalComponent {
     return `${houseNumber}${level}${door}`.trim() || object._id?.$oid || '';
   }
 
+  /**
+   * Sends UTC day bounds for the calendar dates from `<input type="date">` (YYYY-MM-DD).
+   * Avoids `new Date('YYYY-MM-DD')` + `setHours()` which mixes UTC parse with local midnight
+   * and shifts the range vs `DateTime<Utc>` on the backend.
+   */
   private formatDateForBackend(dateString: string, isEndDate = false): string {
     if (!dateString) return '';
 
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-
-    if (isEndDate) {
-      // Set to end of day for to_date
-      date.setHours(23, 59, 59, 999);
-    } else {
-      // Set to start of day for from_date
-      date.setHours(0, 0, 0, 0);
+    const trimmed = dateString.trim();
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (ymd) {
+      const y = Number(ymd[1]);
+      const m = Number(ymd[2]) - 1;
+      const d = Number(ymd[3]);
+      if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return '';
+      const ms = isEndDate
+        ? Date.UTC(y, m, d, 23, 59, 59, 999)
+        : Date.UTC(y, m, d, 0, 0, 0, 0);
+      return new Date(ms).toISOString();
     }
 
+    const date = new Date(trimmed);
+    if (isNaN(date.getTime())) return '';
+    if (isEndDate) {
+      date.setUTCHours(23, 59, 59, 999);
+    } else {
+      date.setUTCHours(0, 0, 0, 0);
+    }
     return date.toISOString();
   }
 
