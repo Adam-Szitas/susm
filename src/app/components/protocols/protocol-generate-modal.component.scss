@@ -37,6 +37,26 @@
   .object-selection {
     margin-bottom: 1.5rem;
 
+    .object-selection-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.25rem;
+    }
+
+    .object-selection-header .section-title {
+      margin-bottom: 0;
+    }
+
+    .object-select-toggle {
+      flex-shrink: 0;
+      font-size: 0.875rem;
+      padding: 0.35rem 0.65rem;
+      white-space: nowrap;
+    }
+
     .section-title {
       display: block;
       font-weight: 500;
@@ -77,6 +97,12 @@
       display: block;
       margin-top: 0.5rem;
     }
+  }
+
+  .preview-object-selection {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
   }
 
   .empty-state {

@@ -38,6 +38,19 @@ export class ProtocolGenerateModalComponent {
   /** IDs of older protocols to include in the generated PDF (rendered first, then new content). */
   selectedLinkedProtocolIds = signal<string[]>([]);
   hasSelection = computed(() => this.selectedObjectIds().length > 0);
+  /** Object IDs currently in the project list (checkboxes). */
+  availableObjectIds = computed(() =>
+    this.objects()
+      .map((o) => o._id?.$oid)
+      .filter((id): id is string => !!id),
+  );
+  /** True when every listed object is selected (empty list → false). */
+  allObjectsSelected = computed(() => {
+    const ids = this.availableObjectIds();
+    if (ids.length === 0) return false;
+    const selected = new Set(this.selectedObjectIds());
+    return ids.every((id) => selected.has(id));
+  });
   #selectionInitialized = signal(false);
   previewData = signal<any>(null);
   showingPreview = signal(false);
@@ -339,6 +352,16 @@ export class ProtocolGenerateModalComponent {
   isSelected(objectId: string | undefined): boolean {
     if (!objectId) return false;
     return this.selectedObjectIds().includes(objectId);
+  }
+
+  toggleSelectAllObjects(): void {
+    const ids = this.availableObjectIds();
+    if (ids.length === 0) return;
+    if (this.allObjectsSelected()) {
+      this.selectedObjectIds.set([]);
+    } else {
+      this.selectedObjectIds.set([...ids]);
+    }
   }
 
   toggleLinkedProtocol(protocolId: string | undefined, checked: boolean): void {

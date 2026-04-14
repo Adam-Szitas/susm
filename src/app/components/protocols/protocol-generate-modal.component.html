@@ -11,7 +11,7 @@
           type="button"
           class="btn btn-secondary"
           (click)="loadPreview()"
-          [disabled]="loadingPreview()"
+          [disabled]="loadingPreview() || !hasSelection()"
         >
           @if (loadingPreview()) {
             {{ 'protocols.loadingPreview' | translate }}
@@ -101,6 +101,46 @@
               }
             </div>
           </form>
+        </div>
+      }
+
+      @if (objects().length === 0) {
+        <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+      } @else {
+        <div class="object-selection preview-object-selection">
+          <div class="object-selection-header">
+            <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
+            <button
+              type="button"
+              class="btn btn-secondary object-select-toggle"
+              (click)="toggleSelectAllObjects()"
+              [disabled]="availableObjectIds().length === 0"
+            >
+              @if (allObjectsSelected()) {
+                {{ 'protocols.deselectAllObjects' | translate }}
+              } @else {
+                {{ 'protocols.selectAllObjects' | translate }}
+              }
+            </button>
+          </div>
+          <p class="helper-text">
+            {{ 'protocols.selectObjectsDescription' | translate }}
+          </p>
+          <div class="object-list">
+            @for (object of objects(); track object._id?.$oid) {
+              <label class="object-item">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(object._id?.$oid)"
+                  (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+                />
+                <span>{{ formatObjectLabel(object) }}</span>
+              </label>
+            }
+          </div>
+          @if (!hasSelection()) {
+            <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
+          }
         </div>
       }
 
@@ -236,7 +276,21 @@
         <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
       } @else {
         <div class="object-selection">
-          <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
+          <div class="object-selection-header">
+            <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
+            <button
+              type="button"
+              class="btn btn-secondary object-select-toggle"
+              (click)="toggleSelectAllObjects()"
+              [disabled]="availableObjectIds().length === 0"
+            >
+              @if (allObjectsSelected()) {
+                {{ 'protocols.deselectAllObjects' | translate }}
+              } @else {
+                {{ 'protocols.selectAllObjects' | translate }}
+              }
+            </button>
+          </div>
           <p class="helper-text">
             {{ 'protocols.selectObjectsDescription' | translate }}
           </p>
