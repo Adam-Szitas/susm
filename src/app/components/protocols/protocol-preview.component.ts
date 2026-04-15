@@ -16,6 +16,8 @@ export interface ProtocolPreviewData {
   project_address: string;
   table_of_contents: { title: string; level: number }[];
   content_sections: {
+    /** Matches `Object._id.$oid` when returned by preview API (objects included after date filter). */
+    object_id?: string;
     object_address: string;
     headline: string;
     file_groups: {
@@ -45,6 +47,7 @@ export interface ProtocolPreviewData {
   templateUrl: './protocol-preview.component.html',
   styleUrl: './protocol-preview.component.scss',
 })
+/** Renders the preview payload from `POST protocols/preview` (already filtered by selected objects and file date range). */
 export class ProtocolPreviewComponent {
   previewData = input.required<ProtocolPreviewData>();
 

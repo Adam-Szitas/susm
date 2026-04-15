@@ -104,7 +104,7 @@
         </div>
       }
 
-      @if (objects().length === 0) {
+      @if (objectsForProtocolSelection().length === 0) {
         <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
       } @else {
         <div class="object-selection preview-object-selection">
@@ -127,7 +127,7 @@
             {{ 'protocols.selectObjectsDescription' | translate }}
           </p>
           <div class="object-list">
-            @for (object of objects(); track object._id?.$oid) {
+            @for (object of objectsForProtocolSelection(); track object._id?.$oid) {
               <label class="object-item">
                 <input
                   type="checkbox"
@@ -272,7 +272,7 @@
         }
       }
 
-      @if (objects().length === 0) {
+      @if (objectsForProtocolSelection().length === 0) {
         <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
       } @else {
         <div class="object-selection">
@@ -295,7 +295,7 @@
             {{ 'protocols.selectObjectsDescription' | translate }}
           </p>
           <div class="object-list">
-            @for (object of objects(); track object._id?.$oid) {
+            @for (object of objectsForProtocolSelection(); track object._id?.$oid) {
               <label class="object-item">
                 <input
                   type="checkbox"

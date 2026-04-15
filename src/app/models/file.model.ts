@@ -1,3 +1,5 @@
+import type { MongoDateJson } from './mongo-date';
+
 // For object files: contains groups
 export interface ObjectFile {
   _id: {
@@ -34,7 +36,7 @@ export interface FileGroup {
   category?: string;
   note?: string;
   files: FileGroupItem[];
-  created_at: string;
+  created_at?: MongoDateJson;
 }
 
 // Individual file within a group
@@ -45,7 +47,8 @@ export interface FileGroupItem {
   path: string;
   filename: string;
   description?: string;
-  created_at: string;
+  created_at?: MongoDateJson;
+  deleted_at?: MongoDateJson;
 }
 
 export type FileUploadTarget = 'object' | 'project';

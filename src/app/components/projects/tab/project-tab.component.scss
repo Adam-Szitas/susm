@@ -24,6 +24,7 @@
   width: 100%;
   max-width: 100%;
   margin-top: var(--space);
+  gap: var(--space-small);
 }
 
 .category {
@@ -58,19 +59,19 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space);
   width: 100%;
-  padding: var(--space) 0;
+  padding: 0;
 
   @media (min-width: 480px) {
     grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   }
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
-    gap: var(--space-large, 24px);
-  }
+  @media (min-width: 600px) {
+    display: flex;
+    flex-direction: column;
 
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+    & .card {
+      width: 100%;
+    }
   }
 }
 
@@ -148,7 +149,7 @@
   }
 
   .protocols-section-content {
-    padding: 0.5rem 1.25rem 1.25rem;
+    padding: 0.5rem;
   }
 }
 

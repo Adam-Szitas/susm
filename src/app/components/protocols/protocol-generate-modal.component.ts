@@ -5,11 +5,11 @@ import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
-import { GenerateProtocolRequest, ProtocolRecord, ProtocolTemplate } from '@models';
+import { GenerateProtocolRequest, parseMongoDateToMs, ProtocolRecord, ProtocolTemplate } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
-import { ProtocolPreviewComponent } from './protocol-preview.component';
+import { ProtocolPreviewComponent, ProtocolPreviewData } from './protocol-preview.component';
 
 @Component({
   selector: 'app-protocol-generate-modal',
@@ -38,9 +38,47 @@ export class ProtocolGenerateModalComponent {
   /** IDs of older protocols to include in the generated PDF (rendered first, then new content). */
   selectedLinkedProtocolIds = signal<string[]>([]);
   hasSelection = computed(() => this.selectedObjectIds().length > 0);
-  /** Object IDs currently in the project list (checkboxes). */
+  /** Recomputed when protocol date inputs change (form is not a signal). */
+  #dateRangeVersion = signal(0);
+
+  /**
+   * Objects listed in the protocol modal: with a date range, only objects that have at least one
+   * file in range (using `file_groups` from the API). After preview is loaded, the list matches
+   * `content_sections` from the server (same filter as the PDF).
+   */
+  objectsForProtocolSelection = computed(() => {
+    this.objects();
+    this.#dateRangeVersion();
+    this.previewData();
+    this.showingPreview();
+
+    const all = this.objects();
+    const fromD = (this.form.get('from_date')?.value as string) ?? '';
+    const toD = (this.form.get('to_date')?.value as string) ?? '';
+
+    if (this.showingPreview()) {
+      const sections = this.previewData()?.content_sections;
+      if (sections?.length) {
+        const ids = sections.map((s) => s.object_id).filter((id): id is string => !!id);
+        if (ids.length > 0) {
+          const order = new Map(ids.map((id, i) => [id, i]));
+          return all
+            .filter((o) => o._id?.$oid && order.has(o._id.$oid))
+            .sort((a, b) => (order.get(a._id!.$oid!) ?? 0) - (order.get(b._id!.$oid!) ?? 0));
+        }
+      }
+      return [];
+    }
+
+    if (!fromD.trim() && !toD.trim()) {
+      return all;
+    }
+    return all.filter((o) => this.objectHasFileInDateRange(o, fromD, toD));
+  });
+
+  /** Object IDs currently shown in the checklist (respects date range + preview). */
   availableObjectIds = computed(() =>
-    this.objects()
+    this.objectsForProtocolSelection()
       .map((o) => o._id?.$oid)
       .filter((id): id is string => !!id),
   );
@@ -52,7 +90,7 @@ export class ProtocolGenerateModalComponent {
     return ids.every((id) => selected.has(id));
   });
   #selectionInitialized = signal(false);
-  previewData = signal<any>(null);
+  previewData = signal<ProtocolPreviewData | null>(null);
   showingPreview = signal(false);
   loadingPreview = signal(false);
 
@@ -83,7 +121,7 @@ export class ProtocolGenerateModalComponent {
   }
 
   #autoSelectObjects = effect(() => {
-    const availableObjects = this.objects();
+    const availableObjects = this.objectsForProtocolSelection();
     if (!availableObjects?.length) {
       this.selectedObjectIds.set([]);
       this.#selectionInitialized.set(false);
@@ -115,6 +153,13 @@ export class ProtocolGenerateModalComponent {
     // Watch for template changes and update fields
     this.form.get('template_id')?.valueChanges.subscribe(() => {
       this.updateTemplateFields();
+    });
+
+    this.form.get('from_date')?.valueChanges.subscribe(() => {
+      this.#dateRangeVersion.update((n) => n + 1);
+    });
+    this.form.get('to_date')?.valueChanges.subscribe(() => {
+      this.#dateRangeVersion.update((n) => n + 1);
     });
   }
 
@@ -401,6 +446,34 @@ export class ProtocolGenerateModalComponent {
    * Avoids `new Date('YYYY-MM-DD')` + `setHours()` which mixes UTC parse with local midnight
    * and shifts the range vs `DateTime<Utc>` on the backend.
    */
+  /** Same UTC bounds as `formatDateForBackend`, compared to each file's `created_at`. */
+  private objectHasFileInDateRange(obj: Object, fromInput: string, toInput: string): boolean {
+    const groups = obj.file_groups;
+    if (!groups?.length) {
+      return true;
+    }
+
+    const fromIso = fromInput.trim() ? this.formatDateForBackend(fromInput.trim(), false) : null;
+    const toIso = toInput.trim() ? this.formatDateForBackend(toInput.trim(), true) : null;
+    const fromMs = fromIso ? Date.parse(fromIso) : null;
+    const toMs = toIso ? Date.parse(toIso) : null;
+    if (fromMs === null && toMs === null) return true;
+
+    for (const g of groups) {
+      for (const f of g.files ?? []) {
+        if (f.deleted_at != null) {
+          continue;
+        }
+        const t = parseMongoDateToMs(f.created_at);
+        if (t === null) continue;
+        const okFrom = fromMs === null || t >= fromMs;
+        const okTo = toMs === null || t <= toMs;
+        if (okFrom && okTo) return true;
+      }
+    }
+    return false;
+  }
+
   private formatDateForBackend(dateString: string, isEndDate = false): string {
     if (!dateString) return '';
 

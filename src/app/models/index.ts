@@ -2,6 +2,7 @@
 export * from './user.model';
 export * from './project.model';
 export * from './object.model';
+export * from './mongo-date';
 export * from './file.model';
 export * from './filter.model';
 export * from './status.model';
