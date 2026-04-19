@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FileGroup, ProjectFile, FileGroupItem } from '@models';
+import { FileGroup, ProjectFile, FileGroupItem, parseMongoDateToMs } from '@models';
 import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { FileService } from '../../services/file.service';
@@ -280,40 +280,15 @@ export class FileListComponent implements OnDestroy {
     this.editFileDescription.set(file.description || '');
     this.editFileName.set(file.filename || '');
 
-    // Format created_at for date input (YYYY-MM-DD format)
+    // Date input uses UTC calendar day (matches protocol filter / PDF picture_date).
     let dateValue = '';
-    if (file.created_at) {
-      const raw: any = (file as any).created_at;
-      let date: Date | null = null;
-
-      if (raw instanceof Date) {
-        date = raw;
-      } else if (typeof raw === 'string') {
-        date = new Date(raw);
-        if (isNaN(date.getTime())) {
-          date = null;
-        }
-      } else if (typeof raw === 'object' && raw !== null) {
-        // Handle BSON-style objects
-        const candidate = (raw as any).$date ?? (raw as any).date ?? null;
-        if (candidate) {
-          const timestamp =
-            typeof candidate === 'number'
-              ? candidate
-              : candidate.$numberLong
-                ? Number(candidate.$numberLong)
-                : null;
-          if (timestamp) {
-            date = new Date(timestamp);
-          }
-        }
-      }
-
-      if (date && !isNaN(date.getTime())) {
-        // Format as YYYY-MM-DD for date input
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+    if (file.created_at != null) {
+      const ms = parseMongoDateToMs(file.created_at as unknown);
+      if (ms != null) {
+        const d = new Date(ms);
+        const year = d.getUTCFullYear();
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
         dateValue = `${year}-${month}-${day}`;
       }
     }
@@ -376,44 +351,15 @@ export class FileListComponent implements OnDestroy {
   }
 
   /**
-   * Safely formats created_at for display, handling various backend shapes.
+   * Formats picture date for display (UTC calendar day, consistent with protocol PDF).
    */
   public getCreatedAtDisplay(file: FileGroupItem | ProjectFile): string | null {
-    const raw: any = (file as any).created_at;
-    if (!raw) return null;
-
-    let date: Date | null = null;
-
-    if (raw instanceof Date) {
-      date = raw;
-    } else if (typeof raw === 'string' || typeof raw === 'number') {
-      const d = new Date(raw);
-      if (!Number.isNaN(d.getTime())) {
-        date = d;
-      }
-    } else if (typeof raw === 'object') {
-      // Handle possible BSON-style or custom objects, e.g. { $date: ... } or { $numberLong: "..." }
-      const candidate = (raw as any).$date ?? (raw as any).date ?? null;
-      if (candidate) {
-        if (typeof candidate === 'string' || typeof candidate === 'number') {
-          const d = new Date(candidate);
-          if (!Number.isNaN(d.getTime())) {
-            date = d;
-          }
-        } else if (candidate.$numberLong != null) {
-          const d = new Date(Number(candidate.$numberLong));
-          if (!Number.isNaN(d.getTime())) {
-            date = d;
-          }
-        }
-      }
-    }
-
-    if (!date) return null;
-
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const ms = parseMongoDateToMs(file.created_at as unknown);
+    if (ms === null) return null;
+    const d = new Date(ms);
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
     return `${day}.${month}.${year}`;
   }
 

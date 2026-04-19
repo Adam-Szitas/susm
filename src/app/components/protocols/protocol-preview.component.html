@@ -63,8 +63,11 @@
                 [alt]="image.description || ''"
               />
               <div class="image-caption">
-                @if (image.object_address) {
-                  <span class="caption-address">{{ image.object_address }}</span>
+                @if (image.filename) {
+                  <span class="caption-filename">{{ image.filename }}</span>
+                }
+                @if (image.picture_date) {
+                  <span class="caption-date">{{ image.picture_date }}</span>
                 }
                 @if (image.description) {
                   <span class="caption-description">{{ image.description }}</span>
@@ -86,8 +89,11 @@
                 [alt]="image.description || ''"
               />
               <div class="image-caption">
-                @if (image.object_address) {
-                  <span class="caption-address">{{ image.object_address }}</span>
+                @if (image.filename) {
+                  <span class="caption-filename">{{ image.filename }}</span>
+                }
+                @if (image.picture_date) {
+                  <span class="caption-date">{{ image.picture_date }}</span>
                 }
                 @if (image.description) {
                   <span class="caption-description">{{ image.description }}</span>
@@ -166,8 +172,11 @@
                         [alt]="image.description || ''"
                       />
                       <div class="image-caption">
-                        @if (image.object_address) {
-                          <span class="caption-address">{{ image.object_address }}</span>
+                        @if (image.filename) {
+                          <span class="caption-filename">{{ image.filename }}</span>
+                        }
+                        @if (image.picture_date) {
+                          <span class="caption-date">{{ image.picture_date }}</span>
                         }
                         @if (image.description) {
                           <span class="caption-description">{{ image.description }}</span>

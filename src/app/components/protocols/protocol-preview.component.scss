@@ -100,9 +100,16 @@
         color: #666;
         padding: 5px 0;
 
-        .caption-address {
+        .caption-filename {
           font-weight: 500;
           display: block;
+          margin-bottom: 2px;
+        }
+
+        .caption-date {
+          display: block;
+          color: #888;
+          font-size: 11px;
           margin-bottom: 2px;
         }
 

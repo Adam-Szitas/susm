@@ -446,7 +446,10 @@ export class ProtocolGenerateModalComponent {
    * Avoids `new Date('YYYY-MM-DD')` + `setHours()` which mixes UTC parse with local midnight
    * and shifts the range vs `DateTime<Utc>` on the backend.
    */
-  /** Same UTC bounds as `formatDateForBackend`, compared to each file's `created_at`. */
+  /**
+   * Same UTC bounds as `formatDateForBackend`.
+   * Uses each picture's `created_at` only (not the file group's date).
+   */
   private objectHasFileInDateRange(obj: Object, fromInput: string, toInput: string): boolean {
     const groups = obj.file_groups;
     if (!groups?.length) {

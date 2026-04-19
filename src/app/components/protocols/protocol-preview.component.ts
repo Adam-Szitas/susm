@@ -25,13 +25,15 @@ export interface ProtocolPreviewData {
       images: {
         path: string;
         description?: string;
-        object_address: string;
+        filename?: string;
+        picture_date?: string;
       }[];
     }[];
     ungrouped_images?: {
       path: string;
       description?: string;
-      object_address: string;
+      filename?: string;
+      picture_date?: string;
     }[];
   }[];
   /** When present, older protocol(s) to be included after the current one in the PDF. */
