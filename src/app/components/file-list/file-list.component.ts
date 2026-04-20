@@ -38,6 +38,8 @@ export class FileListComponent implements OnDestroy {
   public fileGroups = input<FileGroup[]>([]);
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
+  /** Parent object's project categories — all of these appear in the file-group category select. */
+  public projectCategories = input<string[]>([]);
 
   constructor() {
     // Clean up failed file IDs when data changes (files that are no longer present)
@@ -80,8 +82,7 @@ export class FileListComponent implements OnDestroy {
       .map((group) => ({
         ...group,
         files: group.files.filter(
-          (file) =>
-            !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+          (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
         ),
       }))
       .filter((group) => group.files.length > 0);
@@ -106,14 +107,22 @@ export class FileListComponent implements OnDestroy {
     return Array.from(cats).sort();
   });
 
-  // Category options for the group edit select (includes current value if not in list)
+  // Category options for the group edit select: project categories + any used on groups + current edit if orphan
   public categoryOptionsForEdit = computed(() => {
-    const cats = this.allCategories();
-    const current = this.editCategory();
-    if (current?.trim() && !cats.includes(current.trim())) {
-      return [current.trim(), ...cats];
+    const merged = new Set<string>();
+    for (const c of this.projectCategories()) {
+      const t = c?.trim();
+      if (t) merged.add(t);
     }
-    return cats;
+    for (const c of this.allCategories()) {
+      merged.add(c);
+    }
+    const sorted = Array.from(merged).sort();
+    const current = this.editCategory()?.trim() ?? '';
+    if (current && !merged.has(current)) {
+      return [current, ...sorted];
+    }
+    return sorted;
   });
 
   // All groups for move dropdown (object files only)
@@ -373,7 +382,10 @@ export class FileListComponent implements OnDestroy {
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.substring('uploads/'.length);
     }
-    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
+    const pathSegments = normalizedPath
+      .split('/')
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment));
     const encodedPath = pathSegments.join('/');
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
@@ -446,7 +458,10 @@ export class FileListComponent implements OnDestroy {
       if (normalizedPath.startsWith('uploads/')) {
         normalizedPath = normalizedPath.substring('uploads/'.length);
       }
-      const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
+      const pathSegments = normalizedPath
+        .split('/')
+        .filter(Boolean)
+        .map((segment) => encodeURIComponent(segment));
       const encodedPath = pathSegments.join('/');
       url = `${environment.be}${environment.folderBase}/${encodedPath}`;
     }

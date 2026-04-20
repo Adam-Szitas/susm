@@ -161,6 +161,7 @@
     @if (fileGroups().length > 0) {
       <app-file-list
         [fileGroups]="fileGroups()"
+        [projectCategories]="projectCategories()"
         (fileDeleted)="onFileDeleted()"
         (metadataUpdated)="onFileDeleted()"
       ></app-file-list>
