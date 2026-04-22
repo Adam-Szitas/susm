@@ -65,3 +65,9 @@ h1 {
 .archive-toggle {
   margin: 0 var(--space);
 }
+
+.card-wrapper {
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+  }
+}

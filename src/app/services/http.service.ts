@@ -1,8 +1,7 @@
-import { inject, Injectable, Injector } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../environment';
-import { UserStore } from '../store/user.store';
 import { ErrorHandlerService, AppError } from './error-handler.service';
 
 @Injectable({
@@ -12,7 +11,6 @@ export class HttpService {
   private readonly apiUrl: string;
 
   #http = inject(HttpClient);
-  #injector = inject(Injector);
   #errorHandler = inject(ErrorHandlerService);
 
   constructor() {
@@ -49,15 +47,9 @@ export class HttpService {
       .pipe(catchError((error) => this.handleError(error, url)));
   }
 
-  private handleError(error: unknown, url: string): Observable<never> {
+  private handleError(error: unknown, _url: string): Observable<never> {
     const appError = this.#errorHandler.handleHttpError(error);
-
-    // Handle 401 errors by logging out (except for login/register endpoints)
-    if (appError.status === 401 && !url.includes('login') && !url.includes('register')) {
-      const userStore = this.#injector.get(UserStore);
-      userStore.logout();
-    }
-
+    // Session expiry / auth invalid: logout is handled in AuthInterceptor (all HttpClient calls).
     return throwError(() => appError);
   }
 }

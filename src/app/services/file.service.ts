@@ -42,9 +42,17 @@ export class FileService {
   }
 
   /**
-   * Uploads files for an object (creates a new file group)
+   * Uploads files for an object. Without `groupId`, creates a new file group; with `groupId`,
+   * appends files to that existing group (multipart field `group_id`).
    */
-  uploadFileForObject(fileData: FormData, objectId: string): Observable<string[]> {
+  uploadFileForObject(
+    fileData: FormData,
+    objectId: string,
+    options?: { groupId?: string },
+  ): Observable<string[]> {
+    if (options?.groupId) {
+      fileData.append('group_id', options.groupId);
+    }
     return this.uploadFile(fileData, 'object', objectId);
   }
 
@@ -60,7 +68,7 @@ export class FileService {
    */
   updateFileGroup(
     groupId: string,
-    data: { description?: string; category?: string | null; note?: string | null }
+    data: { description?: string; categories?: string[] | null; note?: string | null }
   ): Observable<{ message: string }> {
     const endpoint = `file/group/${groupId}`;
     return this.#httpService.put<{ message: string }>(endpoint, data);

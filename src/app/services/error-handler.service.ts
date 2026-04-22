@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NotificationService } from './notification.service';
+import { responseIndicatesAuthSessionInvalid } from '../utils/auth-http-error';
 
 export interface AppError {
   status?: number;
@@ -55,7 +56,11 @@ export class ErrorHandlerService {
     });
 
     // Show notification based on error type
-    if (error.status === 401) {
+    const sessionLike =
+      error.status === 401 ||
+      (error.status === 404 && responseIndicatesAuthSessionInvalid(error)) ||
+      (error.status === 403 && responseIndicatesAuthSessionInvalid(error));
+    if (sessionLike) {
       this.#notificationService.showError('Session expired. Please log in again.');
     } else if (error.status === 403) {
       this.#notificationService.showError('You do not have permission to perform this action.');

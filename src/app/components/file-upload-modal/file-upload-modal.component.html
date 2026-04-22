@@ -75,18 +75,53 @@
         </div>
 
         @if (categories().length > 0) {
-          <div class="form-group">
-            <label for="category">{{ 'fileUpload.category' | translate }}</label>
-            <select
-              id="category"
-              [(ngModel)]="category"
-              [disabled]="uploading()"
-            >
-              <option value="">{{ 'fileUpload.noCategory' | translate }}</option>
-              @for (cat of categories(); track cat) {
-                <option [value]="cat">{{ cat }}</option>
+          <div class="form-group form-group-categories">
+            <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
+            <div class="selected-category-chips">
+              @for (c of selectedCategories(); track c) {
+                <button
+                  type="button"
+                  class="category-chip-mini"
+                  (click)="removeSelectedCategory(c)"
+                  [disabled]="uploading()"
+                  [attr.aria-label]="'fileList.removeCategory' | translate"
+                >
+                  {{ c }} ×
+                </button>
               }
-            </select>
+            </div>
+            <div class="category-checkbox-grid">
+              @for (cat of categories(); track cat) {
+                <label class="category-cb-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isCategorySelected(cat)"
+                    (change)="toggleCategory(cat)"
+                    [disabled]="uploading()"
+                  />
+                  <span>{{ cat }}</span>
+                </label>
+              }
+            </div>
+            <div class="category-add-inline">
+              <input
+                type="text"
+                class="category-add-input"
+                [ngModel]="categoryCustomDraft()"
+                (ngModelChange)="categoryCustomDraft.set($event)"
+                (keydown.enter)="$event.preventDefault(); addCustomCategory()"
+                [disabled]="uploading()"
+                [placeholder]="'fileList.addCategoryPlaceholder' | translate"
+              />
+              <button
+                type="button"
+                class="btn-secondary category-add-btn"
+                (click)="addCustomCategory()"
+                [disabled]="uploading()"
+              >
+                {{ 'fileList.addCategory' | translate }}
+              </button>
+            </div>
           </div>
         }
 

@@ -3,22 +3,32 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   HostListener,
   inject,
   input,
   OnDestroy,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FileGroup, ProjectFile, FileGroupItem, parseMongoDateToMs } from '@models';
+import {
+  FileGroup,
+  ProjectFile,
+  FileGroupItem,
+  fileGroupCategoryLabels,
+  parseMongoDateToMs,
+} from '@models';
 import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { FileService } from '../../services/file.service';
+import { ImageCompressionService } from '../../services/image-compression.service';
 import { ModalService } from '../../services/modal.service';
 import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-file-list',
@@ -33,6 +43,16 @@ export class FileListComponent implements OnDestroy {
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #imageCompression = inject(ImageCompressionService);
+
+  /** Parent object id — required for uploading into an existing file group. */
+  public objectId = input<string | undefined>(undefined);
+
+  readonly groupFileInput = viewChild<ElementRef<HTMLInputElement>>('groupFileInput');
+
+  /** Which group the next file-picker selection applies to (single shared input). */
+  private pendingGroupUpload = signal<{ groupId: string } | null>(null);
+  public groupPhotoUploading = signal(false);
 
   // For object files: receives FileGroup[]
   public fileGroups = input<FileGroup[]>([]);
@@ -95,19 +115,19 @@ export class FileListComponent implements OnDestroy {
     );
   });
 
-  // All unique categories from file groups (for group edit select)
+  // All unique categories from file groups (for group editor checkboxes)
   public allCategories = computed(() => {
     const groups = this.filteredFileGroups();
     const cats = new Set<string>();
     groups.forEach((g) => {
-      if (g.category?.trim()) {
-        cats.add(g.category.trim());
+      for (const c of fileGroupCategoryLabels(g)) {
+        cats.add(c);
       }
     });
     return Array.from(cats).sort();
   });
 
-  // Category options for the group edit select: project categories + any used on groups + current edit if orphan
+  // Category options: project + used on any group + any currently selected in the editor
   public categoryOptionsForEdit = computed(() => {
     const merged = new Set<string>();
     for (const c of this.projectCategories()) {
@@ -117,12 +137,10 @@ export class FileListComponent implements OnDestroy {
     for (const c of this.allCategories()) {
       merged.add(c);
     }
-    const sorted = Array.from(merged).sort();
-    const current = this.editCategory()?.trim() ?? '';
-    if (current && !merged.has(current)) {
-      return [current, ...sorted];
+    for (const c of this.editCategories()) {
+      merged.add(c);
     }
-    return sorted;
+    return Array.from(merged).sort();
   });
 
   // All groups for move dropdown (object files only)
@@ -141,7 +159,8 @@ export class FileListComponent implements OnDestroy {
   // Inline edit state for group description/category/note
   public editingGroupId = signal<string | null>(null);
   public editDescription = signal<string>('');
-  public editCategory = signal<string>('');
+  public editCategories = signal<string[]>([]);
+  public categoryCustomDraft = signal<string>('');
   public editNote = signal<string>('');
 
   // Picture selection for moving between groups (object files only)
@@ -160,8 +179,36 @@ export class FileListComponent implements OnDestroy {
     if (!id) return;
     this.editingGroupId.set(id);
     this.editDescription.set(group.description ?? '');
-    this.editCategory.set(group.category ?? '');
+    this.editCategories.set([...fileGroupCategoryLabels(group)]);
+    this.categoryCustomDraft.set('');
     this.editNote.set(group.note ?? '');
+  }
+
+  public isEditCategorySelected(label: string): boolean {
+    return this.editCategories().some((c) => c === label);
+  }
+
+  public toggleEditCategory(label: string): void {
+    const t = label.trim();
+    if (!t) return;
+    this.editCategories.update((list) => {
+      const has = list.includes(t);
+      if (has) {
+        return list.filter((c) => c !== t);
+      }
+      return [...list, t];
+    });
+  }
+
+  public addCustomCategoryFromDraft(): void {
+    const t = this.categoryCustomDraft().trim();
+    if (!t) return;
+    this.editCategories.update((list) => (list.includes(t) ? list : [...list, t]));
+    this.categoryCustomDraft.set('');
+  }
+
+  public removeEditCategory(label: string): void {
+    this.editCategories.update((list) => list.filter((c) => c !== label));
   }
 
   public cancelEditGroup(): void {
@@ -171,9 +218,12 @@ export class FileListComponent implements OnDestroy {
   public getGroupDisplayName(group: FileGroup): string {
     const parts: string[] = [];
     if (group.description?.trim()) parts.push(group.description.trim());
-    if (group.category?.trim()) parts.push(`(${group.category.trim()})`);
+    const cats = fileGroupCategoryLabels(group);
+    if (cats.length > 0) parts.push(`(${cats.join(', ')})`);
     return parts.length > 0 ? parts.join(' ') : `Group ${group._id?.$oid?.slice(-6) || ''}`;
   }
+
+  public groupCategoryLabels = fileGroupCategoryLabels;
 
   public toggleSelectionMode(): void {
     this.selectionMode.update((v) => !v);
@@ -247,20 +297,103 @@ export class FileListComponent implements OnDestroy {
     moveNext();
   }
 
+  public openGroupPhotoPicker(group: FileGroup): void {
+    const groupId = group._id?.$oid;
+    const objectId = this.objectId();
+    if (!groupId || !objectId || this.groupPhotoUploading()) {
+      return;
+    }
+    this.pendingGroupUpload.set({ groupId });
+    // Must stay in the same synchronous user-gesture stack (esp. iOS Safari) — no microtask/setTimeout.
+    this.groupFileInput()?.nativeElement?.click();
+  }
+
+  public async onGroupPhotoFilesSelected(event: Event): Promise<void> {
+    const pending = this.pendingGroupUpload();
+    const objectId = this.objectId();
+    const input = event.target as HTMLInputElement;
+
+    // Read and copy files BEFORE clearing `value` — clearing resets `files` (desktop + mobile).
+    const files = input.files?.length ? Array.from(input.files) : [];
+    input.value = '';
+
+    if (!pending || !objectId || this.groupPhotoUploading()) {
+      this.pendingGroupUpload.set(null);
+      return;
+    }
+
+    if (files.length === 0) {
+      this.pendingGroupUpload.set(null);
+      return;
+    }
+    const imageFiles = files.filter((f) => this.#imageCompression.isImageFile(f));
+    if (imageFiles.length === 0) {
+      this.#notificationService.showError(
+        this.#translationService.instant('errors.imageCompressionFailed') ||
+          'Please select image files only',
+      );
+      this.pendingGroupUpload.set(null);
+      return;
+    }
+
+    const groupId = pending.groupId;
+    this.pendingGroupUpload.set(null);
+
+    try {
+      const compressed = await this.#imageCompression.compressImages(imageFiles);
+      this.uploadPhotosToGroup(objectId, groupId, compressed);
+    } catch (err) {
+      this.#notificationService.showError(
+        err instanceof Error
+          ? err.message
+          : this.#translationService.instant('errors.imageCompressionFailed'),
+      );
+    }
+  }
+
+  private uploadPhotosToGroup(objectId: string, groupId: string, files: File[]): void {
+    this.groupPhotoUploading.set(true);
+    const form = new FormData();
+    files.forEach((file) => {
+      form.append('avatar', file, file.name);
+    });
+
+    this.#fileService
+      .uploadFileForObject(form, objectId, { groupId })
+      .pipe(finalize(() => this.groupPhotoUploading.set(false)))
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('objects.uploadSuccess') || 'Upload successful',
+          );
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('errors.uploadFailed') ||
+              'Upload failed',
+          );
+        },
+      });
+  }
+
   public saveGroupMetadata(group: FileGroup): void {
     const id = group._id?.$oid;
     if (!id) return;
 
     const description = this.editDescription().trim();
-    const categoryRaw = this.editCategory().trim();
-    const category = categoryRaw === '' ? null : categoryRaw;
+    const categories = this.editCategories()
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const unique = [...new Set(categories)];
     const noteRaw = this.editNote().trim();
     const note = noteRaw === '' ? null : noteRaw;
 
     this.#fileService
       .updateFileGroup(id, {
         description,
-        category,
+        categories: unique,
         note,
       })
       .subscribe({

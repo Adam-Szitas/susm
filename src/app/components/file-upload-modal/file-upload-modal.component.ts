@@ -30,11 +30,18 @@ export class FileUploadModalComponent {
   uploading = input<boolean>(false);
 
   filesSelected = output<globalThis.File[]>();
-  upload = output<{ files: globalThis.File[]; description: string; category: string; note: string }>();
+  upload = output<{
+    files: globalThis.File[];
+    description: string;
+    categories: string[];
+    note: string;
+  }>();
   cancel = output<void>();
 
   description = signal('');
-  category = signal('');
+  /** Selected category labels (multi). */
+  selectedCategories = signal<string[]>([]);
+  categoryCustomDraft = signal('');
   note = signal('');
   filePreviews = signal<FilePreview[]>([]);
   compressing = signal(false);
@@ -134,17 +141,19 @@ export class FileUploadModalComponent {
     const files = this.filePreviews().map(p => p.file);
     if (files.length === 0) return;
 
+    const cats = [...new Set(this.selectedCategories().map(c => c.trim()).filter(Boolean))];
     this.upload.emit({
       files,
       description: this.description().trim(),
-      category: this.category().trim(),
+      categories: cats,
       note: this.note().trim(),
     });
   }
 
   onCancel(): void {
     this.description.set('');
-    this.category.set('');
+    this.selectedCategories.set([]);
+    this.categoryCustomDraft.set('');
     this.note.set('');
     this.filePreviews.set([]);
     this.compressing.set(false);
@@ -161,9 +170,33 @@ export class FileUploadModalComponent {
   clearAll(): void {
     this.filePreviews.set([]);
     this.description.set('');
-    this.category.set('');
+    this.selectedCategories.set([]);
+    this.categoryCustomDraft.set('');
     this.note.set('');
     this.compressing.set(false);
+  }
+
+  isCategorySelected(label: string): boolean {
+    return this.selectedCategories().includes(label);
+  }
+
+  toggleCategory(label: string): void {
+    const t = label.trim();
+    if (!t) return;
+    this.selectedCategories.update((list) =>
+      list.includes(t) ? list.filter((c) => c !== t) : [...list, t],
+    );
+  }
+
+  addCustomCategory(): void {
+    const t = this.categoryCustomDraft().trim();
+    if (!t) return;
+    this.selectedCategories.update((list) => (list.includes(t) ? list : [...list, t]));
+    this.categoryCustomDraft.set('');
+  }
+
+  removeSelectedCategory(label: string): void {
+    this.selectedCategories.update((list) => list.filter((c) => c !== label));
   }
 }
 

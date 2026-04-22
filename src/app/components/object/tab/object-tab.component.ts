@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
 import { ProjectStore } from '@store/project.store';
@@ -57,9 +64,6 @@ export class ObjectTabComponent implements OnInit {
   projectCategories = signal<string[]>([]);
   updatingCategory = signal(false);
   updatingStatus = signal(false);
-  editingNote = signal(false);
-  editNoteValue = signal('');
-  savingNote = signal(false);
   uploadModalOpen = signal(false);
   selectedFiles = signal<globalThis.File[]>([]);
   readonly defaultStatus = DEFAULT_WORK_STATUS;
@@ -194,8 +198,7 @@ export class ObjectTabComponent implements OnInit {
             files: fileGroup.files.map((file) => {
               // Ensure we always have a safe, normalized filename
               const rawName =
-                file.filename ||
-                (file.path ? file.path.split(/[\\/]/).pop() || '' : '');
+                file.filename || (file.path ? file.path.split(/[\\/]/).pop() || '' : '');
               const normalizedFilename = rawName.split('\\').pop() || rawName;
               return {
                 ...file,
@@ -270,7 +273,12 @@ export class ObjectTabComponent implements OnInit {
     this.selectedFiles.set(files);
   }
 
-  onUploadFile(data: { files: globalThis.File[]; description: string; category: string; note: string }): void {
+  onUploadFile(data: {
+    files: globalThis.File[];
+    description: string;
+    categories: string[];
+    note: string;
+  }): void {
     const objectId = this.#route.snapshot.paramMap.get('id');
     if (!objectId) {
       this.#notificationService.showError(
@@ -280,7 +288,7 @@ export class ObjectTabComponent implements OnInit {
       return;
     }
 
-    this.uploadFiles(data.files, data.description, data.category, objectId, data.note);
+    this.uploadFiles(data.files, data.description, data.categories, objectId, data.note);
   }
 
   onCancelUpload(): void {
@@ -292,7 +300,7 @@ export class ObjectTabComponent implements OnInit {
   private uploadFiles(
     files: globalThis.File[],
     description: string,
-    category: string,
+    categories: string[],
     objectId: string,
     note?: string,
   ): void {
@@ -307,8 +315,11 @@ export class ObjectTabComponent implements OnInit {
     if (description) {
       form.append('description', description);
     }
-    if (category) {
-      form.append('category', category);
+    if (categories.length > 0) {
+      const unique = [...new Set(categories.map((c) => c.trim()).filter(Boolean))];
+      if (unique.length > 0) {
+        form.append('categories', JSON.stringify(unique));
+      }
     }
     if (note) {
       form.append('note', note);
@@ -395,40 +406,6 @@ export class ObjectTabComponent implements OnInit {
           error.message || this.#translationService.instant('objects.deleteObjectFailed'),
         );
         this.deleting.set(false);
-      },
-    });
-  }
-
-  startEditNote(): void {
-    this.editNoteValue.set(this.object()?.note || '');
-    this.editingNote.set(true);
-  }
-
-  cancelEditNote(): void {
-    this.editingNote.set(false);
-  }
-
-  saveNote(): void {
-    const objectId = this.object()?._id?.$oid;
-    if (!objectId) return;
-
-    const note = this.editNoteValue().trim();
-    this.savingNote.set(true);
-
-    this.#httpService.put<Object>(`object/${objectId}`, { note }).subscribe({
-      next: (updated) => {
-        this.object.set(updated);
-        this.editingNote.set(false);
-        this.savingNote.set(false);
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.noteUpdated'),
-        );
-      },
-      error: (err) => {
-        this.savingNote.set(false);
-        this.#notificationService.showError(
-          err.message || this.#translationService.instant('objects.updateNoteFailed'),
-        );
       },
     });
   }

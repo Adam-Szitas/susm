@@ -12,10 +12,15 @@
   border-bottom: 2px solid var(--default-color, #e0e0e0);
   margin-bottom: 0.5rem;
 
-  &:has(.group-edit-toggle) {
+  &:has(.group-header-actions) {
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+  }
+
+  .group-header-content {
+    flex: 1;
+    min-width: 0;
   }
 
   @include mobile {

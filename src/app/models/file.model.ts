@@ -33,10 +33,25 @@ export interface FileGroup {
     $oid: string;
   };
   description: string;
+  /** One or more category labels. Legacy `category` (singular) is merged on the server. */
+  categories?: string[];
+  /** @deprecated Prefer `categories`; still returned for older data until migrated. */
   category?: string;
   note?: string;
   files: FileGroupItem[];
   created_at?: MongoDateJson;
+}
+
+/** Normalized category list for display/edit (merges legacy `category`). */
+export function fileGroupCategoryLabels(g: FileGroup): string[] {
+  const fromArr = (g.categories ?? [])
+    .map((s) => s?.trim() ?? '')
+    .filter(Boolean);
+  if (fromArr.length > 0) {
+    return [...new Set(fromArr)];
+  }
+  const legacy = g.category?.trim();
+  return legacy ? [legacy] : [];
 }
 
 // Individual file within a group

@@ -149,7 +149,7 @@ export class UserStore {
     } catch (error) {
       console.error(error);
     }
-    this.#router.navigateByUrl('login');
+    this.#router.navigateByUrl('/login');
   }
 
   private fetchUserProfile() {

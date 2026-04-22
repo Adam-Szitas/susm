@@ -1,32 +1,38 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { UserStore } from '../store/user.store'; // Adjust the path as needed
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from '@angular/common/http';
+import { catchError, Observable, throwError } from 'rxjs';
+import { UserStore } from '../store/user.store';
+import { shouldLogoutOnHttpError } from '../utils/auth-http-error';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   #userStore = inject(UserStore);
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.#userStore.token();
 
-    // Optionally skip auth for some endpoints
     const isAuthFree = req.url.includes('/login') || req.url.includes('/register');
 
-    if (token && !isAuthFree) {
-      const cloned = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return next.handle(cloned);
-    }
+    const outgoing: HttpRequest<unknown> =
+      token && !isAuthFree
+        ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+        : req.clone({ setHeaders: { 'Content-type': 'application/json' } });
 
-    const cloned = req.clone({
-      setHeaders: {
-        'Content-type': 'application/json',
-      },
-    });
-    return next.handle(cloned);
+    return next.handle(outgoing).pipe(
+      catchError((err: unknown) => {
+        if (err instanceof HttpErrorResponse) {
+          if (shouldLogoutOnHttpError(err, req.url) && this.#userStore.isAuthenticated()) {
+            this.#userStore.logout();
+          }
+        }
+        return throwError(() => err);
+      }),
+    );
   }
 }
