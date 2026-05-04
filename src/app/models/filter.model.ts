@@ -11,6 +11,9 @@ export interface Filter {
   showCategory?: boolean;
   categories?: string[];
   selectedCategory?: string;
+  /** Multiple checkbox selection for categories (e.g. project tab — file group categories). */
+  multiSelectCategories?: boolean;
+  selectedCategories?: string[];
   dateFrom?: string;
   dateTo?: string;
   showSort?: boolean;
@@ -20,6 +23,8 @@ export interface Filter {
 export interface FilterResult {
   searchText?: string;
   category?: string;
+  /** When set (non-empty), object list filters by file groups matching any of these labels. */
+  selectedCategories?: string[];
   status?: string;
   dateFrom?: string;
   dateTo?: string;

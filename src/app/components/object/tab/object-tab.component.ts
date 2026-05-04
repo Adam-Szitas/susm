@@ -2,17 +2,26 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
 import { ProjectStore } from '@store/project.store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { FileService } from '@services/file.service';
 import { NotificationService } from '@services/notification.service';
-import { Object, FileGroup, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
+import {
+  Object,
+  FileGroup,
+  DEFAULT_WORK_STATUS,
+  fileGroupCategoryLabels,
+  formatWorkStatus,
+  WORK_STATUSES,
+} from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
@@ -43,6 +52,7 @@ import { UserStore } from '@store/user.store';
 export class ObjectTabComponent implements OnInit {
   #projectStore = inject(ProjectStore);
   #route = inject(ActivatedRoute);
+  #destroyRef = inject(DestroyRef);
   #router = inject(Router);
   #fileService = inject(FileService);
   #notificationService = inject(NotificationService);
@@ -54,6 +64,8 @@ export class ObjectTabComponent implements OnInit {
   object = signal<Object | null>(null);
   isAdmin = this.#userStore.isAdmin;
   fileGroups = signal<FileGroup[]>([]);
+  /** Category labels from `?categories=` (repeat or comma-separated); filters visible file groups. */
+  urlFileGroupCategories = signal<string[]>([]);
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
   deleting = signal(false);
@@ -93,6 +105,26 @@ export class ObjectTabComponent implements OnInit {
   });
 
   readonly objectDisplayTitle = computed(() => this.#objectDisplayName(this.object()));
+
+  readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
+
+  readonly displayedFileGroups = computed(() => {
+    const all = this.fileGroups();
+    const labels = this.urlFileGroupCategories();
+    if (labels.length === 0) return all;
+    const selected = new Set(labels);
+    return all.filter((g) =>
+      fileGroupCategoryLabels(g).some((l) => selected.has(l)),
+    );
+  });
+
+  constructor() {
+    this.#route.queryParamMap
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((params) => {
+        this.urlFileGroupCategories.set(parseCategoriesFromQueryParams(params));
+      });
+  }
 
   /** Short display name for the object (e.g. address parts or "Object"). */
   #objectDisplayName(obj: Object | null): string {
@@ -213,6 +245,15 @@ export class ObjectTabComponent implements OnInit {
         console.error('Failed to load file groups:', error);
         this.fileGroups.set([]);
       },
+    });
+  }
+
+  clearUrlCategoryFilter(): void {
+    const objectId = this.#route.snapshot.paramMap.get('id');
+    if (!objectId) return;
+    void this.#router.navigate(['/objects/tab', objectId], {
+      queryParams: {},
+      replaceUrl: true,
     });
   }
 
@@ -437,4 +478,20 @@ export class ObjectTabComponent implements OnInit {
       });
     }
   }
+}
+
+/** Reads `categories` from the URL (?categories=a&categories=b or comma-separated values). */
+function parseCategoriesFromQueryParams(params: ParamMap): string[] {
+  const raw = params.getAll('categories');
+  const out: string[] = [];
+  for (const entry of raw) {
+    if (!entry?.trim()) continue;
+    out.push(
+      ...entry
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+  }
+  return [...new Set(out)];
 }

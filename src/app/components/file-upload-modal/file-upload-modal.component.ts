@@ -139,8 +139,6 @@ export class FileUploadModalComponent {
 
   onUpload(): void {
     const files = this.filePreviews().map(p => p.file);
-    if (files.length === 0) return;
-
     const cats = [...new Set(this.selectedCategories().map(c => c.trim()).filter(Boolean))];
     this.upload.emit({
       files,

@@ -31,6 +31,8 @@ export class FilterComponent implements OnInit {
 
   private currentFilter = <FilterResult>({});
   public areFiltersVisible = false;
+  /** Selected labels when `multiSelectCategories` is enabled (project tab file-group categories). */
+  selectedFileGroupCategories: string[] = [];
 
   searchForm = new FormGroup({
     search: new FormControl(''),
@@ -50,12 +52,12 @@ export class FilterComponent implements OnInit {
         this.emitFilterChange()
       });
 
-    // Emit immediately for category and date changes
-    this.searchForm.get('category')?.valueChanges
-      .subscribe((value) => {
-        this.currentFilter = { ...this.currentFilter, category: value?.toString() };
-        this.emitFilterChange()
-      });
+    // Emit immediately for category and date changes (single-select only — multi uses checkboxes)
+    this.searchForm.get('category')?.valueChanges.subscribe((value) => {
+      if (this.filter().multiSelectCategories) return;
+      this.currentFilter = { ...this.currentFilter, category: value?.toString() };
+      this.emitFilterChange();
+    });
       
       this.searchForm.get('dateFrom')?.valueChanges
       .subscribe((value) => {
@@ -115,6 +117,45 @@ export class FilterComponent implements OnInit {
       });
       this.areFiltersVisible = restored.filtersVisible;
     }
+
+    if (this.filter().multiSelectCategories) {
+      const rf = restored?.filter;
+      let initialCats: string[] = [];
+      if (rf?.selectedCategories?.length) {
+        initialCats = rf.selectedCategories.filter((c): c is string => !!c?.trim());
+      } else if (rf?.category?.trim()) {
+        initialCats = [rf.category.trim()];
+      } else if (filterData.selectedCategories?.length) {
+        initialCats = [...filterData.selectedCategories];
+      }
+      this.selectedFileGroupCategories = [...initialCats];
+      this.currentFilter = {
+        ...this.currentFilter,
+        selectedCategories: [...this.selectedFileGroupCategories],
+        category: undefined,
+      };
+      this.emitFilterChange();
+    }
+  }
+
+  isMultiCategorySelected(category: string): boolean {
+    return this.selectedFileGroupCategories.includes(category);
+  }
+
+  onMultiCategoryToggle(category: string, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedFileGroupCategories.includes(category)) {
+        this.selectedFileGroupCategories = [...this.selectedFileGroupCategories, category];
+      }
+    } else {
+      this.selectedFileGroupCategories = this.selectedFileGroupCategories.filter((c) => c !== category);
+    }
+    this.currentFilter = {
+      ...this.currentFilter,
+      selectedCategories: [...this.selectedFileGroupCategories],
+      category: undefined,
+    };
+    this.emitFilterChange();
   }
 
   private emitFilterChange(): void {
@@ -127,13 +168,31 @@ export class FilterComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.searchForm.reset({
-      search: '',
+    this.selectedFileGroupCategories = [];
+    this.searchForm.reset(
+      {
+        search: '',
+        category: '',
+        status: '',
+        dateFrom: '',
+        dateTo: '',
+        sortDirection: '',
+      },
+      { emitEvent: false },
+    );
+    const multi = this.filter().multiSelectCategories;
+    this.currentFilter = {
+      searchText: '',
       category: '',
       status: '',
       dateFrom: '',
       dateTo: '',
-      sortDirection: '',
-    });
+      sortDirection: '' as SortDirection,
+      ...(multi ? { selectedCategories: [] as string[] } : {}),
+    };
+    if (!multi) {
+      delete this.currentFilter.selectedCategories;
+    }
+    this.emitFilterChange();
   }
 }

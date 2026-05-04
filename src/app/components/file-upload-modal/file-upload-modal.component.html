@@ -145,12 +145,14 @@
           type="button"
           class="btn-primary"
           (click)="onUpload()"
-          [disabled]="filePreviews().length === 0 || uploading()"
+          [disabled]="uploading()"
         >
           @if (uploading()) {
             {{ 'fileUpload.uploading' | translate }}
-          } @else {
+          } @else if (filePreviews().length > 0) {
             {{ 'fileUpload.upload' | translate }} ({{ filePreviews().length }})
+          } @else {
+            {{ 'fileUpload.upload' | translate }}
           }
         </button>
       </div>

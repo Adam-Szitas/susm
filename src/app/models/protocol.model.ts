@@ -47,6 +47,8 @@ export interface GenerateProtocolRequest {
   data?: Record<string, unknown>;
   from_date?: string;
   to_date?: string;
+  /** When set, only file groups whose categories intersect these labels appear in preview/PDF. */
+  file_group_categories?: string[];
   /** Optional: include these older protocol IDs in the same PDF (older first, then new content). */
   linked_protocol_ids?: string[];
 }

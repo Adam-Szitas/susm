@@ -131,7 +131,11 @@
     @if (filteredObjects().length > 0) {
       <div class="card-wrapper">
         @for (object of filteredObjects(); track object._id?.$oid) {
-          <div class="card" [routerLink]="'/objects/tab/' + object._id?.$oid">
+          <div
+            class="card"
+            [routerLink]="['/objects/tab', object._id?.$oid]"
+            [queryParams]="objectTabLinkQueryParams()"
+          >
             <app-status-pill [status]="object?.status || 'created'" />
             <h2 class="headline">
               @if (object.address.house_number) {

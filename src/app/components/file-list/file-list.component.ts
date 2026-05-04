@@ -29,6 +29,7 @@ import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.component';
 
 @Component({
   selector: 'app-file-list',
@@ -37,6 +38,7 @@ import { finalize } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, TranslateModule, FormsModule],
+  preserveWhitespaces: false,
 })
 export class FileListComponent implements OnDestroy {
   #fileService = inject(FileService);
@@ -95,17 +97,15 @@ export class FileListComponent implements OnDestroy {
     return !!(file as { deleted_at?: string }).deleted_at;
   }
 
-  // Computed filtered file groups (excluding empty groups, failed files, and soft-deleted files)
+  // Filter failed loads & soft-deleted items; keep metadata-only groups (no pictures yet)
   public filteredFileGroups = computed(() => {
     const groups = this.fileGroups();
-    return groups
-      .map((group) => ({
-        ...group,
-        files: group.files.filter(
-          (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
-        ),
-      }))
-      .filter((group) => group.files.length > 0);
+    return groups.map((group) => ({
+      ...group,
+      files: group.files.filter(
+        (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+      ),
+    }));
   });
 
   // Computed filtered project files (excluding failed and soft-deleted files)
@@ -145,6 +145,8 @@ export class FileListComponent implements OnDestroy {
 
   // All groups for move dropdown (object files only)
   public moveTargetGroups = computed(() => this.filteredFileGroups());
+
+  public moveFileInProgress = signal(false);
 
   public activeFileId = signal<string | null>(null);
   /** Full-resolution image URL when lightbox is open */
@@ -256,6 +258,74 @@ export class FileListComponent implements OnDestroy {
     this.selectedFileIds.set(new Set());
     this.selectionMode.set(false);
     this.selectedMoveTargetGroupId.set('');
+  }
+
+  /** Other file groups on this object (for moving a single picture from the overlay). */
+  public moveTargetsExcludingGroup(group: FileGroup): FileGroup[] {
+    const id = group._id?.$oid;
+    if (!id) return [];
+    return this.filteredFileGroups().filter((g) => g._id?.$oid && g._id.$oid !== id);
+  }
+
+  /** Open modal to pick another group; then move this file. */
+  public openMoveFileModal(event: Event, file: FileGroupItem, currentGroup: FileGroup): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.moveFileInProgress()) return;
+
+    const targets = this.moveTargetsExcludingGroup(currentGroup);
+    if (targets.length === 0) return;
+
+    this.activeFileId.set(null);
+
+    const targetRows = targets
+      .map((g) => {
+        const oid = g._id?.$oid;
+        if (!oid) return null;
+        return { groupId: oid, label: this.getGroupDisplayName(g) };
+      })
+      .filter((r): r is { groupId: string; label: string } => r !== null);
+
+    const { childRef } = this.#modalService.open({
+      title: 'fileList.movePickDestination',
+      component: MoveFileToGroupModalComponent,
+      componentInputs: { targetRows },
+      wide: true,
+    });
+
+    if (childRef) {
+      const inst = childRef.instance as MoveFileToGroupModalComponent;
+      const sub = inst.groupPicked.subscribe((targetGroupId: string) => {
+        sub.unsubscribe();
+        this.#moveFileToGroup(file, targetGroupId);
+      });
+    }
+  }
+
+  #moveFileToGroup(file: FileGroupItem, targetGroupId: string): void {
+    const fileId = file._id?.$oid;
+    if (!fileId || this.moveFileInProgress()) return;
+
+    this.moveFileInProgress.set(true);
+    this.#fileService
+      .moveFileToGroup(fileId, targetGroupId)
+      .pipe(finalize(() => this.moveFileInProgress.set(false)))
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('fileList.moveSuccess', { count: 1 }) ||
+              'Picture moved',
+          );
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('fileList.moveFailed') ||
+              'Failed to move file',
+          );
+        },
+      });
   }
 
   public moveSelectedToGroup(targetGroupId?: string): void {

@@ -4,6 +4,19 @@
 @use '../../../styles/grids' as *;
 @use '../../../styles/groups' as *;
 
+// Visible to screen readers & HTML validators that ignore Angular `title` bindings
+.file-list-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .file-wrapper {
   position: relative;
   width: 100%;
@@ -23,6 +36,46 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+// Square tile thumbnails: keep overlay actions in a tight 2×2 icon grid
+.file-item .image-container .overlay {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  justify-items: stretch;
+  gap: 0.28rem;
+  padding: 0.32rem;
+  box-sizing: border-box;
+  overflow: hidden auto;
+}
+
+// Icon labels use `.file-list-visually-hidden` in the template
+.file-item .image-container .overlay .zoom-hint,
+.file-item .image-container .overlay .move-hint,
+.file-item .image-container .overlay .download-hint,
+.file-item .image-container .overlay .delete-hint {
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.28rem;
+  font-size: 0;
+  line-height: 0;
+  box-sizing: border-box;
+  max-height: min(42%, 46px);
+  aspect-ratio: 1;
+  gap: 0;
+  border: none;
+  flex-shrink: 0;
+}
+
+.file-item .image-container .overlay .zoom-hint-icon,
+.file-item .image-container .overlay .move-hint-icon,
+.file-item .image-container .overlay .overlay-action-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
 .file-item {
   cursor: pointer;
   @include flex-column;
@@ -37,6 +90,7 @@
 // Overlay action buttons: use button for reliable touch on mobile
 .zoom-hint,
 .download-hint,
+.move-hint,
 .delete-hint {
   display: inline-flex;
   align-items: center;
@@ -52,6 +106,7 @@
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
   user-select: none;
   @include transition(background-color);
 }
@@ -61,6 +116,7 @@
   gap: 0.5rem;
   color: #fff;
   background: rgba(40, 167, 69, 0.45);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
   &:hover {
@@ -72,7 +128,8 @@
   }
 }
 
-.zoom-hint-icon {
+.zoom-hint-icon,
+.move-hint-icon {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
@@ -82,9 +139,33 @@
   white-space: nowrap;
 }
 
+.move-hint {
+  flex-direction: row;
+  gap: 0;
+  color: #fff;
+  background: rgba(59, 130, 246, 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.7);
+  }
+
+  &:active:not(:disabled) {
+    background: rgba(59, 130, 246, 0.85);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
 .download-hint {
   color: #fff;
   background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
   &:hover {
@@ -99,6 +180,7 @@
 .delete-hint {
   color: #fff;
   background: rgba(255, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
   &:hover {
@@ -118,7 +200,8 @@
   color: var(--text-color, #333);
   @include truncate;
   border-top: 1px solid var(--default-color, #e0e0e0);
-  text-wrap: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .file-name-input {
@@ -434,6 +517,7 @@
   gap: 0.35rem;
   font-size: 0.9rem;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 
   input {
@@ -606,7 +690,8 @@
 }
 
 p {
-  text-wrap: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .created-at-wrapper {

@@ -52,6 +52,32 @@ form {
   flex-direction: column;
 }
 
+.control.category-multi {
+  grid-column: 1 / -1;
+}
+
+.control.category-multi legend {
+  padding: 0;
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--default-color);
+}
+
+.category-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.category-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
 .control.date-range {
   min-width: 150px;
   flex: 0 1 auto;

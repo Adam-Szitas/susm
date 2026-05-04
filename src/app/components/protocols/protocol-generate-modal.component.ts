@@ -5,7 +5,13 @@ import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
-import { GenerateProtocolRequest, parseMongoDateToMs, ProtocolRecord, ProtocolTemplate } from '@models';
+import {
+  GenerateProtocolRequest,
+  fileGroupCategoryLabels,
+  parseMongoDateToMs,
+  ProtocolRecord,
+  ProtocolTemplate,
+} from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
@@ -29,6 +35,8 @@ export class ProtocolGenerateModalComponent {
   projectId = input.required<string>();
   objects = input.required<Object[]>();
   templates = input.required<ProtocolTemplate[]>();
+  /** Project-defined labels for file-group categories (same list as project tab filter). */
+  projectCategories = input<string[]>([]);
   /** Existing protocols for this project (older versions to optionally include in the new PDF). */
   existingProtocols = input<ProtocolRecord[]>([]);
 
@@ -40,21 +48,26 @@ export class ProtocolGenerateModalComponent {
   hasSelection = computed(() => this.selectedObjectIds().length > 0);
   /** Recomputed when protocol date inputs change (form is not a signal). */
   #dateRangeVersion = signal(0);
+  /** Selected file-group category labels (multi-select); empty means no category filter. */
+  protocolFileGroupCategories = signal<string[]>([]);
 
   /**
    * Objects listed in the protocol modal: with a date range, only objects that have at least one
-   * file in range (using `file_groups` from the API). After preview is loaded, the list matches
-   * `content_sections` from the server (same filter as the PDF).
+   * file in range (using `file_groups` from the API). With category filter, only objects that have
+   * a matching file group. After preview is loaded, the list matches `content_sections` from the
+   * server (same filter as the PDF).
    */
   objectsForProtocolSelection = computed(() => {
     this.objects();
     this.#dateRangeVersion();
+    this.protocolFileGroupCategories();
     this.previewData();
     this.showingPreview();
 
     const all = this.objects();
     const fromD = (this.form.get('from_date')?.value as string) ?? '';
     const toD = (this.form.get('to_date')?.value as string) ?? '';
+    const catFilter = this.protocolFileGroupCategories().filter((c) => c.trim());
 
     if (this.showingPreview()) {
       const sections = this.previewData()?.content_sections;
@@ -70,10 +83,7 @@ export class ProtocolGenerateModalComponent {
       return [];
     }
 
-    if (!fromD.trim() && !toD.trim()) {
-      return all;
-    }
-    return all.filter((o) => this.objectHasFileInDateRange(o, fromD, toD));
+    return all.filter((o) => this.objectMatchesProtocolFilters(o, fromD, toD, catFilter));
   });
 
   /** Object IDs currently shown in the checklist (respects date range + preview). */
@@ -226,6 +236,7 @@ export class ProtocolGenerateModalComponent {
     }
 
     const linkedIds = this.selectedLinkedProtocolIds();
+    const fgCats = this.fileGroupCategoriesPayload();
     const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
@@ -234,6 +245,7 @@ export class ProtocolGenerateModalComponent {
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
       linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
+      ...(fgCats ? { file_group_categories: fgCats } : {}),
     };
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
@@ -348,6 +360,7 @@ export class ProtocolGenerateModalComponent {
     }
 
     const linkedIds = this.selectedLinkedProtocolIds();
+    const fgCats = this.fileGroupCategoriesPayload();
     const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
@@ -356,6 +369,7 @@ export class ProtocolGenerateModalComponent {
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
       linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
+      ...(fgCats ? { file_group_categories: fgCats } : {}),
     };
 
     this.#protocolService.downloadProtocol(request).subscribe({
@@ -378,6 +392,29 @@ export class ProtocolGenerateModalComponent {
 
   close(): void {
     this.#modalService.close();
+  }
+
+  isProtocolCategorySelected(category: string): boolean {
+    return this.protocolFileGroupCategories().includes(category);
+  }
+
+  toggleProtocolCategory(category: string, checked: boolean): void {
+    const next = new Set(this.protocolFileGroupCategories());
+    if (checked) {
+      next.add(category);
+    } else {
+      next.delete(category);
+    }
+    this.protocolFileGroupCategories.set(Array.from(next));
+    if (this.showingPreview() && this.previewData() && this.hasSelection()) {
+      this.loadPreview();
+    }
+  }
+
+  /** Deduplicated non-empty labels sent to preview/PDF endpoints. */
+  private fileGroupCategoriesPayload(): string[] | undefined {
+    const unique = [...new Set(this.protocolFileGroupCategories().map((c) => c.trim()).filter(Boolean))];
+    return unique.length > 0 ? unique : undefined;
   }
 
   toggleSelection(objectId: string | undefined, checked: boolean): void {
@@ -442,36 +479,47 @@ export class ProtocolGenerateModalComponent {
   }
 
   /**
-   * Sends UTC day bounds for the calendar dates from `<input type="date">` (YYYY-MM-DD).
-   * Avoids `new Date('YYYY-MM-DD')` + `setHours()` which mixes UTC parse with local midnight
-   * and shifts the range vs `DateTime<Utc>` on the backend.
+   * Date range + optional file-group categories (matches backend `collect_objects_for_protocol`).
    */
-  /**
-   * Same UTC bounds as `formatDateForBackend`.
-   * Uses each picture's `created_at` only (not the file group's date).
-   */
-  private objectHasFileInDateRange(obj: Object, fromInput: string, toInput: string): boolean {
+  private objectMatchesProtocolFilters(
+    obj: Object,
+    fromInput: string,
+    toInput: string,
+    categoryLabels: string[],
+  ): boolean {
     const groups = obj.file_groups;
     if (!groups?.length) {
-      return true;
+      return categoryLabels.length === 0;
     }
 
     const fromIso = fromInput.trim() ? this.formatDateForBackend(fromInput.trim(), false) : null;
     const toIso = toInput.trim() ? this.formatDateForBackend(toInput.trim(), true) : null;
     const fromMs = fromIso ? Date.parse(fromIso) : null;
     const toMs = toIso ? Date.parse(toIso) : null;
-    if (fromMs === null && toMs === null) return true;
+    const hasDateConstraint = fromMs !== null || toMs !== null;
+    const catSet = categoryLabels.length > 0 ? new Set(categoryLabels) : null;
 
     for (const g of groups) {
+      const labels = fileGroupCategoryLabels(g);
+      if (catSet && !labels.some((l) => catSet.has(l))) {
+        continue;
+      }
       for (const f of g.files ?? []) {
         if (f.deleted_at != null) {
           continue;
         }
+        if (!hasDateConstraint) {
+          return true;
+        }
         const t = parseMongoDateToMs(f.created_at);
-        if (t === null) continue;
+        if (t === null) {
+          continue;
+        }
         const okFrom = fromMs === null || t >= fromMs;
         const okTo = toMs === null || t <= toMs;
-        if (okFrom && okTo) return true;
+        if (okFrom && okTo) {
+          return true;
+        }
       }
     }
     return false;

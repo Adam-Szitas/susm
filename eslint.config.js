@@ -37,4 +37,12 @@ module.exports = tseslint.config(
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},
   },
+  {
+    files: ['**/file-list.component.html'],
+    rules: {
+      // Overlay / lightbox use divs with click + stopPropagation; keyboard is secondary UX here
+      '@angular-eslint/template/click-events-have-key-events': 'off',
+      '@angular-eslint/template/interactive-supports-focus': 'off',
+    },
+  },
 );

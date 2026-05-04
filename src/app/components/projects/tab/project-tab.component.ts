@@ -17,6 +17,7 @@ import { FilterComponent } from '../../filter/filter.component';
 import {
   Filter,
   FilterResult,
+  fileGroupCategoryLabels,
   formatWorkStatus,
   Object,
   parseDateValue,
@@ -108,6 +109,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     return [{ label: projectsLabel, url: '/projects' }, { label: p.name }];
   });
 
+  /** Query params forwarded when opening an object from this view (multi-selected file-group categories). */
+  readonly objectTabLinkQueryParams = computed(() => {
+    const cats =
+      this.#currentFilter().selectedCategories?.filter((c) => !!c?.trim()) ?? [];
+    return cats.length ? { categories: cats } : {};
+  });
+
   constructor() {
     effect(() => {
       const objects = this.objects() || [];
@@ -150,6 +158,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       label: 'common.search',
       showDateRange: true,
       showCategory: true,
+      multiSelectCategories: true,
       categories: project?.categories || [],
       showSort: true,
     };
@@ -231,6 +240,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
             objects: availableObjects,
             templates,
             existingProtocols: this.projectProtocols(),
+            projectCategories: this.project()?.categories ?? [],
           },
         });
       },
@@ -428,8 +438,15 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (filter.category) {
-      filtered = filtered.filter((obj) => obj.category === filter.category);
+    const selectedGroupCategories = filter.selectedCategories?.filter((c) => c?.trim()) ?? [];
+    if (selectedGroupCategories.length > 0) {
+      const selectedSet = new Set(selectedGroupCategories);
+      filtered = filtered.filter((obj) => {
+        const groups = obj.file_groups ?? [];
+        return groups.some((g) =>
+          fileGroupCategoryLabels(g).some((label) => selectedSet.has(label)),
+        );
+      });
     }
 
     if (filter.dateFrom || filter.dateTo) {

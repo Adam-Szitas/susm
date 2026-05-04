@@ -33,6 +33,25 @@
         </button>
       </div>
 
+      @if (projectCategories().length > 0) {
+        <fieldset class="file-group-categories-fieldset">
+          <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
+          <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
+          <div class="category-checkboxes">
+            @for (category of projectCategories(); track category) {
+              <label class="category-checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isProtocolCategorySelected(category)"
+                  (change)="toggleProtocolCategory(category, $any($event.target).checked)"
+                />
+                {{ category }}
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
+
       <!-- Editable Fields Section in Preview -->
       @if (fieldControls.controls.length > 0 && templateForPreview) {
         <div class="template-fields-section preview-fields">
@@ -199,6 +218,25 @@
         />
         <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
       </div>
+
+      @if (projectCategories().length > 0) {
+        <fieldset class="file-group-categories-fieldset">
+          <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
+          <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
+          <div class="category-checkboxes">
+            @for (category of projectCategories(); track category) {
+              <label class="category-checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isProtocolCategorySelected(category)"
+                  (change)="toggleProtocolCategory(category, $any($event.target).checked)"
+                />
+                {{ category }}
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
 
       @if (selectedTemplate()) {
         @if (selectedTemplate()!.fields && selectedTemplate()!.fields.length > 0) {

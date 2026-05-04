@@ -120,13 +120,23 @@
     }
 
     @if (fileGroups().length > 0) {
-      <app-file-list
-        [fileGroups]="fileGroups()"
-        [projectCategories]="projectCategories()"
-        [objectId]="object()?._id?.$oid"
-        (fileDeleted)="onFileDeleted()"
-        (metadataUpdated)="onFileDeleted()"
-      ></app-file-list>
+      @if (hasUrlFileGroupCategoryFilter()) {
+        <p class="url-file-group-filter-hint">{{ 'objects.fileGroupsFilteredByLinkCategories' | translate }}</p>
+      }
+      @if (displayedFileGroups().length > 0) {
+        <app-file-list
+          [fileGroups]="displayedFileGroups()"
+          [projectCategories]="projectCategories()"
+          [objectId]="object()?._id?.$oid"
+          (fileDeleted)="onFileDeleted()"
+          (metadataUpdated)="onFileDeleted()"
+        ></app-file-list>
+      } @else if (hasUrlFileGroupCategoryFilter()) {
+        <p class="filter-empty">{{ 'objects.noMatchingFileGroupsForCategories' | translate }}</p>
+        <button type="button" class="button button-secondary" (click)="clearUrlCategoryFilter()">
+          {{ 'objects.showAllFileGroups' | translate }}
+        </button>
+      }
     }
   </div>
 

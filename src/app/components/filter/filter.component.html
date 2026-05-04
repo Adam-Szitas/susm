@@ -33,20 +33,38 @@
       </div>
 
       @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
-        <div class="control">
-          <label for="category">{{ 'filter.category' | translate }}</label>
-          <select id="category" formControlName="category" class="filter-input">
-            <option value="">{{ 'filter.allCategories' | translate }}</option>
-            @for (category of filter().categories; track category) {
-              <option [value]="category">{{ category }}</option>
-            }
-          </select>
-        </div>
+        @if (filter().multiSelectCategories) {
+          <fieldset class="control category-multi">
+            <legend>{{ 'filter.category' | translate }}</legend>
+            <div class="category-checkboxes" role="group" [attr.aria-label]="'filter.category' | translate">
+              @for (category of filter().categories; track category) {
+                <label class="category-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isMultiCategorySelected(category)"
+                    (change)="onMultiCategoryToggle(category, $any($event.target).checked)"
+                  />
+                  {{ category }}
+                </label>
+              }
+            </div>
+          </fieldset>
+        } @else {
+          <div class="control">
+            <label for="category">{{ 'filter.category' | translate }}</label>
+            <select id="category" formControlName="category" class="filter-input">
+              <option value="">{{ 'filter.allCategories' | translate }}</option>
+              @for (category of filter().categories; track category) {
+                <option [value]="category">{{ category }}</option>
+              }
+            </select>
+          </div>
+        }
       }
 
       @if(filter().showStatus) {
         <div class="control">
-          <label for="category">{{ 'filter.status' | translate }}</label>
+          <label for="status">{{ 'filter.status' | translate }}</label>
           <select formControlName="status" id="status" class="filter-input">
             <option value="">{{ 'filter.allStatuses' | translate }}</option>
             @for (status of filter().statuses; track status) {

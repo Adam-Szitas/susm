@@ -9,6 +9,44 @@
     margin-bottom: 1.5rem;
   }
 
+  .file-group-categories-fieldset {
+    margin-bottom: 1.5rem;
+    padding: 0;
+    border: none;
+
+    legend {
+      padding: 0;
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    > .helper-text {
+      margin: 0 0 0.75rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  .category-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .category-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    input {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
   .form-group {
     margin-bottom: 1.5rem;
 
