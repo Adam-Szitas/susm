@@ -75,6 +75,14 @@ export class FileService {
   }
 
   /**
+   * Soft-deletes an object file group (`deleted_at` on the group in the backend).
+   */
+  deleteFileGroup(groupId: string): Observable<{ message: string }> {
+    const endpoint = `file/group/${groupId}`;
+    return this.#httpService.delete<{ message: string }>(endpoint);
+  }
+
+  /**
    * Gets all file groups for a specific object
    * @param objectId - The ID of the object
    * @returns Observable with array of file groups

@@ -386,6 +386,38 @@
   }
 }
 
+.group-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(180, 40, 40, 0.45);
+  background: #fff;
+  color: #b22222;
+  cursor: pointer;
+  flex-shrink: 0;
+  @include transition(background-color, border-color, transform);
+
+  &:hover {
+    background: rgba(178, 34, 34, 0.08);
+    border-color: #b22222;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #b22222;
+    outline-offset: 2px;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+}
+
 .group-photo-file-input {
   position: absolute;
   width: 1px;

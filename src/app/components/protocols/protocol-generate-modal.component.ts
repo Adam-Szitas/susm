@@ -7,6 +7,7 @@ import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import {
   GenerateProtocolRequest,
+  FileGroup,
   fileGroupCategoryLabels,
   parseMongoDateToMs,
   ProtocolRecord,
@@ -499,18 +500,37 @@ export class ProtocolGenerateModalComponent {
     const hasDateConstraint = fromMs !== null || toMs !== null;
     const catSet = categoryLabels.length > 0 ? new Set(categoryLabels) : null;
 
-    for (const g of groups) {
+    for (const g of groups as FileGroup[]) {
+      if (g.deleted_at != null) {
+        continue;
+      }
+
+      const rawFiles = g.files ?? [];
+      const activeFiles = rawFiles.filter((f) => f.deleted_at == null);
+      const hadAnyFileRecord = rawFiles.length > 0;
+
+      // Metadata-only groups: backend always includes (category filter does not apply).
+      if (!hadAnyFileRecord) {
+        if (!hasDateConstraint) {
+          return true;
+        }
+        continue;
+      }
+
       const labels = fileGroupCategoryLabels(g);
       if (catSet && !labels.some((l) => catSet.has(l))) {
         continue;
       }
-      for (const f of g.files ?? []) {
-        if (f.deleted_at != null) {
-          continue;
-        }
-        if (!hasDateConstraint) {
-          return true;
-        }
+
+      if (activeFiles.length === 0) {
+        continue;
+      }
+
+      if (!hasDateConstraint) {
+        return true;
+      }
+
+      for (const f of activeFiles) {
         const t = parseMongoDateToMs(f.created_at);
         if (t === null) {
           continue;

@@ -97,15 +97,22 @@ export class FileListComponent implements OnDestroy {
     return !!(file as { deleted_at?: string }).deleted_at;
   }
 
+  /** True when the whole file group was soft-deleted. */
+  private isGroupRemoved(group: FileGroup): boolean {
+    return !!group.deleted_at;
+  }
+
   // Filter failed loads & soft-deleted items; keep metadata-only groups (no pictures yet)
   public filteredFileGroups = computed(() => {
     const groups = this.fileGroups();
-    return groups.map((group) => ({
-      ...group,
-      files: group.files.filter(
-        (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
-      ),
-    }));
+    return groups
+      .filter((group) => !this.isGroupRemoved(group))
+      .map((group) => ({
+        ...group,
+        files: group.files.filter(
+          (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+        ),
+      }));
   });
 
   // Computed filtered project files (excluding failed and soft-deleted files)
@@ -679,6 +686,52 @@ export class FileListComponent implements OnDestroy {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  public async deleteFileGroup(group: FileGroup): Promise<void> {
+    const groupId = group._id?.$oid;
+    if (!groupId || !this.objectId()) {
+      this.#notificationService.showError(
+        this.#translationService.instant('fileList.deleteFileGroupFailed') || 'Invalid group',
+      );
+      return;
+    }
+
+    const groupLabel = this.getGroupDisplayName(group);
+    let message = this.#translationService.instant('fileList.confirmDeleteFileGroup', { groupLabel });
+    if (message === 'fileList.confirmDeleteFileGroup') {
+      message = `Remove the file group "${groupLabel}"? The group will be hidden; files remain on the server.`;
+    }
+    const title =
+      this.#translationService.instant('fileList.deleteFileGroup') || 'Remove file group';
+
+    const confirmed = await this.#modalService.openConfirm({
+      title,
+      message,
+      confirmText: 'common.delete',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.#fileService.deleteFileGroup(groupId).subscribe({
+      next: () => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('fileList.deleteFileGroupSuccess') ||
+            'File group removed',
+        );
+        this.fileDeleted.emit();
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message ||
+            this.#translationService.instant('fileList.deleteFileGroupFailed') ||
+            'Failed to remove file group',
+        );
+      },
+    });
   }
 
   public async deleteFile(file: FileGroupItem | ProjectFile): Promise<void> {

@@ -140,7 +140,7 @@
   cursor: pointer;
 
   input {
-    accent-color: var(--button, #007bff);
+    accent-color: var(--primary-default, #9d0000);
   }
 }
 
@@ -149,6 +149,14 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+
+  .button {
+    margin: 0;
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 .category-add-input {
@@ -160,6 +168,8 @@
   font: inherit;
 }
 
-.category-add-btn {
-  flex-shrink: 0;
+// Match global `.button` usage: reset horizontal margin so footer `gap` controls spacing only.
+.modal-footer .button {
+  margin: 0;
 }
+

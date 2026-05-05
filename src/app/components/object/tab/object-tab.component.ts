@@ -109,7 +109,7 @@ export class ObjectTabComponent implements OnInit {
   readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
 
   readonly displayedFileGroups = computed(() => {
-    const all = this.fileGroups();
+    const all = this.fileGroups().filter((g) => !g.deleted_at);
     const labels = this.urlFileGroupCategories();
     if (labels.length === 0) return all;
     const selected = new Set(labels);

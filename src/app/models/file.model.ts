@@ -40,6 +40,8 @@ export interface FileGroup {
   note?: string;
   files: FileGroupItem[];
   created_at?: MongoDateJson;
+  /** Present when the group was soft-deleted (`deleted_at` on the server). */
+  deleted_at?: MongoDateJson;
 }
 
 /** Normalized category list for display/edit (merges legacy `category`). */
