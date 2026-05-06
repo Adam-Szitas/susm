@@ -227,7 +227,7 @@ export class ObjectTabComponent implements OnInit {
         const refactoredFileGroups = fileGroups.map((fileGroup) => {
           return {
             ...fileGroup,
-            files: fileGroup.files.map((file) => {
+            files: (fileGroup.files ?? []).map((file) => {
               // Ensure we always have a safe, normalized filename
               const rawName =
                 file.filename || (file.path ? file.path.split(/[\\/]/).pop() || '' : '');

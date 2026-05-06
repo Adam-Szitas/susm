@@ -121,7 +121,9 @@
 
     @if (fileGroups().length > 0) {
       @if (hasUrlFileGroupCategoryFilter()) {
-        <p class="url-file-group-filter-hint">{{ 'objects.fileGroupsFilteredByLinkCategories' | translate }}</p>
+        <p class="url-file-group-filter-hint">
+          {{ 'objects.fileGroupsFilteredByLinkCategories' | translate }}
+        </p>
       }
       @if (displayedFileGroups().length > 0) {
         <app-file-list

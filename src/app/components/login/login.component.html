@@ -1,6 +1,6 @@
 <div>
   @if (form) {
-    <form [formGroup]="form">
+    <form [formGroup]="form" (ngSubmit)="Submit()">
       <h2>{{ 'login.title' | translate }}</h2>
       <div class="control">
         <label for="email">{{ 'login.email' | translate }}</label>
@@ -22,10 +22,9 @@
       </div>
       <div class="control buttons">
         <button
-          type="button"
+          type="submit"
           class="button button-primary"
           [disabled]="form.invalid"
-          (click)="Submit()"
         >
           {{ 'common.submit' | translate }}
         </button>

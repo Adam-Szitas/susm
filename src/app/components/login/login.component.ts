@@ -40,6 +40,9 @@ export class LoginComponent {
   });
 
   public Submit() {
+    if (this.form.invalid) {
+      return;
+    }
     const credentials = this.form.getRawValue();
     const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/projects';
     this.#userStore.login(credentials.email, credentials.password, returnUrl);

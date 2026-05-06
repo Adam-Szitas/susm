@@ -92,14 +92,14 @@ export class FileListComponent implements OnDestroy {
     });
   }
 
-  /** True if the file is soft-deleted (has deleted_at). */
+  /** True if the file is soft-deleted (non-null `deleted_at` timestamp). */
   private hasDeletedAt(file: FileGroupItem | ProjectFile): boolean {
-    return !!(file as { deleted_at?: string }).deleted_at;
+    return parseMongoDateToMs((file as { deleted_at?: unknown }).deleted_at) != null;
   }
 
   /** True when the whole file group was soft-deleted. */
   private isGroupRemoved(group: FileGroup): boolean {
-    return !!group.deleted_at;
+    return parseMongoDateToMs(group.deleted_at) != null;
   }
 
   // Filter failed loads & soft-deleted items; keep metadata-only groups (no pictures yet)
@@ -184,6 +184,7 @@ export class FileListComponent implements OnDestroy {
   public editFileCreatedAt = signal<string>('');
 
   public startEditGroup(group: FileGroup): void {
+    if (!this.objectId()) return;
     const id = group._id?.$oid;
     if (!id) return;
     this.editingGroupId.set(id);
@@ -456,6 +457,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public saveGroupMetadata(group: FileGroup): void {
+    if (!this.objectId()) return;
     const id = group._id?.$oid;
     if (!id) return;
 

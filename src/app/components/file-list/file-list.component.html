@@ -12,7 +12,7 @@
     />
   }
   <!-- Selection mode toolbar (object files only) -->
-  @if (filteredFileGroups().length > 0 && (selectionMode() || selectedFileIds().size > 0)) {
+  @if (objectId() && filteredFileGroups().length > 0 && (selectionMode() || selectedFileIds().size > 0)) {
     <div class="selection-toolbar">
       <span class="selection-count">
         {{ selectedFileIds().size }} {{ (selectedFileIds().size === 1 ? 'fileList.fileSelected' : 'fileList.filesSelected') | translate }}
@@ -52,7 +52,7 @@
   }
 
   <!-- Select mode toggle (object files only) -->
-  @if (filteredFileGroups().length > 0) {
+  @if (objectId() && filteredFileGroups().length > 0) {
     <div class="selection-mode-toggle">
       <button
         type="button"
@@ -65,7 +65,8 @@
     </div>
   }
 
-  <!-- Object File Groups -->
+  <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
+  @if (objectId()) {
   @for (group of filteredFileGroups(); track group._id.$oid) {
     <div class="file-group">
       <div class="group-header">
@@ -452,6 +453,7 @@
         }
       </ul>
     </div>
+  }
   }
 
   <!-- Project Files (simple, no groups) -->

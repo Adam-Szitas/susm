@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../environment';
-import { Filter, FilterResult, parseDateValue } from '@models';
+import { Filter, FilterResult, parseDateValue, parseMongoDateToMs } from '@models';
 import { FilterComponent } from '../filter/filter.component';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
 
@@ -63,7 +63,8 @@ export class FilesComponent implements OnInit {
     return this.files().filter((f) => {
       const id = f?.file?._id?.$oid;
       if (!id || this.#failedFileIds.has(id)) return false;
-      if ((f.file as { deleted_at?: string })?.deleted_at) return false;
+      if (parseMongoDateToMs((f.file as { deleted_at?: unknown }).deleted_at) != null)
+        return false;
       if (!f.file?.path) return false;
       return true;
     });

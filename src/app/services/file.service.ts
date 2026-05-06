@@ -64,7 +64,8 @@ export class FileService {
   }
 
   /**
-   * Updates metadata (description/category) for a file group (object files only)
+   * Updates metadata for an **object** file group (`projects[].objects[].file_groups[]`).
+   * Projects do not have file groups — project files live in `projects[].files` and use {@link updateFileMetadata} per file.
    */
   updateFileGroup(
     groupId: string,
@@ -75,7 +76,7 @@ export class FileService {
   }
 
   /**
-   * Soft-deletes an object file group (`deleted_at` on the group in the backend).
+   * Soft-deletes an **object** file group (not used for project-level uploads).
    */
   deleteFileGroup(groupId: string): Observable<{ message: string }> {
     const endpoint = `file/group/${groupId}`;
@@ -93,9 +94,7 @@ export class FileService {
   }
 
   /**
-   * Gets all files for a specific project
-   * @param projectId - The ID of the project
-   * @returns Observable with array of project files
+   * Gets project-level files (`projects[].files`) — a flat list, no groups.
    */
   getFilesForProject(projectId: string): Observable<ProjectFile[]> {
     const endpoint = `file/project/${projectId}`;
