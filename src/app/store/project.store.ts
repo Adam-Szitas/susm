@@ -311,4 +311,15 @@ export class ProjectStore {
   clearError(): void {
     this._error.set(null);
   }
+
+  /** Drop cached project/object/file state (call on logout). */
+  reset(): void {
+    this._projects.set([]);
+    this._project.set(null);
+    this._objects.set([]);
+    this._objectsWithProjects.set([]);
+    this._files.set([]);
+    this._loading.set(false);
+    this._error.set(null);
+  }
 }

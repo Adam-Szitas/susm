@@ -9,6 +9,7 @@ import {
   GenerateProtocolRequest,
   FileGroup,
   fileGroupCategoryLabels,
+  fileGroupIsSoftDeleted,
   parseMongoDateToMs,
   ProtocolRecord,
   ProtocolTemplate,
@@ -501,7 +502,7 @@ export class ProtocolGenerateModalComponent {
     const catSet = categoryLabels.length > 0 ? new Set(categoryLabels) : null;
 
     for (const g of groups as FileGroup[]) {
-      if (g.deleted_at != null) {
+      if (fileGroupIsSoftDeleted(g)) {
         continue;
       }
 

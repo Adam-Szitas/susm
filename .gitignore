@@ -11,6 +11,13 @@
 npm-debug.log
 yarn-error.log
 
+# Local env / secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+
 # IDEs and editors
 .idea/
 .project

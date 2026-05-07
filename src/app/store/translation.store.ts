@@ -9,6 +9,10 @@ export class TranslationStore {
     this._translations.set(newTranslations);
   }
 
+  clear(): void {
+    this._translations.set({});
+  }
+
   get(key: string): string {
     return this._translations()[key] || key;
   }

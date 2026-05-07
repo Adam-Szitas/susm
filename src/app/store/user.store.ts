@@ -5,6 +5,8 @@ import { HttpService } from '../services/http.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UrlPersistenceService } from '../services/url-persistence.service';
+import { ProjectStore } from './project.store';
+import { TranslationStore } from './translation.store';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -26,6 +28,8 @@ export class UserStore {
   #router = inject(Router);
   #authService = inject(AuthService);
   #urlPersistenceService = inject(UrlPersistenceService);
+  #projectStore = inject(ProjectStore);
+  #translationStore = inject(TranslationStore);
 
   initialize(): Promise<void> {
     if (!isBrowser()) {
@@ -54,6 +58,8 @@ export class UserStore {
       console.error('Error initializing user store:', error);
       // Clear potentially corrupted data
       this.clearStorage();
+      this.#projectStore.reset();
+      this.#translationStore.clear();
     } finally {
       this._initialized.set(true);
     }
@@ -140,6 +146,9 @@ export class UserStore {
     try {
       this._user.set(null);
       this._token.set(null);
+      this._error.set(null);
+      this.#projectStore.reset();
+      this.#translationStore.clear();
       if (isBrowser()) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');

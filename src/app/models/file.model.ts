@@ -1,4 +1,5 @@
 import type { MongoDateJson } from './mongo-date';
+import { parseMongoDateToMs } from './mongo-date';
 
 // For object files: contains groups
 export interface ObjectFile {
@@ -42,6 +43,11 @@ export interface FileGroup {
   created_at?: MongoDateJson;
   /** Present when the group was soft-deleted (`deleted_at` on the server). */
   deleted_at?: MongoDateJson;
+}
+
+/** True when the file group is soft-deleted (`deleted_at` is a real timestamp). */
+export function fileGroupIsSoftDeleted(g: Pick<FileGroup, 'deleted_at'>): boolean {
+  return parseMongoDateToMs(g.deleted_at as unknown) != null;
 }
 
 /** Normalized category list for display/edit (merges legacy `category`). */
