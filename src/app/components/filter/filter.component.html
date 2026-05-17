@@ -19,97 +19,91 @@
       id="filterControls"
       class="filter-controls"
       [class.collapsed]="!areFiltersVisible"
+      [attr.aria-hidden]="!areFiltersVisible"
+      [attr.inert]="!areFiltersVisible ? '' : null"
     >
-      <div class="control">
-        <label for="search">{{ filter().label | translate }}</label>
-        <input
-          id="search"
-          title="search"
-          type="text"
-          formControlName="search"
-          class="filter-input"
-          [placeholder]="filter().placeholder | translate"
-        />
-      </div>
+      <div class="filter-controls-inner">
+        <div class="control">
+          <label for="search">{{ filter().label | translate }}</label>
+          <input
+            id="search"
+            title="search"
+            type="text"
+            formControlName="search"
+            class="filter-input"
+            [placeholder]="filter().placeholder | translate"
+          />
+        </div>
 
-      @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
-        @if (filter().multiSelectCategories) {
-          <fieldset class="control category-multi">
-            <legend>{{ 'filter.category' | translate }}</legend>
-            <div class="category-checkboxes" role="group" [attr.aria-label]="'filter.category' | translate">
-              @for (category of filter().categories; track category) {
-                <label class="category-checkbox-label">
-                  <input
-                    type="checkbox"
-                    [checked]="isMultiCategorySelected(category)"
-                    (change)="onMultiCategoryToggle(category, $any($event.target).checked)"
-                  />
-                  {{ category }}
-                </label>
-              }
+        @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
+          @if (filter().multiSelectCategories) {
+            <fieldset class="control category-multi">
+              <legend>{{ 'filter.category' | translate }}</legend>
+              <div class="category-checkboxes" role="group" [attr.aria-label]="'filter.category' | translate">
+                @for (category of filter().categories; track category) {
+                  <label class="category-checkbox-label">
+                    <input
+                      type="checkbox"
+                      [checked]="isMultiCategorySelected(category)"
+                      (change)="onMultiCategoryToggle(category, $any($event.target).checked)"
+                    />
+                    {{ category }}
+                  </label>
+                }
+              </div>
+            </fieldset>
+          } @else {
+            <div class="control">
+              <label for="category">{{ 'filter.category' | translate }}</label>
+              <select id="category" formControlName="category" class="filter-input">
+                <option value="">{{ 'filter.allCategories' | translate }}</option>
+                @for (category of filter().categories; track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
             </div>
-          </fieldset>
-        } @else {
+          }
+        }
+
+        @if (filter().showStatus) {
           <div class="control">
-            <label for="category">{{ 'filter.category' | translate }}</label>
-            <select id="category" formControlName="category" class="filter-input">
-              <option value="">{{ 'filter.allCategories' | translate }}</option>
-              @for (category of filter().categories; track category) {
-                <option [value]="category">{{ category }}</option>
+            <label for="status">{{ 'filter.status' | translate }}</label>
+            <select formControlName="status" id="status" class="filter-input">
+              <option value="">{{ 'filter.allStatuses' | translate }}</option>
+              @for (status of filter().statuses; track status) {
+                <option [value]="status">{{ status }}</option>
               }
             </select>
           </div>
         }
-      }
 
-      @if(filter().showStatus) {
-        <div class="control">
-          <label for="status">{{ 'filter.status' | translate }}</label>
-          <select formControlName="status" id="status" class="filter-input">
-            <option value="">{{ 'filter.allStatuses' | translate }}</option>
-            @for (status of filter().statuses; track status) {
-              <option [value]="status">{{ status }}</option>
-            }
-          </select>
-        </div>
-      }
+        @if (filter().showDateRange) {
+          <div class="control date-range">
+            <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>
+            <input id="dateFrom" type="date" formControlName="dateFrom" class="filter-input" />
+          </div>
+          <div class="control date-range">
+            <label for="dateTo">{{ 'filter.dateTo' | translate }}</label>
+            <input id="dateTo" type="date" formControlName="dateTo" class="filter-input" />
+          </div>
+        }
 
-      @if (filter().showDateRange) {
-        <div class="control date-range">
-          <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>
-          <input
-            id="dateFrom"
-            type="date"
-            formControlName="dateFrom"
-            class="filter-input"
-          />
-        </div>
-        <div class="control date-range">
-          <label for="dateTo">{{ 'filter.dateTo' | translate }}</label>
-          <input
-            id="dateTo"
-            type="date"
-            formControlName="dateTo"
-            class="filter-input"
-          />
-        </div>
-      }
+        @if (filter().showSort) {
+          <div class="control">
+            <label for="sortDirection">{{ 'filter.sortDirection' | translate }}</label>
+            <select id="sortDirection" formControlName="sortDirection" class="filter-input">
+              <option value="">{{ 'filter.noSort' | translate }}</option>
+              <option value="asc">{{ 'filter.ascending' | translate }}</option>
+              <option value="desc">{{ 'filter.descending' | translate }}</option>
+            </select>
+          </div>
+        }
 
-      @if (filter().showSort) {
-        <div class="control">
-          <label for="sortDirection">{{ 'filter.sortDirection' | translate }}</label>
-          <select id="sortDirection" formControlName="sortDirection" class="filter-input">
-            <option value="">{{ 'filter.noSort' | translate }}</option>
-            <option value="asc">{{ 'filter.ascending' | translate }}</option>
-            <option value="desc">{{ 'filter.descending' | translate }}</option>
-          </select>
+        <div class="control control-actions">
+          <button type="button" class="btn btn-secondary btn-small" (click)="clearFilters()">
+            {{ 'filter.clear' | translate }}
+          </button>
         </div>
-      }
-
-      <div class="control control-actions">
-        <button type="button" class="btn btn-secondary btn-small" (click)="clearFilters()">
-          {{ 'filter.clear' | translate }}
-        </button>
       </div>
     </div>
   </form>

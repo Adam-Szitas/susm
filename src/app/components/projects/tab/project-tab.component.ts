@@ -12,7 +12,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
-import { UserStore } from '@store/user.store';
 import { FilterComponent } from '../../filter/filter.component';
 import {
   Filter,
@@ -43,6 +42,7 @@ import {
   FilterPersistenceService,
   PersistedFilterState,
 } from '@services/filter-persistence.service';
+import { TrashIconComponent } from '../../shared/trash-icon.component';
 
 @Component({
   selector: 'app-project-tab',
@@ -57,6 +57,7 @@ import {
     StatusPillComponent,
     DatePipe,
     BreadcrumbComponent,
+    TrashIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -64,7 +65,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #route = inject(ActivatedRoute);
   #router = inject(Router);
   #projectStore = inject(ProjectStore);
-  #userStore = inject(UserStore);
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
@@ -76,7 +76,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   project = this.#projectStore.project;
   objects = this.#projectStore.objects;
-  isAdmin = this.#userStore.isAdmin;
   files = this.#projectStore.files;
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
@@ -84,7 +83,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   downloadingProtocol = signal<string | null>(null);
   loadingTemplates = signal(false);
   archivingProject = signal(false);
-  deletingProject = signal(false);
   uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
@@ -618,43 +616,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
             this.#translationService.instant('protocols.uploadPdfFailed'),
         );
         this.uploadingProtocolPdf.set(false);
-      },
-    });
-  }
-
-  async confirmDeleteProject(): Promise<void> {
-    const projectName = this.project()?.name ?? '';
-    const message = this.#translationService.instant('projects.deleteProjectConfirm', {
-      name: projectName,
-    });
-    const title = this.#translationService.instant('projects.deleteProject') || 'Delete project';
-    const confirmed = await this.#modalService.openConfirm({
-      title,
-      message,
-      confirmText: 'common.delete',
-      cancelText: 'common.cancel',
-      confirmKind: 'danger',
-    });
-    if (!confirmed) {
-      return;
-    }
-    const projectId = this.#route.snapshot.paramMap.get('id');
-    if (!projectId || this.deletingProject()) return;
-
-    this.deletingProject.set(true);
-    this.#projectStore.deleteProject(projectId).subscribe({
-      next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('projects.projectDeleted'),
-        );
-        this.deletingProject.set(false);
-        this.#router.navigate(['/projects']);
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('projects.deleteProjectFailed'),
-        );
-        this.deletingProject.set(false);
       },
     });
   }

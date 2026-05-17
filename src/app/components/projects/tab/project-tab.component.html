@@ -3,18 +3,6 @@
   <section class="project-details">
     <header>
       <h2>{{ project()?.name }}</h2>
-      @if (isAdmin()) {
-        <button
-          type="button"
-          class="button button-error delete-icon"
-          (click)="confirmDeleteProject()"
-          [disabled]="deletingProject()"
-          [attr.aria-label]="'projects.deleteProject' | translate"
-          [title]="'projects.deleteProject' | translate"
-        >
-          ✕
-        </button>
-      }
     </header>
     <div class="project-description">
       <ul>
@@ -48,29 +36,42 @@
   }
 
   <section class="project-category-section">
-    <div class="category-selector">
-      <span>
-        <label for="projectCategory">{{ 'projects.category' | translate }}</label>
-        <select
-          id="projectCategory"
-          [value]="project()?.category"
-          [disabled]="updatingCategory()"
-          (change)="updateCategory($any($event.target).value)"
-          class="category-select"
+    <label for="projectCategory">{{ 'projects.category' | translate }}</label>
+    <div class="category-row">
+      <select
+        id="projectCategory"
+        [value]="project()?.category"
+        [disabled]="updatingCategory()"
+        (change)="updateCategory($any($event.target).value)"
+        class="category-select"
+      >
+        <option value="">{{ 'objects.noCategory' | translate }}</option>
+        @for (category of project()?.categories; track category) {
+          <option [value]="category" [selected]="category === project()?.category">
+            {{ category }}
+          </option>
+        }
+      </select>
+      <button
+        type="button"
+        class="category-add-btn"
+        (click)="manageCategories()"
+        [attr.aria-label]="'projects.manageCategories' | translate"
+        [title]="'projects.manageCategories' | translate"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
-          <option value="">{{ 'objects.noCategory' | translate }}</option>
-          @for (category of project()?.categories; track category) {
-            <option [value]="category" [selected]="category === project()?.category">
-              {{ category }}
-            </option>
-          }
-        </select>
-      </span>
-      <span>
-        <button type="button" class="button button-primary" (click)="manageCategories()">
-          {{ 'projects.manageCategories' | translate }}
-        </button>
-      </span>
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
     </div>
   </section>
 
@@ -193,24 +194,15 @@
             <div class="protocol-list">
               @for (protocol of projectProtocols(); track protocol._id.$oid) {
                 <div class="protocol-item">
-                  <div class="delete" (click)="deleteProtocol(protocol)" title="Delete">
-                    <svg
-                      width="25"
-                      height="25"
-                      viewBox="0 0 25 25"
-                      fill="none"
-                      aria-hidden="true"
-                      focusable="false"
-                    >
-                      <circle cx="10" cy="10" r="10" fill="#e85e6c" />
-                      <path
-                        d="M7 7L13 13M13 7L7 13"
-                        stroke="#fff"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                  </div>
+                  <button
+                    type="button"
+                    class="delete"
+                    (click)="deleteProtocol(protocol)"
+                    [attr.aria-label]="'protocols.delete' | translate"
+                    [title]="'protocols.delete' | translate"
+                  >
+                    <app-trash-icon [size]="22" />
+                  </button>
                   <div class="protocol-info">
                     <p class="protocol-name">{{ protocol.template_name }}</p>
                     <p class="protocol-meta">

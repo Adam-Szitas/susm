@@ -2,6 +2,8 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  /* Limit repaint/layout invalidation to the filter block when expanding */
+  contain: layout style;
 }
 
 form {
@@ -37,14 +39,30 @@ form {
   transform: rotate(-135deg);
 }
 
+/* 0fr → 1fr row: smooth height without display:none (avoids full-page layout flash) */
 .filter-controls {
+  display: grid;
+  grid-template-rows: 1fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.28s ease;
+  contain: layout style;
+
+  &.collapsed {
+    grid-template-rows: 0fr;
+  }
+}
+
+.filter-controls-inner {
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 1rem;
 }
 
-.filter-controls.collapsed {
-  display: none;
+@media (prefers-reduced-motion: reduce) {
+  .filter-controls {
+    transition: none;
+  }
 }
 
 .control {

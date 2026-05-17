@@ -8,19 +8,23 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Object, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
 import { HttpService } from '@services/http.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
+import { UserStore } from '@store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
+import { TrashIconComponent } from '../../shared/trash-icon.component';
+import { compactFormActions } from '../../shared/compact-form-actions';
 
 @Component({
   selector: 'app-edit-object',
   templateUrl: './object-edit.component.html',
   styleUrl: './object-edit.component.scss',
-  imports: [ReactiveFormsModule, TranslateModule],
+  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
@@ -33,10 +37,15 @@ export class EditObjectComponent implements OnInit {
   #projectStore = inject(ProjectStore);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #router = inject(Router);
+  #userStore = inject(UserStore);
 
+  isAdmin = this.#userStore.isAdmin;
+  readonly iconOnlyActions = compactFormActions();
   public readonly statuses = WORK_STATUSES;
   public readonly statusLabel = formatWorkStatus;
   public progressing = signal<boolean>(false);
+  public deleting = signal<boolean>(false);
   public form!: FormGroup;
 
   ngOnInit(): void {
@@ -104,6 +113,40 @@ export class EditObjectComponent implements OnInit {
       },
       complete: () => {
         this.progressing.set(false);
+      },
+    });
+  }
+
+  async deleteObject(): Promise<void> {
+    const objectId = this.objectData._id?.$oid;
+    if (!objectId || this.deleting()) return;
+
+    const message = this.#translationService.instant('objects.deleteObjectConfirm');
+    const title = this.#translationService.instant('objects.deleteObject') || 'Delete Object';
+    const confirmed = await this.#modalService.openConfirm({
+      title,
+      message,
+      confirmText: 'common.delete',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+    });
+    if (!confirmed) return;
+
+    this.deleting.set(true);
+    this.#projectStore.deleteObject(objectId).subscribe({
+      next: () => {
+        this.#modalService.close();
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('objects.objectDeleted'),
+        );
+        this.deleting.set(false);
+        this.#router.navigate(['/objects']);
+      },
+      error: (error) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('objects.deleteObjectFailed'),
+        );
+        this.deleting.set(false);
       },
     });
   }

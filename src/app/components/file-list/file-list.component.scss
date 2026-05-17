@@ -71,6 +71,9 @@
 .file-item .image-container .overlay .zoom-hint-icon,
 .file-item .image-container .overlay .move-hint-icon,
 .file-item .image-container .overlay .overlay-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 1.125rem;
   height: 1.125rem;
   flex-shrink: 0;
@@ -531,10 +534,14 @@
   }
 }
 
-.category-chip-x {
-  font-size: 1rem;
-  line-height: 1;
-  opacity: 0.8;
+.category-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.category-chip-label {
+  line-height: 1.2;
 }
 
 .group-category-checkboxes {

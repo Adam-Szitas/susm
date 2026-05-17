@@ -1,0 +1,39 @@
+:host {
+  .form-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .delete-action,
+  .submit-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .delete-action.icon-only,
+  .submit-action.icon-only {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem !important;
+  }
+
+  .submit-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    display: block;
+  }
+
+  h4 {
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+  }
+}

@@ -1,0 +1,64 @@
+@use 'mixins' as *;
+
+/// Form footer actions for object/project edit modals (include inside `:host { }`).
+@mixin styles {
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .delete-action,
+  .submit-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .action-icon {
+    display: none;
+    line-height: 0;
+
+    svg {
+      display: block;
+    }
+  }
+
+  .action-icon--submit svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  @include mobile {
+    .form-actions {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .form-actions .action-label {
+      display: none !important;
+    }
+
+    .delete-action,
+    .submit-action {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.5rem !important;
+      margin: 0;
+    }
+
+    .action-icon {
+      display: inline-flex !important;
+    }
+
+    .delete-action app-trash-icon {
+      display: inline-flex;
+    }
+  }
+}

@@ -5,18 +5,6 @@
     <section class="object-details">
       <header>
         <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
-        @if (isAdmin()) {
-          <button
-            type="button"
-            class="button button-error delete-icon"
-            (click)="deleteObject()"
-            [disabled]="deleting()"
-            [attr.aria-label]="'objects.deleteObject' | translate"
-            [title]="'objects.deleteObject' | translate"
-          >
-            ✕
-          </button>
-        }
       </header>
       <div class="object-address">
         <ul>

@@ -20,14 +20,49 @@
         <label for="note">{{ 'projects.note' | translate }}</label>
         <input placeholder="Note" type="note" id="note" formControlName="note" />
       </div>
-      <div class="control buttons">
+      <div class="form-actions">
+        @if (isAdmin()) {
+          <button
+            type="button"
+            class="button button-error delete-action"
+            [class.icon-only]="iconOnlyActions()"
+            (click)="deleteProject()"
+            [disabled]="deleting()"
+            [attr.aria-label]="'projects.deleteProject' | translate"
+            [title]="'projects.deleteProject' | translate"
+          >
+            <app-trash-icon [size]="20" />
+            @if (!iconOnlyActions()) {
+              <span class="action-label">{{ 'projects.deleteProject' | translate }}</span>
+            }
+          </button>
+        }
         <button
           type="button"
-          class="button button-primary"
-          [disabled]="projectForm.invalid"
+          class="button button-primary submit-action"
+          [class.icon-only]="iconOnlyActions()"
+          [disabled]="projectForm.invalid || deleting()"
           (click)="submit()"
+          [attr.aria-label]="'common.submit' | translate"
+          [title]="'common.submit' | translate"
         >
-          {{ 'common.submit' | translate }}
+          @if (iconOnlyActions()) {
+            <svg
+              class="submit-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          } @else {
+            <span class="action-label">{{ 'common.submit' | translate }}</span>
+          }
         </button>
       </div>
     </form>

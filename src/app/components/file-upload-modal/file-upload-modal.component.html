@@ -49,9 +49,7 @@
                 <div class="file-preview-item">
                   <img [src]="preview.previewUrl" [alt]="preview.file.name" class="preview-thumbnail" />
                   <button type="button" class="remove-file-btn" (click)="removeFile($index)" aria-label="Remove file">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
+                    <app-trash-icon [size]="14" />
                   </button>
                   <span class="file-name">{{ preview.file.name }}</span>
                   @if (description()) {
@@ -86,7 +84,8 @@
                   [disabled]="uploading()"
                   [attr.aria-label]="'fileList.removeCategory' | translate"
                 >
-                  {{ c }} ×
+                  <span>{{ c }}</span>
+                  <app-trash-icon [size]="12" />
                 </button>
               }
             </div>

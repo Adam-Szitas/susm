@@ -30,6 +30,7 @@ import { TranslationService } from '../../services/translation.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.component';
+import { TrashIconComponent } from '../shared/trash-icon.component';
 
 @Component({
   selector: 'app-file-list',
@@ -37,7 +38,7 @@ import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.compon
   styleUrl: './file-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, TrashIconComponent],
   preserveWhitespaces: false,
 })
 export class FileListComponent implements OnDestroy {

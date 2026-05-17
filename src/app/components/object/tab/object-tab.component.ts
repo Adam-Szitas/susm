@@ -32,7 +32,6 @@ import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-mo
 import { ModalService } from '@services/modal.service';
 import { EditObjectComponent } from '../edit-object/object-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
-import { UserStore } from '@store/user.store';
 
 @Component({
   selector: 'app-object-tab',
@@ -59,16 +58,13 @@ export class ObjectTabComponent implements OnInit {
   #translationService = inject(TranslationService);
   #httpService = inject(HttpService);
   #modalService = inject(ModalService);
-  #userStore = inject(UserStore);
 
   object = signal<Object | null>(null);
-  isAdmin = this.#userStore.isAdmin;
   fileGroups = signal<FileGroup[]>([]);
   /** Category labels from `?categories=` (repeat or comma-separated); filters visible file groups. */
   urlFileGroupCategories = signal<string[]>([]);
   imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
-  deleting = signal(false);
   shareUrl = signal<string | null>(null);
   shareQrDataUrl = signal<string | null>(null);
   shareLoading = signal(false);
@@ -414,39 +410,6 @@ export class ObjectTabComponent implements OnInit {
         this.#notificationService.showError(
           this.#translationService.instant('errors.loadObjectFailed'),
         );
-      },
-    });
-  }
-
-  async deleteObject(): Promise<void> {
-    const objectId = this.object()?._id?.$oid;
-    if (!objectId || this.deleting()) return;
-
-    const message = this.#translationService.instant('objects.deleteObjectConfirm');
-    const title = this.#translationService.instant('objects.deleteObject') || 'Delete Object';
-    const confirmed = await this.#modalService.openConfirm({
-      title,
-      message,
-      confirmText: 'common.delete',
-      cancelText: 'common.cancel',
-      confirmKind: 'danger',
-    });
-    if (!confirmed) return;
-
-    this.deleting.set(true);
-    this.#projectStore.deleteObject(objectId).subscribe({
-      next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.objectDeleted'),
-        );
-        this.deleting.set(false);
-        this.#router.navigate(['/objects']);
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('objects.deleteObjectFailed'),
-        );
-        this.deleting.set(false);
       },
     });
   }

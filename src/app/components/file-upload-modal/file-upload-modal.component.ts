@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { TrashIconComponent } from '../shared/trash-icon.component';
 
 interface FilePreview {
   file: globalThis.File;
@@ -14,7 +15,7 @@ interface FilePreview {
 @Component({
   selector: 'app-file-upload-modal',
   standalone: true,
-  imports: [TranslateModule, FormsModule],
+  imports: [TranslateModule, FormsModule, TrashIconComponent],
   templateUrl: './file-upload-modal.component.html',
   styleUrl: './file-upload-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
