@@ -10,6 +10,24 @@
     padding-bottom: 20px;
     border-bottom: 2px solid #333;
 
+    .template-name {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0 0 8px 0;
+    }
+
+    .template-subtitle {
+      font-size: 16px;
+      color: #444;
+      margin: 0 0 12px 0;
+    }
+
+    .template-description {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 12px 0;
+    }
+
     .project-name {
       font-size: 28px;
       font-weight: bold;

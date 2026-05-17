@@ -5,6 +5,7 @@ import { environment } from '../../environment';
 
 export interface ProtocolPreviewData {
   template_name?: string;
+  subtitle?: string;
   header_template?: string;
   description?: string;
   field_values?: {

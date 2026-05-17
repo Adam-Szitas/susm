@@ -42,6 +42,7 @@ export class ProtocolTemplateModalComponent implements OnInit {
   constructor() {
     this.form = this.#fb.group({
       name: ['', [Validators.required]],
+      subtitle: [''],
       description: [''],
       header_template: [''],
       footer_template: [''],
@@ -59,6 +60,7 @@ export class ProtocolTemplateModalComponent implements OnInit {
   populateForm(template: ProtocolTemplate): void {
     this.form.patchValue({
       name: template.name,
+      subtitle: template.subtitle || '',
       description: template.description || '',
       header_template: template.header_template || '',
       footer_template: template.footer_template || '',
@@ -164,6 +166,7 @@ export class ProtocolTemplateModalComponent implements OnInit {
 
     const template = {
       name: formValue.name,
+      subtitle: formValue.subtitle?.trim() || undefined,
       description: formValue.description || undefined,
       fields,
       header_template: formValue.header_template || undefined,

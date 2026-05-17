@@ -189,7 +189,7 @@
         <select id="template_id" formControlName="template_id">
           <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
           @for (template of templates(); track template._id?.$oid) {
-            <option [value]="template._id?.$oid || ''">{{ template.name }}</option>
+            <option [value]="template._id?.$oid || ''">{{ formatTemplateSelectLabel(template) }}</option>
           }
         </select>
         @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {

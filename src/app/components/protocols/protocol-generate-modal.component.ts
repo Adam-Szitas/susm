@@ -123,6 +123,11 @@ export class ProtocolGenerateModalComponent {
     return this.templates().find((t) => t._id?.$oid === templateId) || null;
   }
 
+  formatTemplateSelectLabel(template: ProtocolTemplate): string {
+    const subtitle = template.subtitle?.trim();
+    return subtitle ? `${template.name} — ${subtitle}` : template.name;
+  }
+
   // Check if form is valid for preview (excluding template fields validation)
   get isFormValidForPreview(): boolean {
     const templateIdControl = this.form.get('template_id');
@@ -252,7 +257,6 @@ export class ProtocolGenerateModalComponent {
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
       next: (previewResponse) => {
-        console.log(previewResponse);
         this.previewData.set(previewResponse);
         // Ensure fields are still populated when showing preview
         // Use template_id from form to get the template, not selectedTemplate() signal
@@ -415,7 +419,13 @@ export class ProtocolGenerateModalComponent {
 
   /** Deduplicated non-empty labels sent to preview/PDF endpoints. */
   private fileGroupCategoriesPayload(): string[] | undefined {
-    const unique = [...new Set(this.protocolFileGroupCategories().map((c) => c.trim()).filter(Boolean))];
+    const unique = [
+      ...new Set(
+        this.protocolFileGroupCategories()
+          .map((c) => c.trim())
+          .filter(Boolean),
+      ),
+    ];
     return unique.length > 0 ? unique : undefined;
   }
 
@@ -556,9 +566,7 @@ export class ProtocolGenerateModalComponent {
       const m = Number(ymd[2]) - 1;
       const d = Number(ymd[3]);
       if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return '';
-      const ms = isEndDate
-        ? Date.UTC(y, m, d, 23, 59, 59, 999)
-        : Date.UTC(y, m, d, 0, 0, 0, 0);
+      const ms = isEndDate ? Date.UTC(y, m, d, 23, 59, 59, 999) : Date.UTC(y, m, d, 0, 0, 0, 0);
       return new Date(ms).toISOString();
     }
 

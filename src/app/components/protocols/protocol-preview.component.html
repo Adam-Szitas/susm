@@ -5,6 +5,9 @@
       <div class="header-template">{{ previewData().header_template }}</div>
     }
     <h1 class="template-name">{{ previewData().template_name || previewData().project_name }}</h1>
+    @if (previewData().subtitle) {
+      <p class="template-subtitle">{{ previewData().subtitle }}</p>
+    }
     @if (previewData().description) {
       <p class="template-description">{{ previewData().description }}</p>
     }

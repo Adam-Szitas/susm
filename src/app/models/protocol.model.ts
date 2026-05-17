@@ -10,6 +10,8 @@ export interface ProtocolField {
 export interface ProtocolTemplate {
   _id?: { $oid: string };
   name: string;
+  /** Shown under the template name on the PDF cover page. */
+  subtitle?: string;
   description?: string;
   fields: ProtocolField[];
   header_template?: string;
@@ -20,6 +22,7 @@ export interface ProtocolTemplate {
 
 export interface CreateProtocolTemplate {
   name: string;
+  subtitle?: string;
   description?: string;
   fields: ProtocolField[];
   header_template?: string;
