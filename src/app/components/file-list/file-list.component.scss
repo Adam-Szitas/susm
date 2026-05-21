@@ -29,9 +29,39 @@
   }
 }
 
-.image-container .overlay {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+// Overlay actions only after explicit open (.visible); hover must not arm buttons on touch
+.file-item .image-container,
+.file-group.ungrouped .image-container {
+  .overlay {
+    pointer-events: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .overlay.visible {
+    pointer-events: auto;
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    &:hover {
+      img {
+        transform: none;
+      }
+
+      .overlay:not(.visible) {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+.image-container.overlay-actions-blocked {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 // Square tile thumbnails: keep overlay actions in a tight 2×2 icon grid

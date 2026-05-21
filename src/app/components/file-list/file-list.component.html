@@ -296,7 +296,8 @@
             }
             <div
               class="image-container"
-              (click)="selectionMode() ? toggleFileSelection(file, $event) : (reorderMode() ? null : showOverlay(file))"
+              [class.overlay-actions-blocked]="reorderMode()"
+              (click)="onImageContainerClick($event, file)"
             >
               <img
                 [src]="getImageUrl(file.path)"
@@ -313,7 +314,7 @@
                     </svg>
                   }
                 </div>
-              } @else {
+              } @else if (!reorderMode()) {
                 <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
                   <button
                     type="button"
@@ -480,7 +481,7 @@
   @if (filteredProjectFiles().length > 0) {
     <div class="file-group ungrouped">
       <ul class="file-gallery">@for (file of filteredProjectFiles(); track file._id.$oid) {<li class="file-item">
-            <div class="image-container" (click)="showOverlay(file)">
+            <div class="image-container" (click)="onImageContainerClick($event, file)">
               <img
                 [src]="getImageUrl(file.path)"
                 [alt]="file.filename || 'File Preview'"

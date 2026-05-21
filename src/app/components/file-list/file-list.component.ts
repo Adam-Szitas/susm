@@ -249,8 +249,11 @@ export class FileListComponent implements OnDestroy {
   public groupCategoryLabels = fileGroupCategoryLabels;
 
   public toggleSelectionMode(): void {
+    const turningOn = !this.selectionMode();
     this.selectionMode.update((v) => !v);
-    if (!this.selectionMode()) {
+    if (turningOn) {
+      this.hideOverlay();
+    } else {
       this.selectedFileIds.set(new Set());
     }
   }
@@ -615,11 +618,36 @@ export class FileListComponent implements OnDestroy {
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
 
-  public showOverlay(file: FileGroupItem | ProjectFile): void {
+  /**
+   * First tap opens actions; tap image/backdrop again closes. Buttons only fire when overlay is open.
+   */
+  public onImageContainerClick(event: MouseEvent, file: FileGroupItem | ProjectFile): void {
+    if (this.reorderMode()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (this.selectionMode()) {
+      this.toggleFileSelection(file, event);
+      return;
+    }
+
     const id = file._id?.$oid;
     if (!id) return;
-    // Toggle: if this overlay is already open, close it; otherwise open it
-    this.activeFileId.update((current) => (current === id ? null : id));
+
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) {
+      return;
+    }
+
+    event.stopPropagation();
+
+    if (this.activeFileId() === id) {
+      this.hideOverlay();
+    } else {
+      this.activeFileId.set(id);
+    }
   }
 
   public hideOverlay(): void {
@@ -817,8 +845,11 @@ export class FileListComponent implements OnDestroy {
   // =========================================================================
 
   public toggleReorderMode(): void {
+    const turningOn = !this.reorderMode();
     this.reorderMode.update((v) => !v);
-    if (!this.reorderMode()) {
+    if (turningOn) {
+      this.hideOverlay();
+    } else {
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
     }
