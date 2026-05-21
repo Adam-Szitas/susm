@@ -740,3 +740,93 @@ p {
   width: 100%;
   padding: 0 var(--space-small);
 }
+
+// ============================================================================
+// Drag-and-drop reorder mode
+// ============================================================================
+
+.group-reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &.active {
+    background-color: var(--color-primary, #3b82f6);
+    color: white;
+    border-color: var(--color-primary, #3b82f6);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.file-item.reorder-active {
+  cursor: grab;
+  position: relative;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  transition: border-color 0.15s, opacity 0.15s, transform 0.15s;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+
+  &.drag-over {
+    border-color: var(--color-primary, #3b82f6);
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+}
+
+.reorder-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  background: var(--color-surface, #f8f9fa);
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-light, #eff6ff);
+    border-color: var(--color-primary, #3b82f6);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.reorder-position {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  min-width: 1.5rem;
+  text-align: center;
+}

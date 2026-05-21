@@ -52,9 +52,7 @@ export function fileGroupIsSoftDeleted(g: Pick<FileGroup, 'deleted_at'>): boolea
 
 /** Normalized category list for display/edit (merges legacy `category`). */
 export function fileGroupCategoryLabels(g: FileGroup): string[] {
-  const fromArr = (g.categories ?? [])
-    .map((s) => s?.trim() ?? '')
-    .filter(Boolean);
+  const fromArr = (g.categories ?? []).map((s) => s?.trim() ?? '').filter(Boolean);
   if (fromArr.length > 0) {
     return [...new Set(fromArr)];
   }
@@ -70,9 +68,9 @@ export interface FileGroupItem {
   path: string;
   filename: string;
   description?: string;
+  sort_order?: number;
   created_at?: MongoDateJson;
   deleted_at?: MongoDateJson;
 }
 
 export type FileUploadTarget = 'object' | 'project';
-

@@ -103,16 +103,22 @@ export class FileListComponent implements OnDestroy {
     return parseMongoDateToMs(group.deleted_at) != null;
   }
 
-  // Filter failed loads & soft-deleted items; keep metadata-only groups (no pictures yet)
+  // Filter failed loads & soft-deleted items; sort by sort_order; keep metadata-only groups (no pictures yet)
   public filteredFileGroups = computed(() => {
     const groups = this.fileGroups();
     return groups
       .filter((group) => !this.isGroupRemoved(group))
       .map((group) => ({
         ...group,
-        files: group.files.filter(
-          (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
-        ),
+        files: group.files
+          .filter(
+            (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+          )
+          .sort((a, b) => {
+            const aOrder = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+            const bOrder = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+            return aOrder - bOrder;
+          }),
       }));
   });
 
@@ -165,6 +171,12 @@ export class FileListComponent implements OnDestroy {
 
   // Track files that failed to load
   private failedFileIds = new Set<string>();
+
+  // Drag-and-drop reorder state
+  public reorderMode = signal<boolean>(false);
+  public draggedFileId = signal<string | null>(null);
+  public dragOverFileId = signal<string | null>(null);
+  public reorderSaving = signal<boolean>(false);
 
   // Inline edit state for group description/category/note
   public editingGroupId = signal<string | null>(null);
@@ -798,5 +810,130 @@ export class FileListComponent implements OnDestroy {
         img.style.display = 'none';
       }
     }
+  }
+
+  // =========================================================================
+  // Drag-and-drop reorder
+  // =========================================================================
+
+  public toggleReorderMode(): void {
+    this.reorderMode.update((v) => !v);
+    if (!this.reorderMode()) {
+      this.draggedFileId.set(null);
+      this.dragOverFileId.set(null);
+    }
+  }
+
+  public onDragStart(event: DragEvent, file: FileGroupItem): void {
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.draggedFileId.set(id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', id);
+    }
+  }
+
+  public onDragOver(event: DragEvent, file: FileGroupItem): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    const id = file._id?.$oid;
+    if (id && id !== this.draggedFileId()) {
+      this.dragOverFileId.set(id);
+    }
+  }
+
+  public onDragLeave(event: DragEvent, file: FileGroupItem): void {
+    const id = file._id?.$oid;
+    if (id && this.dragOverFileId() === id) {
+      this.dragOverFileId.set(null);
+    }
+  }
+
+  public onDrop(event: DragEvent, targetFile: FileGroupItem, group: FileGroup): void {
+    event.preventDefault();
+    const draggedId = this.draggedFileId();
+    const targetId = targetFile._id?.$oid;
+    if (!draggedId || !targetId || draggedId === targetId) {
+      this.draggedFileId.set(null);
+      this.dragOverFileId.set(null);
+      return;
+    }
+
+    // Get the current file order for this group
+    const files = this.filteredFileGroups()
+      .find((g) => g._id.$oid === group._id.$oid)
+      ?.files;
+    if (!files) return;
+
+    const currentOrder = files.map((f) => f._id.$oid);
+    const fromIndex = currentOrder.indexOf(draggedId);
+    const toIndex = currentOrder.indexOf(targetId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    // Reorder: remove from old position, insert at new position
+    currentOrder.splice(fromIndex, 1);
+    currentOrder.splice(toIndex, 0, draggedId);
+
+    this.draggedFileId.set(null);
+    this.dragOverFileId.set(null);
+
+    // Save to backend
+    this.#saveFileOrder(group._id.$oid, currentOrder);
+  }
+
+  public onDragEnd(): void {
+    this.draggedFileId.set(null);
+    this.dragOverFileId.set(null);
+  }
+
+  /** Move file one position earlier (left/up) in the group. */
+  public moveFileUp(file: FileGroupItem, group: FileGroup): void {
+    const files = this.filteredFileGroups()
+      .find((g) => g._id.$oid === group._id.$oid)
+      ?.files;
+    if (!files) return;
+
+    const currentOrder = files.map((f) => f._id.$oid);
+    const index = currentOrder.indexOf(file._id.$oid);
+    if (index <= 0) return;
+
+    // Swap with previous
+    [currentOrder[index - 1], currentOrder[index]] = [currentOrder[index], currentOrder[index - 1]];
+    this.#saveFileOrder(group._id.$oid, currentOrder);
+  }
+
+  /** Move file one position later (right/down) in the group. */
+  public moveFileDown(file: FileGroupItem, group: FileGroup): void {
+    const files = this.filteredFileGroups()
+      .find((g) => g._id.$oid === group._id.$oid)
+      ?.files;
+    if (!files) return;
+
+    const currentOrder = files.map((f) => f._id.$oid);
+    const index = currentOrder.indexOf(file._id.$oid);
+    if (index === -1 || index >= currentOrder.length - 1) return;
+
+    // Swap with next
+    [currentOrder[index], currentOrder[index + 1]] = [currentOrder[index + 1], currentOrder[index]];
+    this.#saveFileOrder(group._id.$oid, currentOrder);
+  }
+
+  #saveFileOrder(groupId: string, fileIds: string[]): void {
+    this.reorderSaving.set(true);
+    this.#fileService.reorderFiles(groupId, fileIds).pipe(
+      finalize(() => this.reorderSaving.set(false)),
+    ).subscribe({
+      next: () => {
+        this.metadataUpdated.emit();
+      },
+      error: (error: Error) => {
+        this.#notificationService.showError(
+          error.message || 'Failed to save file order',
+        );
+      },
+    });
   }
 }
