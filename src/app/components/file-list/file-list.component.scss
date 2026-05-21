@@ -1,8 +1,6 @@
 @use 'sass:color';
 @use '../../../styles/mixins' as *;
-@use '../../../styles/overlays' as *;
-@use '../../../styles/grids' as *;
-@use '../../../styles/groups' as *;
+// overlays, grids, groups — global via styles.scss; do not @use here (duplicates ~4kB into component budget)
 
 // Visible to screen readers & HTML validators that ignore Angular `title` bindings
 .file-list-visually-hidden {
@@ -519,7 +517,7 @@
 .category-chip-remove {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   padding: 0.25rem 0.55rem;
   font-size: 0.85rem;
   border-radius: 999px;
@@ -532,12 +530,6 @@
   &:hover {
     background: rgba(157, 0, 0, 0.14);
   }
-}
-
-.category-chip-remove {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
 }
 
 .category-chip-label {
