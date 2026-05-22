@@ -1,107 +1,89 @@
+@let data = previewData();
+
 <div class="protocol-preview">
-  <!-- Template Header -->
   <div class="preview-header">
-    @if (previewData().header_template) {
-      <div class="header-template">{{ previewData().header_template }}</div>
+    @if (data.header_template) {
+      <div class="header-template">{{ data.header_template }}</div>
     }
-    <h1 class="template-name">{{ previewData().template_name || previewData().project_name }}</h1>
-    @if (previewData().subtitle) {
-      <p class="template-subtitle">{{ previewData().subtitle }}</p>
+    <h1 class="template-name">{{ data.template_name || data.project_name }}</h1>
+    @if (data.subtitle) {
+      <p class="template-subtitle">{{ data.subtitle }}</p>
     }
-    @if (previewData().description) {
-      <p class="template-description">{{ previewData().description }}</p>
+    @if (data.description) {
+      <p class="template-description">{{ data.description }}</p>
     }
-    @if (previewData().field_values && previewData().field_values!.length > 0) {
+    @if (data.field_values && data.field_values.length > 0) {
       <div class="template-fields">
-        @for (field of previewData().field_values; track field.label) {
+        @for (field of data.field_values; track field.label) {
           <div class="template-field">
-            <strong>{{ field.label }}:</strong>
-            @if (field.value) {
-              {{ field.value }}
-            } @else {
-              <span class="empty-value">-</span>
-            }
+            <strong>{{ field.label }}:</strong> {{ field.value }}
           </div>
         }
       </div>
     }
+    @if (data.project_address) {
+      <p class="project-address">{{ data.project_address }}</p>
+    }
   </div>
 
-  <!-- Table of Contents -->
-  <div class="preview-section toc-section">
-    <h2 class="section-title">{{ 'protocol.pdf.tableOfContents' | translate }}</h2>
-    <ul class="toc-list">
-      @for (entry of previewData().table_of_contents; track $index) {
-        <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
-          {{ entry.title }}
-        </li>
-      }
-    </ul>
-  </div>
+  @if (data.table_of_contents.length > 0) {
+    <div class="preview-section toc-section">
+      <h2 class="section-title">{{ 'protocol.pdf.tableOfContents' | translate }}</h2>
+      <ul class="toc-list">
+        @for (entry of data.table_of_contents; track $index) {
+          <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
+            {{ entry.title }}
+          </li>
+        }
+      </ul>
+    </div>
+  }
 
-  <!-- Content Sections -->
-  @for (section of previewData().content_sections; track $index) {
+  @for (section of data.content_sections; track $index) {
     <div class="preview-section content-section">
-      <!-- Object Headline -->
-      <h3 class="object-headline">{{ section.headline }}</h3>
-
-      <!-- Object Address -->
-      @if (section.object_address) {
-        <p class="object-address">{{ section.object_address }}</p>
+      @if (objectHeadline(section)) {
+        <h3 class="object-headline">{{ objectHeadline(section) }}</h3>
       }
 
-      <!-- File Groups -->
+      @if (section.object_note?.trim()) {
+        <p class="object-note">{{ section.object_note }}</p>
+      }
+
       @for (group of section.file_groups; track $index) {
         <div class="file-group">
           @if (group.description) {
             <h4 class="group-description">{{ group.description }}</h4>
           }
 
-          <!-- Images in group -->
+          @if (group.note?.trim()) {
+            <p class="group-note">{{ group.note }}</p>
+          }
+
           @for (image of group.images; track $index) {
             <div class="image-item">
               <img
                 [src]="getImageUrl(image.path)"
-                [title]="image.description"
-                [alt]="image.description || ''"
+                [alt]="image.filename || group.description || ''"
               />
-              <div class="image-caption">
-                @if (image.filename) {
-                  <span class="caption-filename">{{ image.filename }}</span>
-                }
-                @if (image.picture_date) {
-                  <span class="caption-date">{{ image.picture_date }}</span>
-                }
-                @if (image.description) {
-                  <span class="caption-description">{{ image.description }}</span>
-                }
-              </div>
+              @if (imageCaption(image)) {
+                <pre class="image-caption">{{ imageCaption(image) }}</pre>
+              }
             </div>
           }
         </div>
       }
 
-      <!-- Ungrouped Images -->
-      @if (section && section.ungrouped_images && section.ungrouped_images.length > 0) {
+      @if (section.ungrouped_images && section.ungrouped_images.length > 0) {
         <div class="ungrouped-images">
           @for (image of section.ungrouped_images; track $index) {
             <div class="image-item">
               <img
                 [src]="getImageUrl(image.path)"
-                [title]="image.description"
-                [alt]="image.description || ''"
+                [alt]="image.filename || ''"
               />
-              <div class="image-caption">
-                @if (image.filename) {
-                  <span class="caption-filename">{{ image.filename }}</span>
-                }
-                @if (image.picture_date) {
-                  <span class="caption-date">{{ image.picture_date }}</span>
-                }
-                @if (image.description) {
-                  <span class="caption-description">{{ image.description }}</span>
-                }
-              </div>
+              @if (imageCaption(image)) {
+                <pre class="image-caption">{{ imageCaption(image) }}</pre>
+              }
             </div>
           }
         </div>
@@ -109,12 +91,11 @@
     </div>
   }
 
-  <!-- Linked (older) protocols included after the current one -->
-  @if (previewData().linked_previews && previewData().linked_previews!.length > 0) {
+  @if (data.linked_previews && data.linked_previews.length > 0) {
     <div class="linked-previews-intro">
       <h2 class="section-title">{{ 'protocols.alsoIncludedInPdf' | translate }}</h2>
     </div>
-    @for (linked of previewData().linked_previews!; track $index) {
+    @for (linked of data.linked_previews; track $index) {
       <div class="protocol-preview linked-protocol-block">
         <div class="preview-header linked-header">
           <h3 class="template-name">{{ linked.template_name || linked.project_name }}</h3>
@@ -123,6 +104,9 @@
               {{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | date: 'medium' }}
             </p>
           }
+          @if (linked.subtitle) {
+            <p class="template-subtitle">{{ linked.subtitle }}</p>
+          }
           @if (linked.description) {
             <p class="template-description">{{ linked.description }}</p>
           }
@@ -130,15 +114,13 @@
             <div class="template-fields">
               @for (field of linked.field_values; track field.label) {
                 <div class="template-field">
-                  <strong>{{ field.label }}:</strong>
-                  @if (field.value) {
-                    {{ field.value }}
-                  } @else {
-                    <span class="empty-value">-</span>
-                  }
+                  <strong>{{ field.label }}:</strong> {{ field.value }}
                 </div>
               }
             </div>
+          }
+          @if (linked.project_address) {
+            <p class="project-address">{{ linked.project_address }}</p>
           }
         </div>
 
@@ -158,33 +140,29 @@
         @if (linked.content_sections) {
           @for (section of linked.content_sections; track $index) {
             <div class="preview-section content-section">
-              <h3 class="object-headline">{{ section.headline }}</h3>
-              @if (section.object_address) {
-                <p class="object-address">{{ section.object_address }}</p>
+              @if (objectHeadline(section)) {
+                <h3 class="object-headline">{{ objectHeadline(section) }}</h3>
+              }
+              @if (section.object_note?.trim()) {
+                <p class="object-note">{{ section.object_note }}</p>
               }
               @for (group of section.file_groups; track $index) {
                 <div class="file-group">
                   @if (group.description) {
                     <h4 class="group-description">{{ group.description }}</h4>
                   }
+                  @if (group.note?.trim()) {
+                    <p class="group-note">{{ group.note }}</p>
+                  }
                   @for (image of group.images; track $index) {
                     <div class="image-item">
                       <img
                         [src]="getImageUrl(image.path)"
-                        [title]="image.description"
-                        [alt]="image.description || ''"
+                        [alt]="image.filename || group.description || ''"
                       />
-                      <div class="image-caption">
-                        @if (image.filename) {
-                          <span class="caption-filename">{{ image.filename }}</span>
-                        }
-                        @if (image.picture_date) {
-                          <span class="caption-date">{{ image.picture_date }}</span>
-                        }
-                        @if (image.description) {
-                          <span class="caption-description">{{ image.description }}</span>
-                        }
-                      </div>
+                      @if (imageCaption(image)) {
+                        <pre class="image-caption">{{ imageCaption(image) }}</pre>
+                      }
                     </div>
                   }
                 </div>
