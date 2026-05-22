@@ -130,52 +130,170 @@
     </div>
   </section>
 
+  @if (!project()?.archived_at) {
+    <div class="project-toolbar">
+      <button
+        type="button"
+        class="button button-primary project-toolbar-btn"
+        [class.icon-only]="toolbarIconOnly()"
+        (click)="generateProtocol()"
+        [disabled]="loadingTemplates()"
+        [attr.aria-label]="'protocols.generateProtocol' | translate"
+        [title]="'protocols.generateProtocol' | translate"
+      >
+        @if (loadingTemplates()) {
+          <span class="spinner"></span>
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
+          }
+        } @else {
+          <svg
+            class="project-toolbar-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{
+              'protocols.generateProtocol' | translate
+            }}</span>
+          }
+        }
+      </button>
+      <button
+        type="button"
+        class="button button-outline project-toolbar-btn project-toolbar-filters"
+        [class.icon-only]="toolbarIconOnly()"
+        (click)="toggleFiltersFromToolbar()"
+        [attr.aria-expanded]="filtersVisible()"
+        [attr.aria-label]="
+          filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)
+        "
+        [title]="filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)"
+        aria-controls="filterControls"
+      >
+        @if (filtersVisible()) {
+          <svg
+            class="project-toolbar-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 5h16l-6 7v5l-4 2v-7L4 5z" />
+            <line x1="4" y1="4" x2="20" y2="20" />
+          </svg>
+        } @else {
+          <svg
+            class="project-toolbar-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 5h16l-6 7v5l-4 2v-7L4 5z" />
+          </svg>
+        }
+        @if (!toolbarIconOnly()) {
+          <span class="project-toolbar-label">{{
+            filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)
+          }}</span>
+        }
+      </button>
+      @if (objects().length > 0) {
+        <button
+          type="button"
+          class="button button-outline project-toolbar-btn object-reorder-toggle"
+          [class.icon-only]="toolbarIconOnly()"
+          [class.active]="objectReorderMode()"
+          (click)="toggleObjectReorderMode()"
+          [disabled]="objectReorderSaving()"
+          [attr.aria-label]="
+            objectReorderMode()
+              ? ('projects.doneReorderObjects' | translate)
+              : ('projects.reorderObjects' | translate)
+          "
+          [title]="
+            objectReorderMode()
+              ? ('projects.doneReorderObjects' | translate)
+              : ('projects.reorderObjects' | translate)
+          "
+        >
+          @if (objectReorderMode()) {
+            <svg
+              class="project-toolbar-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          } @else {
+            <svg
+              class="project-toolbar-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8 9l4-4 4 4" />
+              <path d="M8 15l4 4 4-4" />
+              <line x1="12" y1="5" x2="12" y2="19" />
+            </svg>
+          }
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{
+              objectReorderMode()
+                ? ('projects.doneReorderObjects' | translate)
+                : ('projects.reorderObjects' | translate)
+            }}</span>
+          }
+        </button>
+      }
+      @if (objectReorderSaving()) {
+        <span class="project-toolbar-hint">{{ 'common.loading' | translate }}</span>
+      }
+    </div>
+  }
+
   <app-filter
     [filter]="filterData()"
     [initialState]="restoredFilterState()"
+    [hideToggleButton]="!project()?.archived_at"
     (filterChange)="filterChanged($event)"
     (filtersVisibleChange)="onFiltersVisibleChange($event)"
   ></app-filter>
 
-  @if (!project()?.archived_at) {
-    <div class="action-buttons">
-      <button
-        type="button"
-        class="button button-primary"
-        (click)="generateProtocol()"
-        [disabled]="loadingTemplates()"
-      >
-        @if (loadingTemplates()) {
-          <span class="spinner"></span>
-          {{ 'common.loading' | translate }}
-        } @else {
-          {{ 'protocols.generateProtocol' | translate }}
-        }
-      </button>
-    </div>
-  }
   <div class="content-wrapper">
-    @if (objects().length > 0 && !project()?.archived_at) {
-      <div class="objects-toolbar">
-        <button
-          type="button"
-          class="button button-outline object-reorder-toggle"
-          [class.active]="objectReorderMode()"
-          (click)="toggleObjectReorderMode()"
-          [disabled]="objectReorderSaving()"
-        >
-          {{
-            objectReorderMode()
-              ? ('projects.doneReorderObjects' | translate)
-              : ('projects.reorderObjects' | translate)
-          }}
-        </button>
-        @if (objectReorderSaving()) {
-          <span class="objects-toolbar-hint">{{ 'common.loading' | translate }}</span>
-        }
-      </div>
-    }
-
     @if (objectReorderMode() && objectsInReorderMode().length > 0) {
       <div class="card-wrapper card-wrapper--reorder">
         @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {

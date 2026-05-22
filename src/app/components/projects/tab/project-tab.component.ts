@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   signal,
+  viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -46,6 +47,7 @@ import {
   PersistedFilterState,
 } from '@services/filter-persistence.service';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
+import { compactFormActions } from '../../shared/compact-form-actions';
 
 @Component({
   selector: 'app-project-tab',
@@ -89,6 +91,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
+  filtersVisible = signal(false);
+  readonly projectFilter = viewChild(FilterComponent);
+  /** Icon-only toolbar buttons on viewports ≤768px. */
+  readonly toolbarIconOnly = compactFormActions();
   #projectFilterKey = '';
   restoredFilterState = signal<PersistedFilterState | null>(null);
   /** Collapsed by default — compact summary; expand for full project data + category. */
@@ -172,6 +178,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
           this.restoredFilterState.set(restored);
           this.#currentFilter.set(restored.filter);
           this.#filtersVisible = restored.filtersVisible;
+          this.filtersVisible.set(restored.filtersVisible);
         } else {
           this.restoredFilterState.set(null);
           this.#currentFilter.set({});
@@ -207,8 +214,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleFiltersFromToolbar(): void {
+    this.projectFilter()?.toggleFilters();
+  }
+
   onFiltersVisibleChange(visible: boolean): void {
     this.#filtersVisible = visible;
+    this.filtersVisible.set(visible);
     if (this.#projectFilterKey) {
       this.#filterPersistence.save(this.#projectFilterKey, {
         filter: this.#currentFilter(),
