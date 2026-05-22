@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { FilterComponent } from '../../filter/filter.component';
@@ -23,6 +24,7 @@ import {
   parseDateValue,
   ProtocolRecord,
   isUploadedProtocol,
+  sortObjectsByStoredOrder,
 } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
@@ -91,7 +93,26 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   restoredFilterState = signal<PersistedFilterState | null>(null);
   /** Collapsed by default — compact summary; expand for full project data + category. */
   projectDataExpanded = signal(false);
+  objectReorderMode = signal(false);
+  objectReorderSaving = signal(false);
+  draggedObjectId = signal<string | null>(null);
+  dragOverObjectId = signal<string | null>(null);
+  /** Working order while reorder mode is active (all project objects). */
+  objectOrderIds = signal<string[]>([]);
   public readonly formatStatus = formatWorkStatus;
+
+  readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
+
+  readonly objectsInReorderMode = computed(() => {
+    const byId = new Map(
+      this.sortedObjects()
+        .map((o) => [o._id?.$oid, o] as const)
+        .filter((entry): entry is [string, Object] => !!entry[0]),
+    );
+    return this.objectOrderIds()
+      .map((id) => byId.get(id))
+      .filter((o): o is Object => !!o);
+  });
 
   readonly projectAddressLine = computed(() => {
     const addr = this.project()?.address;
@@ -219,7 +240,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   generateProtocol(): void {
-    const availableObjects = this.filteredObjects();
+    const availableObjects = sortObjectsByStoredOrder(this.filteredObjects());
     if (!availableObjects.length) {
       this.#notificationService.showError(
         this.#translationService.instant('protocols.noObjectsAvailable'),
@@ -435,8 +456,124 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     });
   }
 
+  toggleObjectReorderMode(): void {
+    const turningOn = !this.objectReorderMode();
+    this.objectReorderMode.update((v) => !v);
+    if (turningOn) {
+      const ids = this.sortedObjects()
+        .map((o) => o._id?.$oid)
+        .filter((id): id is string => !!id);
+      this.objectOrderIds.set(ids);
+    } else {
+      this.draggedObjectId.set(null);
+      this.dragOverObjectId.set(null);
+    }
+  }
+
+  #saveObjectOrder(objectIds: string[]): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId || this.objectReorderSaving()) return;
+
+    this.objectReorderSaving.set(true);
+    this.#projectStore
+      .reorderObjects(projectId, objectIds)
+      .pipe(finalize(() => this.objectReorderSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.objectOrderIds.set(objectIds);
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('projects.objectOrderSaved'),
+          );
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('projects.objectOrderSaveFailed'),
+          );
+        },
+      });
+  }
+
+  moveObjectUp(object: Object): void {
+    const id = object._id?.$oid;
+    if (!id) return;
+    const order = [...this.objectOrderIds()];
+    const index = order.indexOf(id);
+    if (index <= 0) return;
+    [order[index - 1], order[index]] = [order[index], order[index - 1]];
+    this.objectOrderIds.set(order);
+    this.#saveObjectOrder(order);
+  }
+
+  moveObjectDown(object: Object): void {
+    const id = object._id?.$oid;
+    if (!id) return;
+    const order = [...this.objectOrderIds()];
+    const index = order.indexOf(id);
+    if (index === -1 || index >= order.length - 1) return;
+    [order[index], order[index + 1]] = [order[index + 1], order[index]];
+    this.objectOrderIds.set(order);
+    this.#saveObjectOrder(order);
+  }
+
+  onObjectDragStart(event: DragEvent, object: Object): void {
+    const id = object._id?.$oid;
+    if (!id) return;
+    this.draggedObjectId.set(id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', id);
+    }
+  }
+
+  onObjectDragOver(event: DragEvent, object: Object): void {
+    event.preventDefault();
+    const id = object._id?.$oid;
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (id && id !== this.draggedObjectId()) {
+      this.dragOverObjectId.set(id);
+    }
+  }
+
+  onObjectDragLeave(object: Object): void {
+    const id = object._id?.$oid;
+    if (id && this.dragOverObjectId() === id) {
+      this.dragOverObjectId.set(null);
+    }
+  }
+
+  onObjectDrop(event: DragEvent, target: Object): void {
+    event.preventDefault();
+    const draggedId = this.draggedObjectId();
+    const targetId = target._id?.$oid;
+    if (!draggedId || !targetId || draggedId === targetId) {
+      this.draggedObjectId.set(null);
+      this.dragOverObjectId.set(null);
+      return;
+    }
+
+    const order = [...this.objectOrderIds()];
+    const from = order.indexOf(draggedId);
+    const to = order.indexOf(targetId);
+    if (from === -1 || to === -1) return;
+
+    order.splice(from, 1);
+    order.splice(to, 0, draggedId);
+    this.draggedObjectId.set(null);
+    this.dragOverObjectId.set(null);
+    this.objectOrderIds.set(order);
+    this.#saveObjectOrder(order);
+  }
+
+  onObjectDragEnd(): void {
+    this.draggedObjectId.set(null);
+    this.dragOverObjectId.set(null);
+  }
+
   #applyFilters(objects: Object[], filter: FilterResult): Object[] {
-    let filtered = [...objects];
+    let filtered = sortObjectsByStoredOrder([...objects]);
 
     if (filter.searchText) {
       const searchLower = filter.searchText.toLowerCase();

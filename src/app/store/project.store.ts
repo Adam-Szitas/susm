@@ -154,6 +154,17 @@ export class ProjectStore {
     });
   }
 
+  /** Persist object display/protocol order for a project. */
+  reorderObjects(projectId: string, objectIds: string[]): Observable<{ message: string }> {
+    return this.#httpService
+      .put<{ message: string }>(`project/${projectId}/objects/reorder`, { object_ids: objectIds })
+      .pipe(
+        tap(() => {
+          this.loadObjects();
+        }),
+      );
+  }
+
   loadAllObjects(): void {
     this._loading.set(true);
     this._error.set(null);

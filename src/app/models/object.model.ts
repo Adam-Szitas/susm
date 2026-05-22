@@ -18,6 +18,25 @@ export interface Object {
   created_at?: string;
   deleted_at?: string;
   prefix?: string;
+  /** User-defined order within the project (lower = earlier). Omitted until first reorder. */
+  sort_order?: number;
+}
+
+/** True when any object has a saved `sort_order`. */
+export function hasCustomObjectOrder(objects: Object[]): boolean {
+  return objects.some((o) => o.sort_order != null);
+}
+
+/** Apply stored order when present; otherwise keep array order (default). */
+export function sortObjectsByStoredOrder(objects: Object[]): Object[] {
+  if (!hasCustomObjectOrder(objects)) {
+    return objects;
+  }
+  return [...objects].sort((a, b) => {
+    const ao = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+    const bo = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+    return ao - bo;
+  });
 }
 
 export interface ObjectWithProject {

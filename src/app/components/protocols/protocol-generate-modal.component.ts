@@ -14,6 +14,7 @@ import {
   ProtocolRecord,
   ProtocolTemplate,
   isUploadedProtocol,
+  sortObjectsByStoredOrder,
 } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
@@ -74,7 +75,7 @@ export class ProtocolGenerateModalComponent {
     this.previewData();
     this.showingPreview();
 
-    const all = this.objects();
+    const all = sortObjectsByStoredOrder(this.objects());
     const fromD = (this.form.get('from_date')?.value as string) ?? '';
     const toD = (this.form.get('to_date')?.value as string) ?? '';
     const catFilter = this.protocolFileGroupCategories().filter((c) => c.trim());
@@ -227,6 +228,20 @@ export class ProtocolGenerateModalComponent {
     }
   }
 
+  /** Selected object IDs in stored project order (for preview/PDF APIs). */
+  #orderedSelectedObjectIds(): string[] {
+    const selected = new Set(this.selectedObjectIds());
+    const ordered = sortObjectsByStoredOrder(this.objects())
+      .map((o) => o._id?.$oid)
+      .filter((id): id is string => !!id && selected.has(id));
+    for (const id of this.selectedObjectIds()) {
+      if (!ordered.includes(id)) {
+        ordered.push(id);
+      }
+    }
+    return ordered;
+  }
+
   loadPreview(): void {
     const templateId = this.form.get('template_id')?.value;
     if (!templateId || templateId === '' || !this.hasSelection()) {
@@ -234,7 +249,7 @@ export class ProtocolGenerateModalComponent {
     }
 
     const projectId = this.projectId();
-    const objectIds = this.selectedObjectIds();
+    const objectIds = this.#orderedSelectedObjectIds();
 
     if (!projectId || objectIds.length === 0) {
       return;
@@ -267,6 +282,12 @@ export class ProtocolGenerateModalComponent {
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
       next: (previewResponse) => {
+        const sectionIds = (previewResponse?.content_sections ?? [])
+          .map((s: { object_id?: string }) => s.object_id)
+          .filter((id: string | undefined): id is string => !!id);
+        if (sectionIds.length > 0) {
+          this.selectedObjectIds.set(sectionIds);
+        }
         this.previewData.set(previewResponse);
         // Ensure fields are still populated when showing preview
         // Use template_id from form to get the template, not selectedTemplate() signal
@@ -354,7 +375,7 @@ export class ProtocolGenerateModalComponent {
 
     const templateId = this.form.value.template_id;
     const projectId = this.projectId();
-    const objectIds = this.selectedObjectIds();
+    const objectIds = this.#orderedSelectedObjectIds();
 
     if (!projectId || objectIds.length === 0) {
       this.generating.set(false);
@@ -448,15 +469,14 @@ export class ProtocolGenerateModalComponent {
   toggleSelection(objectId: string | undefined, checked: boolean): void {
     if (!objectId) return;
 
-    const current = new Set(this.selectedObjectIds());
-
+    const current = this.selectedObjectIds();
     if (checked) {
-      current.add(objectId);
+      if (!current.includes(objectId)) {
+        this.selectedObjectIds.set([...current, objectId]);
+      }
     } else {
-      current.delete(objectId);
+      this.selectedObjectIds.set(current.filter((id) => id !== objectId));
     }
-
-    this.selectedObjectIds.set(Array.from(current));
   }
 
   isSelected(objectId: string | undefined): boolean {

@@ -155,7 +155,80 @@
     </div>
   }
   <div class="content-wrapper">
-    @if (filteredObjects().length > 0) {
+    @if (objects().length > 0 && !project()?.archived_at) {
+      <div class="objects-toolbar">
+        <button
+          type="button"
+          class="button button-outline object-reorder-toggle"
+          [class.active]="objectReorderMode()"
+          (click)="toggleObjectReorderMode()"
+          [disabled]="objectReorderSaving()"
+        >
+          {{
+            objectReorderMode()
+              ? ('projects.doneReorderObjects' | translate)
+              : ('projects.reorderObjects' | translate)
+          }}
+        </button>
+        @if (objectReorderSaving()) {
+          <span class="objects-toolbar-hint">{{ 'common.loading' | translate }}</span>
+        }
+      </div>
+    }
+
+    @if (objectReorderMode() && objectsInReorderMode().length > 0) {
+      <div class="card-wrapper card-wrapper--reorder">
+        @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {
+          <div
+            class="card card--reorder"
+            [class.dragging]="draggedObjectId() === object._id?.$oid"
+            [class.drag-over]="dragOverObjectId() === object._id?.$oid"
+            [attr.draggable]="true"
+            (dragstart)="onObjectDragStart($event, object)"
+            (dragover)="onObjectDragOver($event, object)"
+            (dragleave)="onObjectDragLeave(object)"
+            (drop)="onObjectDrop($event, object)"
+            (dragend)="onObjectDragEnd()"
+          >
+            <div class="reorder-controls">
+              <button
+                type="button"
+                class="reorder-btn"
+                (click)="moveObjectUp(object)"
+                [disabled]="i === 0 || objectReorderSaving()"
+                [attr.aria-label]="'projects.moveObjectLeft' | translate"
+                [attr.title]="'projects.moveObjectLeft' | translate"
+              >
+                ◀
+              </button>
+              <span class="reorder-position">{{ i + 1 }}</span>
+              <button
+                type="button"
+                class="reorder-btn"
+                (click)="moveObjectDown(object)"
+                [disabled]="i === objectsInReorderMode().length - 1 || objectReorderSaving()"
+                [attr.aria-label]="'projects.moveObjectRight' | translate"
+                [attr.title]="'projects.moveObjectRight' | translate"
+              >
+                ▶
+              </button>
+            </div>
+            <app-status-pill [status]="object?.status || 'created'" />
+            <h2 class="headline">
+              @if (object.address.house_number) {
+                <span>{{ object.address.house_number + ', ' }}</span>
+              }
+              @if (object.address.level) {
+                <span>{{ object.address.level + ', ' }}</span>
+              }
+              @if (object.address.door_number) {
+                <span>{{ object.address.door_number }}</span>
+              }
+            </h2>
+          </div>
+        }
+      </div>
+    } @else if (filteredObjects().length > 0) {
       <div class="card-wrapper">
         @for (object of filteredObjects(); track object._id?.$oid) {
           <div

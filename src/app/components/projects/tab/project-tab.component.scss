@@ -35,6 +35,25 @@
 }
 
 
+.objects-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: var(--space-small);
+
+  .object-reorder-toggle.active {
+    border-color: var(--primary-default, #9d0000);
+    color: var(--primary-default, #9d0000);
+    background: rgba(157, 0, 0, 0.06);
+  }
+}
+
+.objects-toolbar-hint {
+  font-size: 0.85rem;
+  color: #666;
+}
+
 .card-wrapper {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -52,6 +71,13 @@
 
     & .card {
       width: 100%;
+    }
+  }
+
+  &--reorder {
+    @media (min-width: 600px) {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
     }
   }
 }
@@ -74,6 +100,64 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border-color: #d0d0d0;
   }
+
+  &--reorder {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    &.dragging {
+      opacity: 0.45;
+    }
+
+    &.drag-over {
+      border-color: var(--primary-default, #9d0000);
+      box-shadow: 0 0 0 2px rgba(157, 0, 0, 0.15);
+    }
+  }
+}
+
+.reorder-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary-default, #9d0000);
+    color: var(--primary-default, #9d0000);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.reorder-position {
+  min-width: 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
 }
 
 .visually-hidden {
