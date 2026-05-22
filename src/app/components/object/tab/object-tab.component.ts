@@ -74,6 +74,8 @@ export class ObjectTabComponent implements OnInit {
   updatingStatus = signal(false);
   uploadModalOpen = signal(false);
   selectedFiles = signal<globalThis.File[]>([]);
+  /** Collapsed by default — compact summary; expand for full object data. */
+  objectDataExpanded = signal(false);
   readonly defaultStatus = DEFAULT_WORK_STATUS;
   readonly formatStatus = formatWorkStatus;
   readonly statuses = WORK_STATUSES;
@@ -101,6 +103,12 @@ export class ObjectTabComponent implements OnInit {
   });
 
   readonly objectDisplayTitle = computed(() => this.#objectDisplayName(this.object()));
+
+  readonly objectAddressSummary = computed(() => {
+    const a = this.object()?.address;
+    if (!a) return '';
+    return [a.house_number, a.level, a.door_number].filter((p) => !!p?.trim()).join(', ');
+  });
 
   readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
 
@@ -412,6 +420,10 @@ export class ObjectTabComponent implements OnInit {
         );
       },
     });
+  }
+
+  toggleObjectData(): void {
+    this.objectDataExpanded.update((v) => !v);
   }
 
   editObjectDetails(): void {

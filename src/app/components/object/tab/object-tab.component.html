@@ -2,99 +2,150 @@
   <app-breadcrumb [items]="breadcrumbItems()" />
 
   @if (object()) {
-    <section class="object-details">
-      <header>
-        <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
+    <section
+      class="object-details"
+      [class.object-details--expanded]="objectDataExpanded()"
+    >
+      <header class="object-details-header">
+        <div class="object-details-title-row">
+          <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
+          <button
+            type="button"
+            class="group-edit-toggle button button-primary"
+            (click)="editObjectDetails()"
+            [attr.aria-label]="'objects.editObject' | translate"
+            [title]="'objects.editObject' | translate"
+          >
+            ✎
+          </button>
+        </div>
+
+        @if (!objectDataExpanded()) {
+          <div class="object-details-summary">
+            @if (objectAddressSummary()) {
+              <span class="summary-chip">{{ objectAddressSummary() }}</span>
+            }
+            @if (object()?.prefix?.trim()) {
+              <span class="summary-chip">{{ object()?.prefix }}</span>
+            }
+            <span class="summary-chip summary-chip--status">
+              <app-status-pill [status]="object()?.status || defaultStatus" />
+            </span>
+            @if (object()?.category) {
+              <span class="summary-chip summary-chip--category">{{ object()?.category }}</span>
+            }
+          </div>
+        }
       </header>
-      <div class="object-address">
-        <ul>
-          @if (object()?.address?.house_number) {
-            <li>{{ 'common.houseNumber' | translate }}: {{ object()?.address?.house_number }}</li>
-          }
-          @if (object()?.address?.level) {
-            <li>{{ 'common.level' | translate }}: {{ object()?.address?.level }}</li>
-          }
-          @if (object()?.address?.door_number) {
-            <li>{{ 'common.doorNumber' | translate }}: {{ object()?.address?.door_number }}</li>
-          }
-          @if (object()?.prefix) {
-            <li>{{ 'objects.prefix' | translate }}: {{ object()?.prefix }}</li>
-          }
-        </ul>
-        <app-status-pill [status]="object()?.status || defaultStatus" />
-      </div>
-      <div class="note-section">
-        <div class="note-display">
-          @if (object()?.note) {
-            <p class="note">{{ object()?.note }}</p>
-          } @else {
-            <p class="note note-empty">{{ 'objects.noNote' | translate }}</p>
-          }
+
+      @if (objectDataExpanded()) {
+        <div id="objectDetailsBody" class="object-details-body">
+          <dl class="object-data-grid">
+            @if (object()?.address?.house_number) {
+              <div class="object-data-item">
+                <dt>{{ 'common.houseNumber' | translate }}</dt>
+                <dd>{{ object()?.address?.house_number }}</dd>
+              </div>
+            }
+            @if (object()?.address?.level) {
+              <div class="object-data-item">
+                <dt>{{ 'common.level' | translate }}</dt>
+                <dd>{{ object()?.address?.level }}</dd>
+              </div>
+            }
+            @if (object()?.address?.door_number) {
+              <div class="object-data-item">
+                <dt>{{ 'common.doorNumber' | translate }}</dt>
+                <dd>{{ object()?.address?.door_number }}</dd>
+              </div>
+            }
+            @if (object()?.prefix?.trim()) {
+              <div class="object-data-item">
+                <dt>{{ 'objects.prefix' | translate }}</dt>
+                <dd>{{ object()?.prefix }}</dd>
+              </div>
+            }
+            <div class="object-data-item">
+              <dt>{{ 'objects.status' | translate }}</dt>
+              <dd>
+                <app-status-pill [status]="object()?.status || defaultStatus" />
+              </dd>
+            </div>
+            <div class="object-data-item object-data-item--category">
+              <dt>
+                <label for="objectCategory">{{ 'objects.category' | translate }}</label>
+              </dt>
+              <dd>
+                <select
+                  id="objectCategory"
+                  [value]="object()?.category"
+                  [disabled]="updatingCategory()"
+                  (change)="updateCategory($any($event.target).value)"
+                  class="category-select"
+                >
+                  <option value="">{{ 'objects.noCategory' | translate }}</option>
+                  @for (category of projectCategories(); track category) {
+                    <option [value]="category" [selected]="category === object()?.category">
+                      {{ category }}
+                    </option>
+                  }
+                </select>
+              </dd>
+            </div>
+            <div class="object-data-item object-data-item--status">
+              <dt>
+                <label for="objectStatus">{{ 'objects.status' | translate }}</label>
+              </dt>
+              <dd>
+                <select
+                  id="objectStatus"
+                  [value]="object()?.status || defaultStatus"
+                  [disabled]="updatingStatus()"
+                  (change)="updateStatus($any($event.target).value)"
+                  class="status-select"
+                >
+                  @for (status of statuses; track status) {
+                    <option [value]="status" [selected]="status === object()?.status">
+                      {{ formatStatus(status) | translate }}
+                    </option>
+                  }
+                </select>
+              </dd>
+            </div>
+            <div class="object-data-item object-data-item--full">
+              <dt>{{ 'common.note' | translate }}</dt>
+              <dd class="object-note">
+                @if (object()?.note?.trim()) {
+                  {{ object()?.note }}
+                } @else {
+                  <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+                }
+              </dd>
+            </div>
+          </dl>
         </div>
-      </div>
-      <div class="selection-container">
-        <div class="section-container">
-          <div class="category-section">
-            <label for="objectCategory">{{ 'objects.category' | translate }}</label>
-            <select
-              id="objectCategory"
-              [value]="object()?.category"
-              [disabled]="updatingCategory()"
-              (change)="updateCategory($any($event.target).value)"
-              class="category-select"
-            >
-              <option value="">{{ 'objects.noCategory' | translate }}</option>
-              @for (category of projectCategories(); track category) {
-                <option [value]="category" [selected]="category === object()?.category">
-                  {{ category }}
-                </option>
-              }
-            </select>
-          </div>
-          <div class="status-section">
-            <label for="objectStatus">{{ 'objects.status' | translate }}</label>
-            <select
-              id="objectStatus"
-              [value]="object()?.status || defaultStatus"
-              [disabled]="updatingStatus()"
-              (change)="updateStatus($any($event.target).value)"
-              class="status-select"
-            >
-              @for (status of statuses; track status) {
-                <option [value]="status" [selected]="status === object()?.status">
-                  {{ formatStatus(status) | translate }}
-                </option>
-              }
-            </select>
-          </div>
-        </div>
-        <button type="button" class="button button-primary edit" (click)="editObjectDetails()">
-          ✎
+      }
+
+      <div class="object-details-footer">
+        <button
+          type="button"
+          class="object-data-toggle"
+          (click)="toggleObjectData()"
+          [attr.aria-expanded]="objectDataExpanded()"
+          [attr.aria-label]="
+            objectDataExpanded()
+              ? ('objects.hideObjectData' | translate)
+              : ('objects.showObjectData' | translate)
+          "
+          aria-controls="objectDetailsBody"
+        >
+          <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
         </button>
       </div>
     </section>
   }
 
   <div class="content-wrapper">
-    <!-- <div class="share-block">
-      <button type="button" class="primary" (click)="generateShareQr()" [disabled]="shareLoading()">
-        @if (shareLoading()) {
-          {{ 'objects.generatingQr' | translate }}
-        } @else {
-          {{
-            shareQrDataUrl()
-              ? ('objects.regenerateQr' | translate)
-              : ('objects.generateQr' | translate)
-          }}
-        }
-      </button>
-      @if (shareUrl()) {
-        <button type="button" class="ghost" (click)="copyShareLink()">
-          {{ 'objects.copyLink' | translate }}
-        </button>
-      }
-    </div> -->
-
     @if (shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>
     }
