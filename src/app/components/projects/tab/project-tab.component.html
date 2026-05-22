@@ -1,76 +1,131 @@
 <div class="wrapper">
   <app-breadcrumb [items]="breadcrumbItems()" />
-  <section class="project-details">
-    <header>
-      <h2>{{ project()?.name }}</h2>
-    </header>
-    <div class="project-description">
-      <ul>
-        <li>{{ 'dashboard.totalObjects' | translate }}: {{ objects().length }}</li>
-        @if (project()?.address?.street) {
-          <li>{{ project()?.address?.street }}</li>
-        }
-        @if (project()?.address?.postal_code) {
-          <li>{{ project()?.address?.postal_code }}</li>
-        }
-        <li>
-          <p>{{ project()?.note }}</p>
-        </li>
-      </ul>
-      <button
-        type="button"
-        class="group-edit-toggle button button-primary"
-        (click)="startEditingProject()"
-        aria-label="Edit message"
-      >
-        ✎
-      </button>
-    </div>
-  </section>
-
-  @if (project()?.archived_at && project()?.archive_comment) {
-    <section class="archive-comment-section">
-      <h3>{{ 'projects.archiveComment' | translate }}</h3>
-      <p class="archive-comment">{{ project()?.archive_comment }}</p>
-    </section>
-  }
-
-  <section class="project-category-section">
-    <label for="projectCategory">{{ 'projects.category' | translate }}</label>
-    <div class="category-row">
-      <select
-        id="projectCategory"
-        [value]="project()?.category"
-        [disabled]="updatingCategory()"
-        (change)="updateCategory($any($event.target).value)"
-        class="category-select"
-      >
-        <option value="">{{ 'objects.noCategory' | translate }}</option>
-        @for (category of project()?.categories; track category) {
-          <option [value]="category" [selected]="category === project()?.category">
-            {{ category }}
-          </option>
-        }
-      </select>
-      <button
-        type="button"
-        class="category-add-btn"
-        (click)="manageCategories()"
-        [attr.aria-label]="'projects.manageCategories' | translate"
-        [title]="'projects.manageCategories' | translate"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
+  <section
+    class="project-details"
+    [class.project-details--expanded]="projectDataExpanded()"
+  >
+    <header class="project-details-header">
+      <div class="project-details-title-row">
+        <h2>{{ project()?.name }}</h2>
+        <button
+          type="button"
+          class="group-edit-toggle button button-primary"
+          (click)="startEditingProject()"
+          [attr.aria-label]="'projects.editProject' | translate"
+          [title]="'projects.editProject' | translate"
         >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+          ✎
+        </button>
+      </div>
+
+      @if (!projectDataExpanded()) {
+        <div class="project-details-summary">
+          <span class="summary-chip">
+            {{ 'dashboard.totalObjects' | translate }}: {{ objects().length }}
+          </span>
+          @if (projectAddressLine()) {
+            <span class="summary-chip">{{ projectAddressLine() }}</span>
+          }
+          @if (project()?.category) {
+            <span class="summary-chip summary-chip--category">{{ project()?.category }}</span>
+          }
+        </div>
+      }
+    </header>
+
+    @if (projectDataExpanded()) {
+      <div id="projectDetailsBody" class="project-details-body">
+        @if (project()?.archived_at && project()?.archive_comment) {
+          <div class="archive-comment-inline">
+            <span class="archive-comment-label">{{ 'projects.archiveComment' | translate }}</span>
+            <p class="archive-comment">{{ project()?.archive_comment }}</p>
+          </div>
+        }
+
+        <dl class="project-data-grid">
+          <div class="project-data-item">
+            <dt>{{ 'dashboard.totalObjects' | translate }}</dt>
+            <dd>{{ objects().length }}</dd>
+          </div>
+          @if (project()?.address?.street) {
+            <div class="project-data-item">
+              <dt>{{ 'projects.street' | translate }}</dt>
+              <dd>{{ project()?.address?.street }}</dd>
+            </div>
+          }
+          @if (project()?.address?.postal_code) {
+            <div class="project-data-item">
+              <dt>{{ 'projects.postalCode' | translate }}</dt>
+              <dd>{{ project()?.address?.postal_code }}</dd>
+            </div>
+          }
+          <div class="project-data-item project-data-item--category">
+            <dt>
+              <label for="projectCategory">{{ 'projects.category' | translate }}</label>
+            </dt>
+            <dd>
+              <div class="category-row">
+                <select
+                  id="projectCategory"
+                  [value]="project()?.category"
+                  [disabled]="updatingCategory()"
+                  (change)="updateCategory($any($event.target).value)"
+                  class="category-select"
+                >
+                  <option value="">{{ 'objects.noCategory' | translate }}</option>
+                  @for (category of project()?.categories; track category) {
+                    <option [value]="category" [selected]="category === project()?.category">
+                      {{ category }}
+                    </option>
+                  }
+                </select>
+                <button
+                  type="button"
+                  class="category-add-btn"
+                  (click)="manageCategories()"
+                  [attr.aria-label]="'projects.manageCategories' | translate"
+                  [title]="'projects.manageCategories' | translate"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </button>
+              </div>
+            </dd>
+          </div>
+          @if (project()?.note?.trim()) {
+            <div class="project-data-item project-data-item--full">
+              <dt>{{ 'projects.note' | translate }}</dt>
+              <dd class="project-note">{{ project()?.note }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    }
+
+    <div class="project-details-footer">
+      <button
+        type="button"
+        class="project-data-toggle"
+        (click)="toggleProjectData()"
+        [attr.aria-expanded]="projectDataExpanded()"
+        [attr.aria-label]="
+          projectDataExpanded()
+            ? ('projects.hideProjectData' | translate)
+            : ('projects.showProjectData' | translate)
+        "
+        aria-controls="projectDetailsBody"
+      >
+        <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
       </button>
     </div>
   </section>
@@ -95,35 +150,6 @@
           {{ 'common.loading' | translate }}
         } @else {
           {{ 'protocols.generateProtocol' | translate }}
-        }
-      </button>
-      <button
-        type="button"
-        class="button button-primary"
-        (click)="toggleArchiveProject(true)"
-        [disabled]="archivingProject()"
-      >
-        @if (archivingProject()) {
-          <span class="spinner"></span>
-          {{ 'common.loading' | translate }}
-        } @else {
-          {{ 'projects.archiveProject' | translate }}
-        }
-      </button>
-    </div>
-  } @else {
-    <div class="action-buttons">
-      <button
-        type="button"
-        class="button button-primary"
-        (click)="toggleArchiveProject(false)"
-        [disabled]="archivingProject()"
-      >
-        @if (archivingProject()) {
-          <span class="spinner"></span>
-          {{ 'common.loading' | translate }}
-        } @else {
-          {{ 'projects.unarchiveProject' | translate }}
         }
       </button>
     </div>
@@ -193,7 +219,11 @@
           @if (projectProtocols().length > 0) {
             <div class="protocol-list">
               @for (protocol of projectProtocols(); track protocol._id.$oid) {
-                <div class="protocol-item">
+                <div
+                  class="protocol-item"
+                  [class.protocol-item--uploaded]="isUploadedProtocol(protocol)"
+                  [class.protocol-item--generated]="!isUploadedProtocol(protocol)"
+                >
                   <button
                     type="button"
                     class="delete"
@@ -204,9 +234,20 @@
                     <app-trash-icon [size]="22" />
                   </button>
                   <div class="protocol-info">
-                    <p class="protocol-name">{{ protocol.template_name }}</p>
+                    <div class="protocol-name-row">
+                      <p class="protocol-name">{{ protocol.template_name }}</p>
+                      @if (isUploadedProtocol(protocol)) {
+                        <span class="protocol-source-badge protocol-source-badge--uploaded">{{
+                          'protocols.badgeUploaded' | translate
+                        }}</span>
+                      } @else {
+                        <span class="protocol-source-badge protocol-source-badge--generated">{{
+                          'protocols.badgeGenerated' | translate
+                        }}</span>
+                      }
+                    </div>
                     <p class="protocol-meta">
-                      <span>{{ protocolGeneratedAt(protocol) }}</span>
+                      <span>{{ protocolDateLabel(protocol) }}</span>
                     </p>
                   </div>
                   <button

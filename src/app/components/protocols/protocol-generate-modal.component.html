@@ -3,6 +3,15 @@
 
   @if (showingPreview() && previewData()) {
     <div class="preview-container">
+      <div class="save-to-project-row">
+        <app-toggle-switch
+          [checked]="saveToProject()"
+          [label]="'protocols.saveToProject' | translate"
+          [disabled]="generating()"
+          (checkedChange)="saveToProject.set($event)"
+        />
+      </div>
+
       <div class="preview-actions">
         <button type="button" class="btn btn-secondary" (click)="backToForm()">
           {{ 'common.back' | translate }}
@@ -189,7 +198,9 @@
         <select id="template_id" formControlName="template_id">
           <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
           @for (template of templates(); track template._id?.$oid) {
-            <option [value]="template._id?.$oid || ''">{{ formatTemplateSelectLabel(template) }}</option>
+            <option [value]="template._id?.$oid || ''">
+              {{ formatTemplateSelectLabel(template) }}
+            </option>
           }
         </select>
         @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {

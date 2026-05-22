@@ -43,6 +43,11 @@ export interface ProtocolRecord {
   uploaded_pdf_path?: string;
 }
 
+/** True when the protocol row came from a user PDF upload (not template generation). */
+export function isUploadedProtocol(protocol: ProtocolRecord): boolean {
+  return !!protocol.uploaded_pdf_path?.trim();
+}
+
 export interface GenerateProtocolRequest {
   template_id: string;
   project_id: string;
@@ -54,4 +59,6 @@ export interface GenerateProtocolRequest {
   file_group_categories?: string[];
   /** Optional: include these older protocol IDs in the same PDF (older first, then new content). */
   linked_protocol_ids?: string[];
+  /** When true, add this PDF to the project's Generated Protocols list (default: download only). */
+  save_to_project?: boolean;
 }

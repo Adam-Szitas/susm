@@ -33,8 +33,13 @@ export class EditProjectComponent implements OnInit {
 
   isAdmin = this.#userStore.isAdmin;
   deleting = signal(false);
+  archiving = signal(false);
   readonly iconOnlyActions = compactFormActions();
   public projectForm!: FormGroup;
+
+  isArchived(): boolean {
+    return !!this.projectData?.archived_at;
+  }
 
   ngOnInit(): void {
     this.projectForm = this.#fb.group({
@@ -70,6 +75,49 @@ export class EditProjectComponent implements OnInit {
       error: (err) => {
         this.#notificationService.showError('projects.updateError');
         console.error('Update failed:', err);
+      },
+    });
+  }
+
+  toggleArchive(archive: boolean): void {
+    const projectId = this.projectData._id?.$oid;
+    if (!projectId || this.archiving() || this.deleting()) return;
+
+    if (archive) {
+      const comment = prompt(this.#translationService.instant('projects.archiveCommentPrompt'));
+      this.archiving.set(true);
+      this.#projectStore.toggleArchiveProject(projectId, true, comment || undefined).subscribe({
+        next: () => {
+          this.archiving.set(false);
+          this.#modalService.close();
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('projects.archived') || 'Project archived',
+          );
+        },
+        error: (error) => {
+          this.archiving.set(false);
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('projects.updateError'),
+          );
+        },
+      });
+      return;
+    }
+
+    this.archiving.set(true);
+    this.#projectStore.toggleArchiveProject(projectId, false).subscribe({
+      next: () => {
+        this.archiving.set(false);
+        this.#modalService.close();
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('projects.unarchiveProject') || 'Project unarchived',
+        );
+      },
+      error: (error) => {
+        this.archiving.set(false);
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('projects.updateError'),
+        );
       },
     });
   }

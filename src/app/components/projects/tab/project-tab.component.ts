@@ -22,6 +22,7 @@ import {
   Object,
   parseDateValue,
   ProtocolRecord,
+  isUploadedProtocol,
 } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
@@ -82,17 +83,29 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   updatingCategory = signal(false);
   downloadingProtocol = signal<string | null>(null);
   loadingTemplates = signal(false);
-  archivingProject = signal(false);
   uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
   #projectFilterKey = '';
   restoredFilterState = signal<PersistedFilterState | null>(null);
+  /** Collapsed by default — compact summary; expand for full project data + category. */
+  projectDataExpanded = signal(false);
   public readonly formatStatus = formatWorkStatus;
+
+  readonly projectAddressLine = computed(() => {
+    const addr = this.project()?.address;
+    if (!addr) return '';
+    return [addr.street, addr.postal_code].filter((p) => !!p?.trim()).join(', ');
+  });
   readonly projectProtocols = computed(() => {
     const protocols = this.project()?.protocols ?? [];
     return [...protocols].sort((a, b) => {
+      const aUploaded = !!a.uploaded_pdf_path;
+      const bUploaded = !!b.uploaded_pdf_path;
+      if (aUploaded !== bUploaded) {
+        return aUploaded ? -1 : 1;
+      }
       const aTime = a.generated_at ? new Date(a.generated_at).getTime() : 0;
       const bTime = b.generated_at ? new Date(b.generated_at).getTime() : 0;
       return bTime - aTime;
@@ -312,12 +325,16 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  protocolGeneratedAt(protocol: ProtocolRecord): string {
+  readonly isUploadedProtocol = isUploadedProtocol;
+
+  protocolDateLabel(protocol: ProtocolRecord): string {
     if (!protocol.generated_at) {
       return '';
     }
-    const date = new Date(protocol.generated_at);
-    return date.toLocaleString();
+    const date = new Date(protocol.generated_at).toLocaleString();
+    const key = isUploadedProtocol(protocol) ? 'protocols.uploadedAt' : 'protocols.generatedAt';
+    const prefix = this.#translationService.instant(key);
+    return prefix && prefix !== key ? `${prefix}: ${date}` : date;
   }
 
   async onFileSelected(event: Event): Promise<void> {
@@ -550,37 +567,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleArchiveProject(archive: boolean): void {
-    const projectId = this.#route.snapshot.paramMap.get('id');
-    if (!projectId || this.archivingProject()) return;
-
-    if (archive) {
-      // Prompt for archive comment
-      const comment = prompt(this.#translationService.instant('projects.archiveCommentPrompt'));
-      // Allow null/empty comment
-      this.archivingProject.set(true);
-      this.#projectStore.toggleArchiveProject(projectId, archive, comment || undefined).subscribe({
-        next: () => {
-          this.archivingProject.set(false);
-        },
-        error: () => {
-          this.archivingProject.set(false);
-        },
-      });
-    } else {
-      // Unarchiving doesn't need a comment
-      this.archivingProject.set(true);
-      this.#projectStore.toggleArchiveProject(projectId, archive).subscribe({
-        next: () => {
-          this.archivingProject.set(false);
-        },
-        error: () => {
-          this.archivingProject.set(false);
-        },
-      });
-    }
-  }
-
   onProtocolPdfSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -618,6 +604,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.uploadingProtocolPdf.set(false);
       },
     });
+  }
+
+  toggleProjectData(): void {
+    this.projectDataExpanded.update((v) => !v);
   }
 
   startEditingProject(): void {

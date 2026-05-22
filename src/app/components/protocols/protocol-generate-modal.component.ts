@@ -13,16 +13,24 @@ import {
   parseMongoDateToMs,
   ProtocolRecord,
   ProtocolTemplate,
+  isUploadedProtocol,
 } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
 import { ProtocolPreviewComponent, ProtocolPreviewData } from './protocol-preview.component';
+import { ToggleSwitchComponent } from '../shared/toggle-switch.component';
 
 @Component({
   selector: 'app-protocol-generate-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ProtocolPreviewComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    ProtocolPreviewComponent,
+    ToggleSwitchComponent,
+  ],
   templateUrl: './protocol-generate-modal.component.html',
   styleUrl: './protocol-generate-modal.component.scss',
 })
@@ -105,6 +113,8 @@ export class ProtocolGenerateModalComponent {
   previewData = signal<ProtocolPreviewData | null>(null);
   showingPreview = signal(false);
   loadingPreview = signal(false);
+  /** When on, generated PDF is stored under project → Generated Protocols. */
+  saveToProject = signal(true);
 
   selectedTemplate = computed(() => {
     const templateId = this.form.get('template_id')?.value;
@@ -367,6 +377,7 @@ export class ProtocolGenerateModalComponent {
 
     const linkedIds = this.selectedLinkedProtocolIds();
     const fgCats = this.fileGroupCategoriesPayload();
+    const saveToProject = this.saveToProject();
     const request: GenerateProtocolRequest = {
       template_id: templateId,
       project_id: projectId,
@@ -375,15 +386,20 @@ export class ProtocolGenerateModalComponent {
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
       linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
+      save_to_project: saveToProject,
       ...(fgCats ? { file_group_categories: fgCats } : {}),
     };
 
     this.#protocolService.downloadProtocol(request).subscribe({
       next: () => {
-        this.#projectStore.loadProject(projectId);
+        if (saveToProject) {
+          this.#projectStore.loadProject(projectId);
+        }
         this.generating.set(false);
         this.#notificationService.showSuccess(
-          this.#translationService.instant('protocols.generated'),
+          this.#translationService.instant(
+            saveToProject ? 'protocols.generated' : 'protocols.generatedDownloadOnly',
+          ),
         );
         this.#modalService.close();
       },
@@ -478,7 +494,12 @@ export class ProtocolGenerateModalComponent {
     const name = protocol.template_name || '';
     const date = protocol.generated_at ? new Date(protocol.generated_at).toLocaleDateString() : '';
     const objects = protocol.object_names?.length ? protocol.object_names.join(', ') : '';
-    return [name, date, objects].filter(Boolean).join(' · ');
+    const sourceKey = isUploadedProtocol(protocol)
+      ? 'protocols.badgeUploaded'
+      : 'protocols.badgeGenerated';
+    const source = this.#translationService.instant(sourceKey);
+    const sourceLabel = source && source !== sourceKey ? source : '';
+    return [name, sourceLabel, date, objects].filter(Boolean).join(' · ');
   }
 
   formatObjectLabel(object: Object): string {

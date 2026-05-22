@@ -1,3 +1,19 @@
+.save-to-project-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--default-color, #e0e0e0);
+  background: rgba(157, 0, 0, 0.04);
+}
+
+.save-to-project-hint {
+  margin: 0;
+  padding-left: 3.4rem;
+}
+
 .preview-actions {
   display: flex;
   flex-wrap: wrap;

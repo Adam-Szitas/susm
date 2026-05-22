@@ -21,49 +21,82 @@
         <input placeholder="Note" type="note" id="note" formControlName="note" />
       </div>
       <div class="form-actions">
-        @if (isAdmin()) {
+        <div class="form-actions-start">
+          @if (isAdmin()) {
+            <button
+              type="button"
+              class="button button-error delete-action"
+              [class.icon-only]="iconOnlyActions()"
+              (click)="deleteProject()"
+              [disabled]="deleting() || archiving()"
+              [attr.aria-label]="'projects.deleteProject' | translate"
+              [title]="'projects.deleteProject' | translate"
+            >
+              <app-trash-icon [size]="20" />
+              @if (!iconOnlyActions()) {
+                <span class="action-label">{{ 'projects.deleteProject' | translate }}</span>
+              }
+            </button>
+          }
+          @if (isArchived()) {
+            <button
+              type="button"
+              class="button button-secondary archive-action"
+              (click)="toggleArchive(false)"
+              [disabled]="archiving() || deleting()"
+            >
+              @if (archiving()) {
+                <span class="spinner"></span>
+                {{ 'common.loading' | translate }}
+              } @else {
+                {{ 'projects.unarchiveProject' | translate }}
+              }
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="button button-secondary archive-action"
+              (click)="toggleArchive(true)"
+              [disabled]="archiving() || deleting()"
+            >
+              @if (archiving()) {
+                <span class="spinner"></span>
+                {{ 'common.loading' | translate }}
+              } @else {
+                {{ 'projects.archiveProject' | translate }}
+              }
+            </button>
+          }
+        </div>
+        <div class="form-actions-end">
           <button
             type="button"
-            class="button button-error delete-action"
+            class="button button-primary submit-action"
             [class.icon-only]="iconOnlyActions()"
-            (click)="deleteProject()"
-            [disabled]="deleting()"
-            [attr.aria-label]="'projects.deleteProject' | translate"
-            [title]="'projects.deleteProject' | translate"
+            [disabled]="projectForm.invalid || deleting() || archiving()"
+            (click)="submit()"
+            [attr.aria-label]="'common.submit' | translate"
+            [title]="'common.submit' | translate"
           >
-            <app-trash-icon [size]="20" />
-            @if (!iconOnlyActions()) {
-              <span class="action-label">{{ 'projects.deleteProject' | translate }}</span>
+            @if (iconOnlyActions()) {
+              <svg
+                class="submit-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            } @else {
+              <span class="action-label">{{ 'common.submit' | translate }}</span>
             }
           </button>
-        }
-        <button
-          type="button"
-          class="button button-primary submit-action"
-          [class.icon-only]="iconOnlyActions()"
-          [disabled]="projectForm.invalid || deleting()"
-          (click)="submit()"
-          [attr.aria-label]="'common.submit' | translate"
-          [title]="'common.submit' | translate"
-        >
-          @if (iconOnlyActions()) {
-            <svg
-              class="submit-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          } @else {
-            <span class="action-label">{{ 'common.submit' | translate }}</span>
-          }
-        </button>
+        </div>
       </div>
     </form>
   }
