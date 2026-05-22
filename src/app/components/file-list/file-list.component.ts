@@ -248,16 +248,6 @@ export class FileListComponent implements OnDestroy {
 
   public groupCategoryLabels = fileGroupCategoryLabels;
 
-  public toggleSelectionMode(): void {
-    const turningOn = !this.selectionMode();
-    this.selectionMode.update((v) => !v);
-    if (turningOn) {
-      this.hideOverlay();
-    } else {
-      this.selectedFileIds.set(new Set());
-    }
-  }
-
   public toggleFileSelection(file: FileGroupItem | ProjectFile, event?: Event): void {
     event?.stopPropagation();
     event?.preventDefault();

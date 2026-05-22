@@ -51,20 +51,6 @@
     </div>
   }
 
-  <!-- Select mode toggle (object files only) -->
-  @if (objectId() && filteredFileGroups().length > 0) {
-    <div class="selection-mode-toggle">
-      <button
-        type="button"
-        class="button button-outline"
-        [class.active]="selectionMode()"
-        (click)="toggleSelectionMode()"
-      >
-        {{ selectionMode() ? ('fileList.doneSelecting' | translate) : ('fileList.selectFiles' | translate) }}
-      </button>
-    </div>
-  }
-
   <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
   @if (objectId()) {
   @for (group of filteredFileGroups(); track group._id.$oid) {
@@ -72,14 +58,17 @@
       <div class="group-header">
         @if (editingGroupId() === group._id.$oid) {
           <div class="group-edit-form">
-            <input
-              type="text"
-              [ngModel]="editDescription()"
-              (ngModelChange)="editDescription.set($event)"
-              placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-              class="group-edit-input"
-              [attr.aria-label]="'fileUpload.descriptionPlaceholder' | translate"
-            />
+            <div class="group-header-row group-header-row--title">
+              <input
+                type="text"
+                [ngModel]="editDescription()"
+                (ngModelChange)="editDescription.set($event)"
+                placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+                class="group-edit-input group-edit-description"
+                [attr.aria-label]="'fileUpload.descriptionPlaceholder' | translate"
+              />
+            </div>
+            <div class="group-header-row group-header-row--categories">
             <div class="group-edit-categories">
               <span class="group-edit-categories-title">{{ 'fileUpload.category' | translate }}</span>
               <div
@@ -133,14 +122,8 @@
                 </button>
               </div>
             </div>
-            <textarea
-              class="group-edit-input group-edit-note"
-              [ngModel]="editNote()"
-              (ngModelChange)="editNote.set($event)"
-              rows="2"
-              placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
-              [attr.aria-label]="'fileUpload.note' | translate"
-            ></textarea>
+            </div>
+            <div class="group-header-row group-header-row--toolbar">
             <div class="group-edit-actions">
               @if (objectId()) {
                 <button
@@ -180,24 +163,36 @@
                 <span class="group-edit-btn-icon">✕</span>
               </button>
             </div>
+            </div>
+            <div class="group-header-row group-header-row--note">
+            <div class="group-note-field group-note-field--edit">
+              <label class="group-note-label" [attr.for]="'group-note-' + group._id.$oid">{{
+                'fileUpload.note' | translate
+              }}</label>
+              <textarea
+                [id]="'group-note-' + group._id.$oid"
+                class="group-edit-input group-edit-note"
+                [ngModel]="editNote()"
+                (ngModelChange)="editNote.set($event)"
+                rows="2"
+                placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
+              ></textarea>
+            </div>
+            </div>
           </div>
         } @else {
-          <div class="group-header-content">
-            @if (group.description) {
+          @if (group.description) {
+            <div class="group-header-row group-header-row--title">
               <h3 class="group-description">{{ group.description }}</h3>
-            }
-            @if (groupCategoryLabels(group).length > 0) {
-              <div class="group-categories-view">
-                @for (c of groupCategoryLabels(group); track c) {
-                  <span class="group-category-pill">{{ c }}</span>
-                }
-              </div>
-            }
-            @if (group.note) {
-              <p class="group-note">{{ group.note }}</p>
-            }
-          </div>
-          <div class="group-header-actions">
+            </div>
+          }
+          <div class="group-header-row group-header-row--toolbar">
+            <div class="group-categories-view">
+              @for (c of groupCategoryLabels(group); track c) {
+                <span class="group-category-pill">{{ c }}</span>
+              }
+            </div>
+            <div class="group-header-actions">
             @if (objectId()) {
               <button
                 type="button"
@@ -254,6 +249,15 @@
               </button>
             }
           </div>
+          </div>
+          @if (group.note?.trim()) {
+            <div class="group-header-row group-header-row--note">
+              <div class="group-note-field">
+                <span class="group-note-label">{{ 'fileUpload.note' | translate }}</span>
+                <p class="group-note">{{ group.note }}</p>
+              </div>
+            </div>
+          }
         }
       </div>
       <ul class="file-gallery">@for (file of group.files; track file._id.$oid; let i = $index) {<li
