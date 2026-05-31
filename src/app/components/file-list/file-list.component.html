@@ -266,7 +266,7 @@
           [class.dragging]="draggedFileId() === file._id.$oid"
           [class.drag-over]="dragOverFileId() === file._id.$oid"
           [class.reorder-active]="reorderMode()"
-          [attr.draggable]="reorderMode() ? 'true' : null"
+          [attr.draggable]="reorderMode() && !reorderSaving() ? 'true' : null"
           (dragstart)="reorderMode() ? onDragStart($event, file) : null"
           (dragover)="reorderMode() ? onDragOver($event, file) : null"
           (dragleave)="reorderMode() ? onDragLeave($event, file) : null"

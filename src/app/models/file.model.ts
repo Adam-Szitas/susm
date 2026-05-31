@@ -73,4 +73,43 @@ export interface FileGroupItem {
   deleted_at?: MongoDateJson;
 }
 
+/** True when any active file in the group has a saved `sort_order`. */
+export function hasCustomFileOrder(files: FileGroupItem[]): boolean {
+  return files.some((f) => parseMongoDateToMs(f.deleted_at as unknown) == null && f.sort_order != null);
+}
+
+/** Apply stored order when present; otherwise keep array order (default). */
+export function sortFileGroupItemsByStoredOrder(files: FileGroupItem[]): FileGroupItem[] {
+  if (!hasCustomFileOrder(files)) {
+    return files;
+  }
+  return files
+    .map((file, index) => ({ file, index }))
+    .sort((a, b) => {
+      const ao = a.file.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const bo = b.file.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return a.index - b.index;
+    })
+    .map(({ file }) => file);
+}
+
+/**
+ * Merge a new visible-file order into the full active list.
+ * Hidden files (e.g. broken thumbnails) keep their original slots.
+ */
+export function mergeVisibleReorderIntoFullOrder(
+  fullOrder: string[],
+  visibleOrderBefore: string[],
+  visibleOrderAfter: string[],
+): string[] {
+  if (fullOrder.length === 0) return visibleOrderAfter;
+  const visibleSet = new Set(visibleOrderBefore);
+  const hiddenQueue = fullOrder.filter((id) => !visibleSet.has(id));
+  const visibleQueue = [...visibleOrderAfter];
+  return fullOrder.map((id) =>
+    visibleSet.has(id) ? visibleQueue.shift()! : hiddenQueue.shift()!,
+  );
+}
+
 export type FileUploadTarget = 'object' | 'project';

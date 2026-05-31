@@ -19,6 +19,8 @@ import {
   FileGroupItem,
   fileGroupCategoryLabels,
   parseMongoDateToMs,
+  sortFileGroupItemsByStoredOrder,
+  mergeVisibleReorderIntoFullOrder,
 } from '@models';
 import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
@@ -103,22 +105,18 @@ export class FileListComponent implements OnDestroy {
     return parseMongoDateToMs(group.deleted_at) != null;
   }
 
-  // Filter failed loads & soft-deleted items; sort by sort_order; keep metadata-only groups (no pictures yet)
+  // Filter failed loads & soft-deleted items; sort by sort_order when saved; keep metadata-only groups
   public filteredFileGroups = computed(() => {
     const groups = this.fileGroups();
     return groups
       .filter((group) => !this.isGroupRemoved(group))
       .map((group) => ({
         ...group,
-        files: group.files
-          .filter(
+        files: sortFileGroupItemsByStoredOrder(
+          group.files.filter(
             (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
-          )
-          .sort((a, b) => {
-            const aOrder = a.sort_order ?? Number.MAX_SAFE_INTEGER;
-            const bOrder = b.sort_order ?? Number.MAX_SAFE_INTEGER;
-            return aOrder - bOrder;
-          }),
+          ),
+        ),
       }));
   });
 
@@ -839,13 +837,60 @@ export class FileListComponent implements OnDestroy {
     this.reorderMode.update((v) => !v);
     if (turningOn) {
       this.hideOverlay();
+      this.clearSelection();
     } else {
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
     }
   }
 
+  /** Files shown in the gallery (excludes broken thumbnails). */
+  #visibleFilesInGroup(group: FileGroup): FileGroupItem[] {
+    return (
+      this.filteredFileGroups().find((g) => g._id.$oid === group._id.$oid)?.files ?? []
+    );
+  }
+
+  /** Visible file IDs in display order. */
+  #visibleFileOrderIds(group: FileGroup): string[] {
+    return this.#visibleFilesInGroup(group)
+      .map((f) => f._id?.$oid)
+      .filter((id): id is string => !!id);
+  }
+
+  /** Active files in storage order (includes broken thumbnails — required for reorder API). */
+  #activeFilesForReorder(group: FileGroup): FileGroupItem[] {
+    const raw = this.fileGroups().find((g) => g._id.$oid === group._id.$oid);
+    if (!raw) return [];
+    return sortFileGroupItemsByStoredOrder(raw.files.filter((f) => !this.hasDeletedAt(f)));
+  }
+
+  /** Ordered file IDs sent to the reorder API (every active file in the group). */
+  #fileOrderIdsForGroup(group: FileGroup): string[] {
+    return this.#activeFilesForReorder(group)
+      .map((f) => f._id?.$oid)
+      .filter((id): id is string => !!id);
+  }
+
+  /** Apply a visible-only reorder and merge hidden files back into their original slots. */
+  #saveVisibleReorder(group: FileGroup, visibleOrderAfter: string[]): void {
+    const fullBefore = this.#fileOrderIdsForGroup(group);
+    const visibleBefore = this.#visibleFileOrderIds(group);
+    if (!fullBefore.length || !visibleBefore.length) return;
+
+    const merged = mergeVisibleReorderIntoFullOrder(
+      fullBefore,
+      visibleBefore,
+      visibleOrderAfter,
+    );
+    this.#saveFileOrder(group._id.$oid, merged);
+  }
+
   public onDragStart(event: DragEvent, file: FileGroupItem): void {
+    if (this.reorderSaving()) {
+      event.preventDefault();
+      return;
+    }
     const id = file._id?.$oid;
     if (!id) return;
     this.draggedFileId.set(id);
@@ -875,6 +920,8 @@ export class FileListComponent implements OnDestroy {
 
   public onDrop(event: DragEvent, targetFile: FileGroupItem, group: FileGroup): void {
     event.preventDefault();
+    if (this.reorderSaving()) return;
+
     const draggedId = this.draggedFileId();
     const targetId = targetFile._id?.$oid;
     if (!draggedId || !targetId || draggedId === targetId) {
@@ -883,26 +930,21 @@ export class FileListComponent implements OnDestroy {
       return;
     }
 
-    // Get the current file order for this group
-    const files = this.filteredFileGroups()
-      .find((g) => g._id.$oid === group._id.$oid)
-      ?.files;
-    if (!files) return;
+    const visibleBefore = this.#visibleFileOrderIds(group);
+    if (!visibleBefore.length) return;
 
-    const currentOrder = files.map((f) => f._id.$oid);
-    const fromIndex = currentOrder.indexOf(draggedId);
-    const toIndex = currentOrder.indexOf(targetId);
+    const fromIndex = visibleBefore.indexOf(draggedId);
+    const toIndex = visibleBefore.indexOf(targetId);
     if (fromIndex === -1 || toIndex === -1) return;
 
-    // Reorder: remove from old position, insert at new position
-    currentOrder.splice(fromIndex, 1);
-    currentOrder.splice(toIndex, 0, draggedId);
+    const visibleAfter = [...visibleBefore];
+    visibleAfter.splice(fromIndex, 1);
+    visibleAfter.splice(toIndex, 0, draggedId);
 
     this.draggedFileId.set(null);
     this.dragOverFileId.set(null);
 
-    // Save to backend
-    this.#saveFileOrder(group._id.$oid, currentOrder);
+    this.#saveVisibleReorder(group, visibleAfter);
   }
 
   public onDragEnd(): void {
@@ -912,37 +954,28 @@ export class FileListComponent implements OnDestroy {
 
   /** Move file one position earlier (left/up) in the group. */
   public moveFileUp(file: FileGroupItem, group: FileGroup): void {
-    const files = this.filteredFileGroups()
-      .find((g) => g._id.$oid === group._id.$oid)
-      ?.files;
-    if (!files) return;
-
-    const currentOrder = files.map((f) => f._id.$oid);
-    const index = currentOrder.indexOf(file._id.$oid);
+    if (this.reorderSaving()) return;
+    const visible = [...this.#visibleFileOrderIds(group)];
+    const index = visible.indexOf(file._id.$oid);
     if (index <= 0) return;
 
-    // Swap with previous
-    [currentOrder[index - 1], currentOrder[index]] = [currentOrder[index], currentOrder[index - 1]];
-    this.#saveFileOrder(group._id.$oid, currentOrder);
+    [visible[index - 1], visible[index]] = [visible[index], visible[index - 1]];
+    this.#saveVisibleReorder(group, visible);
   }
 
   /** Move file one position later (right/down) in the group. */
   public moveFileDown(file: FileGroupItem, group: FileGroup): void {
-    const files = this.filteredFileGroups()
-      .find((g) => g._id.$oid === group._id.$oid)
-      ?.files;
-    if (!files) return;
+    if (this.reorderSaving()) return;
+    const visible = [...this.#visibleFileOrderIds(group)];
+    const index = visible.indexOf(file._id.$oid);
+    if (index === -1 || index >= visible.length - 1) return;
 
-    const currentOrder = files.map((f) => f._id.$oid);
-    const index = currentOrder.indexOf(file._id.$oid);
-    if (index === -1 || index >= currentOrder.length - 1) return;
-
-    // Swap with next
-    [currentOrder[index], currentOrder[index + 1]] = [currentOrder[index + 1], currentOrder[index]];
-    this.#saveFileOrder(group._id.$oid, currentOrder);
+    [visible[index], visible[index + 1]] = [visible[index + 1], visible[index]];
+    this.#saveVisibleReorder(group, visible);
   }
 
   #saveFileOrder(groupId: string, fileIds: string[]): void {
+    if (this.reorderSaving()) return;
     this.reorderSaving.set(true);
     this.#fileService.reorderFiles(groupId, fileIds).pipe(
       finalize(() => this.reorderSaving.set(false)),
