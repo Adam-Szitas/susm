@@ -20,6 +20,7 @@ import {
   fileGroupCategoryLabels,
   parseMongoDateToMs,
   sortFileGroupItemsByStoredOrder,
+  sortFileGroupsByStoredOrder,
   mergeVisibleReorderIntoFullOrder,
 } from '@models';
 import { environment } from '../../environment';
@@ -61,6 +62,8 @@ export class FileListComponent implements OnDestroy {
 
   // For object files: receives FileGroup[]
   public fileGroups = input<FileGroup[]>([]);
+  /** When set, only groups matching these category labels are shown (full list kept for reorder API). */
+  public categoryFilter = input<string[]>([]);
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
   /** Parent object's project categories — all of these appear in the file-group category select. */
@@ -105,20 +108,33 @@ export class FileListComponent implements OnDestroy {
     return parseMongoDateToMs(group.deleted_at) != null;
   }
 
-  // Filter failed loads & soft-deleted items; sort by sort_order when saved; keep metadata-only groups
+  // Filter failed loads & soft-deleted items; sort groups/files; optional category filter
   public filteredFileGroups = computed(() => {
-    const groups = this.fileGroups();
-    return groups
-      .filter((group) => !this.isGroupRemoved(group))
-      .map((group) => ({
-        ...group,
-        files: sortFileGroupItemsByStoredOrder(
-          group.files.filter(
-            (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
-          ),
+    const activeGroups = sortFileGroupsByStoredOrder(
+      this.fileGroups().filter((group) => !this.isGroupRemoved(group)),
+    );
+    const filterLabels = this.categoryFilter().map((c) => c?.trim()).filter(Boolean);
+    const groups =
+      filterLabels.length === 0
+        ? activeGroups
+        : activeGroups.filter((g) =>
+            fileGroupCategoryLabels(g).some((l) => filterLabels.includes(l)),
+          );
+
+    return groups.map((group) => ({
+      ...group,
+      files: sortFileGroupItemsByStoredOrder(
+        group.files.filter(
+          (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
         ),
-      }));
+      ),
+    }));
   });
+
+  /** Active groups on the object (unfiltered, for group reorder API). */
+  readonly activeGroupCount = computed(
+    () => this.fileGroups().filter((g) => !this.isGroupRemoved(g)).length,
+  );
 
   // Computed filtered project files (excluding failed and soft-deleted files)
   public filteredProjectFiles = computed(() => {
@@ -170,11 +186,15 @@ export class FileListComponent implements OnDestroy {
   // Track files that failed to load
   private failedFileIds = new Set<string>();
 
-  // Drag-and-drop reorder state
+  // Drag-and-drop reorder (pictures within a group)
   public reorderMode = signal<boolean>(false);
   public draggedFileId = signal<string | null>(null);
   public dragOverFileId = signal<string | null>(null);
   public reorderSaving = signal<boolean>(false);
+
+  // Reorder file groups on the object
+  public groupReorderMode = signal<boolean>(false);
+  public groupReorderSaving = signal<boolean>(false);
 
   // Inline edit state for group description/category/note
   public editingGroupId = signal<string | null>(null);
@@ -610,7 +630,7 @@ export class FileListComponent implements OnDestroy {
    * First tap opens actions; tap image/backdrop again closes. Buttons only fire when overlay is open.
    */
   public onImageContainerClick(event: MouseEvent, file: FileGroupItem | ProjectFile): void {
-    if (this.reorderMode()) {
+    if (this.reorderMode() || this.groupReorderMode()) {
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -836,12 +856,96 @@ export class FileListComponent implements OnDestroy {
     const turningOn = !this.reorderMode();
     this.reorderMode.update((v) => !v);
     if (turningOn) {
+      this.groupReorderMode.set(false);
       this.hideOverlay();
       this.clearSelection();
     } else {
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
     }
+  }
+
+  public toggleGroupReorderMode(): void {
+    const turningOn = !this.groupReorderMode();
+    this.groupReorderMode.update((v) => !v);
+    if (turningOn) {
+      this.reorderMode.set(false);
+      this.draggedFileId.set(null);
+      this.dragOverFileId.set(null);
+      this.hideOverlay();
+      this.clearSelection();
+    }
+  }
+
+  /** All active group IDs in stored order (includes groups hidden by category filter). */
+  #allActiveGroupIds(): string[] {
+    return sortFileGroupsByStoredOrder(this.fileGroups().filter((g) => !this.isGroupRemoved(g)))
+      .map((g) => g._id?.$oid)
+      .filter((id): id is string => !!id);
+  }
+
+  /** Group IDs currently shown in the UI (after category filter). */
+  #visibleGroupIds(): string[] {
+    return this.filteredFileGroups()
+      .map((g) => g._id?.$oid)
+      .filter((id): id is string => !!id);
+  }
+
+  #saveVisibleGroupReorder(visibleOrderAfter: string[]): void {
+    const objectId = this.objectId();
+    if (!objectId) return;
+
+    const fullBefore = this.#allActiveGroupIds();
+    const visibleBefore = this.#visibleGroupIds();
+    if (!fullBefore.length || !visibleBefore.length) return;
+
+    const merged = mergeVisibleReorderIntoFullOrder(
+      fullBefore,
+      visibleBefore,
+      visibleOrderAfter,
+    );
+    this.#saveGroupOrder(objectId, merged);
+  }
+
+  public moveGroupUp(group: FileGroup): void {
+    if (this.groupReorderSaving()) return;
+    const visible = [...this.#visibleGroupIds()];
+    const id = group._id?.$oid;
+    if (!id) return;
+    const index = visible.indexOf(id);
+    if (index <= 0) return;
+    [visible[index - 1], visible[index]] = [visible[index], visible[index - 1]];
+    this.#saveVisibleGroupReorder(visible);
+  }
+
+  public moveGroupDown(group: FileGroup): void {
+    if (this.groupReorderSaving()) return;
+    const visible = [...this.#visibleGroupIds()];
+    const id = group._id?.$oid;
+    if (!id) return;
+    const index = visible.indexOf(id);
+    if (index === -1 || index >= visible.length - 1) return;
+    [visible[index], visible[index + 1]] = [visible[index + 1], visible[index]];
+    this.#saveVisibleGroupReorder(visible);
+  }
+
+  #saveGroupOrder(objectId: string, groupIds: string[]): void {
+    if (this.groupReorderSaving()) return;
+    this.groupReorderSaving.set(true);
+    this.#fileService
+      .reorderFileGroups(objectId, groupIds)
+      .pipe(finalize(() => this.groupReorderSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message ||
+              this.#translationService.instant('fileList.groupOrderSaveFailed'),
+          );
+        },
+      });
   }
 
   /** Files shown in the gallery (excludes broken thumbnails). */

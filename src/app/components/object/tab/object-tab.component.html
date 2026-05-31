@@ -166,7 +166,8 @@
       }
       @if (displayedFileGroups().length > 0) {
         <app-file-list
-          [fileGroups]="displayedFileGroups()"
+          [fileGroups]="fileGroups()"
+          [categoryFilter]="urlFileGroupCategories()"
           [projectCategories]="projectCategories()"
           [objectId]="object()?._id?.$oid"
           (fileDeleted)="onFileDeleted()"

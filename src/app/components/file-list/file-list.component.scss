@@ -752,6 +752,40 @@ p {
 // Drag-and-drop reorder mode
 // ============================================================================
 
+.file-groups-reorder-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-small, 0.75rem);
+  margin-bottom: var(--space-medium, 1rem);
+}
+
+.file-groups-reorder-toggle.active {
+  background-color: var(--color-primary, #3b82f6);
+  color: white;
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.reorder-saving-hint,
+.reorder-filter-hint {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+.group-block-reorder-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.file-group.group-reorder-active {
+  border: 2px dashed var(--color-border, #cbd5e1);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: var(--space-medium, 1rem);
+}
+
 .group-reorder-btn {
   display: inline-flex;
   align-items: center;

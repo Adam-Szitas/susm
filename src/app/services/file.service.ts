@@ -164,4 +164,14 @@ export class FileService {
     const endpoint = `file/group/${groupId}/reorder`;
     return this.#httpService.put<{ message: string }>(endpoint, { file_ids: fileIds });
   }
+
+  /**
+   * Reorders file groups on an object by setting sort_order from the provided ID order.
+   * @param objectId - The object ID
+   * @param groupIds - Ordered array of file group IDs (position = sort priority)
+   */
+  reorderFileGroups(objectId: string, groupIds: string[]): Observable<{ message: string }> {
+    const endpoint = `file/object/${objectId}/groups/reorder`;
+    return this.#httpService.put<{ message: string }>(endpoint, { group_ids: groupIds });
+  }
 }

@@ -53,9 +53,63 @@
 
   <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
   @if (objectId()) {
-  @for (group of filteredFileGroups(); track group._id.$oid) {
-    <div class="file-group">
+  @if (activeGroupCount() > 1) {
+    <div class="file-groups-reorder-toolbar">
+      <button
+        type="button"
+        class="button button-outline file-groups-reorder-toggle"
+        [class.active]="groupReorderMode()"
+        (click)="toggleGroupReorderMode()"
+        [disabled]="groupReorderSaving()"
+        [attr.aria-label]="
+          groupReorderMode()
+            ? ('fileList.doneReorderGroups' | translate)
+            : ('fileList.reorderGroups' | translate)
+        "
+        [attr.title]="
+          groupReorderMode()
+            ? ('fileList.doneReorderGroups' | translate)
+            : ('fileList.reorderGroups' | translate)
+        "
+      >
+        {{ groupReorderMode() ? ('fileList.doneReorderGroups' | translate) : ('fileList.reorderGroups' | translate) }}
+      </button>
+      @if (groupReorderSaving()) {
+        <span class="reorder-saving-hint">{{ 'fileList.savingOrder' | translate }}</span>
+      }
+      @if (groupReorderMode() && categoryFilter().length > 0) {
+        <span class="reorder-filter-hint">{{ 'fileList.groupReorderFilteredHint' | translate }}</span>
+      }
+    </div>
+  }
+  @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
+    <div class="file-group" [class.group-reorder-active]="groupReorderMode()">
       <div class="group-header">
+        @if (groupReorderMode()) {
+          <div class="group-block-reorder-controls">
+            <button
+              type="button"
+              class="reorder-btn reorder-btn-up"
+              (click)="moveGroupUp(group)"
+              [disabled]="gi === 0 || groupReorderSaving()"
+              [attr.aria-label]="'fileList.moveGroupUp' | translate"
+              [attr.title]="'fileList.moveGroupUp' | translate"
+            >
+              ▲
+            </button>
+            <span class="reorder-position">{{ gi + 1 }}</span>
+            <button
+              type="button"
+              class="reorder-btn reorder-btn-down"
+              (click)="moveGroupDown(group)"
+              [disabled]="gi === filteredFileGroups().length - 1 || groupReorderSaving()"
+              [attr.aria-label]="'fileList.moveGroupDown' | translate"
+              [attr.title]="'fileList.moveGroupDown' | translate"
+            >
+              ▼
+            </button>
+          </div>
+        }
         @if (editingGroupId() === group._id.$oid) {
           <div class="group-edit-form">
             <div class="group-header-row group-header-row--title">
@@ -193,16 +247,29 @@
               }
             </div>
             <div class="group-header-actions">
-            @if (objectId()) {
+            @if (objectId() && !groupReorderMode()) {
               <button
                 type="button"
                 class="group-reorder-btn button button-outline"
                 [class.active]="reorderMode()"
                 (click)="toggleReorderMode()"
-                [attr.aria-label]="'fileList.reorder' | translate"
-                title="{{ reorderMode() ? ('fileList.doneReorder' | translate) : ('fileList.reorder' | translate) }}"
+                [disabled]="reorderSaving()"
+                [attr.aria-label]="
+                  reorderMode()
+                    ? ('fileList.doneReorderPictures' | translate)
+                    : ('fileList.reorderPictures' | translate)
+                "
+                [attr.title]="
+                  reorderMode()
+                    ? ('fileList.doneReorderPictures' | translate)
+                    : ('fileList.reorderPictures' | translate)
+                "
               >
-                <span class="file-list-visually-hidden">{{ reorderMode() ? ('fileList.doneReorder' | translate) : ('fileList.reorder' | translate) }}</span>
+                <span class="file-list-visually-hidden">{{
+                  reorderMode()
+                    ? ('fileList.doneReorderPictures' | translate)
+                    : ('fileList.reorderPictures' | translate)
+                }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
                   <path d="M3 7h18M3 12h18M3 17h18"/>
                   <path d="M7 3l-4 4 4 4M17 13l4 4-4 4"/>

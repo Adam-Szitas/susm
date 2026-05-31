@@ -43,6 +43,8 @@ export interface FileGroup {
   created_at?: MongoDateJson;
   /** Present when the group was soft-deleted (`deleted_at` on the server). */
   deleted_at?: MongoDateJson;
+  /** User-defined order within the object (lower = earlier). Omitted until first reorder. */
+  sort_order?: number;
 }
 
 /** True when the file group is soft-deleted (`deleted_at` is a real timestamp). */
@@ -110,6 +112,29 @@ export function mergeVisibleReorderIntoFullOrder(
   return fullOrder.map((id) =>
     visibleSet.has(id) ? visibleQueue.shift()! : hiddenQueue.shift()!,
   );
+}
+
+/** True when any active group has a saved `sort_order`. */
+export function hasCustomFileGroupOrder(groups: FileGroup[]): boolean {
+  return groups.some(
+    (g) => parseMongoDateToMs(g.deleted_at as unknown) == null && g.sort_order != null,
+  );
+}
+
+/** Apply stored order when present; otherwise keep array order (default). */
+export function sortFileGroupsByStoredOrder(groups: FileGroup[]): FileGroup[] {
+  if (!hasCustomFileGroupOrder(groups)) {
+    return groups;
+  }
+  return groups
+    .map((group, index) => ({ group, index }))
+    .sort((a, b) => {
+      const ao = a.group.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const bo = b.group.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return a.index - b.index;
+    })
+    .map(({ group }) => group);
 }
 
 export type FileUploadTarget = 'object' | 'project';
