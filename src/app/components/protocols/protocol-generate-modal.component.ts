@@ -61,6 +61,12 @@ export class ProtocolGenerateModalComponent {
   #dateRangeVersion = signal(0);
   /** Selected file-group category labels (multi-select); empty means no category filter. */
   protocolFileGroupCategories = signal<string[]>([]);
+  /** When true, object order is sent explicitly for this protocol (not project default). */
+  customObjectOrder = signal(false);
+  /** Ordered selected object IDs for this protocol (used when customObjectOrder is true). */
+  protocolObjectOrderIds = signal<string[]>([]);
+  draggedObjectId = signal<string | null>(null);
+  dragOverObjectId = signal<string | null>(null);
 
   /**
    * Objects listed in the protocol modal: with a date range, only objects that have at least one
@@ -74,6 +80,8 @@ export class ProtocolGenerateModalComponent {
     this.protocolFileGroupCategories();
     this.previewData();
     this.showingPreview();
+    this.customObjectOrder();
+    this.protocolObjectOrderIds();
 
     const all = sortObjectsByStoredOrder(this.objects());
     const fromD = (this.form.get('from_date')?.value as string) ?? '';
@@ -81,6 +89,14 @@ export class ProtocolGenerateModalComponent {
     const catFilter = this.protocolFileGroupCategories().filter((c) => c.trim());
 
     if (this.showingPreview()) {
+      const customIds = this.protocolObjectOrderIds();
+      if (this.customObjectOrder() && customIds.length > 0) {
+        const order = new Map(customIds.map((id, i) => [id, i]));
+        return all
+          .filter((o) => o._id?.$oid && order.has(o._id.$oid))
+          .sort((a, b) => (order.get(a._id!.$oid!) ?? 0) - (order.get(b._id!.$oid!) ?? 0));
+      }
+
       const sections = this.previewData()?.content_sections;
       if (sections?.length) {
         const ids = sections.map((s) => s.object_id).filter((id): id is string => !!id);
@@ -95,6 +111,38 @@ export class ProtocolGenerateModalComponent {
     }
 
     return all.filter((o) => this.objectMatchesProtocolFilters(o, fromD, toD, catFilter));
+  });
+
+  /** Selected objects in protocol order (preview step: drag to reorder). */
+  objectsInProtocolOrder = computed(() => {
+    this.objectsForProtocolSelection();
+    this.selectedObjectIds();
+    this.customObjectOrder();
+    this.protocolObjectOrderIds();
+
+    const selected = new Set(this.selectedObjectIds());
+    const available = this.objectsForProtocolSelection().filter(
+      (o) => o._id?.$oid && selected.has(o._id.$oid),
+    );
+
+    if (!this.customObjectOrder()) {
+      return available;
+    }
+
+    const order = this.protocolObjectOrderIds().filter((id) => selected.has(id));
+    const byId = new Map(available.map((o) => [o._id!.$oid!, o]));
+    const ordered: Object[] = [];
+    for (const id of order) {
+      const obj = byId.get(id);
+      if (obj) {
+        ordered.push(obj);
+        byId.delete(id);
+      }
+    }
+    for (const obj of byId.values()) {
+      ordered.push(obj);
+    }
+    return ordered;
   });
 
   /** Object IDs currently shown in the checklist (respects date range + preview). */
@@ -185,9 +233,11 @@ export class ProtocolGenerateModalComponent {
 
     this.form.get('from_date')?.valueChanges.subscribe(() => {
       this.#dateRangeVersion.update((n) => n + 1);
+      this.#onProtocolFiltersChanged();
     });
     this.form.get('to_date')?.valueChanges.subscribe(() => {
       this.#dateRangeVersion.update((n) => n + 1);
+      this.#onProtocolFiltersChanged();
     });
   }
 
@@ -228,9 +278,26 @@ export class ProtocolGenerateModalComponent {
     }
   }
 
-  /** Selected object IDs in stored project order (for preview/PDF APIs). */
+  #resetProtocolObjectOrder(): void {
+    this.customObjectOrder.set(false);
+    this.protocolObjectOrderIds.set([]);
+    this.draggedObjectId.set(null);
+    this.dragOverObjectId.set(null);
+  }
+
+  #onProtocolFiltersChanged(): void {
+    this.#resetProtocolObjectOrder();
+    if (this.showingPreview() && this.hasSelection()) {
+      this.loadPreview();
+    }
+  }
+
+  /** Selected object IDs in protocol order (for preview/PDF APIs). */
   #orderedSelectedObjectIds(): string[] {
     const selected = new Set(this.selectedObjectIds());
+    if (this.customObjectOrder()) {
+      return this.protocolObjectOrderIds().filter((id) => selected.has(id));
+    }
     const ordered = sortObjectsByStoredOrder(this.objects())
       .map((o) => o._id?.$oid)
       .filter((id): id is string => !!id && selected.has(id));
@@ -242,34 +309,27 @@ export class ProtocolGenerateModalComponent {
     return ordered;
   }
 
-  loadPreview(): void {
+  #buildGenerateRequest(): GenerateProtocolRequest | null {
     const templateId = this.form.get('template_id')?.value;
-    if (!templateId || templateId === '' || !this.hasSelection()) {
-      return;
-    }
-
     const projectId = this.projectId();
     const objectIds = this.#orderedSelectedObjectIds();
 
-    if (!projectId || objectIds.length === 0) {
-      return;
+    if (!templateId || templateId === '' || !projectId || objectIds.length === 0) {
+      return null;
     }
 
-    this.loadingPreview.set(true);
     const formValue = this.form.value;
-
-    // Build data object from template fields - include all fields even if empty
     const data: Record<string, unknown> = {};
     if (formValue.fields && Array.isArray(formValue.fields)) {
       for (const field of formValue.fields) {
-        // Include field even if empty, so it shows up in preview
         data[field.label] = field.value || '';
       }
     }
 
     const linkedIds = this.selectedLinkedProtocolIds();
     const fgCats = this.fileGroupCategoriesPayload();
-    const request: GenerateProtocolRequest = {
+
+    return {
       template_id: templateId,
       project_id: projectId,
       object_ids: objectIds,
@@ -277,8 +337,25 @@ export class ProtocolGenerateModalComponent {
       to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
       data: Object.keys(data).length > 0 ? data : undefined,
       linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
+      save_to_project: this.saveToProject(),
+      custom_object_order: this.customObjectOrder(),
       ...(fgCats ? { file_group_categories: fgCats } : {}),
     };
+  }
+
+  loadPreview(): void {
+    const templateId = this.form.get('template_id')?.value;
+    if (!templateId || templateId === '' || !this.hasSelection()) {
+      return;
+    }
+
+    const request = this.#buildGenerateRequest();
+    if (!request) {
+      return;
+    }
+
+    this.loadingPreview.set(true);
+    const formValue = this.form.value;
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
       next: (previewResponse) => {
@@ -287,6 +364,9 @@ export class ProtocolGenerateModalComponent {
           .filter((id: string | undefined): id is string => !!id);
         if (sectionIds.length > 0) {
           this.selectedObjectIds.set(sectionIds);
+          if (!this.customObjectOrder()) {
+            this.protocolObjectOrderIds.set(sectionIds);
+          }
         }
         this.previewData.set(previewResponse);
         // Ensure fields are still populated when showing preview
@@ -373,11 +453,9 @@ export class ProtocolGenerateModalComponent {
 
     this.generating.set(true);
 
-    const templateId = this.form.value.template_id;
+    const request = this.#buildGenerateRequest();
     const projectId = this.projectId();
-    const objectIds = this.#orderedSelectedObjectIds();
-
-    if (!projectId || objectIds.length === 0) {
+    if (!request || !projectId) {
       this.generating.set(false);
       this.#notificationService.showError(
         this.#translationService.instant('protocols.generateMissingData'),
@@ -385,31 +463,7 @@ export class ProtocolGenerateModalComponent {
       return;
     }
 
-    const formValue = this.form.value;
-
-    // Build data object from template fields - include all fields even if empty
-    const data: Record<string, unknown> = {};
-    if (formValue.fields && Array.isArray(formValue.fields)) {
-      for (const field of formValue.fields) {
-        // Include field even if empty, so it shows up in PDF
-        data[field.label] = field.value || '';
-      }
-    }
-
-    const linkedIds = this.selectedLinkedProtocolIds();
-    const fgCats = this.fileGroupCategoriesPayload();
     const saveToProject = this.saveToProject();
-    const request: GenerateProtocolRequest = {
-      template_id: templateId,
-      project_id: projectId,
-      object_ids: objectIds,
-      from_date: formValue.from_date ? this.formatDateForBackend(formValue.from_date) : undefined,
-      to_date: formValue.to_date ? this.formatDateForBackend(formValue.to_date, true) : undefined,
-      data: Object.keys(data).length > 0 ? data : undefined,
-      linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
-      save_to_project: saveToProject,
-      ...(fgCats ? { file_group_categories: fgCats } : {}),
-    };
 
     this.#protocolService.downloadProtocol(request).subscribe({
       next: () => {
@@ -449,9 +503,7 @@ export class ProtocolGenerateModalComponent {
       next.delete(category);
     }
     this.protocolFileGroupCategories.set(Array.from(next));
-    if (this.showingPreview() && this.previewData() && this.hasSelection()) {
-      this.loadPreview();
-    }
+    this.#onProtocolFiltersChanged();
   }
 
   /** Deduplicated non-empty labels sent to preview/PDF endpoints. */
@@ -477,6 +529,7 @@ export class ProtocolGenerateModalComponent {
     } else {
       this.selectedObjectIds.set(current.filter((id) => id !== objectId));
     }
+    this.#onProtocolFiltersChanged();
   }
 
   isSelected(objectId: string | undefined): boolean {
@@ -492,6 +545,74 @@ export class ProtocolGenerateModalComponent {
     } else {
       this.selectedObjectIds.set([...ids]);
     }
+    this.#onProtocolFiltersChanged();
+  }
+
+  onProtocolObjectDragStart(event: DragEvent, object: Object): void {
+    const id = object._id?.$oid;
+    if (!id) return;
+    this.draggedObjectId.set(id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', id);
+    }
+  }
+
+  onProtocolObjectDragOver(event: DragEvent, object: Object): void {
+    event.preventDefault();
+    const id = object._id?.$oid;
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (id && id !== this.draggedObjectId()) {
+      this.dragOverObjectId.set(id);
+    }
+  }
+
+  onProtocolObjectDragLeave(object: Object): void {
+    const id = object._id?.$oid;
+    if (id && this.dragOverObjectId() === id) {
+      this.dragOverObjectId.set(null);
+    }
+  }
+
+  onProtocolObjectDrop(event: DragEvent, target: Object): void {
+    event.preventDefault();
+    const draggedId = this.draggedObjectId();
+    const targetId = target._id?.$oid;
+    if (!draggedId || !targetId || draggedId === targetId) {
+      this.draggedObjectId.set(null);
+      this.dragOverObjectId.set(null);
+      return;
+    }
+
+    const selected = new Set(this.selectedObjectIds());
+    const base = this.protocolObjectOrderIds().length
+      ? [...this.protocolObjectOrderIds()]
+      : this.objectsInProtocolOrder()
+          .map((o) => o._id?.$oid)
+          .filter((id): id is string => !!id && selected.has(id));
+
+    const from = base.indexOf(draggedId);
+    const to = base.indexOf(targetId);
+    if (from === -1 || to === -1) {
+      this.draggedObjectId.set(null);
+      this.dragOverObjectId.set(null);
+      return;
+    }
+
+    base.splice(from, 1);
+    base.splice(to, 0, draggedId);
+    this.customObjectOrder.set(true);
+    this.protocolObjectOrderIds.set(base);
+    this.draggedObjectId.set(null);
+    this.dragOverObjectId.set(null);
+    this.loadPreview();
+  }
+
+  onProtocolObjectDragEnd(): void {
+    this.draggedObjectId.set(null);
+    this.dragOverObjectId.set(null);
   }
 
   toggleLinkedProtocol(protocolId: string | undefined, checked: boolean): void {

@@ -151,19 +151,35 @@
               }
             </button>
           </div>
-          <p class="helper-text">
-            {{ 'protocols.selectObjectsDescription' | translate }}
-          </p>
-          <div class="object-list">
-            @for (object of objectsForProtocolSelection(); track object._id?.$oid) {
-              <label class="object-item">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(object._id?.$oid)"
-                  (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
-                />
-                <span>{{ formatObjectLabel(object) }}</span>
-              </label>
+          <p class="helper-text">{{ 'protocols.selectObjectsDescription' | translate }}</p>
+          <p class="helper-text reorder-hint">{{ 'protocols.reorderObjectsHint' | translate }}</p>
+          <p class="section-title reorder-title">{{ 'protocols.reorderObjects' | translate }}</p>
+          <div class="object-list object-list--reorder">
+            @for (object of objectsInProtocolOrder(); track object._id?.$oid; let i = $index) {
+              <div
+                class="object-item object-item--reorder"
+                [class.dragging]="draggedObjectId() === object._id?.$oid"
+                [class.drag-over]="dragOverObjectId() === object._id?.$oid"
+                [attr.draggable]="isSelected(object._id?.$oid)"
+                (dragstart)="onProtocolObjectDragStart($event, object)"
+                (dragover)="onProtocolObjectDragOver($event, object)"
+                (dragleave)="onProtocolObjectDragLeave(object)"
+                (drop)="onProtocolObjectDrop($event, object)"
+                (dragend)="onProtocolObjectDragEnd()"
+              >
+                <label class="object-item-checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(object._id?.$oid)"
+                    (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+                  />
+                  <span>{{ formatObjectLabel(object) }}</span>
+                </label>
+                @if (isSelected(object._id?.$oid)) {
+                  <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+                  <span class="reorder-position">{{ i + 1 }}</span>
+                }
+              </div>
             }
           </div>
           @if (!hasSelection()) {

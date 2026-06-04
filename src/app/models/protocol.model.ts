@@ -41,6 +41,10 @@ export interface ProtocolRecord {
   data?: Record<string, unknown>;
   /** Present when the PDF was uploaded by the user rather than generated from a template. */
   uploaded_pdf_path?: string;
+  from_date?: string;
+  to_date?: string;
+  file_group_categories?: string[];
+  custom_object_order?: boolean;
 }
 
 /** True when the protocol row came from a user PDF upload (not template generation). */
@@ -61,4 +65,6 @@ export interface GenerateProtocolRequest {
   linked_protocol_ids?: string[];
   /** When true, add this PDF to the project's Generated Protocols list (default: download only). */
   save_to_project?: boolean;
+  /** When true, `object_ids` order is used as the protocol object order. */
+  custom_object_order?: boolean;
 }
