@@ -426,7 +426,9 @@
                   </button>
                   <div class="protocol-info">
                     <div class="protocol-name-row">
-                      <p class="protocol-name">{{ protocol.template_name }}</p>
+                      <p class="protocol-name" [attr.title]="protocol.template_name">
+                        {{ protocol.template_name }}
+                      </p>
                       @if (isUploadedProtocol(protocol)) {
                         <span class="protocol-source-badge protocol-source-badge--uploaded">{{
                           'protocols.badgeUploaded' | translate
