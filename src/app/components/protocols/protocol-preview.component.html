@@ -101,6 +101,16 @@
           @if (todo.note?.trim()) {
             <p class="todo-preview-note">{{ todo.note }}</p>
           }
+          @if (todo.sub_items?.length) {
+            <ul class="todo-preview-sub-list">
+              @for (sub of todo.sub_items; track $index) {
+                <li class="todo-preview-sub-item">
+                  <span class="todo-preview-sub-dot todo-preview-sub-dot--{{ sub.color || 'red' }}"></span>
+                  <span>{{ sub.title }}</span>
+                </li>
+              }
+            </ul>
+          }
           </li>
         }
       </ul>

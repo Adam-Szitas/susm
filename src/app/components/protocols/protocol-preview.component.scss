@@ -220,5 +220,43 @@
       font-size: 0.9rem;
       color: #555;
     }
+
+    .todo-preview-sub-list {
+      list-style: none;
+      margin: 0.35rem 0 0;
+      padding: 0 0 0 1rem;
+    }
+
+    .todo-preview-sub-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.88rem;
+      color: #444;
+      margin-bottom: 0.2rem;
+    }
+
+    .todo-preview-sub-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+
+      &--red {
+        background: #e53935;
+      }
+
+      &--blue {
+        background: #1e88e5;
+      }
+
+      &--green {
+        background: #43a047;
+      }
+
+      &--orange {
+        background: #fb8c00;
+      }
+    }
   }
 }

@@ -25,9 +25,15 @@ export interface ProtocolPreviewFileGroup {
   images: ProtocolPreviewImage[];
 }
 
+export interface ProtocolPreviewTodoSubSection {
+  title: string;
+  color?: string;
+}
+
 export interface ProtocolPreviewTodoSection {
   title: string;
   note?: string;
+  sub_items?: ProtocolPreviewTodoSubSection[];
 }
 
 export interface ProtocolPreviewContentSection {

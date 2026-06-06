@@ -137,26 +137,6 @@
   min-width: 0;
 }
 
-.assign-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  cursor: pointer;
-  margin: 0;
-  min-width: 0;
-  flex: 1;
-  line-height: 1.2;
-
-  input[type='checkbox'] {
-    margin: 0;
-    flex-shrink: 0;
-  }
-
-  .todo-label {
-    flex: 1;
-  }
-}
-
 .todo-label {
   display: block;
   flex: 1;
@@ -190,22 +170,76 @@
   color: #333;
   cursor: pointer;
 
-  &--successful {
+  &--finished {
     border-color: #a5d6a7;
     background: #f1f8f2;
     color: #1b5e20;
   }
 
-  &--failed {
+  &--under-process {
     border-color: #ef9a9a;
     background: #fff5f5;
     color: #b71c1c;
   }
+
+  &--sub {
+    max-width: 9rem;
+  }
+
+  &--sub-red {
+    border-color: #ef9a9a;
+    background: #fff5f5;
+    color: #b71c1c;
+  }
+
+  &--sub-blue {
+    border-color: #90caf9;
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
+
+  &--sub-green {
+    border-color: #a5d6a7;
+    background: #e8f5e9;
+    color: #1b5e20;
+  }
+
+  &--sub-orange {
+    border-color: #ffcc80;
+    background: #fff3e0;
+    color: #e65100;
+  }
 }
 
-.empty-message {
-  color: #666;
-  font-style: italic;
-  margin: 0;
-  font-size: 0.85rem;
+.sub-item-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  min-width: 0;
 }
+
+.color-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  &--red {
+    background: #e53935;
+  }
+
+  &--blue {
+    background: #1e88e5;
+  }
+
+  &--green {
+    background: #43a047;
+  }
+
+  &--orange {
+    background: #fb8c00;
+  }
+}
+

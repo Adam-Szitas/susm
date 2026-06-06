@@ -6,6 +6,7 @@ import {
   createComponent,
   inject,
   EnvironmentInjector,
+  inputBinding,
 } from '@angular/core';
 import { ModalComponent } from '../components/modal/modal.component';
 import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
@@ -86,18 +87,15 @@ export class ModalService {
     // Clear ng-content
     modalBody.innerHTML = '';
 
-    // Create component in modal body
+    const bindings = inputs
+      ? Object.keys(inputs).map((key) => inputBinding(key, () => inputs[key]))
+      : [];
+
     const childComponent = createComponent(componentType, {
       environmentInjector: this.#injector as EnvironmentInjector,
       hostElement: modalBody,
+      bindings,
     });
-
-    // Set inputs if provided - use setInput() for signal inputs
-    if (inputs) {
-      Object.keys(inputs).forEach(key => {
-        childComponent.setInput(key, inputs[key]);
-      });
-    }
 
     this.#appRef.attachView(childComponent.hostView);
     return childComponent;

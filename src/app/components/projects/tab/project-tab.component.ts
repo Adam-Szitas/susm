@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -26,7 +27,7 @@ import {
   ProtocolRecord,
   isUploadedProtocol,
   sortObjectsByStoredOrder,
-  computeObjectTodoAggregateStatus,
+  objectTodoCardClassNames,
 } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
@@ -38,6 +39,7 @@ import { FileListComponent } from '../../file-list/file-list.component';
 import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
+import { ProjectTodoAssignmentModalComponent } from '../../todos/project-todo-assignment-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { UserStore } from '@store/user.store';
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
@@ -58,6 +60,7 @@ import { compactFormActions } from '../../shared/compact-form-actions';
   styleUrl: './project-tab.component.scss',
   standalone: true,
   imports: [
+    CommonModule,
     FilterComponent,
     RouterLink,
     TranslateModule,
@@ -268,16 +271,46 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       componentInputs: {
         projectId,
         todoItems: project.todo_items || [],
+        objects: this.sortedObjects(),
       },
       wide: true,
     });
   }
 
-  objectTodoCardClass(object: Object): string | null {
-    const status = computeObjectTodoAggregateStatus(object.todo_entries);
-    if (status === 'complete') return 'card--todo-complete';
-    if (status === 'attention') return 'card--todo-attention';
-    return null;
+  assignTodoItems(): void {
+    const project = this.project();
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    const todoItems = project?.todo_items ?? [];
+    const projectObjects = this.sortedObjects();
+
+    if (!project || !projectId) return;
+    if (!todoItems.length) {
+      this.#notificationService.showError(
+        this.#translationService.instant('todos.noItemsToAssign'),
+      );
+      return;
+    }
+    if (!projectObjects.length) {
+      this.#notificationService.showError(
+        this.#translationService.instant('todos.noObjectsToAssign'),
+      );
+      return;
+    }
+
+    this.#modalService.open({
+      title: 'todos.assignChecklist',
+      component: ProjectTodoAssignmentModalComponent,
+      componentInputs: {
+        projectId,
+        todoItems,
+        objects: projectObjects,
+      },
+      wide: true,
+    });
+  }
+
+  objectTodoCardClasses(object: Object): string[] {
+    return objectTodoCardClassNames(object.todo_entries, this.project()?.todo_items);
   }
 
   generateProtocol(): void {

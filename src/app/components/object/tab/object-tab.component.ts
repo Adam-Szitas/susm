@@ -23,6 +23,7 @@ import {
   WORK_STATUSES,
   TodoItem,
   ObjectTodoEntry,
+  resolveAssignedTodoItems,
 } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
@@ -119,6 +120,12 @@ export class ObjectTabComponent implements OnInit {
     return [a.house_number, a.level, a.door_number].filter((p) => !!p?.trim()).join(', ');
   });
 
+  readonly hasAssignedChecklist = computed(() => {
+    const entries = this.object()?.todo_entries ?? [];
+    const items = this.projectTodoItems();
+    return resolveAssignedTodoItems(items, entries).length > 0;
+  });
+
   readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
 
   readonly displayedFileGroups = computed(() => {
@@ -157,6 +164,10 @@ export class ObjectTabComponent implements OnInit {
           this.shareUrl.set(null);
           this.shareQrDataUrl.set(null);
           this.shareError.set(null);
+          const projectItems = this.#projectStore.project()?.todo_items ?? [];
+          if (projectItems.length) {
+            this.projectTodoItems.set(projectItems);
+          }
           this.loadFiles(objectId);
           this.loadProjectCategories(objectId);
         },

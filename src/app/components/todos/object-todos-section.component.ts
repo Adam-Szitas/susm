@@ -13,11 +13,21 @@ import {
   ObjectTodoEntry,
   TodoItem,
   TodoItemStatus,
+  TodoSubItem,
+  TodoSubItemColor,
   getObjectTodoStatus,
-  isTodoAssigned,
+  getSelectedSubItem,
+  getSelectedSubItemId,
+  getSubItems,
+  hasSubItems,
+  isParentTodoAssigned,
+  normalizeTodoSubItemColor,
+  resolveAssignedTodoItems,
   sortTodoItems,
-  todoEntryItemId,
   todoItemId,
+  todoSubItemId,
+  updateSelectedSubItem,
+  updateTodoEntryStatus,
 } from '@models';
 import { ProjectStore } from '@store/project.store';
 import { NotificationService } from '@services/notification.service';
@@ -48,19 +58,25 @@ export class ObjectTodosSectionComponent {
 
   readonly sortedItems = computed(() => sortTodoItems(this.todoItems()));
 
-  readonly visibleItems = computed(() => {
-    const items = this.sortedItems();
-    if (this.isAdmin()) {
-      return items;
-    }
-    const assignedIds = new Set(this.todoEntries().map((e) => todoEntryItemId(e)));
-    return items.filter((item) => assignedIds.has(todoItemId(item)));
-  });
+  readonly visibleItems = computed(() =>
+    resolveAssignedTodoItems(this.todoItems(), this.todoEntries()),
+  );
 
   readonly visibleCount = computed(() => this.visibleItems().length);
 
+  readonly todoItemId = todoItemId;
+  readonly todoSubItemId = todoSubItemId;
+
   isAssigned(item: TodoItem): boolean {
-    return isTodoAssigned(this.todoEntries(), todoItemId(item));
+    return isParentTodoAssigned(this.todoEntries(), todoItemId(item));
+  }
+
+  itemHasSubItems(item: TodoItem): boolean {
+    return hasSubItems(item);
+  }
+
+  subItems(item: TodoItem): TodoSubItem[] {
+    return getSubItems(item);
   }
 
   itemDisplayLabel(item: TodoItem): string {
@@ -73,32 +89,28 @@ export class ObjectTodosSectionComponent {
     return getObjectTodoStatus(this.todoEntries(), todoItemId(item));
   }
 
+  selectedSubItemId(item: TodoItem): string | null {
+    return getSelectedSubItemId(this.todoEntries(), todoItemId(item));
+  }
+
+  selectedSubColor(item: TodoItem): TodoSubItemColor {
+    const sub = getSelectedSubItem(this.todoEntries(), item);
+    return normalizeTodoSubItemColor(sub?.color);
+  }
+
   toggleExpanded(): void {
     this.expanded.update((value) => !value);
   }
 
-  toggleAssignment(item: TodoItem, event: Event): void {
-    if (!this.isAdmin()) return;
-    const checked = (event.target as HTMLInputElement).checked;
-    const itemId = todoItemId(item);
-    let entries = [...this.todoEntries()];
+  toggleAssignment(_item: TodoItem, _event: Event): void {}
 
-    if (checked) {
-      if (!entries.some((e) => todoEntryItemId(e) === itemId)) {
-        entries.push({ todo_item_id: itemId, status: 'pending' });
-      }
-    } else {
-      entries = entries.filter((e) => todoEntryItemId(e) !== itemId);
-    }
-
+  setStatus(item: TodoItem, status: TodoItemStatus): void {
+    const entries = updateTodoEntryStatus(this.todoEntries(), todoItemId(item), status);
     this.#persist(entries);
   }
 
-  setStatus(item: TodoItem, status: TodoItemStatus): void {
-    const itemId = todoItemId(item);
-    const entries = this.todoEntries().map((entry) =>
-      todoEntryItemId(entry) === itemId ? { ...entry, status } : entry,
-    );
+  setSelectedSubItem(item: TodoItem, subItemId: string): void {
+    const entries = updateSelectedSubItem(this.todoEntries(), item, subItemId);
     this.#persist(entries);
   }
 

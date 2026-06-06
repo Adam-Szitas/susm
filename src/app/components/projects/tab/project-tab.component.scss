@@ -131,6 +131,26 @@
     border-color: #ffe082;
   }
 
+  &--todo-sub-red {
+    background: #ffebee;
+    border-color: #ef9a9a;
+  }
+
+  &--todo-sub-blue {
+    background: #e3f2fd;
+    border-color: #90caf9;
+  }
+
+  &--todo-sub-green {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &--todo-sub-orange {
+    background: #fff3e0;
+    border-color: #ffcc80;
+  }
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border-color: #d0d0d0;
@@ -580,6 +600,12 @@
 
   &--full {
     grid-column: 1 / -1;
+  }
+
+  .checklist-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   &--category {

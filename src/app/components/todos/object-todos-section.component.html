@@ -1,4 +1,4 @@
-@if (sortedItems().length > 0) {
+@if (visibleItems().length > 0) {
   <section class="object-todos-section" [class.object-todos-section--saving]="saving()">
     <button
       type="button"
@@ -25,60 +25,56 @@
 
     @if (expanded()) {
       <ul class="todo-list">
-      @for (item of visibleItems(); track item._id.$oid) {
-        <li
-          class="todo-list-item"
-          [class.todo-list-item--assigned]="isAssigned(item)"
-          [class.todo-list-item--admin]="isAdmin()"
-        >
-          <div class="todo-row">
-            <div class="todo-main">
-              @if (isAdmin()) {
-                <label class="assign-checkbox category-checkbox-label">
-                  <input
-                    type="checkbox"
-                    [checked]="isAssigned(item)"
-                    (change)="toggleAssignment(item, $event)"
-                  />
-                  <span class="todo-label" [title]="itemDisplayLabel(item)">
-                    <span class="todo-label-title">{{ item.title }}</span>
-                    @if (item.note?.trim()) {
-                      <span class="todo-label-note"> ({{ item.note }})</span>
-                    }
-                  </span>
-                </label>
-              } @else {
+        @for (item of visibleItems(); track todoItemId(item)) {
+          <li
+            class="todo-list-item"
+            [class.todo-list-item--assigned]="isAssigned(item)"
+          >
+            <div class="todo-row">
+              <div class="todo-main">
                 <span class="todo-label" [title]="itemDisplayLabel(item)">
                   <span class="todo-label-title">{{ item.title }}</span>
                   @if (item.note?.trim()) {
                     <span class="todo-label-note"> ({{ item.note }})</span>
                   }
                 </span>
+              </div>
+
+              @if (!itemHasSubItems(item)) {
+                <select
+                  class="status-select"
+                  [class.status-select--finished]="itemStatus(item) === 'finished'"
+                  [class.status-select--under-process]="itemStatus(item) === 'under_process'"
+                  [value]="itemStatus(item) ?? 'under_process'"
+                  [attr.aria-label]="'todos.status' | translate"
+                  (change)="setStatus(item, $any($event.target).value)"
+                >
+                  <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
+                  <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
+                </select>
+              } @else {
+                <div class="sub-item-select-wrap">
+                  <span class="color-dot color-dot--{{ selectedSubColor(item) }}"></span>
+                  <select
+                    class="status-select status-select--sub"
+                    [class.status-select--sub-red]="selectedSubColor(item) === 'red'"
+                    [class.status-select--sub-blue]="selectedSubColor(item) === 'blue'"
+                    [class.status-select--sub-green]="selectedSubColor(item) === 'green'"
+                    [class.status-select--sub-orange]="selectedSubColor(item) === 'orange'"
+                    [value]="selectedSubItemId(item) ?? ''"
+                    [attr.aria-label]="'todos.selectSubItem' | translate"
+                    (change)="setSelectedSubItem(item, $any($event.target).value)"
+                  >
+                    @for (sub of subItems(item); track todoSubItemId(sub)) {
+                      <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>
+                    }
+                  </select>
+                </div>
               }
             </div>
-
-            @if (isAssigned(item)) {
-              <select
-                class="status-select"
-                [class.status-select--successful]="itemStatus(item) === 'successful'"
-                [class.status-select--failed]="itemStatus(item) === 'failed'"
-                [value]="itemStatus(item) ?? 'pending'"
-                [attr.aria-label]="'todos.status' | translate"
-                (change)="setStatus(item, $any($event.target).value)"
-              >
-                <option value="pending">{{ 'todos.statusPending' | translate }}</option>
-                <option value="successful">{{ 'todos.statusSuccessful' | translate }}</option>
-                <option value="failed">{{ 'todos.statusFailed' | translate }}</option>
-              </select>
-            }
-          </div>
-        </li>
-      }
+          </li>
+        }
       </ul>
-
-      @if (!isAdmin() && visibleItems().length === 0) {
-        <p class="empty-message">{{ 'todos.noAssignedItems' | translate }}</p>
-      }
     }
   </section>
 }

@@ -111,7 +111,7 @@
           @if (isAdmin()) {
             <div class="project-data-item project-data-item--full">
               <dt>{{ 'todos.projectChecklist' | translate }}</dt>
-              <dd>
+              <dd class="checklist-actions">
                 <button
                   type="button"
                   class="button button-outline"
@@ -120,6 +120,16 @@
                   [title]="'todos.manageProjectChecklist' | translate"
                 >
                   {{ 'todos.manageProjectChecklist' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="button button-outline"
+                  (click)="assignTodoItems()"
+                  [disabled]="!project()?.todo_items?.length || objects().length === 0"
+                  [attr.aria-label]="'todos.assignChecklist' | translate"
+                  [title]="'todos.assignChecklist' | translate"
+                >
+                  {{ 'todos.assignChecklist' | translate }}
                 </button>
               </dd>
             </div>
@@ -148,6 +158,63 @@
 
   @if (!project()?.archived_at) {
     <div class="project-toolbar">
+      @if (isAdmin()) {
+        <button
+          type="button"
+          class="button button-outline project-toolbar-btn"
+          [class.icon-only]="toolbarIconOnly()"
+          (click)="manageTodoItems()"
+          [attr.aria-label]="'todos.manageProjectChecklist' | translate"
+          [title]="'todos.manageProjectChecklist' | translate"
+        >
+          <svg
+            class="project-toolbar-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 6h11M9 12h11M9 18h11" />
+            <path d="M4 6h.01M4 12h.01M4 18h.01" />
+          </svg>
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{ 'todos.manageProjectChecklist' | translate }}</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="button button-outline project-toolbar-btn"
+          [class.icon-only]="toolbarIconOnly()"
+          (click)="assignTodoItems()"
+          [disabled]="!project()?.todo_items?.length || objects().length === 0"
+          [attr.aria-label]="'todos.assignChecklist' | translate"
+          [title]="'todos.assignChecklist' | translate"
+        >
+          <svg
+            class="project-toolbar-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{ 'todos.assignChecklist' | translate }}</span>
+          }
+        </button>
+      }
       <button
         type="button"
         class="button button-primary project-toolbar-btn"
@@ -367,8 +434,7 @@
         @for (object of filteredObjects(); track object._id?.$oid) {
           <div
             class="card"
-            [class.card--todo-complete]="objectTodoCardClass(object) === 'card--todo-complete'"
-            [class.card--todo-attention]="objectTodoCardClass(object) === 'card--todo-attention'"
+            [ngClass]="objectTodoCardClasses(object)"
             [routerLink]="['/objects/tab', object._id?.$oid]"
             [queryParams]="objectTabLinkQueryParams()"
           >

@@ -8,6 +8,8 @@ import {
   ProjectFile,
   TodoItem,
   ObjectTodoEntry,
+  normalizeTodoItemStatus,
+  todoEntrySubItemId,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -193,13 +195,27 @@ export class ProjectStore {
 
   updateProjectTodoItems(
     projectId: string,
-    todoItems: { id?: string | null; title: string; note?: string | null }[],
+    todoItems: {
+      id?: string | null;
+      title: string;
+      note?: string | null;
+      sub_items?: {
+        id?: string | null;
+        title: string;
+        color: string;
+      }[];
+    }[],
   ): Observable<Project> {
     const payload = {
       todo_items: todoItems.map((item) => ({
-        id: item.id ?? undefined,
+        id: item.id ? String(item.id) : undefined,
         title: item.title,
         note: item.note ?? null,
+        sub_items: (item.sub_items ?? []).map((sub) => ({
+          id: sub.id ? String(sub.id) : undefined,
+          title: sub.title,
+          color: sub.color,
+        })),
       })),
     };
     return this.#httpService.put<Project>(`project/${projectId}/todo-items`, payload).pipe(
@@ -223,7 +239,8 @@ export class ProjectStore {
           typeof entry.todo_item_id === 'string'
             ? entry.todo_item_id
             : entry.todo_item_id.$oid,
-        status: entry.status,
+        todo_sub_item_id: todoEntrySubItemId(entry) ?? undefined,
+        status: normalizeTodoItemStatus(entry.status),
       })),
     };
     return this.#httpService.put<Object>(`object/${objectId}/todos`, payload).pipe(

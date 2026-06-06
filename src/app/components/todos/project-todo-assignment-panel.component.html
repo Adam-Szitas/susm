@@ -1,0 +1,115 @@
+<div class="todo-assignment-form">
+  <p class="assignment-intro">{{ 'todos.assignmentIntro' | translate }}</p>
+
+  <div class="assignment-layout">
+    <aside class="object-panel">
+      <label class="search-label" for="objectSearch">{{ 'todos.selectObject' | translate }}</label>
+      <input
+        id="objectSearch"
+        type="search"
+        class="object-search"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        [placeholder]="'todos.searchObjects' | translate"
+      />
+
+      <ul class="object-list" role="listbox" [attr.aria-label]="'todos.selectObject' | translate">
+        @for (object of filteredObjects(); track object._id?.$oid) {
+          <li>
+            <button
+              type="button"
+              class="object-list-item"
+              [class.object-list-item--selected]="isObjectSelected(object)"
+              [class.object-list-item--dirty]="isObjectDirtyState(object)"
+              role="option"
+              [attr.aria-selected]="isObjectSelected(object)"
+              (click)="selectObject(object)"
+            >
+              <span class="object-list-item-label">{{ objectLabel(object) }}</span>
+              <span class="object-list-item-meta">
+                <span class="assignment-badge">{{ assignmentSummary(object) }}</span>
+                @if (isObjectDirtyState(object)) {
+                  <span class="dirty-dot" [attr.title]="'todos.unsavedChanges' | translate"></span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+        @if (filteredObjects().length === 0) {
+          <li class="object-list-empty">{{ 'todos.noObjectsMatchSearch' | translate }}</li>
+        }
+      </ul>
+    </aside>
+
+    <section class="checklist-panel">
+      @if (selectedObject(); as object) {
+        <header class="checklist-panel-header">
+          <div>
+            <h3 class="checklist-panel-title">{{ objectLabel(object) }}</h3>
+            <p class="checklist-panel-subtitle">{{ 'todos.assignmentForObject' | translate }}</p>
+          </div>
+          <div class="checklist-panel-actions">
+            <button type="button" class="btn btn-secondary btn-small" (click)="assignAllForSelected()">
+              {{ 'todos.assignAll' | translate }}
+            </button>
+            <button type="button" class="btn btn-secondary btn-small" (click)="clearAllForSelected()">
+              {{ 'todos.clearAll' | translate }}
+            </button>
+          </div>
+        </header>
+
+        <ul class="checklist-assign-list">
+          @for (item of sortedTodoItems(); track trackTodoItemId(item)) {
+            <li class="checklist-assign-item">
+              <label class="checklist-assign-label">
+                <input
+                  type="checkbox"
+                  [checked]="isTodoAssigned(object._id!.$oid, item)"
+                  (change)="toggleAssignment(object._id!.$oid, item, $any($event.target).checked)"
+                />
+                <span class="checklist-assign-text">
+                  <span class="checklist-assign-title">{{ item.title }}</span>
+                  @if (item.note?.trim()) {
+                    <span class="checklist-assign-note">({{ item.note }})</span>
+                  }
+                  @if (itemHasSubItems(item)) {
+                    <span class="checklist-assign-hint">{{ 'todos.includesSubItems' | translate }}</span>
+                  }
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="checklist-panel-empty">{{ 'todos.selectObjectToAssign' | translate }}</p>
+      }
+    </section>
+  </div>
+
+  <footer class="form-actions">
+    @if (dirtyObjectCount() > 0) {
+      <span class="changes-hint">
+        {{ 'todos.objectsWithChanges' | translate: { count: dirtyObjectCount() } }}
+      </span>
+    }
+    <div class="form-actions-buttons">
+      @if (!embedded()) {
+        <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="saving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      }
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || dirtyObjectCount() === 0"
+      >
+        @if (saving()) {
+          {{ 'common.saving' | translate }}
+        } @else {
+          {{ 'todos.saveAssignments' | translate }}
+        }
+      </button>
+    </div>
+  </footer>
+</div>
