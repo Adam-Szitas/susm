@@ -1,7 +1,14 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpService } from '../services/http.service';
 import { Observable, tap } from 'rxjs';
-import { Project, Object, ObjectWithProject, ProjectFile } from '../models';
+import {
+  Project,
+  Object,
+  ObjectWithProject,
+  ProjectFile,
+  TodoItem,
+  ObjectTodoEntry,
+} from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectStore {
@@ -182,6 +189,61 @@ export class ProjectStore {
 
   loadObject(objectId: string): Observable<Object> {
     return this.#httpService.get<Object>(`object/${objectId}`);
+  }
+
+  updateProjectTodoItems(
+    projectId: string,
+    todoItems: { id?: string | null; title: string; note?: string | null }[],
+  ): Observable<Project> {
+    const payload = {
+      todo_items: todoItems.map((item) => ({
+        id: item.id ?? undefined,
+        title: item.title,
+        note: item.note ?? null,
+      })),
+    };
+    return this.#httpService.put<Project>(`project/${projectId}/todo-items`, payload).pipe(
+      tap((project) => {
+        this._project.set(project);
+        this.loadObjects();
+        const projects = this._projects();
+        const index = projects.findIndex((p) => p._id?.$oid === projectId);
+        if (index !== -1) {
+          projects[index] = project;
+          this._projects.set([...projects]);
+        }
+      }),
+    );
+  }
+
+  updateObjectTodos(objectId: string, todoEntries: ObjectTodoEntry[]): Observable<Object> {
+    const payload = {
+      todo_entries: todoEntries.map((entry) => ({
+        todo_item_id:
+          typeof entry.todo_item_id === 'string'
+            ? entry.todo_item_id
+            : entry.todo_item_id.$oid,
+        status: entry.status,
+      })),
+    };
+    return this.#httpService.put<Object>(`object/${objectId}/todos`, payload).pipe(
+      tap((updatedObject) => {
+        const project = this._project();
+        if (project?.objects) {
+          const index = project.objects.findIndex((o) => o._id?.$oid === objectId);
+          if (index !== -1) {
+            project.objects[index] = updatedObject;
+            this._project.set({ ...project });
+          }
+        }
+        const objects = this._objects();
+        const objIndex = objects.findIndex((o) => o._id?.$oid === objectId);
+        if (objIndex !== -1) {
+          objects[objIndex] = updatedObject;
+          this._objects.set([...objects]);
+        }
+      }),
+    );
   }
 
   updateProjectCategories(projectId: string, categories: string[]): Observable<Project> {

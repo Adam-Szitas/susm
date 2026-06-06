@@ -67,6 +67,11 @@ export class ProtocolGenerateModalComponent {
   protocolObjectOrderIds = signal<string[]>([]);
   draggedObjectId = signal<string | null>(null);
   dragOverObjectId = signal<string | null>(null);
+  /** When true, linked protocol order is sent explicitly for this generation. */
+  customLinkedProtocolOrder = signal(false);
+  protocolLinkedOrderIds = signal<string[]>([]);
+  draggedLinkedProtocolId = signal<string | null>(null);
+  dragOverLinkedProtocolId = signal<string | null>(null);
 
   /**
    * Objects listed in the protocol modal: with a date range, only objects that have at least one
@@ -143,6 +148,41 @@ export class ProtocolGenerateModalComponent {
       ordered.push(obj);
     }
     return ordered;
+  });
+
+  /** Linked protocols for preview UI: selected first (merge order), then unselected. */
+  linkedProtocolsInOrder = computed(() => {
+    this.existingProtocols();
+    this.selectedLinkedProtocolIds();
+    this.customLinkedProtocolOrder();
+    this.protocolLinkedOrderIds();
+
+    const all = this.existingProtocols();
+    const selected = new Set(this.selectedLinkedProtocolIds());
+    const byId = new Map(all.map((p) => [p._id.$oid, p]));
+
+    const order = this.customLinkedProtocolOrder()
+      ? this.protocolLinkedOrderIds()
+      : this.selectedLinkedProtocolIds();
+
+    const orderedSelected: ProtocolRecord[] = [];
+    for (const id of order) {
+      if (!selected.has(id)) continue;
+      const protocol = byId.get(id);
+      if (protocol) {
+        orderedSelected.push(protocol);
+      }
+    }
+    for (const id of selected) {
+      if (order.includes(id)) continue;
+      const protocol = byId.get(id);
+      if (protocol) {
+        orderedSelected.push(protocol);
+      }
+    }
+
+    const unselected = all.filter((p) => p._id?.$oid && !selected.has(p._id.$oid));
+    return [...orderedSelected, ...unselected];
   });
 
   /** Object IDs currently shown in the checklist (respects date range + preview). */
@@ -285,8 +325,22 @@ export class ProtocolGenerateModalComponent {
     this.dragOverObjectId.set(null);
   }
 
+  #resetLinkedProtocolOrder(): void {
+    this.customLinkedProtocolOrder.set(false);
+    this.protocolLinkedOrderIds.set([]);
+    this.draggedLinkedProtocolId.set(null);
+    this.dragOverLinkedProtocolId.set(null);
+  }
+
   #onProtocolFiltersChanged(): void {
     this.#resetProtocolObjectOrder();
+    if (this.showingPreview() && this.hasSelection()) {
+      this.loadPreview();
+    }
+  }
+
+  #onLinkedProtocolsChanged(): void {
+    this.#resetLinkedProtocolOrder();
     if (this.showingPreview() && this.hasSelection()) {
       this.loadPreview();
     }
@@ -309,6 +363,44 @@ export class ProtocolGenerateModalComponent {
     return ordered;
   }
 
+  #selectedLinkedProtocolOrderBase(): string[] {
+    const selected = new Set(this.selectedLinkedProtocolIds());
+    if (this.customLinkedProtocolOrder()) {
+      const custom = this.protocolLinkedOrderIds().filter((id) => selected.has(id));
+      if (custom.length > 0) {
+        return custom;
+      }
+    }
+    return this.selectedLinkedProtocolIds().filter((id) => selected.has(id));
+  }
+
+  #orderedLinkedProtocolIds(): string[] {
+    return this.#selectedLinkedProtocolOrderBase();
+  }
+
+  #reorderLinkedPreviewsInPlace(order: string[]): void {
+    const preview = this.previewData();
+    if (!preview) {
+      return;
+    }
+    const linked = preview.linked_previews;
+    if (!linked?.length) {
+      return;
+    }
+    const byId = new Map(
+      linked
+        .map((lp) => [lp.protocol_id ?? '', lp] as const)
+        .filter(([id]) => id.length > 0),
+    );
+    const reordered = order
+      .map((id) => byId.get(id))
+      .filter((lp): lp is NonNullable<typeof lp> => !!lp);
+    if (reordered.length === 0) {
+      return;
+    }
+    this.previewData.set({ ...preview, linked_previews: reordered });
+  }
+
   #buildGenerateRequest(): GenerateProtocolRequest | null {
     const templateId = this.form.get('template_id')?.value;
     const projectId = this.projectId();
@@ -326,7 +418,7 @@ export class ProtocolGenerateModalComponent {
       }
     }
 
-    const linkedIds = this.selectedLinkedProtocolIds();
+    const linkedIds = this.#orderedLinkedProtocolIds();
     const fgCats = this.fileGroupCategoriesPayload();
 
     return {
@@ -366,6 +458,16 @@ export class ProtocolGenerateModalComponent {
           this.selectedObjectIds.set(sectionIds);
           if (!this.customObjectOrder()) {
             this.protocolObjectOrderIds.set(sectionIds);
+          }
+        }
+        const linkedIds = (previewResponse?.linked_previews ?? [])
+          .map((lp: { protocol_id?: string }) => lp.protocol_id)
+          .filter((id: string | undefined): id is string => !!id);
+        if (linkedIds.length > 0) {
+          if (this.customLinkedProtocolOrder()) {
+            this.#reorderLinkedPreviewsInPlace(this.#selectedLinkedProtocolOrderBase());
+          } else {
+            this.protocolLinkedOrderIds.set(linkedIds);
           }
         }
         this.previewData.set(previewResponse);
@@ -548,9 +650,27 @@ export class ProtocolGenerateModalComponent {
     this.#onProtocolFiltersChanged();
   }
 
+  objectProtocolPosition(object: Object): number {
+    const id = object._id?.$oid;
+    if (!id) return 0;
+    const order = this.customObjectOrder()
+      ? this.protocolObjectOrderIds()
+      : this.#orderedSelectedObjectIds();
+    const index = order.indexOf(id);
+    return index === -1 ? 0 : index + 1;
+  }
+
+  linkedProtocolPosition(protocol: ProtocolRecord): number {
+    const id = protocol._id?.$oid;
+    if (!id) return 0;
+    const index = this.#selectedLinkedProtocolOrderBase().indexOf(id);
+    return index === -1 ? 0 : index + 1;
+  }
+
   onProtocolObjectDragStart(event: DragEvent, object: Object): void {
     const id = object._id?.$oid;
     if (!id) return;
+    event.stopPropagation();
     this.draggedObjectId.set(id);
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -578,35 +698,40 @@ export class ProtocolGenerateModalComponent {
 
   onProtocolObjectDrop(event: DragEvent, target: Object): void {
     event.preventDefault();
+    event.stopPropagation();
     const draggedId = this.draggedObjectId();
     const targetId = target._id?.$oid;
     if (!draggedId || !targetId || draggedId === targetId) {
-      this.draggedObjectId.set(null);
-      this.dragOverObjectId.set(null);
+      this.onProtocolObjectDragEnd();
       return;
     }
 
     const selected = new Set(this.selectedObjectIds());
-    const base = this.protocolObjectOrderIds().length
-      ? [...this.protocolObjectOrderIds()]
-      : this.objectsInProtocolOrder()
-          .map((o) => o._id?.$oid)
-          .filter((id): id is string => !!id && selected.has(id));
+    if (!selected.has(draggedId)) {
+      this.onProtocolObjectDragEnd();
+      return;
+    }
+
+    const base = this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
+      ? [...this.protocolObjectOrderIds()].filter((id) => selected.has(id))
+      : this.#orderedSelectedObjectIds();
 
     const from = base.indexOf(draggedId);
-    const to = base.indexOf(targetId);
-    if (from === -1 || to === -1) {
-      this.draggedObjectId.set(null);
-      this.dragOverObjectId.set(null);
+    if (from === -1) {
+      this.onProtocolObjectDragEnd();
       return;
+    }
+
+    let to = base.indexOf(targetId);
+    if (to === -1) {
+      to = base.length;
     }
 
     base.splice(from, 1);
     base.splice(to, 0, draggedId);
     this.customObjectOrder.set(true);
     this.protocolObjectOrderIds.set(base);
-    this.draggedObjectId.set(null);
-    this.dragOverObjectId.set(null);
+    this.onProtocolObjectDragEnd();
     this.loadPreview();
   }
 
@@ -617,13 +742,91 @@ export class ProtocolGenerateModalComponent {
 
   toggleLinkedProtocol(protocolId: string | undefined, checked: boolean): void {
     if (!protocolId) return;
-    const current = new Set(this.selectedLinkedProtocolIds());
+    const current = [...this.selectedLinkedProtocolIds()];
     if (checked) {
-      current.add(protocolId);
+      if (!current.includes(protocolId)) {
+        current.push(protocolId);
+      }
     } else {
-      current.delete(protocolId);
+      const index = current.indexOf(protocolId);
+      if (index !== -1) {
+        current.splice(index, 1);
+      }
     }
-    this.selectedLinkedProtocolIds.set(Array.from(current));
+    this.selectedLinkedProtocolIds.set(current);
+    this.#onLinkedProtocolsChanged();
+  }
+
+  onLinkedProtocolDragStart(event: DragEvent, protocol: ProtocolRecord): void {
+    const id = protocol._id?.$oid;
+    if (!id) return;
+    event.stopPropagation();
+    this.draggedLinkedProtocolId.set(id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', id);
+    }
+  }
+
+  onLinkedProtocolDragOver(event: DragEvent, protocol: ProtocolRecord): void {
+    event.preventDefault();
+    const id = protocol._id?.$oid;
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (id && id !== this.draggedLinkedProtocolId()) {
+      this.dragOverLinkedProtocolId.set(id);
+    }
+  }
+
+  onLinkedProtocolDragLeave(protocol: ProtocolRecord): void {
+    const id = protocol._id?.$oid;
+    if (id && this.dragOverLinkedProtocolId() === id) {
+      this.dragOverLinkedProtocolId.set(null);
+    }
+  }
+
+  onLinkedProtocolDrop(event: DragEvent, target: ProtocolRecord): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const draggedId = this.draggedLinkedProtocolId();
+    const targetId = target._id?.$oid;
+    if (!draggedId || !targetId || draggedId === targetId) {
+      this.onLinkedProtocolDragEnd();
+      return;
+    }
+
+    const selected = new Set(this.selectedLinkedProtocolIds());
+    if (!selected.has(draggedId)) {
+      this.onLinkedProtocolDragEnd();
+      return;
+    }
+
+    const base = [...this.#selectedLinkedProtocolOrderBase()];
+    const from = base.indexOf(draggedId);
+    if (from === -1) {
+      this.onLinkedProtocolDragEnd();
+      return;
+    }
+
+    let to = base.indexOf(targetId);
+    if (to === -1) {
+      to = base.length;
+    }
+
+    base.splice(from, 1);
+    base.splice(to, 0, draggedId);
+    this.customLinkedProtocolOrder.set(true);
+    this.protocolLinkedOrderIds.set(base);
+    this.selectedLinkedProtocolIds.set(base);
+    this.#reorderLinkedPreviewsInPlace(base);
+    this.onLinkedProtocolDragEnd();
+    this.loadPreview();
+  }
+
+  onLinkedProtocolDragEnd(): void {
+    this.draggedLinkedProtocolId.set(null);
+    this.dragOverLinkedProtocolId.set(null);
   }
 
   isLinkedProtocolSelected(protocol: ProtocolRecord): boolean {

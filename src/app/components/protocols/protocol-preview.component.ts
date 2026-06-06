@@ -25,6 +25,11 @@ export interface ProtocolPreviewFileGroup {
   images: ProtocolPreviewImage[];
 }
 
+export interface ProtocolPreviewTodoSection {
+  title: string;
+  note?: string;
+}
+
 export interface ProtocolPreviewContentSection {
   object_id?: string;
   /** Bold object title (house + level/door), same as PDF/TOC. */
@@ -47,7 +52,8 @@ export interface ProtocolPreviewData {
   project_address: string;
   table_of_contents: { title: string; level: number }[];
   content_sections: ProtocolPreviewContentSection[];
-  linked_previews?: ProtocolPreviewData[];
+  todo_sections?: ProtocolPreviewTodoSection[];
+  linked_previews?: (ProtocolPreviewData & { protocol_id?: string })[];
   generated_at?: string;
 }
 

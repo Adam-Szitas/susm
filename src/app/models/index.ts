@@ -8,4 +8,5 @@ export * from './filter.model';
 export * from './status.model';
 export * from './dashboard.model';
 export * from './protocol.model';
+export * from './todo.model';
 

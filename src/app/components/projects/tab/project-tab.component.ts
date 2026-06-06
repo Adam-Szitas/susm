@@ -26,6 +26,7 @@ import {
   ProtocolRecord,
   isUploadedProtocol,
   sortObjectsByStoredOrder,
+  computeObjectTodoAggregateStatus,
 } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
@@ -37,6 +38,8 @@ import { FileListComponent } from '../../file-list/file-list.component';
 import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
+import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
+import { UserStore } from '@store/user.store';
 import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
@@ -77,7 +80,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #protocolService = inject(ProtocolService);
   #imageCompressionService = inject(ImageCompressionService);
   #filterPersistence = inject(FilterPersistenceService);
+  #userStore = inject(UserStore);
   #routeSubscription?: Subscription;
+
+  readonly isAdmin = this.#userStore.isAdmin;
 
   project = this.#projectStore.project;
   objects = this.#projectStore.objects;
@@ -249,6 +255,29 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         categories: project.categories || [],
       },
     });
+  }
+
+  manageTodoItems(): void {
+    const project = this.project();
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!project || !projectId) return;
+
+    this.#modalService.open({
+      title: 'todos.manageProjectChecklist',
+      component: ProjectTodoModalComponent,
+      componentInputs: {
+        projectId,
+        todoItems: project.todo_items || [],
+      },
+      wide: true,
+    });
+  }
+
+  objectTodoCardClass(object: Object): string | null {
+    const status = computeObjectTodoAggregateStatus(object.todo_entries);
+    if (status === 'complete') return 'card--todo-complete';
+    if (status === 'attention') return 'card--todo-attention';
+    return null;
   }
 
   generateProtocol(): void {

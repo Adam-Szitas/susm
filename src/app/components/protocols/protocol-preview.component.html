@@ -91,6 +91,22 @@
     </div>
   }
 
+  @if (data.todo_sections && data.todo_sections.length > 0) {
+    <div class="preview-section todo-section">
+      <h2 class="section-title">{{ 'protocol.pdf.projectChecklistInToc' | translate }}</h2>
+      <ul class="todo-preview-list">
+        @for (todo of data.todo_sections; track $index) {
+          <li class="todo-preview-item">
+          <h3 class="todo-preview-title">{{ todo.title }}</h3>
+          @if (todo.note?.trim()) {
+            <p class="todo-preview-note">{{ todo.note }}</p>
+          }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
   @if (data.linked_previews && data.linked_previews.length > 0) {
     <div class="linked-previews-intro">
       <h2 class="section-title">{{ 'protocols.alsoIncludedInPdf' | translate }}</h2>

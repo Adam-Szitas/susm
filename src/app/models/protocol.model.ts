@@ -45,6 +45,8 @@ export interface ProtocolRecord {
   to_date?: string;
   file_group_categories?: string[];
   custom_object_order?: boolean;
+  /** Older protocol IDs merged after this one in the PDF (stored order). */
+  linked_protocol_ids?: string[];
 }
 
 /** True when the protocol row came from a user PDF upload (not template generation). */

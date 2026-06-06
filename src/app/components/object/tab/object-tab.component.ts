@@ -21,6 +21,8 @@ import {
   fileGroupCategoryLabels,
   formatWorkStatus,
   WORK_STATUSES,
+  TodoItem,
+  ObjectTodoEntry,
 } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
@@ -32,6 +34,8 @@ import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-mo
 import { ModalService } from '@services/modal.service';
 import { EditObjectComponent } from '../edit-object/object-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
+import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.component';
+import { UserStore } from '@store/user.store';
 
 @Component({
   selector: 'app-object-tab',
@@ -43,6 +47,7 @@ import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb
     FileUploadModalComponent,
     BreadcrumbComponent,
     FormsModule,
+    ObjectTodosSectionComponent,
   ],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
@@ -58,8 +63,12 @@ export class ObjectTabComponent implements OnInit {
   #translationService = inject(TranslationService);
   #httpService = inject(HttpService);
   #modalService = inject(ModalService);
+  #userStore = inject(UserStore);
+
+  readonly isAdmin = this.#userStore.isAdmin;
 
   object = signal<Object | null>(null);
+  projectTodoItems = signal<TodoItem[]>([]);
   fileGroups = signal<FileGroup[]>([]);
   /** Category labels from `?categories=` (repeat or comma-separated); filters visible file groups. */
   urlFileGroupCategories = signal<string[]>([]);
@@ -164,18 +173,26 @@ export class ObjectTabComponent implements OnInit {
   }
 
   private loadProjectCategories(objectId: string): void {
-    // Get project categories from object's project
     this.#httpService
-      .get<{ categories?: string[] }>(`object/${objectId}/project-categories`)
+      .get<{ categories?: string[]; todo_items?: TodoItem[] }>(
+        `object/${objectId}/project-categories`,
+      )
       .subscribe({
         next: (result) => {
           this.projectCategories.set(result.categories || []);
+          this.projectTodoItems.set(result.todo_items || []);
         },
         error: () => {
-          // Silently fail - categories are optional
           this.projectCategories.set([]);
+          this.projectTodoItems.set([]);
         },
       });
+  }
+
+  onTodoEntriesChanged(entries: ObjectTodoEntry[]): void {
+    const current = this.object();
+    if (!current) return;
+    this.object.set({ ...current, todo_entries: entries.length ? entries : undefined });
   }
 
   updateCategory(category: string | null): void {

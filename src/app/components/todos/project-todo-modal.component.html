@@ -1,0 +1,60 @@
+<div class="project-todo-form">
+  <form [formGroup]="form">
+    <div class="form-group">
+      <label for="newTodoTitle">{{ 'todos.addItem' | translate }}</label>
+      <div class="add-row">
+        <input
+          type="text"
+          id="newTodoTitle"
+          formControlName="newTitle"
+          [placeholder]="'todos.itemTitle' | translate"
+        />
+        <input
+          type="text"
+          formControlName="newNote"
+          [placeholder]="'todos.itemNoteOptional' | translate"
+        />
+        <button type="button" class="btn btn-secondary" (click)="addItem()">
+          {{ 'common.add' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="items-list" formArrayName="items">
+      <h3>{{ 'todos.projectChecklist' | translate }}</h3>
+      @for (control of itemsArray.controls; track $index; let idx = $index) {
+        <div class="todo-item-row" [formGroupName]="idx">
+          <div class="todo-item-fields">
+            <input type="text" formControlName="title" [placeholder]="'todos.itemTitle' | translate" />
+            <input type="text" formControlName="note" [placeholder]="'todos.itemNoteOptional' | translate" />
+          </div>
+          <button
+            type="button"
+            class="btn btn-error btn-small icon-btn"
+            (click)="removeItem(idx)"
+            [attr.aria-label]="'common.delete' | translate"
+            [title]="'common.delete' | translate"
+          >
+            <app-trash-icon />
+          </button>
+        </div>
+      }
+      @if (itemsArray.length === 0) {
+        <p class="empty-message">{{ 'todos.noItems' | translate }}</p>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          {{ 'common.saving' | translate }}
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </div>
+  </form>
+</div>

@@ -108,6 +108,22 @@
               <dd class="project-note">{{ project()?.note }}</dd>
             </div>
           }
+          @if (isAdmin()) {
+            <div class="project-data-item project-data-item--full">
+              <dt>{{ 'todos.projectChecklist' | translate }}</dt>
+              <dd>
+                <button
+                  type="button"
+                  class="button button-outline"
+                  (click)="manageTodoItems()"
+                  [attr.aria-label]="'todos.manageProjectChecklist' | translate"
+                  [title]="'todos.manageProjectChecklist' | translate"
+                >
+                  {{ 'todos.manageProjectChecklist' | translate }}
+                </button>
+              </dd>
+            </div>
+          }
         </dl>
       </div>
     }
@@ -351,6 +367,8 @@
         @for (object of filteredObjects(); track object._id?.$oid) {
           <div
             class="card"
+            [class.card--todo-complete]="objectTodoCardClass(object) === 'card--todo-complete'"
+            [class.card--todo-attention]="objectTodoCardClass(object) === 'card--todo-attention'"
             [routerLink]="['/objects/tab', object._id?.$oid]"
             [queryParams]="objectTabLinkQueryParams()"
           >

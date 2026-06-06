@@ -145,6 +145,16 @@
     </section>
   }
 
+  @if (object() && projectTodoItems().length > 0) {
+    <app-object-todos-section
+      [objectId]="object()!._id!.$oid"
+      [todoItems]="projectTodoItems()"
+      [todoEntries]="object()?.todo_entries ?? []"
+      [isAdmin]="isAdmin()"
+      (entriesChanged)="onTodoEntriesChanged($event)"
+    />
+  }
+
   <div class="content-wrapper">
     @if (shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>

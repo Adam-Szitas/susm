@@ -1,0 +1,74 @@
+@if (sortedItems().length > 0) {
+  <section class="object-todos-section" [class.object-todos-section--saving]="saving()">
+    <header class="object-todos-header">
+      <h3>{{ 'todos.objectChecklist' | translate }}</h3>
+      @if (saving()) {
+        <span class="saving-hint">{{ 'common.saving' | translate }}</span>
+      }
+    </header>
+
+    <ul class="todo-list">
+      @for (item of visibleItems(); track item._id.$oid) {
+        <li
+          class="todo-list-item"
+          [class.todo-list-item--assigned]="isAssigned(item)"
+          [class.todo-list-item--admin]="isAdmin()"
+        >
+          <div class="todo-row">
+            <div class="todo-main">
+              @if (isAdmin()) {
+                <label class="assign-checkbox category-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isAssigned(item)"
+                    (change)="toggleAssignment(item, $event)"
+                  />
+                  <span class="todo-title">{{ item.title }}</span>
+                </label>
+              } @else {
+                <span class="todo-title">{{ item.title }}</span>
+              }
+            </div>
+
+            @if (isAssigned(item)) {
+              <div class="status-group" role="group" [attr.aria-label]="'todos.status' | translate">
+                <button
+                  type="button"
+                  class="status-btn"
+                  [class.active]="itemStatus(item) === 'pending'"
+                  (click)="setStatus(item, 'pending')"
+                >
+                  {{ 'todos.statusPending' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="status-btn status-btn--success"
+                  [class.active]="itemStatus(item) === 'successful'"
+                  (click)="setStatus(item, 'successful')"
+                >
+                  {{ 'todos.statusSuccessful' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="status-btn status-btn--failed"
+                  [class.active]="itemStatus(item) === 'failed'"
+                  (click)="setStatus(item, 'failed')"
+                >
+                  {{ 'todos.statusFailed' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (item.note?.trim()) {
+            <p class="todo-note">{{ item.note }}</p>
+          }
+        </li>
+      }
+    </ul>
+
+    @if (!isAdmin() && visibleItems().length === 0) {
+      <p class="empty-message">{{ 'todos.noAssignedItems' | translate }}</p>
+    }
+  </section>
+}

@@ -118,7 +118,18 @@
   background: #fafafa;
   transition:
     box-shadow 0.2s,
-    border-color 0.2s;
+    border-color 0.2s,
+    background 0.2s;
+
+  &--todo-complete {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &--todo-attention {
+    background: #fff8e1;
+    border-color: #ffe082;
+  }
 
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);

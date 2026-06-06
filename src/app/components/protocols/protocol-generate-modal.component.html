@@ -154,18 +154,15 @@
           <p class="helper-text">{{ 'protocols.selectObjectsDescription' | translate }}</p>
           <p class="helper-text reorder-hint">{{ 'protocols.reorderObjectsHint' | translate }}</p>
           <p class="section-title reorder-title">{{ 'protocols.reorderObjects' | translate }}</p>
-          <div class="object-list object-list--reorder">
-            @for (object of objectsInProtocolOrder(); track object._id?.$oid; let i = $index) {
+          <div class="object-list object-list--reorder" (dragover)="$event.preventDefault()">
+            @for (object of objectsInProtocolOrder(); track object._id?.$oid) {
               <div
                 class="object-item object-item--reorder"
                 [class.dragging]="draggedObjectId() === object._id?.$oid"
                 [class.drag-over]="dragOverObjectId() === object._id?.$oid"
-                [attr.draggable]="isSelected(object._id?.$oid)"
-                (dragstart)="onProtocolObjectDragStart($event, object)"
                 (dragover)="onProtocolObjectDragOver($event, object)"
                 (dragleave)="onProtocolObjectDragLeave(object)"
                 (drop)="onProtocolObjectDrop($event, object)"
-                (dragend)="onProtocolObjectDragEnd()"
               >
                 <label class="object-item-checkbox">
                   <input
@@ -176,8 +173,14 @@
                   <span>{{ formatObjectLabel(object) }}</span>
                 </label>
                 @if (isSelected(object._id?.$oid)) {
-                  <span class="drag-handle" aria-hidden="true">⋮⋮</span>
-                  <span class="reorder-position">{{ i + 1 }}</span>
+                  <span
+                    class="drag-handle"
+                    draggable="true"
+                    [attr.aria-label]="'protocols.reorderObjects' | translate"
+                    (dragstart)="onProtocolObjectDragStart($event, object)"
+                    (dragend)="onProtocolObjectDragEnd()"
+                  >⋮⋮</span>
+                  <span class="reorder-position">{{ objectProtocolPosition(object) }}</span>
                 }
               </div>
             }
@@ -185,6 +188,57 @@
           @if (!hasSelection()) {
             <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
           }
+        </div>
+      }
+
+      @if (existingProtocols().length > 0) {
+        <div class="linked-protocols-selection preview-linked-selection">
+          <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+          <p class="helper-text">
+            {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+          </p>
+          <p class="helper-text reorder-hint">
+            {{ 'protocols.reorderLinkedProtocolsHint' | translate }}
+          </p>
+          <p class="section-title reorder-title">
+            {{ 'protocols.reorderLinkedProtocols' | translate }}
+          </p>
+          <div
+            class="protocol-list linked-list linked-list--reorder"
+            (dragover)="$event.preventDefault()"
+          >
+            @for (protocol of linkedProtocolsInOrder(); track protocol._id.$oid; let i = $index) {
+              <div
+                class="protocol-item linked-item linked-item--reorder"
+                [class.dragging]="draggedLinkedProtocolId() === protocol._id.$oid"
+                [class.drag-over]="dragOverLinkedProtocolId() === protocol._id.$oid"
+                (dragover)="onLinkedProtocolDragOver($event, protocol)"
+                (dragleave)="onLinkedProtocolDragLeave(protocol)"
+                (drop)="onLinkedProtocolDrop($event, protocol)"
+              >
+                <label class="linked-item-checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="isLinkedProtocolSelected(protocol)"
+                    (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
+                  />
+                  <span class="protocol-label" [attr.title]="formatProtocolLabel(protocol)">{{
+                    formatProtocolLabel(protocol)
+                  }}</span>
+                </label>
+                @if (isLinkedProtocolSelected(protocol)) {
+                  <span
+                    class="drag-handle"
+                    draggable="true"
+                    [attr.aria-label]="'protocols.reorderLinkedProtocols' | translate"
+                    (dragstart)="onLinkedProtocolDragStart($event, protocol)"
+                    (dragend)="onLinkedProtocolDragEnd()"
+                  >⋮⋮</span>
+                  <span class="reorder-position">{{ linkedProtocolPosition(protocol) }}</span>
+                }
+              </div>
+            }
+          </div>
         </div>
       }
 

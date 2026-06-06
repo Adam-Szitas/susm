@@ -1,6 +1,7 @@
 import { FileGroup } from './file.model';
 import { ObjectAddress } from './user.model';
 import { WorkStatus } from './status.model';
+import { ObjectTodoEntry } from './todo.model';
 
 export interface Object {
   _id?: {
@@ -20,6 +21,7 @@ export interface Object {
   prefix?: string;
   /** User-defined order within the project (lower = earlier). Omitted until first reorder. */
   sort_order?: number;
+  todo_entries?: ObjectTodoEntry[];
 }
 
 /** True when any object has a saved `sort_order`. */
