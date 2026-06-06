@@ -65,6 +65,8 @@ export class ProtocolGenerateModalComponent {
   customObjectOrder = signal(false);
   /** Ordered selected object IDs for this protocol (used when customObjectOrder is true). */
   protocolObjectOrderIds = signal<string[]>([]);
+  /** Full object checklist on the preview step (stable when toggling selection). */
+  previewObjectPoolIds = signal<string[]>([]);
   draggedObjectId = signal<string | null>(null);
   dragOverObjectId = signal<string | null>(null);
   /** When true, linked protocol order is sent explicitly for this generation. */
@@ -76,8 +78,8 @@ export class ProtocolGenerateModalComponent {
   /**
    * Objects listed in the protocol modal: with a date range, only objects that have at least one
    * file in range (using `file_groups` from the API). With category filter, only objects that have
-   * a matching file group. After preview is loaded, the list matches `content_sections` from the
-   * server (same filter as the PDF).
+   * a matching file group. On the preview step, the checklist keeps a stable pool of objects so
+   * deselected items stay visible and can be re-selected.
    */
   objectsForProtocolSelection = computed(() => {
     this.objects();
@@ -87,6 +89,7 @@ export class ProtocolGenerateModalComponent {
     this.showingPreview();
     this.customObjectOrder();
     this.protocolObjectOrderIds();
+    this.previewObjectPoolIds();
 
     const all = sortObjectsByStoredOrder(this.objects());
     const fromD = (this.form.get('from_date')?.value as string) ?? '';
@@ -94,9 +97,12 @@ export class ProtocolGenerateModalComponent {
     const catFilter = this.protocolFileGroupCategories().filter((c) => c.trim());
 
     if (this.showingPreview()) {
-      const customIds = this.protocolObjectOrderIds();
-      if (this.customObjectOrder() && customIds.length > 0) {
-        const order = new Map(customIds.map((id, i) => [id, i]));
+      const orderIds =
+        this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
+          ? this.protocolObjectOrderIds()
+          : this.previewObjectPoolIds();
+      if (orderIds.length > 0) {
+        const order = new Map(orderIds.map((id, i) => [id, i]));
         return all
           .filter((o) => o._id?.$oid && order.has(o._id.$oid))
           .sort((a, b) => (order.get(a._id!.$oid!) ?? 0) - (order.get(b._id!.$oid!) ?? 0));
@@ -118,23 +124,18 @@ export class ProtocolGenerateModalComponent {
     return all.filter((o) => this.objectMatchesProtocolFilters(o, fromD, toD, catFilter));
   });
 
-  /** Selected objects in protocol order (preview step: drag to reorder). */
+  /** Objects in protocol order on the preview step (selected and unselected). */
   objectsInProtocolOrder = computed(() => {
     this.objectsForProtocolSelection();
-    this.selectedObjectIds();
     this.customObjectOrder();
     this.protocolObjectOrderIds();
 
-    const selected = new Set(this.selectedObjectIds());
-    const available = this.objectsForProtocolSelection().filter(
-      (o) => o._id?.$oid && selected.has(o._id.$oid),
-    );
-
+    const available = this.objectsForProtocolSelection();
     if (!this.customObjectOrder()) {
       return available;
     }
 
-    const order = this.protocolObjectOrderIds().filter((id) => selected.has(id));
+    const order = this.protocolObjectOrderIds();
     const byId = new Map(available.map((o) => [o._id!.$oid!, o]));
     const ordered: Object[] = [];
     for (const id of order) {
@@ -321,6 +322,7 @@ export class ProtocolGenerateModalComponent {
   #resetProtocolObjectOrder(): void {
     this.customObjectOrder.set(false);
     this.protocolObjectOrderIds.set([]);
+    this.previewObjectPoolIds.set([]);
     this.draggedObjectId.set(null);
     this.dragOverObjectId.set(null);
   }
@@ -446,20 +448,23 @@ export class ProtocolGenerateModalComponent {
       return;
     }
 
+    if (!this.showingPreview()) {
+      const pool = this.objectsForProtocolSelection()
+        .map((o) => o._id?.$oid)
+        .filter((id): id is string => !!id);
+      if (pool.length > 0) {
+        this.previewObjectPoolIds.set(pool);
+        if (!this.customObjectOrder()) {
+          this.protocolObjectOrderIds.set(pool);
+        }
+      }
+    }
+
     this.loadingPreview.set(true);
     const formValue = this.form.value;
 
     this.#protocolService.previewProtocolStructure(request).subscribe({
       next: (previewResponse) => {
-        const sectionIds = (previewResponse?.content_sections ?? [])
-          .map((s: { object_id?: string }) => s.object_id)
-          .filter((id: string | undefined): id is string => !!id);
-        if (sectionIds.length > 0) {
-          this.selectedObjectIds.set(sectionIds);
-          if (!this.customObjectOrder()) {
-            this.protocolObjectOrderIds.set(sectionIds);
-          }
-        }
         const linkedIds = (previewResponse?.linked_previews ?? [])
           .map((lp: { protocol_id?: string }) => lp.protocol_id)
           .filter((id: string | undefined): id is string => !!id);
@@ -509,6 +514,7 @@ export class ProtocolGenerateModalComponent {
 
   backToForm(): void {
     this.showingPreview.set(false);
+    this.#resetProtocolObjectOrder();
     // Ensure fields are still populated when going back
     this.updateTemplateFields();
   }
@@ -631,7 +637,7 @@ export class ProtocolGenerateModalComponent {
     } else {
       this.selectedObjectIds.set(current.filter((id) => id !== objectId));
     }
-    this.#onProtocolFiltersChanged();
+    this.#onObjectSelectionChanged();
   }
 
   isSelected(objectId: string | undefined): boolean {
@@ -647,7 +653,13 @@ export class ProtocolGenerateModalComponent {
     } else {
       this.selectedObjectIds.set([...ids]);
     }
-    this.#onProtocolFiltersChanged();
+    this.#onObjectSelectionChanged();
+  }
+
+  #onObjectSelectionChanged(): void {
+    if (this.showingPreview() && this.hasSelection()) {
+      this.loadPreview();
+    }
   }
 
   objectProtocolPosition(object: Object): number {
@@ -712,9 +724,12 @@ export class ProtocolGenerateModalComponent {
       return;
     }
 
-    const base = this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
-      ? [...this.protocolObjectOrderIds()].filter((id) => selected.has(id))
-      : this.#orderedSelectedObjectIds();
+    const base =
+      this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
+        ? [...this.protocolObjectOrderIds()]
+        : this.previewObjectPoolIds().length > 0
+          ? [...this.previewObjectPoolIds()]
+          : this.#orderedSelectedObjectIds();
 
     const from = base.indexOf(draggedId);
     if (from === -1) {
