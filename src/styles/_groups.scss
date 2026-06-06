@@ -1,133 +1,156 @@
-// ============================================================================
-// Group/Section Headers - Reusable group header patterns
-// ============================================================================
-
-@use 'mixins' as *;
-
-.group-header {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-  width: 100%;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--default-color, #e0e0e0);
-  margin-bottom: 0.5rem;
-}
-
-.group-header-row {
-  display: block;
-  width: 100%;
-  min-width: 0;
-
-  &--toolbar {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 0.75rem;
-  }
-
-  &--note {
-    .group-note-field {
-      width: 100%;
-      padding-top: 0.5rem;
-      border-top: 1px solid #eee;
-    }
-  }
-}
-
-.group-header .group-categories-view {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  min-width: 0;
-}
-
-.group-header .group-header-actions,
-.group-header .group-edit-actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.group-note-label {
-  display: block;
-  margin: 0 0 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #6b7280;
-}
-
-.group-header {
-  @include mobile {
-    gap: 0.4rem;
-    padding-bottom: 0.6rem;
-    margin-bottom: 0.4rem;
-
-    .group-header-row--toolbar {
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-
-    .group-header-actions,
-    .group-edit-actions {
-      margin-left: auto;
-    }
-  }
-
-  .group-description {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color, #333);
-    line-height: 1.4;
-
-    @include mobile {
-      font-size: 1rem;
-    }
-  }
-
-  .group-category {
-    font-size: 0.85rem;
-    color: #666;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    @include mobile {
-      font-size: 0.8rem;
-    }
-  }
-}
-
-button.group-edit-toggle,
-button.file-description-edit {
-  height: 40px;
-  width: 40px;
-  font-size: 22px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-}
-
-.file-group {
-  @include flex-column(1rem);
-}
-
+// ============================================================================
+// Group/Section Headers - Reusable group header patterns
+// ============================================================================
+
+@use 'mixins' as *;
+
+.group-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--default-color, #e0e0e0);
+  margin-bottom: 0.5rem;
+}
+
+.group-header-row {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  &--toolbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+  }
+
+  &--title {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  &--note {
+    .group-note-field {
+      width: 100%;
+      padding-top: 0.5rem;
+      border-top: 1px solid #eee;
+    }
+  }
+}
+
+.group-header .group-categories-view {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.group-header .group-header-actions,
+.group-header .group-edit-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.group-note-label {
+  display: block;
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.group-header {
+  @include mobile {
+    gap: 0.4rem;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
+
+    .group-header-row--toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      gap: 0.45rem;
+    }
+
+    .group-categories-view {
+      flex: none;
+      width: 100%;
+    }
+
+    .group-header-actions,
+    .group-edit-actions {
+      margin-left: 0;
+      width: 100%;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+  }
+
+  .group-description {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+
+    @include mobile {
+      font-size: 1rem;
+    }
+  }
+
+  .group-category {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @include mobile {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+button.group-edit-toggle,
+button.file-description-edit {
+  height: 40px;
+  width: 40px;
+  font-size: 22px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.file-group {
+  @include flex-column(1rem);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+

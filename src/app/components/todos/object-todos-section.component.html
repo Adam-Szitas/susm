@@ -1,13 +1,30 @@
 @if (sortedItems().length > 0) {
   <section class="object-todos-section" [class.object-todos-section--saving]="saving()">
-    <header class="object-todos-header">
-      <h3>{{ 'todos.objectChecklist' | translate }}</h3>
-      @if (saving()) {
-        <span class="saving-hint">{{ 'common.saving' | translate }}</span>
-      }
-    </header>
+    <button
+      type="button"
+      class="object-todos-header"
+      (click)="toggleExpanded()"
+      [attr.aria-expanded]="expanded()"
+      [attr.aria-label]="
+        expanded() ? ('todos.collapseChecklist' | translate) : ('todos.expandChecklist' | translate)
+      "
+    >
+      <span class="object-todos-header-text">
+        <span class="object-todos-title">{{ 'todos.objectChecklist' | translate }}</span>
+        @if (!expanded()) {
+          <span class="object-todos-count">{{ visibleCount() }}</span>
+        }
+      </span>
+      <span class="object-todos-header-end">
+        @if (saving()) {
+          <span class="saving-hint">{{ 'common.saving' | translate }}</span>
+        }
+        <span class="chevron" [class.collapsed]="expanded()"></span>
+      </span>
+    </button>
 
-    <ul class="todo-list">
+    @if (expanded()) {
+      <ul class="todo-list">
       @for (item of visibleItems(); track item._id.$oid) {
         <li
           class="todo-list-item"
@@ -41,40 +58,27 @@
             </div>
 
             @if (isAssigned(item)) {
-              <div class="status-group" role="group" [attr.aria-label]="'todos.status' | translate">
-                <button
-                  type="button"
-                  class="status-btn"
-                  [class.active]="itemStatus(item) === 'pending'"
-                  (click)="setStatus(item, 'pending')"
-                >
-                  {{ 'todos.statusPending' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="status-btn status-btn--success"
-                  [class.active]="itemStatus(item) === 'successful'"
-                  (click)="setStatus(item, 'successful')"
-                >
-                  {{ 'todos.statusSuccessful' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="status-btn status-btn--failed"
-                  [class.active]="itemStatus(item) === 'failed'"
-                  (click)="setStatus(item, 'failed')"
-                >
-                  {{ 'todos.statusFailed' | translate }}
-                </button>
-              </div>
+              <select
+                class="status-select"
+                [class.status-select--successful]="itemStatus(item) === 'successful'"
+                [class.status-select--failed]="itemStatus(item) === 'failed'"
+                [value]="itemStatus(item) ?? 'pending'"
+                [attr.aria-label]="'todos.status' | translate"
+                (change)="setStatus(item, $any($event.target).value)"
+              >
+                <option value="pending">{{ 'todos.statusPending' | translate }}</option>
+                <option value="successful">{{ 'todos.statusSuccessful' | translate }}</option>
+                <option value="failed">{{ 'todos.statusFailed' | translate }}</option>
+              </select>
             }
           </div>
         </li>
       }
-    </ul>
+      </ul>
 
-    @if (!isAdmin() && visibleItems().length === 0) {
-      <p class="empty-message">{{ 'todos.noAssignedItems' | translate }}</p>
+      @if (!isAdmin() && visibleItems().length === 0) {
+        <p class="empty-message">{{ 'todos.noAssignedItems' | translate }}</p>
+      }
     }
   </section>
 }

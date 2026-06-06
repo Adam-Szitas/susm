@@ -44,6 +44,7 @@ export class ObjectTodosSectionComponent {
   entriesChanged = output<ObjectTodoEntry[]>();
 
   saving = signal(false);
+  expanded = signal(false);
 
   readonly sortedItems = computed(() => sortTodoItems(this.todoItems()));
 
@@ -55,6 +56,8 @@ export class ObjectTodosSectionComponent {
     const assignedIds = new Set(this.todoEntries().map((e) => todoEntryItemId(e)));
     return items.filter((item) => assignedIds.has(todoItemId(item)));
   });
+
+  readonly visibleCount = computed(() => this.visibleItems().length);
 
   isAssigned(item: TodoItem): boolean {
     return isTodoAssigned(this.todoEntries(), todoItemId(item));
@@ -68,6 +71,10 @@ export class ObjectTodosSectionComponent {
 
   itemStatus(item: TodoItem): TodoItemStatus | null {
     return getObjectTodoStatus(this.todoEntries(), todoItemId(item));
+  }
+
+  toggleExpanded(): void {
+    this.expanded.update((value) => !value);
   }
 
   toggleAssignment(item: TodoItem, event: Event): void {
