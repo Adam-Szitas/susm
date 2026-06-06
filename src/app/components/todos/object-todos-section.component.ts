@@ -60,6 +60,12 @@ export class ObjectTodosSectionComponent {
     return isTodoAssigned(this.todoEntries(), todoItemId(item));
   }
 
+  itemDisplayLabel(item: TodoItem): string {
+    const title = item.title?.trim() ?? '';
+    const note = item.note?.trim();
+    return note ? `${title} (${note})` : title;
+  }
+
   itemStatus(item: TodoItem): TodoItemStatus | null {
     return getObjectTodoStatus(this.todoEntries(), todoItemId(item));
   }

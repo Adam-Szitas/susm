@@ -23,10 +23,20 @@
                     [checked]="isAssigned(item)"
                     (change)="toggleAssignment(item, $event)"
                   />
-                  <span class="todo-title">{{ item.title }}</span>
+                  <span class="todo-label" [title]="itemDisplayLabel(item)">
+                    <span class="todo-label-title">{{ item.title }}</span>
+                    @if (item.note?.trim()) {
+                      <span class="todo-label-note"> ({{ item.note }})</span>
+                    }
+                  </span>
                 </label>
               } @else {
-                <span class="todo-title">{{ item.title }}</span>
+                <span class="todo-label" [title]="itemDisplayLabel(item)">
+                  <span class="todo-label-title">{{ item.title }}</span>
+                  @if (item.note?.trim()) {
+                    <span class="todo-label-note"> ({{ item.note }})</span>
+                  }
+                </span>
               }
             </div>
 
@@ -59,10 +69,6 @@
               </div>
             }
           </div>
-
-          @if (item.note?.trim()) {
-            <p class="todo-note">{{ item.note }}</p>
-          }
         </li>
       }
     </ul>
