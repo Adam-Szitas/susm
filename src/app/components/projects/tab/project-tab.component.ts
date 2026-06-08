@@ -7,9 +7,11 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   signal,
   viewChild,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs';
@@ -84,6 +86,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #imageCompressionService = inject(ImageCompressionService);
   #filterPersistence = inject(FilterPersistenceService);
   #userStore = inject(UserStore);
+  #platformId = inject(PLATFORM_ID);
   #routeSubscription?: Subscription;
 
   readonly isAdmin = this.#userStore.isAdmin;
@@ -173,6 +176,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.#platformId)) {
+      return;
+    }
+
     this.#routeSubscription = this.#route.paramMap
       .pipe(
         map((params) => params.get('id')),

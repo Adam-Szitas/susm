@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,6 +6,7 @@ import {
   DestroyRef,
   inject,
   OnInit,
+  PLATFORM_ID,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -37,6 +39,8 @@ import { EditObjectComponent } from '../edit-object/object-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.component';
 import { UserStore } from '@store/user.store';
+import type { AppError } from '@services/error-handler.service';
+import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-object-tab',
@@ -65,6 +69,7 @@ export class ObjectTabComponent implements OnInit {
   #httpService = inject(HttpService);
   #modalService = inject(ModalService);
   #userStore = inject(UserStore);
+  #platformId = inject(PLATFORM_ID);
 
   readonly isAdmin = this.#userStore.isAdmin;
 
@@ -155,32 +160,44 @@ export class ObjectTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const objectId = this.#route.snapshot.paramMap.get('id');
-
-    if (objectId) {
-      this.#projectStore.loadObject(objectId).subscribe({
-        next: (object) => {
-          this.object.set(object);
-          this.shareUrl.set(null);
-          this.shareQrDataUrl.set(null);
-          this.shareError.set(null);
-          const projectItems = this.#projectStore.project()?.todo_items ?? [];
-          if (projectItems.length) {
-            this.projectTodoItems.set(projectItems);
-          }
-          this.loadFiles(objectId);
-          this.loadProjectCategories(objectId);
-        },
-        error: () => {
-          this.#notificationService.showError(
-            this.#translationService.instant('errors.loadObjectFailed'),
-          );
-          this.#router.navigate(['/']);
-        },
-      });
-    } else {
-      this.#router.navigate(['/']);
+    if (!isPlatformBrowser(this.#platformId)) {
+      return;
     }
+
+    this.#route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        filter((id): id is string => !!id),
+        takeUntilDestroyed(this.#destroyRef),
+      )
+      .subscribe((objectId) => {
+        this.#loadObjectForRoute(objectId);
+      });
+  }
+
+  #loadObjectForRoute(objectId: string): void {
+    this.#projectStore.loadObject(objectId).subscribe({
+      next: (object) => {
+        this.object.set(object);
+        this.shareUrl.set(null);
+        this.shareQrDataUrl.set(null);
+        this.shareError.set(null);
+        const projectItems = this.#projectStore.project()?.todo_items ?? [];
+        if (projectItems.length) {
+          this.projectTodoItems.set(projectItems);
+        }
+        this.loadFiles(objectId);
+        this.loadProjectCategories(objectId);
+      },
+      error: (error: AppError) => {
+        this.#notificationService.showError(
+          error.message || this.#translationService.instant('errors.loadObjectFailed'),
+        );
+        if (error.status === 404) {
+          this.#router.navigate(['/objects']);
+        }
+      },
+    });
   }
 
   private loadProjectCategories(objectId: string): void {

@@ -1,52 +1,56 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { UserStore } from '../store/user.store';
+import { isBrowserPlatform, safeInternalReturnUrl } from '../utils/platform';
+
+async function waitUntilInitialized(userStore: UserStore): Promise<void> {
+  while (!userStore.initialized()) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+}
 
 /**
- * Auth guard that protects routes requiring authentication
- * Waits for user store to initialize before making decisions
+ * Auth guard that protects routes requiring authentication.
+ * On SSR, defers the check to the browser so deep links survive refresh.
  */
-export const authGuard: CanActivateFn = async (route, state) => {
+export const authGuard: CanActivateFn = async (_route, state) => {
+  const platformId = inject(PLATFORM_ID);
   const userStore = inject(UserStore);
   const router = inject(Router);
 
-  // Wait for initialization to complete
-  // This prevents premature redirects during page refresh
-  while (!userStore.initialized()) {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  if (!isBrowserPlatform(platformId)) {
+    return true;
   }
 
-  // Check if user is authenticated
+  await waitUntilInitialized(userStore);
+
   if (userStore.isAuthenticated()) {
     return true;
   }
 
-  // Not authenticated - redirect to login and preserve the intended URL
-  router.navigate(['/login'], {
-    queryParams: { returnUrl: state.url }
+  return router.createUrlTree(['/login'], {
+    queryParams: { returnUrl: state.url },
   });
-  
-  return false;
 };
 
 /**
- * Guard for login/register pages - redirects to projects if already authenticated
+ * Guard for login/register pages — redirects authenticated users to their target URL.
  */
-export const guestGuard: CanActivateFn = async (route, state) => {
+export const guestGuard: CanActivateFn = async (route) => {
+  const platformId = inject(PLATFORM_ID);
   const userStore = inject(UserStore);
   const router = inject(Router);
 
-  // Wait for initialization to complete
-  while (!userStore.initialized()) {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  if (!isBrowserPlatform(platformId)) {
+    return true;
   }
 
-  // If already authenticated, redirect to projects
+  await waitUntilInitialized(userStore);
+
   if (userStore.isAuthenticated()) {
-    router.navigate(['/projects']);
-    return false;
+    const returnUrl = safeInternalReturnUrl(route.queryParamMap.get('returnUrl'));
+    return router.parseUrl(returnUrl);
   }
 
   return true;
 };
-

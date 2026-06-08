@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { UserStore } from '../../store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { safeInternalReturnUrl } from '../../utils/platform';
 
 @Component({
   selector: 'app-login',
@@ -22,7 +23,7 @@ export class LoginComponent {
   constructor() {
     effect(() => {
       if (this.#userStore.isAuthenticated()) {
-        const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        const returnUrl = safeInternalReturnUrl(this.#route.snapshot.queryParams['returnUrl']);
         this.#router.navigateByUrl(returnUrl);
       }
       if (this.#userStore.user()) {
@@ -44,7 +45,7 @@ export class LoginComponent {
       return;
     }
     const credentials = this.form.getRawValue();
-    const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/projects';
+    const returnUrl = safeInternalReturnUrl(this.#route.snapshot.queryParams['returnUrl']);
     this.#userStore.login(credentials.email, credentials.password, returnUrl);
   }
 

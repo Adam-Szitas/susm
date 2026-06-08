@@ -7,6 +7,8 @@ import { AuthService } from '../services/auth.service';
 import { UrlPersistenceService } from '../services/url-persistence.service';
 import { ProjectStore } from './project.store';
 import { TranslationStore } from './translation.store';
+import { isBrowserPlatform, safeInternalReturnUrl } from '../utils/platform';
+import type { AppError } from '../services/error-handler.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -32,7 +34,7 @@ export class UserStore {
   #translationStore = inject(TranslationStore);
 
   initialize(): Promise<void> {
-    if (!isBrowser()) {
+    if (!isBrowserPlatform()) {
       this._initialized.set(true);
       return Promise.resolve();
     }
@@ -97,7 +99,7 @@ export class UserStore {
   }
 
   private clearStorage(): void {
-    if (isBrowser()) {
+    if (isBrowserPlatform()) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }
@@ -111,12 +113,12 @@ export class UserStore {
       next: (token: string) => {
         this._token.set(token);
         // Store token as string (not JSON.stringified) for faster access
-        if (isBrowser()) {
+        if (isBrowserPlatform()) {
           localStorage.setItem('token', token);
         }
         this.fetchUserProfile();
         // Navigate to the return URL instead of always going to projects
-        this.#router.navigateByUrl(returnUrl);
+        this.#router.navigateByUrl(safeInternalReturnUrl(returnUrl));
       },
       error: (err) => {
         this._error.set(err.error?.message || 'Login failed');
@@ -149,7 +151,7 @@ export class UserStore {
       this._error.set(null);
       this.#projectStore.reset();
       this.#translationStore.clear();
-      if (isBrowser()) {
+      if (isBrowserPlatform()) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
@@ -165,11 +167,16 @@ export class UserStore {
     this.#httpService.get<User>('profile').subscribe({
       next: (user) => {
         this._user.set(user);
-        if (isBrowser()) {
+        if (isBrowserPlatform()) {
           localStorage.setItem('user', JSON.stringify(user));
         }
       },
-      error: () => this.logout(),
+      error: (err: unknown) => {
+        const status = (err as AppError)?.status;
+        if (status === 401 || status === 403) {
+          this.logout();
+        }
+      },
     });
   }
 
@@ -177,7 +184,7 @@ export class UserStore {
     this.#httpService.put<User>('profile', { language }).subscribe({
       next: (user) => {
         this._user.set(user);
-        if (isBrowser()) {
+        if (isBrowserPlatform()) {
           localStorage.setItem('user', JSON.stringify(user));
         }
       },
@@ -186,8 +193,4 @@ export class UserStore {
       },
     });
   }
-}
-
-function isBrowser(): boolean {
-  return typeof window !== 'undefined' && !!window.localStorage;
 }
