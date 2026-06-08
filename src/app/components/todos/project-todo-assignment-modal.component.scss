@@ -76,7 +76,7 @@
   text-align: left;
   color: inherit;
 
-  &:hover {
+  &:not(.object-list-item--selected):hover {
     border-color: #ddd;
     background: #fff;
   }
