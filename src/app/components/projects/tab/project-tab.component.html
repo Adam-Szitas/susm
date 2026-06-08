@@ -108,32 +108,6 @@
               <dd class="project-note">{{ project()?.note }}</dd>
             </div>
           }
-          @if (isAdmin()) {
-            <div class="project-data-item project-data-item--full">
-              <dt>{{ 'todos.projectChecklist' | translate }}</dt>
-              <dd class="checklist-actions">
-                <button
-                  type="button"
-                  class="button button-outline"
-                  (click)="manageTodoItems()"
-                  [attr.aria-label]="'todos.manageProjectChecklist' | translate"
-                  [title]="'todos.manageProjectChecklist' | translate"
-                >
-                  {{ 'todos.manageProjectChecklist' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="button button-outline"
-                  (click)="assignTodoItems()"
-                  [disabled]="!project()?.todo_items?.length || objects().length === 0"
-                  [attr.aria-label]="'todos.assignChecklist' | translate"
-                  [title]="'todos.assignChecklist' | translate"
-                >
-                  {{ 'todos.assignChecklist' | translate }}
-                </button>
-              </dd>
-            </div>
-          }
         </dl>
       </div>
     }
