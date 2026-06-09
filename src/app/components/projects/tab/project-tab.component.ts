@@ -55,6 +55,7 @@ import {
 } from '@services/filter-persistence.service';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
+import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 
 @Component({
   selector: 'app-project-tab',
@@ -115,6 +116,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   objectReorderSaving = signal(false);
   draggedObjectId = signal<string | null>(null);
   dragOverObjectId = signal<string | null>(null);
+  #touchObjectReorderActive = false;
   /** Working order while reorder mode is active (all project objects). */
   objectOrderIds = signal<string[]>([]);
   public readonly formatStatus = formatWorkStatus;
@@ -204,6 +206,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.#routeSubscription?.unsubscribe();
+    this.#touchObjectReorderActive = false;
   }
 
   filterData(): Filter {
@@ -546,6 +549,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         .filter((id): id is string => !!id);
       this.objectOrderIds.set(ids);
     } else {
+      this.#touchObjectReorderActive = false;
       this.draggedObjectId.set(null);
       this.dragOverObjectId.set(null);
     }
@@ -597,9 +601,24 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.#saveObjectOrder(order);
   }
 
+  #applyObjectReorder(draggedId: string, targetId: string): void {
+    if (draggedId === targetId) return;
+
+    const order = [...this.objectOrderIds()];
+    const from = order.indexOf(draggedId);
+    const to = order.indexOf(targetId);
+    if (from === -1 || to === -1) return;
+
+    order.splice(from, 1);
+    order.splice(to, 0, draggedId);
+    this.objectOrderIds.set(order);
+    this.#saveObjectOrder(order);
+  }
+
   onObjectDragStart(event: DragEvent, object: Object): void {
     const id = object._id?.$oid;
     if (!id) return;
+    event.stopPropagation();
     this.draggedObjectId.set(id);
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -629,28 +648,54 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     event.preventDefault();
     const draggedId = this.draggedObjectId();
     const targetId = target._id?.$oid;
-    if (!draggedId || !targetId || draggedId === targetId) {
-      this.draggedObjectId.set(null);
-      this.dragOverObjectId.set(null);
+    if (!draggedId || !targetId) {
+      this.onObjectDragEnd();
       return;
     }
-
-    const order = [...this.objectOrderIds()];
-    const from = order.indexOf(draggedId);
-    const to = order.indexOf(targetId);
-    if (from === -1 || to === -1) return;
-
-    order.splice(from, 1);
-    order.splice(to, 0, draggedId);
-    this.draggedObjectId.set(null);
-    this.dragOverObjectId.set(null);
-    this.objectOrderIds.set(order);
-    this.#saveObjectOrder(order);
+    this.#applyObjectReorder(draggedId, targetId);
+    this.onObjectDragEnd();
   }
 
   onObjectDragEnd(): void {
+    this.#touchObjectReorderActive = false;
     this.draggedObjectId.set(null);
     this.dragOverObjectId.set(null);
+  }
+
+  onObjectTouchStart(event: TouchEvent, object: Object): void {
+    if (!isPlatformBrowser(this.#platformId)) return;
+    const id = object._id?.$oid;
+    if (!id || this.objectReorderSaving()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.#touchObjectReorderActive = true;
+    this.draggedObjectId.set(id);
+  }
+
+  onObjectTouchMove(event: TouchEvent): void {
+    if (!this.#touchObjectReorderActive) return;
+    event.preventDefault();
+    const overId = reorderTargetIdFromTouch(event);
+    const draggedId = this.draggedObjectId();
+    if (overId && overId !== draggedId) {
+      this.dragOverObjectId.set(overId);
+    }
+  }
+
+  onObjectTouchEnd(event: TouchEvent): void {
+    if (!this.#touchObjectReorderActive) return;
+    event.preventDefault();
+    const draggedId = this.draggedObjectId();
+    const targetId = reorderTargetIdFromTouch(event) ?? this.dragOverObjectId();
+    if (draggedId && targetId) {
+      this.#applyObjectReorder(draggedId, targetId);
+    }
+    this.onObjectDragEnd();
+  }
+
+  onObjectTouchCancel(): void {
+    if (!this.#touchObjectReorderActive) return;
+    this.onObjectDragEnd();
   }
 
   #applyFilters(objects: Object[], filter: FilterResult): Object[] {

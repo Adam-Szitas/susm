@@ -178,6 +178,9 @@
       padding: 0.4rem 0.5rem;
       border-radius: 6px;
       border: 1px solid transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
 
       &.dragging {
         opacity: 0.55;
@@ -219,6 +222,8 @@
       font-size: 0.85rem;
       letter-spacing: -0.15em;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
       padding: 0.15rem 0.25rem;
       cursor: grab;
       touch-action: none;
@@ -315,6 +320,9 @@
       padding: 0.4rem 0.5rem;
       border-radius: 6px;
       border: 1px solid transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
 
       &.dragging {
         opacity: 0.55;
@@ -352,6 +360,8 @@
       font-size: 0.85rem;
       letter-spacing: -0.15em;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
       padding: 0.15rem 0.25rem;
       cursor: grab;
       touch-action: none;

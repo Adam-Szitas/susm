@@ -352,54 +352,69 @@
 
   <div class="content-wrapper">
     @if (objectReorderMode() && objectsInReorderMode().length > 0) {
-      <div class="card-wrapper card-wrapper--reorder">
+      <div
+        class="card-wrapper card-wrapper--reorder"
+        (dragover)="$event.preventDefault()"
+        (touchmove)="onObjectTouchMove($event)"
+        (touchend)="onObjectTouchEnd($event)"
+        (touchcancel)="onObjectTouchCancel()"
+      >
         @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {
           <div
             class="card card--reorder"
             [class.dragging]="draggedObjectId() === object._id?.$oid"
             [class.drag-over]="dragOverObjectId() === object._id?.$oid"
-            [attr.draggable]="true"
-            (dragstart)="onObjectDragStart($event, object)"
+            [attr.data-reorder-id]="object._id?.$oid"
             (dragover)="onObjectDragOver($event, object)"
             (dragleave)="onObjectDragLeave(object)"
             (drop)="onObjectDrop($event, object)"
-            (dragend)="onObjectDragEnd()"
           >
-            <div class="reorder-controls">
-              <button
-                type="button"
-                class="reorder-btn"
-                (click)="moveObjectUp(object)"
-                [disabled]="i === 0 || objectReorderSaving()"
-                [attr.aria-label]="'projects.moveObjectLeft' | translate"
-                [attr.title]="'projects.moveObjectLeft' | translate"
-              >
-                ◀
-              </button>
+            <div class="reorder-row">
+              <span
+                class="drag-handle"
+                draggable="true"
+                role="button"
+                [attr.aria-label]="'projects.reorderObjects' | translate"
+                [attr.title]="'projects.reorderObjects' | translate"
+                (dragstart)="onObjectDragStart($event, object)"
+                (dragend)="onObjectDragEnd()"
+                (touchstart)="onObjectTouchStart($event, object)"
+              >⋮⋮</span>
               <span class="reorder-position">{{ i + 1 }}</span>
-              <button
-                type="button"
-                class="reorder-btn"
-                (click)="moveObjectDown(object)"
-                [disabled]="i === objectsInReorderMode().length - 1 || objectReorderSaving()"
-                [attr.aria-label]="'projects.moveObjectRight' | translate"
-                [attr.title]="'projects.moveObjectRight' | translate"
-              >
-                ▶
-              </button>
+              <h2 class="headline">
+                @if (object.address.house_number) {
+                  <span>{{ object.address.house_number + ', ' }}</span>
+                }
+                @if (object.address.level) {
+                  <span>{{ object.address.level + ', ' }}</span>
+                }
+                @if (object.address.door_number) {
+                  <span>{{ object.address.door_number }}</span>
+                }
+              </h2>
+              <div class="reorder-arrows">
+                <button
+                  type="button"
+                  class="reorder-btn"
+                  (click)="moveObjectUp(object)"
+                  [disabled]="i === 0 || objectReorderSaving()"
+                  [attr.aria-label]="'projects.moveObjectLeft' | translate"
+                  [attr.title]="'projects.moveObjectLeft' | translate"
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  class="reorder-btn"
+                  (click)="moveObjectDown(object)"
+                  [disabled]="i === objectsInReorderMode().length - 1 || objectReorderSaving()"
+                  [attr.aria-label]="'projects.moveObjectRight' | translate"
+                  [attr.title]="'projects.moveObjectRight' | translate"
+                >
+                  ▶
+                </button>
+              </div>
             </div>
-            <app-status-pill [status]="object?.status || 'created'" />
-            <h2 class="headline">
-              @if (object.address.house_number) {
-                <span>{{ object.address.house_number + ', ' }}</span>
-              }
-              @if (object.address.level) {
-                <span>{{ object.address.level + ', ' }}</span>
-              }
-              @if (object.address.door_number) {
-                <span>{{ object.address.door_number }}</span>
-              }
-            </h2>
           </div>
         }
       </div>
@@ -412,7 +427,7 @@
             [routerLink]="['/objects/tab', object._id?.$oid]"
             [queryParams]="objectTabLinkQueryParams()"
           >
-            <app-status-pill [status]="object?.status || 'created'" />
+            <app-status-pill class="card-status" [status]="object?.status || 'created'" />
             <h2 class="headline">
               @if (object.address.house_number) {
                 <span>{{ object.address.house_number + ', ' }}</span>
@@ -427,7 +442,7 @@
             @if (object.note) {
               <div class="note">{{ object.note }}</div>
             }
-            <div class="created-at">
+            <div class="created-at card-meta">
               <span>{{ object.created_at | date: 'dd.MM.yyyy' }}</span>
               <span>{{ object.category }}</span>
             </div>

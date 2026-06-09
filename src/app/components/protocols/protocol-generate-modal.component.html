@@ -154,12 +154,19 @@
           <p class="helper-text">{{ 'protocols.selectObjectsDescription' | translate }}</p>
           <p class="helper-text reorder-hint">{{ 'protocols.reorderObjectsHint' | translate }}</p>
           <p class="section-title reorder-title">{{ 'protocols.reorderObjects' | translate }}</p>
-          <div class="object-list object-list--reorder" (dragover)="$event.preventDefault()">
+          <div
+            class="object-list object-list--reorder"
+            (dragover)="$event.preventDefault()"
+            (touchmove)="onProtocolObjectTouchMove($event)"
+            (touchend)="onProtocolObjectTouchEnd($event)"
+            (touchcancel)="onProtocolObjectTouchCancel()"
+          >
             @for (object of objectsInProtocolOrder(); track object._id?.$oid) {
               <div
                 class="object-item object-item--reorder"
                 [class.dragging]="draggedObjectId() === object._id?.$oid"
                 [class.drag-over]="dragOverObjectId() === object._id?.$oid"
+                [attr.data-reorder-id]="object._id?.$oid"
                 (dragover)="onProtocolObjectDragOver($event, object)"
                 (dragleave)="onProtocolObjectDragLeave(object)"
                 (drop)="onProtocolObjectDrop($event, object)"
@@ -176,9 +183,11 @@
                   <span
                     class="drag-handle"
                     draggable="true"
+                    role="button"
                     [attr.aria-label]="'protocols.reorderObjects' | translate"
                     (dragstart)="onProtocolObjectDragStart($event, object)"
                     (dragend)="onProtocolObjectDragEnd()"
+                    (touchstart)="onProtocolObjectTouchStart($event, object)"
                   >⋮⋮</span>
                   <span class="reorder-position">{{ objectProtocolPosition(object) }}</span>
                 }
@@ -206,12 +215,16 @@
           <div
             class="protocol-list linked-list linked-list--reorder"
             (dragover)="$event.preventDefault()"
+            (touchmove)="onLinkedProtocolTouchMove($event)"
+            (touchend)="onLinkedProtocolTouchEnd($event)"
+            (touchcancel)="onLinkedProtocolTouchCancel()"
           >
             @for (protocol of linkedProtocolsInOrder(); track protocol._id.$oid; let i = $index) {
               <div
                 class="protocol-item linked-item linked-item--reorder"
                 [class.dragging]="draggedLinkedProtocolId() === protocol._id.$oid"
                 [class.drag-over]="dragOverLinkedProtocolId() === protocol._id.$oid"
+                [attr.data-reorder-id]="protocol._id.$oid"
                 (dragover)="onLinkedProtocolDragOver($event, protocol)"
                 (dragleave)="onLinkedProtocolDragLeave(protocol)"
                 (drop)="onLinkedProtocolDrop($event, protocol)"
@@ -230,9 +243,11 @@
                   <span
                     class="drag-handle"
                     draggable="true"
+                    role="button"
                     [attr.aria-label]="'protocols.reorderLinkedProtocols' | translate"
                     (dragstart)="onLinkedProtocolDragStart($event, protocol)"
                     (dragend)="onLinkedProtocolDragEnd()"
+                    (touchstart)="onLinkedProtocolTouchStart($event, protocol)"
                   >⋮⋮</span>
                   <span class="reorder-position">{{ linkedProtocolPosition(protocol) }}</span>
                 }

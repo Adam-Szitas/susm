@@ -21,6 +21,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
 import { ProtocolPreviewComponent, ProtocolPreviewData } from './protocol-preview.component';
 import { ToggleSwitchComponent } from '../shared/toggle-switch.component';
+import { reorderTargetIdFromTouch } from '../../utils/touch-reorder';
 
 @Component({
   selector: 'app-protocol-generate-modal',
@@ -69,11 +70,13 @@ export class ProtocolGenerateModalComponent {
   previewObjectPoolIds = signal<string[]>([]);
   draggedObjectId = signal<string | null>(null);
   dragOverObjectId = signal<string | null>(null);
+  #touchProtocolObjectReorderActive = false;
   /** When true, linked protocol order is sent explicitly for this generation. */
   customLinkedProtocolOrder = signal(false);
   protocolLinkedOrderIds = signal<string[]>([]);
   draggedLinkedProtocolId = signal<string | null>(null);
   dragOverLinkedProtocolId = signal<string | null>(null);
+  #touchLinkedProtocolReorderActive = false;
 
   /**
    * Objects listed in the protocol modal: with a date range, only objects that have at least one
@@ -323,6 +326,7 @@ export class ProtocolGenerateModalComponent {
     this.customObjectOrder.set(false);
     this.protocolObjectOrderIds.set([]);
     this.previewObjectPoolIds.set([]);
+    this.#touchProtocolObjectReorderActive = false;
     this.draggedObjectId.set(null);
     this.dragOverObjectId.set(null);
   }
@@ -330,6 +334,7 @@ export class ProtocolGenerateModalComponent {
   #resetLinkedProtocolOrder(): void {
     this.customLinkedProtocolOrder.set(false);
     this.protocolLinkedOrderIds.set([]);
+    this.#touchLinkedProtocolReorderActive = false;
     this.draggedLinkedProtocolId.set(null);
     this.dragOverLinkedProtocolId.set(null);
   }
@@ -679,6 +684,34 @@ export class ProtocolGenerateModalComponent {
     return index === -1 ? 0 : index + 1;
   }
 
+  #applyProtocolObjectReorder(draggedId: string, targetId: string): void {
+    if (draggedId === targetId) return;
+
+    const selected = new Set(this.selectedObjectIds());
+    if (!selected.has(draggedId)) return;
+
+    const base =
+      this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
+        ? [...this.protocolObjectOrderIds()]
+        : this.previewObjectPoolIds().length > 0
+          ? [...this.previewObjectPoolIds()]
+          : this.#orderedSelectedObjectIds();
+
+    const from = base.indexOf(draggedId);
+    if (from === -1) return;
+
+    let to = base.indexOf(targetId);
+    if (to === -1) {
+      to = base.length;
+    }
+
+    base.splice(from, 1);
+    base.splice(to, 0, draggedId);
+    this.customObjectOrder.set(true);
+    this.protocolObjectOrderIds.set(base);
+    this.loadPreview();
+  }
+
   onProtocolObjectDragStart(event: DragEvent, object: Object): void {
     const id = object._id?.$oid;
     if (!id) return;
@@ -713,46 +746,53 @@ export class ProtocolGenerateModalComponent {
     event.stopPropagation();
     const draggedId = this.draggedObjectId();
     const targetId = target._id?.$oid;
-    if (!draggedId || !targetId || draggedId === targetId) {
+    if (!draggedId || !targetId) {
       this.onProtocolObjectDragEnd();
       return;
     }
-
-    const selected = new Set(this.selectedObjectIds());
-    if (!selected.has(draggedId)) {
-      this.onProtocolObjectDragEnd();
-      return;
-    }
-
-    const base =
-      this.customObjectOrder() && this.protocolObjectOrderIds().length > 0
-        ? [...this.protocolObjectOrderIds()]
-        : this.previewObjectPoolIds().length > 0
-          ? [...this.previewObjectPoolIds()]
-          : this.#orderedSelectedObjectIds();
-
-    const from = base.indexOf(draggedId);
-    if (from === -1) {
-      this.onProtocolObjectDragEnd();
-      return;
-    }
-
-    let to = base.indexOf(targetId);
-    if (to === -1) {
-      to = base.length;
-    }
-
-    base.splice(from, 1);
-    base.splice(to, 0, draggedId);
-    this.customObjectOrder.set(true);
-    this.protocolObjectOrderIds.set(base);
+    this.#applyProtocolObjectReorder(draggedId, targetId);
     this.onProtocolObjectDragEnd();
-    this.loadPreview();
   }
 
   onProtocolObjectDragEnd(): void {
+    this.#touchProtocolObjectReorderActive = false;
     this.draggedObjectId.set(null);
     this.dragOverObjectId.set(null);
+  }
+
+  onProtocolObjectTouchStart(event: TouchEvent, object: Object): void {
+    const id = object._id?.$oid;
+    if (!id || !this.isSelected(id)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.#touchProtocolObjectReorderActive = true;
+    this.draggedObjectId.set(id);
+  }
+
+  onProtocolObjectTouchMove(event: TouchEvent): void {
+    if (!this.#touchProtocolObjectReorderActive) return;
+    event.preventDefault();
+    const overId = reorderTargetIdFromTouch(event);
+    const draggedId = this.draggedObjectId();
+    if (overId && overId !== draggedId) {
+      this.dragOverObjectId.set(overId);
+    }
+  }
+
+  onProtocolObjectTouchEnd(event: TouchEvent): void {
+    if (!this.#touchProtocolObjectReorderActive) return;
+    event.preventDefault();
+    const draggedId = this.draggedObjectId();
+    const targetId = reorderTargetIdFromTouch(event) ?? this.dragOverObjectId();
+    if (draggedId && targetId) {
+      this.#applyProtocolObjectReorder(draggedId, targetId);
+    }
+    this.onProtocolObjectDragEnd();
+  }
+
+  onProtocolObjectTouchCancel(): void {
+    if (!this.#touchProtocolObjectReorderActive) return;
+    this.onProtocolObjectDragEnd();
   }
 
   toggleLinkedProtocol(protocolId: string | undefined, checked: boolean): void {
@@ -770,6 +810,30 @@ export class ProtocolGenerateModalComponent {
     }
     this.selectedLinkedProtocolIds.set(current);
     this.#onLinkedProtocolsChanged();
+  }
+
+  #applyLinkedProtocolReorder(draggedId: string, targetId: string): void {
+    if (draggedId === targetId) return;
+
+    const selected = new Set(this.selectedLinkedProtocolIds());
+    if (!selected.has(draggedId)) return;
+
+    const base = [...this.#selectedLinkedProtocolOrderBase()];
+    const from = base.indexOf(draggedId);
+    if (from === -1) return;
+
+    let to = base.indexOf(targetId);
+    if (to === -1) {
+      to = base.length;
+    }
+
+    base.splice(from, 1);
+    base.splice(to, 0, draggedId);
+    this.customLinkedProtocolOrder.set(true);
+    this.protocolLinkedOrderIds.set(base);
+    this.selectedLinkedProtocolIds.set(base);
+    this.#reorderLinkedPreviewsInPlace(base);
+    this.loadPreview();
   }
 
   onLinkedProtocolDragStart(event: DragEvent, protocol: ProtocolRecord): void {
@@ -806,42 +870,53 @@ export class ProtocolGenerateModalComponent {
     event.stopPropagation();
     const draggedId = this.draggedLinkedProtocolId();
     const targetId = target._id?.$oid;
-    if (!draggedId || !targetId || draggedId === targetId) {
+    if (!draggedId || !targetId) {
       this.onLinkedProtocolDragEnd();
       return;
     }
-
-    const selected = new Set(this.selectedLinkedProtocolIds());
-    if (!selected.has(draggedId)) {
-      this.onLinkedProtocolDragEnd();
-      return;
-    }
-
-    const base = [...this.#selectedLinkedProtocolOrderBase()];
-    const from = base.indexOf(draggedId);
-    if (from === -1) {
-      this.onLinkedProtocolDragEnd();
-      return;
-    }
-
-    let to = base.indexOf(targetId);
-    if (to === -1) {
-      to = base.length;
-    }
-
-    base.splice(from, 1);
-    base.splice(to, 0, draggedId);
-    this.customLinkedProtocolOrder.set(true);
-    this.protocolLinkedOrderIds.set(base);
-    this.selectedLinkedProtocolIds.set(base);
-    this.#reorderLinkedPreviewsInPlace(base);
+    this.#applyLinkedProtocolReorder(draggedId, targetId);
     this.onLinkedProtocolDragEnd();
-    this.loadPreview();
   }
 
   onLinkedProtocolDragEnd(): void {
+    this.#touchLinkedProtocolReorderActive = false;
     this.draggedLinkedProtocolId.set(null);
     this.dragOverLinkedProtocolId.set(null);
+  }
+
+  onLinkedProtocolTouchStart(event: TouchEvent, protocol: ProtocolRecord): void {
+    const id = protocol._id?.$oid;
+    if (!id || !this.isLinkedProtocolSelected(protocol)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.#touchLinkedProtocolReorderActive = true;
+    this.draggedLinkedProtocolId.set(id);
+  }
+
+  onLinkedProtocolTouchMove(event: TouchEvent): void {
+    if (!this.#touchLinkedProtocolReorderActive) return;
+    event.preventDefault();
+    const overId = reorderTargetIdFromTouch(event);
+    const draggedId = this.draggedLinkedProtocolId();
+    if (overId && overId !== draggedId) {
+      this.dragOverLinkedProtocolId.set(overId);
+    }
+  }
+
+  onLinkedProtocolTouchEnd(event: TouchEvent): void {
+    if (!this.#touchLinkedProtocolReorderActive) return;
+    event.preventDefault();
+    const draggedId = this.draggedLinkedProtocolId();
+    const targetId = reorderTargetIdFromTouch(event) ?? this.dragOverLinkedProtocolId();
+    if (draggedId && targetId) {
+      this.#applyLinkedProtocolReorder(draggedId, targetId);
+    }
+    this.onLinkedProtocolDragEnd();
+  }
+
+  onLinkedProtocolTouchCancel(): void {
+    if (!this.#touchLinkedProtocolReorderActive) return;
+    this.onLinkedProtocolDragEnd();
   }
 
   isLinkedProtocolSelected(protocol: ProtocolRecord): boolean {
