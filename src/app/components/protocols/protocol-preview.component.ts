@@ -25,15 +25,16 @@ export interface ProtocolPreviewFileGroup {
   images: ProtocolPreviewImage[];
 }
 
-export interface ProtocolPreviewTodoSubSection {
-  title: string;
+export interface ProtocolPreviewTodoLine {
+  label: string;
+  object_names?: string[];
   color?: string;
 }
 
 export interface ProtocolPreviewTodoSection {
   title: string;
   note?: string;
-  sub_items?: ProtocolPreviewTodoSubSection[];
+  lines?: ProtocolPreviewTodoLine[];
 }
 
 export interface ProtocolPreviewContentSection {

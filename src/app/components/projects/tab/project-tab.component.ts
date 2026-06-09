@@ -121,6 +121,15 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   objectOrderIds = signal<string[]>([]);
   public readonly formatStatus = formatWorkStatus;
 
+  objectCardHeadline(object: Object): string {
+    const parts = [
+      object.address.house_number?.trim(),
+      object.address.level?.trim(),
+      object.address.door_number?.trim(),
+    ].filter((part): part is string => !!part);
+    return parts.join(', ');
+  }
+
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
 
   readonly objectsInReorderMode = computed(() => {

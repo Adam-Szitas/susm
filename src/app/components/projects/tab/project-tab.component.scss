@@ -185,11 +185,7 @@
   text-align: left;
   font-size: var(--font-3);
   line-height: 1.25;
-
-  span {
-    white-space: normal;
-    word-break: break-word;
-  }
+  overflow: hidden;
 }
 
 .reorder-arrows {
@@ -725,11 +721,31 @@ h2 {
 }
 
 .headline {
+  min-width: 0;
+  margin: 0;
   font-size: var(--font-3);
   line-height: 1.25;
+  overflow: hidden;
+
+  .headline-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.card-desktop-only {
+  @media screen and (max-width: var(--mobile-breakpoint, 768px)) {
+    display: none !important;
+  }
 }
 
 @media screen and (max-width: var(--mobile-breakpoint, 768px)) {
+  app-status-pill.card-desktop-only {
+    display: none !important;
+  }
+
   .card-wrapper,
   .card-wrapper--reorder {
     display: flex;
@@ -740,20 +756,11 @@ h2 {
     text-align: left;
     max-height: none;
     padding: 0.65rem 0.75rem;
-
-    .card-status,
-    .card-meta,
-    .note {
-      display: none;
-    }
+    overflow: hidden;
 
     .headline {
       font-size: 0.8rem;
       line-height: 1.3;
-
-      span {
-        font-size: inherit;
-      }
     }
   }
 
@@ -773,6 +780,15 @@ h2 {
       min-width: 1.1rem;
       font-size: 0.75rem;
     }
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .headline .headline-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
   }
 }
 
