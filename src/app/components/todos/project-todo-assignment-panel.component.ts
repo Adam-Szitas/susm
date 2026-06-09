@@ -59,7 +59,7 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
   readonly trackTodoItemId = safeTodoItemId;
 
   searchQuery = signal('');
-  selectedObjectId = signal<string | null>(null);
+  selectedObjectIds = signal<string[]>([]);
   saving = signal(false);
 
   readonly #initialSnapshots = new Map<string, string>();
@@ -72,11 +72,14 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
     return items.filter((object) => this.objectLabel(object).toLowerCase().includes(query));
   });
 
-  readonly selectedObject = computed(() => {
-    const id = this.selectedObjectId();
-    if (!id) return null;
-    return this.sortedObjects().find((object) => object._id?.$oid === id) ?? null;
+  readonly selectedObjects = computed(() => {
+    const ids = new Set(this.selectedObjectIds());
+    return this.sortedObjects().filter(
+      (object) => object._id?.$oid && ids.has(object._id.$oid),
+    );
   });
+
+  readonly hasObjectSelection = computed(() => this.selectedObjectIds().length > 0);
 
   readonly dirtyObjectCount = computed(() => {
     const working = this.#workingEntries();
@@ -125,13 +128,30 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
   }
 
   isObjectSelected(object: ProjectObject): boolean {
-    return object._id?.$oid === this.selectedObjectId();
+    const objectId = object._id?.$oid;
+    return !!objectId && this.selectedObjectIds().includes(objectId);
   }
 
+  /** Click toggles an object in or out of the multi-selection. */
   selectObject(object: ProjectObject): void {
     const objectId = object._id?.$oid;
     if (!objectId) return;
-    this.selectedObjectId.set(objectId);
+    const current = this.selectedObjectIds();
+    if (current.includes(objectId)) {
+      this.selectedObjectIds.set(current.filter((id) => id !== objectId));
+      return;
+    }
+    this.selectedObjectIds.set([...current, objectId]);
+  }
+
+  selectedObjectsTitle(): string {
+    const selected = this.selectedObjects();
+    if (selected.length === 1) {
+      return this.objectLabel(selected[0]);
+    }
+    return this.#translationService.instant('todos.selectedObjectCount', {
+      count: selected.length,
+    });
   }
 
   entriesForObject(objectId: string): ObjectTodoEntry[] {
@@ -153,32 +173,41 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
     return hasSubItems(item);
   }
 
-  toggleAssignment(objectId: string, item: TodoItem, checked: boolean): void {
-    const current = this.entriesForObject(objectId);
-    const next = checked
-      ? entriesForAssignedParent(item, current)
-      : entriesForUnassignedParent(todoItemId(item), current);
-    this.#setEntries(objectId, next);
+  isTodoAssignedForSelection(item: TodoItem): boolean {
+    const ids = this.selectedObjectIds();
+    if (!ids.length) return false;
+    return ids.every((objectId) => this.isTodoAssigned(objectId, item));
+  }
+
+  isTodoIndeterminateForSelection(item: TodoItem): boolean {
+    const ids = this.selectedObjectIds();
+    if (!ids.length) return false;
+    const assignedCount = ids.filter((objectId) => this.isTodoAssigned(objectId, item)).length;
+    return assignedCount > 0 && assignedCount < ids.length;
+  }
+
+  toggleAssignmentForSelection(item: TodoItem, checked: boolean): void {
+    for (const objectId of this.selectedObjectIds()) {
+      this.#toggleAssignmentForObject(objectId, item, checked);
+    }
   }
 
   assignAllForSelected(): void {
-    const object = this.selectedObject();
-    const objectId = object?._id?.$oid;
-    if (!objectId) return;
-
-    let entries = this.entriesForObject(objectId);
-    for (const item of this.sortedTodoItems()) {
-      if (!this.isTodoAssigned(objectId, item)) {
-        entries = entriesForAssignedParent(item, entries);
+    for (const objectId of this.selectedObjectIds()) {
+      let entries = this.entriesForObject(objectId);
+      for (const item of this.sortedTodoItems()) {
+        if (!this.isTodoAssigned(objectId, item)) {
+          entries = entriesForAssignedParent(item, entries);
+        }
       }
+      this.#setEntries(objectId, entries);
     }
-    this.#setEntries(objectId, entries);
   }
 
   clearAllForSelected(): void {
-    const objectId = this.selectedObject()?._id?.$oid;
-    if (!objectId) return;
-    this.#setEntries(objectId, []);
+    for (const objectId of this.selectedObjectIds()) {
+      this.#setEntries(objectId, []);
+    }
   }
 
   save(): void {
@@ -242,8 +271,18 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
 
     const first = this.filteredObjects()[0];
     if (first?._id?.$oid) {
-      this.selectedObjectId.set(first._id.$oid);
+      this.selectedObjectIds.set([first._id.$oid]);
+    } else {
+      this.selectedObjectIds.set([]);
     }
+  }
+
+  #toggleAssignmentForObject(objectId: string, item: TodoItem, checked: boolean): void {
+    const current = this.entriesForObject(objectId);
+    const next = checked
+      ? entriesForAssignedParent(item, current)
+      : entriesForUnassignedParent(todoItemId(item), current);
+    this.#setEntries(objectId, next);
   }
 
   #commitSnapshots(): void {

@@ -4,6 +4,7 @@
   <div class="assignment-layout">
     <aside class="object-panel">
       <label class="search-label" for="objectSearch">{{ 'todos.selectObject' | translate }}</label>
+      <p class="object-select-hint">{{ 'todos.selectObjectsHint' | translate }}</p>
       <input
         id="objectSearch"
         type="search"
@@ -13,7 +14,12 @@
         [placeholder]="'todos.searchObjects' | translate"
       />
 
-      <ul class="object-list" role="listbox" [attr.aria-label]="'todos.selectObject' | translate">
+      <ul
+        class="object-list"
+        role="listbox"
+        aria-multiselectable="true"
+        [attr.aria-label]="'todos.selectObject' | translate"
+      >
         @for (object of filteredObjects(); track object._id?.$oid) {
           <li>
             <button
@@ -42,11 +48,13 @@
     </aside>
 
     <section class="checklist-panel">
-      @if (selectedObject(); as object) {
+      @if (hasObjectSelection()) {
         <header class="checklist-panel-header">
           <div>
-            <h3 class="checklist-panel-title">{{ objectLabel(object) }}</h3>
-            <p class="checklist-panel-subtitle">{{ 'todos.assignmentForObject' | translate }}</p>
+            <h3 class="checklist-panel-title">{{ selectedObjectsTitle() }}</h3>
+            <p class="checklist-panel-subtitle">
+              {{ 'todos.assignmentForSelectedObjects' | translate: { count: selectedObjectIds().length } }}
+            </p>
           </div>
           <div class="checklist-panel-actions">
             <button type="button" class="btn btn-secondary btn-small" (click)="assignAllForSelected()">
@@ -64,8 +72,9 @@
               <label class="checklist-assign-label">
                 <input
                   type="checkbox"
-                  [checked]="isTodoAssigned(object._id!.$oid, item)"
-                  (change)="toggleAssignment(object._id!.$oid, item, $any($event.target).checked)"
+                  [checked]="isTodoAssignedForSelection(item)"
+                  [indeterminate]="isTodoIndeterminateForSelection(item)"
+                  (change)="toggleAssignmentForSelection(item, $any($event.target).checked)"
                 />
                 <span class="checklist-assign-text">
                   <span class="checklist-assign-title">{{ item.title }}</span>

@@ -81,9 +81,15 @@
     background: #fff;
   }
 
-  &--selected {
+  &--selected,
+  &--selected:focus-visible {
     border-color: var(--primary-default, #9d0000);
     background: rgba(157, 0, 0, 0.05);
+  }
+
+  &--selected:hover {
+    border-color: var(--primary-default, #9d0000);
+    background: rgba(157, 0, 0, 0.09);
   }
 
   &--dirty .object-list-item-label {
