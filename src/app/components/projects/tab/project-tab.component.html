@@ -413,27 +413,37 @@
     } @else if (filteredObjects().length > 0) {
       <div class="card-wrapper">
         @for (object of filteredObjects(); track object._id?.$oid) {
-          <div
-            class="card"
-            [ngClass]="objectTodoCardClasses(object)"
-            [routerLink]="['/objects/tab', object._id?.$oid]"
-            [queryParams]="objectTabLinkQueryParams()"
-          >
-            <app-status-pill
-              class="card-desktop-only"
-              [status]="object?.status || 'created'"
-            />
-            <h2 class="headline" [attr.title]="objectCardHeadline(object)">
-              <span class="headline-text">{{ objectCardHeadline(object) }}</span>
-            </h2>
-            @if (object.note) {
-              <div class="note card-desktop-only">{{ object.note }}</div>
-            }
-            <div class="created-at card-desktop-only">
-              <span>{{ object.created_at | date: 'dd.MM.yyyy' }}</span>
-              <span>{{ object.category }}</span>
+          @if (toolbarIconOnly()) {
+            <div
+              class="card card--mobile-name"
+              [ngClass]="objectTodoCardClasses(object)"
+              [routerLink]="['/objects/tab', object._id?.$oid]"
+              [queryParams]="objectTabLinkQueryParams()"
+            >
+              <h2 class="headline" [attr.title]="objectCardHeadline(object)">
+                <span class="headline-text">{{ objectCardHeadline(object) }}</span>
+              </h2>
             </div>
-          </div>
+          } @else {
+            <div
+              class="card"
+              [ngClass]="objectTodoCardClasses(object)"
+              [routerLink]="['/objects/tab', object._id?.$oid]"
+              [queryParams]="objectTabLinkQueryParams()"
+            >
+              <app-status-pill [status]="object?.status || 'created'" />
+              <h2 class="headline" [attr.title]="objectCardHeadline(object)">
+                <span class="headline-text">{{ objectCardHeadline(object) }}</span>
+              </h2>
+              @if (object.note) {
+                <div class="note">{{ object.note }}</div>
+              }
+              <div class="created-at">
+                <span>{{ object.created_at | date: 'dd.MM.yyyy' }}</span>
+                <span>{{ object.category }}</span>
+              </div>
+            </div>
+          }
         }
       </div>
     }
