@@ -141,6 +141,32 @@ export class ProjectStore {
     );
   }
 
+  createObjects(payload: {
+    projectId: { $oid: string };
+    objects: {
+      address: { house_number: string; level?: string; door_number?: string };
+      note: string;
+      status: string;
+      prefix?: string | null;
+    }[];
+  }): Observable<Object[]> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    return this.#httpService.post<Object[]>('objects/bulk', payload).pipe(
+      tap({
+        next: () => {
+          this.getObjectsByTerm('').subscribe();
+          this._loading.set(false);
+        },
+        error: (error) => {
+          this._error.set(error.message || 'Failed to create objects');
+          this._loading.set(false);
+        },
+      }),
+    );
+  }
+
   loadObjects(): void {
     const projectId = this._project()?._id?.$oid;
     if (!projectId) {

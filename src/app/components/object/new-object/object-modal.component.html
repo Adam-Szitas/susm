@@ -1,38 +1,17 @@
-<div class="wrapper">
-  @if (form) {
-    <form [formGroup]="form">
-      <div class="control" formGroupName="address">
-        <h4>{{ 'common.address' | translate }}</h4>
-        <div class="control">
-          <label for="house_number">{{ 'common.houseNumber' | translate }} *</label>
-          <input
-            placeholder="house number"
-            type="text"
-            id="house_number"
-            formControlName="house_number"
-          />
-        </div>
-        <div class="control">
-          <label for="level">{{ 'common.level' | translate }}</label>
-          <input placeholder="e.g. 3 or 3rd" type="text" id="level" formControlName="level" />
-        </div>
-        <div class="control">
-          <label for="door_number">{{ 'common.doorNumber' | translate }}</label>
-          <input
-            placeholder="door or flat number"
-            type="text"
-            id="door_number"
-            formControlName="door_number"
-          />
-        </div>
-      </div>
-      <div class="control">
-        <label for="note">{{ 'common.note' | translate }}</label>
-        <input placeholder="Note" type="text" id="note" formControlName="note" />
-      </div>
+<div class="object-bulk-form">
+  <p class="intro">{{ 'objects.bulkIntro' | translate }}</p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="shared-fields">
       <div class="control">
         <label for="prefix">{{ 'objects.prefix' | translate }}</label>
-        <input placeholder="{{ 'objects.prefixPlaceholder' | translate }}" type="text" id="prefix" formControlName="prefix" />
+        <input
+          id="prefix"
+          type="text"
+          formControlName="prefix"
+          [placeholder]="'objects.prefixPlaceholder' | translate"
+        />
+        <span class="field-hint">{{ 'objects.sharedPrefixHint' | translate }}</span>
       </div>
       <div class="control">
         <label for="status">{{ 'objects.status' | translate }}</label>
@@ -41,17 +20,92 @@
             <option [value]="status">{{ statusLabel(status) | translate }}</option>
           }
         </select>
+        <span class="field-hint">{{ 'objects.sharedStatusHint' | translate }}</span>
       </div>
-      <div class="control buttons">
-        <button
-          type="button"
-          class="button button-primary"
-          [disabled]="form.invalid || progressing()"
-          (click)="Submit()"
-        >
-          {{ 'common.submit' | translate }}
-        </button>
+    </div>
+
+    <div class="rows-header">
+      <h3>{{ 'objects.objectRows' | translate }}</h3>
+      <button type="button" class="btn btn-secondary btn-small" (click)="addRow()">
+        {{ 'objects.addRow' | translate }}
+      </button>
+    </div>
+
+    <div class="rows-table" formArrayName="rows">
+      <div class="rows-table-head" aria-hidden="true">
+        <span>{{ 'common.houseNumber' | translate }} *</span>
+        <span>{{ 'common.level' | translate }}</span>
+        <span>{{ 'common.doorNumber' | translate }}</span>
+        <span>{{ 'common.note' | translate }}</span>
+        <span></span>
       </div>
-    </form>
-  }
+
+      @for (row of rowsArray.controls; track $index; let i = $index) {
+        <div class="object-row" [formGroupName]="i">
+          <div class="object-row-field">
+            <label class="mobile-label" [for]="'house_number_' + i">
+              {{ 'common.houseNumber' | translate }} *
+            </label>
+            <input
+              [id]="'house_number_' + i"
+              type="text"
+              formControlName="house_number"
+              [placeholder]="'objects.houseNumberPlaceholder' | translate"
+            />
+          </div>
+          <div class="object-row-field">
+            <label class="mobile-label" [for]="'level_' + i">{{ 'common.level' | translate }}</label>
+            <input
+              [id]="'level_' + i"
+              type="text"
+              formControlName="level"
+              [placeholder]="'objects.levelPlaceholder' | translate"
+            />
+          </div>
+          <div class="object-row-field">
+            <label class="mobile-label" [for]="'door_number_' + i">
+              {{ 'common.doorNumber' | translate }}
+            </label>
+            <input
+              [id]="'door_number_' + i"
+              type="text"
+              formControlName="door_number"
+              [placeholder]="'objects.doorNumberPlaceholder' | translate"
+            />
+          </div>
+          <div class="object-row-field">
+            <label class="mobile-label" [for]="'note_' + i">{{ 'common.note' | translate }}</label>
+            <input
+              [id]="'note_' + i"
+              type="text"
+              formControlName="note"
+              [placeholder]="'objects.notePlaceholder' | translate"
+            />
+          </div>
+          <div class="object-row-actions">
+            <button
+              type="button"
+              class="btn-icon btn-icon-danger"
+              (click)="removeRow(i)"
+              [disabled]="rowsArray.length <= 1"
+              [attr.aria-label]="'objects.removeRow' | translate"
+              [attr.title]="'objects.removeRow' | translate"
+            >
+              <app-trash-icon />
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || progressing()">
+        @if (progressing()) {
+          {{ 'common.saving' | translate }}
+        } @else {
+          {{ 'objects.createObjects' | translate: { count: rowsArray.length } }}
+        }
+      </button>
+    </div>
+  </form>
 </div>

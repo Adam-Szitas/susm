@@ -259,8 +259,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   addObject(): void {
     this.#modalService.open({
-      title: 'objects.newObject',
+      title: 'objects.newObjects',
       component: ObjectModalComponent,
+      wide: true,
     });
   }
 
