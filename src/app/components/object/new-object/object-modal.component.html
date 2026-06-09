@@ -26,7 +26,11 @@
 
     <div class="rows-header">
       <h3>{{ 'objects.objectRows' | translate }}</h3>
-      <button type="button" class="btn btn-secondary btn-small" (click)="addRow()">
+      <button
+        type="button"
+        class="btn btn-secondary btn-small add-row-btn add-row-btn--header"
+        (click)="addRow()"
+      >
         {{ 'objects.addRow' | translate }}
       </button>
     </div>
@@ -99,7 +103,24 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || progressing()">
+      <button
+        type="button"
+        class="btn btn-secondary btn-add-row-mobile"
+        (click)="addRow()"
+        [attr.aria-label]="'objects.addRow' | translate"
+        [attr.title]="'objects.addRow' | translate"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 5v14m-7-7h14"
+          />
+        </svg>
+      </button>
+      <button type="submit" class="btn btn-primary form-actions-submit" [disabled]="form.invalid || progressing()">
         @if (progressing()) {
           {{ 'common.saving' | translate }}
         } @else {
