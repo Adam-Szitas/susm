@@ -27,7 +27,13 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(outgoing).pipe(
       catchError((err: unknown) => {
         if (err instanceof HttpErrorResponse) {
-          if (shouldLogoutOnHttpError(err, req.url) && this.#userStore.isAuthenticated()) {
+          const onLoginPage =
+            typeof window !== 'undefined' && window.location.pathname.startsWith('/login');
+          if (
+            !onLoginPage &&
+            shouldLogoutOnHttpError(err, req.url) &&
+            this.#userStore.isAuthenticated()
+          ) {
             this.#userStore.logout();
           }
         }

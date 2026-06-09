@@ -1,19 +1,13 @@
-import { computed, inject, Injectable, signal, Signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { UserStore } from './user.store';
-import { User } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class FacadeStore {
   #userStore = inject(UserStore);
 
-  constructor() {
-    this.user = this.#userStore.user;
-  }
+  readonly user = this.#userStore.user;
+  readonly isLoggedIn = this.#userStore.isAuthenticated;
+  readonly isAdmin = computed(() => this.#userStore.isAdmin());
 
-  public user: Signal<User | null> = signal(null);
-  public isLoggedIn: Signal<boolean | null> = computed(() => {
-    return !!this.user();
-  });
-
-  public logout = () => this.#userStore.logout();
+  logout = () => this.#userStore.logout();
 }

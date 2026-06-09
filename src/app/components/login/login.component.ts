@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { UserStore } from '../../store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
-import { TranslationService } from '@services/translation.service';
 import { safeInternalReturnUrl } from '../../utils/platform';
 
 @Component({
@@ -16,24 +15,10 @@ import { safeInternalReturnUrl } from '../../utils/platform';
 })
 export class LoginComponent {
   #userStore = inject(UserStore);
-  #router = inject(Router);
   #route = inject(ActivatedRoute);
-  #translationService = inject(TranslationService);
 
-  constructor() {
-    effect(() => {
-      if (this.#userStore.isAuthenticated()) {
-        const returnUrl = safeInternalReturnUrl(this.#route.snapshot.queryParams['returnUrl']);
-        this.#router.navigateByUrl(returnUrl);
-      }
-      if (this.#userStore.user()) {
-        const language = this.#userStore.user()?.language;
-        if (language) {
-          this.#translationService.initialize();
-        }
-      }
-    });
-  }
+  readonly loading = this.#userStore.loading;
+  readonly error = this.#userStore.error;
 
   public form: FormGroup = new FormGroup({
     email: new FormControl('', Validators.required),

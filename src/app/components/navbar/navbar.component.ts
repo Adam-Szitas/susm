@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { FacadeStore } from '../../store/facade.store';
@@ -20,9 +13,12 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [RouterLink, TranslateModule],
 })
 export class NavbarComponent implements OnInit {
-  public user = computed(() => {
-    return this.#facadeStore.user();
-  });
+  #router = inject(Router);
+  #route = inject(ActivatedRoute);
+  #facadeStore = inject(FacadeStore);
+
+  readonly isLoggedIn = this.#facadeStore.isLoggedIn;
+  readonly user = this.#facadeStore.user;
 
   public toggledMenu = signal<boolean>(false);
 
@@ -30,9 +26,6 @@ export class NavbarComponent implements OnInit {
   public isMobile = signal<boolean>(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
-  #router = inject(Router);
-  #route = inject(ActivatedRoute);
-  #facadeStore = inject(FacadeStore);
 
   ngOnInit(): void {
     this.#router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
@@ -55,6 +48,5 @@ export class NavbarComponent implements OnInit {
 
   logout(): void {
     this.#facadeStore.logout();
-    this.#router.navigate(['/login']);
   }
 }

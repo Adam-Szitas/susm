@@ -1,4 +1,4 @@
-@if (user()) {
+@if (isLoggedIn()) {
   <nav [class.mobile]="isMobile()">
     <div class="mobile">
       <i class="hamburger-menu" (click)="toggleMobileMenu()">

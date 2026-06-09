@@ -2,6 +2,9 @@
   @if (form) {
     <form [formGroup]="form" (ngSubmit)="Submit()">
       <h2>{{ 'login.title' | translate }}</h2>
+      @if (error()) {
+        <p class="login-error">{{ error() }}</p>
+      }
       <div class="control">
         <label for="email">{{ 'login.email' | translate }}</label>
         <input

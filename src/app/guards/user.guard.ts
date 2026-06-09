@@ -47,10 +47,14 @@ export const guestGuard: CanActivateFn = async (route) => {
 
   await waitUntilInitialized(userStore);
 
-  if (userStore.isAuthenticated()) {
-    const returnUrl = safeInternalReturnUrl(route.queryParamMap.get('returnUrl'));
-    return router.parseUrl(returnUrl);
+  if (!userStore.isAuthenticated()) {
+    return true;
   }
 
-  return true;
+  const returnUrl = route.queryParamMap.get('returnUrl');
+  if (returnUrl) {
+    return router.parseUrl(safeInternalReturnUrl(returnUrl));
+  }
+
+  return router.createUrlTree(['/projects']);
 };

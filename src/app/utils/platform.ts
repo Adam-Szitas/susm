@@ -1,8 +1,7 @@
-import { PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-/** True when running in the browser (not during SSR). */
-export function isBrowserPlatform(platformId = inject(PLATFORM_ID)): boolean {
+/** True when running in the browser (pass PLATFORM_ID from the injector). */
+export function isBrowserPlatform(platformId: object): boolean {
   return isPlatformBrowser(platformId);
 }
 

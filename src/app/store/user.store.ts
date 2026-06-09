@@ -1,5 +1,6 @@
-import { computed, inject, signal } from '@angular/core';
+import { computed, inject, PLATFORM_ID, signal } from '@angular/core';
 import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models/user.model';
 import { HttpService } from '../services/http.service';
 import { Router } from '@angular/router';
@@ -7,8 +8,8 @@ import { AuthService } from '../services/auth.service';
 import { UrlPersistenceService } from '../services/url-persistence.service';
 import { ProjectStore } from './project.store';
 import { TranslationStore } from './translation.store';
-import { isBrowserPlatform, safeInternalReturnUrl } from '../utils/platform';
-import type { AppError } from '../services/error-handler.service';
+import { safeInternalReturnUrl } from '../utils/platform';
+import { catchError, finalize, map, of, switchMap, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -32,76 +33,55 @@ export class UserStore {
   #urlPersistenceService = inject(UrlPersistenceService);
   #projectStore = inject(ProjectStore);
   #translationStore = inject(TranslationStore);
+  #platformId = inject(PLATFORM_ID);
+  #invalidatingSession = false;
 
   initialize(): Promise<void> {
-    if (!isBrowserPlatform()) {
+    if (!isPlatformBrowser(this.#platformId)) {
       this._initialized.set(true);
       return Promise.resolve();
     }
 
+    const finish = () => this._initialized.set(true);
+
     try {
-      // Load token first (faster, just a string)
-      const token = this.loadToken();
-      if (token) {
-        this._token.set(token);
+      const token = this.#readTokenFromStorage();
+      if (!token) {
+        finish();
+        return Promise.resolve();
       }
 
-      // Load user data
-      const user = this.loadUser();
-      if (user) {
-        this._user.set(user);
+      this._token.set(token);
+      const cachedUser = this.#readUserFromStorage();
+      if (cachedUser) {
+        this._user.set(cachedUser);
+        finish();
+        return Promise.resolve();
       }
 
-      // If we have a token but no user, fetch the profile
-      if (token && !user) {
-        this.fetchUserProfile();
-      }
+      return new Promise<void>((resolve) => {
+        this.#httpService
+          .get<User>('profile')
+          .pipe(
+            tap((profile) => this.#persistUser(profile)),
+            catchError(() => {
+              this.#clearSessionState();
+              return of(null);
+            }),
+            finalize(() => {
+              finish();
+              resolve();
+            }),
+          )
+          .subscribe();
+      });
     } catch (error) {
       console.error('Error initializing user store:', error);
-      // Clear potentially corrupted data
-      this.clearStorage();
+      this.#clearSessionState();
       this.#projectStore.reset();
       this.#translationStore.clear();
-    } finally {
-      this._initialized.set(true);
-    }
-
-    return Promise.resolve();
-  }
-
-  private loadUser(): User | null {
-    try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return null;
-      return JSON.parse(userStr) as User;
-    } catch (error) {
-      console.error('Error parsing user from localStorage:', error);
-      return null;
-    }
-  }
-
-  private loadToken(): string | null {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return null;
-      // Token is stored as a string, but might be JSON.stringified
-      // Try to parse it, if it fails, use it as-is
-      try {
-        const parsed = JSON.parse(token);
-        return typeof parsed === 'string' ? parsed : token;
-      } catch {
-        return token;
-      }
-    } catch (error) {
-      console.error('Error loading token from localStorage:', error);
-      return null;
-    }
-  }
-
-  private clearStorage(): void {
-    if (isBrowserPlatform()) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      finish();
+      return Promise.resolve();
     }
   }
 
@@ -109,24 +89,31 @@ export class UserStore {
     this._loading.set(true);
     this._error.set(null);
 
-    this.#authService.login(email, password).subscribe({
-      next: (token: string) => {
-        this._token.set(token);
-        // Store token as string (not JSON.stringified) for faster access
-        if (isBrowserPlatform()) {
-          localStorage.setItem('token', token);
-        }
-        this.fetchUserProfile();
-        // Navigate to the return URL instead of always going to projects
-        this.#router.navigateByUrl(safeInternalReturnUrl(returnUrl));
-      },
-      error: (err) => {
-        this._error.set(err.error?.message || 'Login failed');
-      },
-      complete: () => {
-        this._loading.set(false);
-      },
-    });
+    this.#authService
+      .login(email, password)
+      .pipe(
+        map((token) => this.#normalizeToken(token)),
+        switchMap((token) => {
+          this._token.set(token);
+          this.#writeTokenToStorage(token);
+          return this.#httpService.get<User>('profile').pipe(
+            tap((user) => this.#persistUser(user)),
+            map((user) => ({ token, user })),
+          );
+        }),
+      )
+      .subscribe({
+        next: () => {
+          void this.#router.navigateByUrl(safeInternalReturnUrl(returnUrl));
+        },
+        error: (err) => {
+          this.#clearSessionState();
+          this._error.set(err?.message || err?.error?.message || 'Login failed');
+        },
+        complete: () => {
+          this._loading.set(false);
+        },
+      });
   }
 
   register(userInput: User) {
@@ -144,53 +131,108 @@ export class UserStore {
     });
   }
 
-  logout() {
+  logout(): void {
+    if (this.#invalidatingSession) {
+      return;
+    }
+    this.#invalidatingSession = true;
+
     try {
-      this._user.set(null);
-      this._token.set(null);
-      this._error.set(null);
+      this.#clearSessionState();
       this.#projectStore.reset();
       this.#translationStore.clear();
-      if (isBrowserPlatform()) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-      // Clear stored URL on logout
       this.#urlPersistenceService.clearStoredUrl();
     } catch (error) {
       console.error(error);
     }
-    this.#router.navigateByUrl('/login');
-  }
 
-  private fetchUserProfile() {
-    this.#httpService.get<User>('profile').subscribe({
-      next: (user) => {
-        this._user.set(user);
-        if (isBrowserPlatform()) {
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-      },
-      error: (err: unknown) => {
-        const status = (err as AppError)?.status;
-        if (status === 401 || status === 403) {
-          this.logout();
-        }
-      },
+    const onLogin = this.#router.url.startsWith('/login');
+    if (!onLogin) {
+      void this.#router.navigate(['/login'], {
+        queryParams: { returnUrl: this.#router.url },
+        replaceUrl: true,
+      });
+    }
+
+    queueMicrotask(() => {
+      this.#invalidatingSession = false;
     });
   }
 
   updateLanguage(language: string): void {
     this.#httpService.put<User>('profile', { language }).subscribe({
       next: (user) => {
-        this._user.set(user);
-        if (isBrowserPlatform()) {
-          localStorage.setItem('user', JSON.stringify(user));
-        }
+        this.#persistUser(user);
       },
       error: (error) => {
         console.error('Failed to update language:', error);
       },
     });
+  }
+
+  #normalizeToken(token: unknown): string {
+    if (typeof token === 'string') {
+      return token;
+    }
+    if (token != null) {
+      return String(token);
+    }
+    throw new Error('Login failed: missing token');
+  }
+
+  #persistUser(user: User): void {
+    this._user.set(user);
+    if (isPlatformBrowser(this.#platformId)) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }
+
+  #writeTokenToStorage(token: string): void {
+    if (isPlatformBrowser(this.#platformId)) {
+      localStorage.setItem('token', token);
+    }
+  }
+
+  #readUserFromStorage(): User | null {
+    if (!isPlatformBrowser(this.#platformId)) {
+      return null;
+    }
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      return JSON.parse(userStr) as User;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      return null;
+    }
+  }
+
+  #readTokenFromStorage(): string | null {
+    if (!isPlatformBrowser(this.#platformId)) {
+      return null;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+      try {
+        const parsed = JSON.parse(token);
+        return typeof parsed === 'string' ? parsed : token;
+      } catch {
+        return token;
+      }
+    } catch (error) {
+      console.error('Error loading token from localStorage:', error);
+      return null;
+    }
+  }
+
+  #clearSessionState(): void {
+    this._user.set(null);
+    this._token.set(null);
+    this._error.set(null);
+    if (isPlatformBrowser(this.#platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
   }
 }
