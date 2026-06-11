@@ -11,11 +11,12 @@
   z-index: var(--z-modal);
   isolation: isolate;
   pointer-events: auto;
+  touch-action: pan-y;
+  overflow: hidden;
 }
 
 body.modal-open {
   overflow: hidden;
-  touch-action: none;
 }
 
 body.modal-open .floating-icon {
@@ -37,6 +38,7 @@ body.modal-open .floating-icon {
   @include mobile {
     padding: 0;
     align-items: flex-end;
+    overflow: hidden;
   }
 }
 
@@ -48,7 +50,8 @@ body.modal-open .floating-icon {
   border-radius: 16px;
   width: 100%;
   max-width: 500px;
-  max-height: 90vh;
+  max-height: min(90vh, 90dvh);
+  min-height: 0;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -56,6 +59,7 @@ body.modal-open .floating-icon {
 
   @include mobile {
     max-width: 100%;
+    max-height: min(92vh, 92dvh);
     border-radius: 16px 16px 0 0;
     animation: slideUpMobile 0.3s ease-out;
   }
@@ -133,9 +137,13 @@ body.modal-open .floating-icon {
   position: relative;
   z-index: 1;
   padding: 1.5rem;
+  overflow-x: hidden;
   overflow-y: auto;
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   background: #fff;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   @include flex-column(1.25rem);
 
   @include mobile {
