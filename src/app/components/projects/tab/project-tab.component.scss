@@ -799,5 +799,5 @@ h2 {
 }
 
 .upload-icon {
-  z-index: 50;
+  z-index: var(--z-floating);
 }

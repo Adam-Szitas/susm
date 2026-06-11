@@ -2,7 +2,7 @@
   position: fixed;
   bottom: var(--space);
   right: var(--space);
-  z-index: 50;
+  z-index: var(--z-floating);
   border-radius: 50%;
   background-color: var(--default-color);
   width: 60px;

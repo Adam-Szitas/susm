@@ -4,17 +4,33 @@
 
 @use 'mixins' as *;
 
-.modal-overlay {
+// Host element appended to document.body by ModalService
+.modal-host {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  z-index: var(--z-modal);
+  isolation: isolate;
+  pointer-events: auto;
+}
+
+body.modal-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+body.modal-open .floating-icon {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 0;
   padding: 1rem;
   overflow-y: auto;
 
@@ -28,6 +44,7 @@
   position: relative;
   z-index: 1;
   background: #fff;
+  isolation: isolate;
   border-radius: 16px;
   width: 100%;
   max-width: 500px;
@@ -71,11 +88,14 @@
 }
 
 .modal-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #e0e0e0;
+  background: #fff;
 
   @include mobile {
     padding: 1rem 1.25rem;
@@ -110,9 +130,12 @@
 }
 
 .modal-body {
+  position: relative;
+  z-index: 1;
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  background: #fff;
   @include flex-column(1.25rem);
 
   @include mobile {

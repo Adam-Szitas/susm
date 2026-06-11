@@ -277,7 +277,7 @@
 
 .file-upload {
   position: relative;
-  z-index: 50;
+  z-index: var(--z-floating);
 }
 
 @media (prefers-reduced-motion: reduce) {

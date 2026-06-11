@@ -43,6 +43,13 @@
   // Legacy button variables (for backward compatibility)
   --button: var(--primary-default);
   --button-hover: var(--primary-hover);
+
+  --z-floating: 50;
+  --z-navbar-backdrop: 999;
+  --z-navbar-menu: 1000;
+  --z-modal: 10500;
+  --z-notification: 10600;
+  --z-lightbox: 10700;
 }
 
 html,

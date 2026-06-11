@@ -43,13 +43,9 @@ export class ModalService {
 
   private createContainer(): HTMLElement {
     const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.bottom = '0';
-    container.style.zIndex = '9999';
+    container.className = 'modal-host';
     document.body.appendChild(container);
+    document.body.classList.add('modal-open');
     return container;
   }
 
@@ -116,6 +112,10 @@ export class ModalService {
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
       this.container = null;
+    }
+
+    if (!document.querySelector('.modal-host')) {
+      document.body.classList.remove('modal-open');
     }
   }
 

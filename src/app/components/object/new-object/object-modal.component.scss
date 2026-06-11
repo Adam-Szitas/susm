@@ -134,11 +134,15 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
+    align-items: stretch;
     gap: 0.5rem;
     margin-top: 1.25rem;
     padding-top: 1rem;
     border-top: 1px solid #e5e5e5;
+
+    .btn {
+      margin: 0;
+    }
   }
 
   .btn-add-row-mobile {
@@ -161,11 +165,12 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      min-width: 44px;
-      min-height: 44px;
-      width: 44px;
-      height: 44px;
-      padding: 0;
+      align-self: stretch;
+      width: auto;
+      min-width: 0;
+      height: auto;
+      padding: 8px 12px;
+      aspect-ratio: 1;
 
       svg {
         width: 1.25rem;
