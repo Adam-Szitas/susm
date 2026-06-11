@@ -3,11 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   ObjectTodoEntry,
@@ -23,6 +25,7 @@ import {
   isParentTodoAssigned,
   normalizeTodoSubItemColor,
   resolveAssignedTodoItems,
+  serializeTodoEntries,
   sortTodoItems,
   todoItemId,
   todoSubItemId,
@@ -36,7 +39,7 @@ import { TranslationService } from '@services/translation.service';
 @Component({
   selector: 'app-object-todos-section',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './object-todos-section.component.html',
   styleUrl: './object-todos-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,12 +58,26 @@ export class ObjectTodosSectionComponent {
 
   saving = signal(false);
   expanded = signal(false);
+  readonly #optimisticEntries = signal<ObjectTodoEntry[] | null>(null);
 
   readonly sortedItems = computed(() => sortTodoItems(this.todoItems()));
 
   readonly visibleItems = computed(() =>
-    resolveAssignedTodoItems(this.todoItems(), this.todoEntries()),
+    resolveAssignedTodoItems(this.todoItems(), this.#activeEntries()),
   );
+
+  constructor() {
+    effect(() => {
+      const external = this.todoEntries();
+      const optimistic = this.#optimisticEntries();
+      if (
+        optimistic &&
+        serializeTodoEntries(external) === serializeTodoEntries(optimistic)
+      ) {
+        this.#optimisticEntries.set(null);
+      }
+    });
+  }
 
   readonly visibleCount = computed(() => this.visibleItems().length);
 
@@ -68,7 +85,7 @@ export class ObjectTodosSectionComponent {
   readonly todoSubItemId = todoSubItemId;
 
   isAssigned(item: TodoItem): boolean {
-    return isParentTodoAssigned(this.todoEntries(), todoItemId(item));
+    return isParentTodoAssigned(this.#activeEntries(), todoItemId(item));
   }
 
   itemHasSubItems(item: TodoItem): boolean {
@@ -86,15 +103,15 @@ export class ObjectTodosSectionComponent {
   }
 
   itemStatus(item: TodoItem): TodoItemStatus | null {
-    return getObjectTodoStatus(this.todoEntries(), todoItemId(item));
+    return getObjectTodoStatus(this.#activeEntries(), todoItemId(item));
   }
 
   selectedSubItemId(item: TodoItem): string | null {
-    return getSelectedSubItemId(this.todoEntries(), todoItemId(item));
+    return getSelectedSubItemId(this.#activeEntries(), todoItemId(item));
   }
 
   selectedSubColor(item: TodoItem): TodoSubItemColor {
-    const sub = getSelectedSubItem(this.todoEntries(), item);
+    const sub = getSelectedSubItem(this.#activeEntries(), item);
     return normalizeTodoSubItemColor(sub?.color);
   }
 
@@ -105,23 +122,32 @@ export class ObjectTodosSectionComponent {
   toggleAssignment(_item: TodoItem, _event: Event): void {}
 
   setStatus(item: TodoItem, status: TodoItemStatus): void {
-    const entries = updateTodoEntryStatus(this.todoEntries(), todoItemId(item), status);
+    const entries = updateTodoEntryStatus(this.#activeEntries(), todoItemId(item), status);
+    this.#optimisticEntries.set(entries);
     this.#persist(entries);
   }
 
   setSelectedSubItem(item: TodoItem, subItemId: string): void {
-    const entries = updateSelectedSubItem(this.todoEntries(), item, subItemId);
+    const entries = updateSelectedSubItem(this.#activeEntries(), item, subItemId);
+    this.#optimisticEntries.set(entries);
     this.#persist(entries);
+  }
+
+  #activeEntries(): ObjectTodoEntry[] {
+    return this.#optimisticEntries() ?? this.todoEntries();
   }
 
   #persist(entries: ObjectTodoEntry[]): void {
     this.saving.set(true);
     this.#projectStore.updateObjectTodos(this.objectId(), entries).subscribe({
       next: (updated) => {
-        this.entriesChanged.emit(updated.todo_entries ?? []);
+        const entries = updated.todo_entries ?? [];
+        this.#optimisticEntries.set(entries);
+        this.entriesChanged.emit(entries);
         this.saving.set(false);
       },
       error: (error) => {
+        this.#optimisticEntries.set(null);
         this.#notificationService.showError(
           error.message || this.#translationService.instant('todos.objectUpdateFailed'),
         );

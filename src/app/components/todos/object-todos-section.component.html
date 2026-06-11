@@ -45,9 +45,9 @@
                   class="status-select"
                   [class.status-select--finished]="itemStatus(item) === 'finished'"
                   [class.status-select--under-process]="itemStatus(item) === 'under_process'"
-                  [value]="itemStatus(item) ?? 'under_process'"
+                  [ngModel]="itemStatus(item) ?? 'under_process'"
                   [attr.aria-label]="'todos.status' | translate"
-                  (change)="setStatus(item, $any($event.target).value)"
+                  (ngModelChange)="setStatus(item, $event)"
                 >
                   <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
                   <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
@@ -61,9 +61,9 @@
                     [class.status-select--sub-blue]="selectedSubColor(item) === 'blue'"
                     [class.status-select--sub-green]="selectedSubColor(item) === 'green'"
                     [class.status-select--sub-orange]="selectedSubColor(item) === 'orange'"
-                    [value]="selectedSubItemId(item) ?? ''"
+                    [ngModel]="selectedSubItemId(item) ?? ''"
                     [attr.aria-label]="'todos.selectSubItem' | translate"
-                    (change)="setSelectedSubItem(item, $any($event.target).value)"
+                    (ngModelChange)="setSelectedSubItem(item, $event)"
                   >
                     @for (sub of subItems(item); track todoSubItemId(sub)) {
                       <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>

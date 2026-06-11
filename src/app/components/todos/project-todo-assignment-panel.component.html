@@ -1,10 +1,7 @@
 <div class="todo-assignment-form">
-  <p class="assignment-intro">{{ 'todos.assignmentIntro' | translate }}</p>
-
   <div class="assignment-layout">
     <aside class="object-panel">
       <label class="search-label" for="objectSearch">{{ 'todos.selectObject' | translate }}</label>
-      <p class="object-select-hint">{{ 'todos.selectObjectsHint' | translate }}</p>
       <input
         id="objectSearch"
         type="search"
@@ -50,12 +47,7 @@
     <section class="checklist-panel">
       @if (hasObjectSelection()) {
         <header class="checklist-panel-header">
-          <div>
-            <h3 class="checklist-panel-title">{{ selectedObjectsTitle() }}</h3>
-            <p class="checklist-panel-subtitle">
-              {{ 'todos.assignmentForSelectedObjects' | translate: { count: selectedObjectIds().length } }}
-            </p>
-          </div>
+          <h3 class="checklist-panel-title">{{ selectedObjectsTitle() }}</h3>
           <div class="checklist-panel-actions">
             <button type="button" class="btn btn-secondary btn-small" (click)="assignAllForSelected()">
               {{ 'todos.assignAll' | translate }}

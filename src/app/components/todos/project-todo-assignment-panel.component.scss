@@ -19,14 +19,6 @@
   background: #fff;
 }
 
-.assignment-intro {
-  margin: 0;
-  flex-shrink: 0;
-  font-size: 0.92rem;
-  color: #555;
-  line-height: 1.45;
-}
-
 .assignment-layout {
   display: grid;
   grid-template-columns: minmax(11rem, 34%) minmax(0, 1fr);
@@ -70,7 +62,6 @@
 }
 
 .search-label,
-.object-select-hint,
 .object-search {
   flex-shrink: 0;
 }
@@ -81,13 +72,6 @@
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-}
-
-.object-select-hint {
-  margin: 0;
-  font-size: 0.78rem;
-  color: #777;
-  line-height: 1.35;
 }
 
 .object-search {
@@ -205,7 +189,7 @@
 
 .checklist-panel-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   flex-shrink: 0;
@@ -222,12 +206,6 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.checklist-panel-subtitle {
-  margin: 0.2rem 0 0;
-  font-size: 0.82rem;
-  color: #666;
 }
 
 .checklist-panel-actions {

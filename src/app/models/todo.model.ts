@@ -213,11 +213,15 @@ export function getObjectTodoStatus(
   entries: ObjectTodoEntry[] | undefined,
   todoItemIdValue: string,
 ): TodoItemStatus | null {
-  const entry = entries?.find((e) => {
-    if (todoEntryItemId(e) !== todoItemIdValue) return false;
-    return !todoEntrySubItemId(e);
-  });
-  return entry ? normalizeTodoItemStatus(entry.status) : null;
+  const plainEntry = entries?.find(
+    (e) => todoEntryItemId(e) === todoItemIdValue && !todoEntrySubItemId(e),
+  );
+  if (plainEntry) {
+    return normalizeTodoItemStatus(plainEntry.status);
+  }
+
+  const fallback = entries?.find((e) => todoEntryItemId(e) === todoItemIdValue);
+  return fallback ? normalizeTodoItemStatus(fallback.status) : null;
 }
 
 export function entriesForAssignedParent(
@@ -270,12 +274,28 @@ export function updateTodoEntryStatus(
   parentId: string,
   status: TodoItemStatus,
 ): ObjectTodoEntry[] {
-  return entries.map((entry) => {
-    if (todoEntryItemId(entry) !== parentId || todoEntrySubItemId(entry)) {
-      return entry;
-    }
-    return { ...entry, status };
-  });
+  const normalizedStatus = normalizeTodoItemStatus(status);
+  const hasPlainEntry = entries.some(
+    (entry) => todoEntryItemId(entry) === parentId && !todoEntrySubItemId(entry),
+  );
+
+  if (hasPlainEntry) {
+    return entries.map((entry) => {
+      if (todoEntryItemId(entry) !== parentId || todoEntrySubItemId(entry)) {
+        return entry;
+      }
+      return { ...entry, status: normalizedStatus };
+    });
+  }
+
+  const withoutParent = entries.filter((entry) => todoEntryItemId(entry) !== parentId);
+  return [
+    ...withoutParent,
+    {
+      todo_item_id: parentId,
+      status: normalizedStatus,
+    },
+  ];
 }
 
 export function countAssignedTodoItems(
