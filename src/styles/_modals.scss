@@ -150,6 +150,19 @@ body.modal-open .floating-icon {
     padding: 1.25rem;
     gap: 1rem;
   }
+
+  // Checklist assignment manages its own scroll regions (object list, checklist list)
+  &:has(.todo-assignment-form) {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    > * {
+      min-height: 0;
+      min-width: 0;
+    }
+  }
 }
 
 .modal-footer {

@@ -1,3 +1,12 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .todo-assignment-form {
   position: relative;
   z-index: 1;
@@ -6,11 +15,13 @@
   gap: 1rem;
   flex: 1 1 auto;
   min-height: 0;
+  overflow: hidden;
   background: #fff;
 }
 
 .assignment-intro {
   margin: 0;
+  flex-shrink: 0;
   font-size: 0.92rem;
   color: #555;
   line-height: 1.45;
@@ -19,23 +30,26 @@
 .assignment-layout {
   display: grid;
   grid-template-columns: minmax(11rem, 34%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 1rem;
   flex: 1 1 auto;
-  min-height: 12rem;
-  max-height: min(28rem, 50vh);
+  height: min(32rem, 52vh);
+  min-height: 14rem;
   isolation: isolate;
   overflow: hidden;
 
   > * {
     min-height: 0;
+    min-width: 0;
   }
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;
-    flex: 0 1 auto;
+    grid-template-rows: minmax(0, 38%) minmax(0, 1fr);
+    height: auto;
+    flex: 1 1 auto;
     min-height: 0;
     max-height: none;
-    overflow: visible;
   }
 }
 
@@ -46,11 +60,19 @@
   flex-direction: column;
   gap: 0.5rem;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
   padding: 0.65rem;
   background: #fafafa;
+}
+
+.search-label,
+.object-select-hint,
+.object-search {
+  flex-shrink: 0;
 }
 
 .search-label {
@@ -82,10 +104,12 @@
   padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  max-height: 100%;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .object-list-item {
@@ -170,6 +194,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
@@ -182,6 +208,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-shrink: 0;
   margin-bottom: 0.75rem;
   padding-bottom: 0.65rem;
   border-bottom: 1px solid #eee;
@@ -215,10 +242,12 @@
   padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  max-height: 100%;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .checklist-assign-item {

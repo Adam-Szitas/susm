@@ -8,6 +8,7 @@ import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-p
   selector: 'app-project-todo-assignment-modal',
   standalone: true,
   imports: [CommonModule, ProjectTodoAssignmentPanelComponent],
+  styleUrl: './project-todo-assignment-modal.component.scss',
   template: `
     <app-project-todo-assignment-panel
       [todoItems]="todoItems()"
