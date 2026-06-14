@@ -23,6 +23,8 @@ export class ProjectStore {
   private _loading = signal(false);
   private _error = signal<string | null>(null);
   private _files = signal<ProjectFile[]>([]);
+  #loadProjectRequestId = 0;
+  #loadObjectsRequestId = 0;
 
   // Public readonly signals
   readonly projects = computed(() => this._projects());
@@ -52,16 +54,22 @@ export class ProjectStore {
       return;
     }
 
+    const requestId = ++this.#loadProjectRequestId;
     this._loading.set(true);
     this._error.set(null);
 
     this.#httpService.get<Project>(`project/${id}`).subscribe({
       next: (result) => {
+        if (requestId !== this.#loadProjectRequestId) {
+          return;
+        }
         this._project.set(result);
-        this.loadObjects();
-        this._loading.set(false);
+        this.loadObjects(requestId);
       },
       error: (error) => {
+        if (requestId !== this.#loadProjectRequestId) {
+          return;
+        }
         this._error.set(error.message || 'Failed to load project');
         this._loading.set(false);
       },
@@ -69,6 +77,9 @@ export class ProjectStore {
 
     this.#httpService.get<ProjectFile[]>(`file/project/${id}`).subscribe({
       next: (files) => {
+        if (requestId !== this.#loadProjectRequestId) {
+          return;
+        }
         this._files.set(files);
       },
     });
@@ -167,22 +178,35 @@ export class ProjectStore {
     );
   }
 
-  loadObjects(): void {
+  loadObjects(projectRequestId?: number): void {
     const projectId = this._project()?._id?.$oid;
     if (!projectId) {
       this._error.set('No project selected');
       return;
     }
 
+    const requestId = ++this.#loadObjectsRequestId;
     this._loading.set(true);
     this._error.set(null);
 
     this.#httpService.get<Object[]>(`objects/${projectId}`).subscribe({
       next: (result) => {
+        if (projectRequestId != null && projectRequestId !== this.#loadProjectRequestId) {
+          return;
+        }
+        if (requestId !== this.#loadObjectsRequestId) {
+          return;
+        }
         this._objects.set(result);
         this._loading.set(false);
       },
       error: (error) => {
+        if (projectRequestId != null && projectRequestId !== this.#loadProjectRequestId) {
+          return;
+        }
+        if (requestId !== this.#loadObjectsRequestId) {
+          return;
+        }
         this._error.set(error.message || 'Failed to load objects');
         this._loading.set(false);
       },
@@ -430,6 +454,8 @@ export class ProjectStore {
 
   /** Drop cached project/object/file state (call on logout). */
   reset(): void {
+    this.#loadProjectRequestId = 0;
+    this.#loadObjectsRequestId = 0;
     this._projects.set([]);
     this._project.set(null);
     this._objects.set([]);

@@ -22,10 +22,16 @@
   > * {
     flex: 1 1 0;
     width: 0;
+    min-width: 0;
   }
 
   @include mobile {
     display: block;
+
+    > * {
+      flex: none;
+      width: 100%;
+    }
   }
 }
 

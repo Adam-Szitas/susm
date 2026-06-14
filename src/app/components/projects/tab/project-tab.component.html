@@ -418,8 +418,8 @@
               [routerLink]="['/objects/tab', object._id?.$oid]"
               [queryParams]="objectTabLinkQueryParams()"
             >
-              <h2 class="headline" [attr.title]="objectCardHeadline(object)">
-                <span class="headline-text">{{ objectCardHeadline(object) }}</span>
+              <h2 class="headline" [attr.title]="objectCardMobileLabel(object) || objectCardHeadline(object)">
+                <span class="headline-text">{{ objectCardMobileLabel(object) || objectCardHeadline(object) }}</span>
               </h2>
             </div>
           } @else {

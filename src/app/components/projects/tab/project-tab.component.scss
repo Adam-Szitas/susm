@@ -25,6 +25,13 @@
   max-width: 100%;
   margin-top: var(--space);
   gap: var(--space-small);
+
+  @media screen and (max-width: 768px) {
+    > * {
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .category {
@@ -762,6 +769,19 @@ h2 {
 
   .card--mobile-name {
     min-height: 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .card--mobile-name .headline,
+  .card--mobile-name .headline-text {
+    width: 100%;
+    min-width: 0;
+    color: #1a1a1a;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
   }
 
   .card--reorder {

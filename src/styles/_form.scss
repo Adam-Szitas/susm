@@ -42,18 +42,15 @@
 }
 
 @media screen and (max-width: 768px) {
-  .content-wrapper.content-wrapper {
-    display: block;
-  }
-  .content-wrapper.content-wrapper > * {
-    display: block;
-    width: 100%;
-  }
-}
-
-@media screen and (max-width: 768px) {
   .content-wrapper {
     display: block;
+
+    > * {
+      display: block;
+      flex: none;
+      width: 100%;
+      min-width: 0;
+    }
   }
 
   .card-wrapper,
@@ -61,7 +58,7 @@
     width: 100%;
   }
 
-  .card-wrapper.card-wrapper {
+  .card-wrapper {
     grid-template-columns: 1fr;
   }
 }

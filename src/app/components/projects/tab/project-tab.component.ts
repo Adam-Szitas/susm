@@ -15,7 +15,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { FilterComponent } from '../../filter/filter.component';
 import {
@@ -120,12 +120,19 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   public readonly formatStatus = formatWorkStatus;
 
   objectCardHeadline(object: Object): string {
+    const addr = object.address;
+    if (!addr) return '';
     const parts = [
-      object.address.house_number?.trim(),
-      object.address.level?.trim(),
-      object.address.door_number?.trim(),
+      addr.house_number?.trim(),
+      addr.level?.trim(),
+      addr.door_number?.trim(),
     ].filter((part): part is string => !!part);
     return parts.join(', ');
+  }
+
+  /** Compact mobile card label — house number only. */
+  objectCardMobileLabel(object: Object): string {
+    return object.address?.house_number?.trim() ?? '';
   }
 
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
@@ -192,6 +199,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       .pipe(
         map((params) => params.get('id')),
         filter((id): id is string => id !== null),
+        distinctUntilChanged(),
       )
       .subscribe((projectId) => {
         this.#projectStore.loadProject(projectId);

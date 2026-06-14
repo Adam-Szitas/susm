@@ -17,6 +17,15 @@
   app-file-list {
     width: 100%;
   }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: unset;
+    text-align: left;
+    max-height: none;
+    width: 100%;
+  }
 }
 
 .card {
