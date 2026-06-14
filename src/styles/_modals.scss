@@ -11,12 +11,19 @@
   z-index: var(--z-modal);
   isolation: isolate;
   pointer-events: auto;
-  touch-action: pan-y;
+  touch-action: none;
   overflow: hidden;
 }
 
+html.modal-open,
 body.modal-open {
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.modal-open {
+  position: fixed;
+  width: 100%;
 }
 
 body.modal-open .floating-icon {
@@ -66,6 +73,22 @@ body.modal-open .floating-icon {
 
   &.wide {
     max-width: 800px;
+
+    &:has(.todo-assignment-form),
+    &:has(.todo-verify-form),
+    &:has(.project-todo-form) {
+      height: min(88dvh, 88vh);
+      max-height: min(88dvh, 88vh);
+    }
+
+    @include mobile {
+      &:has(.todo-assignment-form),
+      &:has(.todo-verify-form),
+      &:has(.project-todo-form) {
+        height: min(92dvh, 92vh);
+        max-height: min(92dvh, 92vh);
+      }
+    }
   }
 }
 
@@ -144,6 +167,7 @@ body.modal-open .floating-icon {
   background: #fff;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   @include flex-column(1.25rem);
 
   @include mobile {
@@ -152,8 +176,12 @@ body.modal-open .floating-icon {
   }
 
   // Checklist assignment manages its own scroll regions (object list, checklist list)
-  &:has(.todo-assignment-form) {
+  &:has(.todo-assignment-form),
+  &:has(.todo-verify-form),
+  &:has(.project-todo-form app-project-todo-assignment-panel),
+  &:has(.project-todo-form app-project-todo-assignment-verify-panel) {
     overflow: hidden;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -161,6 +189,14 @@ body.modal-open .floating-icon {
     > * {
       min-height: 0;
       min-width: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .project-todo-form {
+      min-height: 0;
     }
   }
 }

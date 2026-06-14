@@ -32,6 +32,8 @@ import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
 
+export type AssignmentMobileStep = 'objects' | 'checklist';
+
 @Component({
   selector: 'app-project-todo-assignment-panel',
   standalone: true,
@@ -53,10 +55,13 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
 
   saved = output<void>();
   cancelRequested = output<void>();
+  verifyRequested = output<void>();
 
   readonly sortedTodoItems = computed(() => sortTodoItems(this.todoItems()));
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
   readonly trackTodoItemId = safeTodoItemId;
+
+  readonly mobileStep = signal<AssignmentMobileStep>('objects');
 
   searchQuery = signal('');
   selectedObjectIds = signal<string[]>([]);
@@ -142,6 +147,15 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
       return;
     }
     this.selectedObjectIds.set([...current, objectId]);
+  }
+
+  goToObjectsStep(): void {
+    this.mobileStep.set('objects');
+  }
+
+  goToChecklistStep(): void {
+    if (!this.hasObjectSelection()) return;
+    this.mobileStep.set('checklist');
   }
 
   selectedObjectsTitle(): string {

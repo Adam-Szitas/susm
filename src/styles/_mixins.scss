@@ -4,9 +4,9 @@
 // Mixins - Reusable SCSS functions
 // ============================================================================
 
-// Mobile breakpoint mixin
+// Mobile breakpoint mixin (hardcoded px — CSS variables are invalid in @media queries)
 @mixin mobile {
-  @media screen and (max-width: var(--mobile-breakpoint, 768px)) {
+  @media screen and (max-width: 768px) {
     @content;
   }
 }

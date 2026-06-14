@@ -1,3 +1,6 @@
+@use '../../../styles/mixins' as *;
+@use './todo-assignment-mobile';
+
 :host {
   display: flex;
   flex-direction: column;
@@ -33,15 +36,6 @@
   > * {
     min-height: 0;
     min-width: 0;
-  }
-
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 38%) minmax(0, 1fr);
-    height: auto;
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: none;
   }
 }
 
@@ -197,8 +191,9 @@
   padding-bottom: 0.65rem;
   border-bottom: 1px solid #eee;
 
-  @media (max-width: 600px) {
+  @include mobile {
     flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -293,7 +288,7 @@
   padding-top: 0.85rem;
   border-top: 1px solid #ddd;
 
-  @media (max-width: 600px) {
+  @include mobile {
     flex-direction: column;
     align-items: stretch;
   }
@@ -307,7 +302,10 @@
 .form-actions-buttons {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.65rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .btn-small {

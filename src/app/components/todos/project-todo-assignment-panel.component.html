@@ -1,5 +1,32 @@
 <div class="todo-assignment-form">
-  <div class="assignment-layout">
+  <nav class="mobile-step-nav" [attr.aria-label]="'todos.mobileAssignmentSteps' | translate">
+    <button
+      type="button"
+      class="mobile-step-btn"
+      [class.mobile-step-btn--active]="mobileStep() === 'objects'"
+      (click)="goToObjectsStep()"
+    >
+      {{ 'todos.mobileStepObjects' | translate }}
+      @if (selectedObjectIds().length > 0) {
+        <span class="mobile-step-badge">{{ selectedObjectIds().length }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      class="mobile-step-btn"
+      [class.mobile-step-btn--active]="mobileStep() === 'checklist'"
+      [disabled]="!hasObjectSelection()"
+      (click)="goToChecklistStep()"
+    >
+      {{ 'todos.mobileStepChecklist' | translate }}
+    </button>
+  </nav>
+
+  <div
+    class="assignment-layout"
+    [class.assignment-layout--mobile-step-objects]="mobileStep() === 'objects'"
+    [class.assignment-layout--mobile-step-checklist]="mobileStep() === 'checklist'"
+  >
     <aside class="object-panel">
       <label class="search-label" for="objectSearch">{{ 'todos.selectObject' | translate }}</label>
       <input
@@ -45,15 +72,47 @@
     </aside>
 
     <section class="checklist-panel">
+      @if (mobileStep() === 'checklist') {
+        <button type="button" class="mobile-panel-back" (click)="goToObjectsStep()">
+          {{ 'todos.mobileBackToObjects' | translate }}
+          @if (selectedObjectIds().length > 0) {
+            ({{ selectedObjectIds().length }})
+          }
+        </button>
+      }
+
       @if (hasObjectSelection()) {
         <header class="checklist-panel-header">
           <h3 class="checklist-panel-title">{{ selectedObjectsTitle() }}</h3>
           <div class="checklist-panel-actions">
-            <button type="button" class="btn btn-secondary btn-small" (click)="assignAllForSelected()">
-              {{ 'todos.assignAll' | translate }}
+            <button
+              type="button"
+              class="btn btn-secondary btn-small todo-action-btn"
+              (click)="assignAllForSelected()"
+              [attr.aria-label]="'todos.assignAll' | translate"
+              [title]="'todos.assignAll' | translate"
+            >
+              <span class="todo-action-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </span>
+              <span class="todo-action-label">{{ 'todos.assignAll' | translate }}</span>
             </button>
-            <button type="button" class="btn btn-secondary btn-small" (click)="clearAllForSelected()">
-              {{ 'todos.clearAll' | translate }}
+            <button
+              type="button"
+              class="btn btn-secondary btn-small todo-action-btn"
+              (click)="clearAllForSelected()"
+              [attr.aria-label]="'todos.clearAll' | translate"
+              [title]="'todos.clearAll' | translate"
+            >
+              <span class="todo-action-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </span>
+              <span class="todo-action-label">{{ 'todos.clearAll' | translate }}</span>
             </button>
           </div>
         </header>
@@ -87,29 +146,100 @@
     </section>
   </div>
 
-  <footer class="form-actions">
-    @if (dirtyObjectCount() > 0) {
+  <footer
+    class="form-actions"
+    [class.form-actions--mobile-objects]="mobileStep() === 'objects'"
+    [class.form-actions--mobile-checklist]="mobileStep() === 'checklist'"
+  >
+    @if (mobileStep() === 'checklist' && dirtyObjectCount() > 0) {
       <span class="changes-hint">
         {{ 'todos.objectsWithChanges' | translate: { count: dirtyObjectCount() } }}
       </span>
     }
-    <div class="form-actions-buttons">
+
+    @if (mobileStep() === 'objects') {
+      <div class="form-actions-buttons form-actions-buttons--continue">
+        <button
+          type="button"
+          class="btn btn-primary todo-action-btn"
+          (click)="goToChecklistStep()"
+          [disabled]="!hasObjectSelection()"
+          [attr.aria-label]="'todos.mobileContinueToChecklist' | translate: { count: selectedObjectIds().length }"
+          [title]="'todos.mobileContinueToChecklist' | translate: { count: selectedObjectIds().length }"
+        >
+          <span class="todo-action-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+          <span class="todo-action-label">{{
+            'todos.mobileContinueToChecklist'
+              | translate: { count: selectedObjectIds().length }
+          }}</span>
+        </button>
+      </div>
+    }
+
+    <div class="form-actions-buttons form-actions-buttons--edit">
+      <button
+        type="button"
+        class="btn btn-secondary todo-action-btn"
+        (click)="verifyRequested.emit()"
+        [attr.aria-label]="'todos.verifyAssignments' | translate"
+        [title]="'todos.verifyAssignments' | translate"
+      >
+        <span class="todo-action-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+            <path d="M9 14l2 2 4-4" />
+          </svg>
+        </span>
+        <span class="todo-action-label">{{ 'todos.verifyAssignments' | translate }}</span>
+      </button>
       @if (!embedded()) {
-        <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="saving()">
-          {{ 'common.cancel' | translate }}
+        <button
+          type="button"
+          class="btn btn-secondary todo-action-btn"
+          (click)="cancel()"
+          [disabled]="saving()"
+          [attr.aria-label]="'common.cancel' | translate"
+          [title]="'common.cancel' | translate"
+        >
+          <span class="todo-action-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </span>
+          <span class="todo-action-label">{{ 'common.cancel' | translate }}</span>
         </button>
       }
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary todo-action-btn"
         (click)="save()"
         [disabled]="saving() || dirtyObjectCount() === 0"
+        [attr.aria-label]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
+        [title]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
       >
-        @if (saving()) {
-          {{ 'common.saving' | translate }}
-        } @else {
-          {{ 'todos.saveAssignments' | translate }}
-        }
+        <span class="todo-action-icon" aria-hidden="true">
+          @if (saving()) {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          }
+        </span>
+        <span class="todo-action-label">
+          @if (saving()) {
+            {{ 'common.saving' | translate }}
+          } @else {
+            {{ 'todos.saveAssignments' | translate }}
+          }
+        </span>
       </button>
     </div>
   </footer>

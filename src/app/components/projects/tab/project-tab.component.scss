@@ -735,7 +735,7 @@ h2 {
   }
 }
 
-@media screen and (max-width: var(--mobile-breakpoint, 768px)) {
+@media screen and (max-width: 768px) {
   .card-wrapper,
   .card-wrapper--reorder {
     display: flex;

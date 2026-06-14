@@ -132,12 +132,22 @@
     @if (!canAssign()) {
       <p class="empty-message">{{ 'todos.saveItemsBeforeAssign' | translate }}</p>
     } @else {
-      <app-project-todo-assignment-panel
-        [todoItems]="savedTodoItems()"
-        [objects]="objects()"
-        [embedded]="true"
-        (saved)="onAssignmentsSaved()"
-      />
+      @if (assignTabMode() === 'verify') {
+        <app-project-todo-assignment-verify-panel
+          [todoItems]="savedTodoItems()"
+          [objects]="objects()"
+          [embedded]="true"
+          (backRequested)="assignTabMode.set('assign')"
+        />
+      } @else {
+        <app-project-todo-assignment-panel
+          [todoItems]="savedTodoItems()"
+          [objects]="objects()"
+          [embedded]="true"
+          (saved)="onAssignmentsSaved()"
+          (verifyRequested)="assignTabMode.set('verify')"
+        />
+      }
     }
   }
 </div>

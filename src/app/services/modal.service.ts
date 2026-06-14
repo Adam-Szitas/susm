@@ -11,6 +11,7 @@ import {
 import { ModalComponent } from '../components/modal/modal.component';
 import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
 import { TranslationService } from './translation.service';
+import { lockDocumentScroll, unlockDocumentScroll } from './document-scroll-lock';
 
 export interface ModalConfig {
   title?: string;
@@ -45,7 +46,7 @@ export class ModalService {
     const container = document.createElement('div');
     container.className = 'modal-host';
     document.body.appendChild(container);
-    document.body.classList.add('modal-open');
+    lockDocumentScroll();
     return container;
   }
 
@@ -115,7 +116,7 @@ export class ModalService {
     }
 
     if (!document.querySelector('.modal-host')) {
-      document.body.classList.remove('modal-open');
+      unlockDocumentScroll();
     }
   }
 

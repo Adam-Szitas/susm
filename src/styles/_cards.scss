@@ -9,7 +9,7 @@
   align-items: self-start;
 }
 
-@media screen and (max-width: var(--mobile-breakpoint)) {
+@media screen and (max-width: 768px) {
   .card-wrapper {
     display: block;
     width: 100%;

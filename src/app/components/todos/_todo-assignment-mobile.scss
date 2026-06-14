@@ -1,0 +1,255 @@
+@use '../../../styles/mixins' as *;
+
+.mobile-step-nav {
+  display: none;
+
+  @include mobile {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    padding: 0.2rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    background: #f7f7f7;
+  }
+}
+
+.mobile-step-btn {
+  display: none;
+
+  @include mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #555;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &--active {
+      border-color: rgba(157, 0, 0, 0.25);
+      background: #fff;
+      color: var(--primary-default, #9d0000);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.mobile-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--primary-default, #9d0000);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mobile-panel-back {
+  display: none;
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0 0 0.35rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--primary-default, #9d0000);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    max-width: 100%;
+  }
+}
+
+.todo-assignment-form,
+.todo-verify-form {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.todo-action-btn {
+  margin: 0;
+  max-width: 100%;
+}
+
+.todo-action-icon {
+  display: none;
+  line-height: 0;
+  flex-shrink: 0;
+
+  svg {
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.todo-action-label {
+  min-width: 0;
+}
+
+@include mobile {
+  .todo-assignment-form,
+  .todo-verify-form {
+    overflow-x: hidden;
+  }
+
+  .form-actions {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .changes-hint,
+  .verify-summary {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .checklist-panel-actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .todo-action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem !important;
+    flex: 0 0 auto;
+  }
+
+  .todo-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .todo-action-label {
+    display: none !important;
+  }
+
+  .form-actions-buttons {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    .btn,
+    .todo-action-btn {
+      width: auto;
+      margin: 0;
+    }
+  }
+}
+
+.mobile-only {
+  display: none !important;
+
+  @include mobile {
+    display: revert !important;
+  }
+}
+
+.desktop-only {
+  @include mobile {
+    display: none !important;
+  }
+}
+
+@include mobile {
+  .assignment-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  // Default step: objects only (checklist hidden until user continues) — assignment only
+  .todo-assignment-form .assignment-layout--mobile-step-objects,
+  .todo-assignment-form
+    .assignment-layout:not(.assignment-layout--mobile-step-checklist) {
+    .checklist-panel {
+      display: none !important;
+    }
+
+    .object-panel {
+      flex: 1 1 0;
+      max-height: none;
+      min-height: 0;
+    }
+  }
+
+  .todo-assignment-form .assignment-layout--mobile-step-checklist {
+    .object-panel {
+      display: none !important;
+    }
+
+    .checklist-panel {
+      flex: 1 1 0;
+      max-height: none;
+      min-height: 0;
+    }
+  }
+
+  .form-actions--mobile-objects {
+    flex-direction: column;
+    align-items: stretch;
+
+    .form-actions-buttons {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  .form-actions--mobile-objects .form-actions-buttons--edit {
+    display: none;
+  }
+
+  .form-actions--mobile-checklist .form-actions-buttons--continue {
+    display: none !important;
+  }
+
+  .form-actions--mobile-objects .form-actions-buttons--continue {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.form-actions-buttons--continue {
+  display: none;
+}

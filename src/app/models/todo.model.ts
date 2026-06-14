@@ -331,3 +331,58 @@ export function updateSelectedSubItem(
     },
   ];
 }
+
+/** Objects that have the given checklist item assigned. */
+export function objectsAssignedToTodoItem<T extends { todo_entries?: ObjectTodoEntry[] }>(
+  objects: T[],
+  todoItemIdValue: string,
+): T[] {
+  return objects.filter((object) =>
+    isParentTodoAssigned(object.todo_entries, todoItemIdValue),
+  );
+}
+
+/** Count of objects with a given checklist item assigned. */
+export function countObjectsAssignedToTodoItem<T extends { todo_entries?: ObjectTodoEntry[] }>(
+  objects: T[],
+  todoItemIdValue: string,
+): number {
+  return objectsAssignedToTodoItem(objects, todoItemIdValue).length;
+}
+
+/** Objects assigned to at least one of the selected checklist item ids (union). */
+export function objectsAssignedToAnyTodoItems<T extends { todo_entries?: ObjectTodoEntry[] }>(
+  objects: T[],
+  todoItemIds: string[],
+): T[] {
+  if (!todoItemIds.length) {
+    return [];
+  }
+  const selected = new Set(todoItemIds);
+  return objects.filter((object) =>
+    (object.todo_entries ?? []).some((entry) => selected.has(todoEntryItemId(entry))),
+  );
+}
+
+/** Checklist items that are assigned on at least one object. */
+export function todoItemsWithAssignments(
+  todoItems: TodoItem[],
+  objects: { todo_entries?: ObjectTodoEntry[] }[],
+): TodoItem[] {
+  return sortTodoItems(todoItems).filter(
+    (item) => countObjectsAssignedToTodoItem(objects, todoItemId(item)) > 0,
+  );
+}
+
+/** Selected checklist items that are assigned on the given object. */
+export function selectedTodoItemsAssignedOnObject(
+  object: { todo_entries?: ObjectTodoEntry[] },
+  items: TodoItem[],
+  selectedTodoItemIds: Set<string>,
+): TodoItem[] {
+  return items.filter(
+    (item) =>
+      selectedTodoItemIds.has(todoItemId(item)) &&
+      isParentTodoAssigned(object.todo_entries, todoItemId(item)),
+  );
+}

@@ -27,6 +27,7 @@ import { environment } from '../../environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { FileService } from '../../services/file.service';
 import { ImageCompressionService } from '../../services/image-compression.service';
+import { lockDocumentScroll, unlockDocumentScroll } from '../../services/document-scroll-lock';
 import { ModalService } from '../../services/modal.service';
 import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
@@ -693,11 +694,11 @@ export class FileListComponent implements OnDestroy {
   }
 
   #lockBodyScroll(): void {
-    document.body.style.overflow = 'hidden';
+    lockDocumentScroll();
   }
 
   #restoreBodyScroll(): void {
-    document.body.style.removeProperty('overflow');
+    unlockDocumentScroll();
   }
 
   public openImageLightbox(event: Event, file: FileGroupItem | ProjectFile): void {

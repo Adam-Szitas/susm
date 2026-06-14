@@ -1,0 +1,133 @@
+<div class="todo-verify-form">
+  <header class="verify-toolbar">
+    <label class="panel-label">{{ 'todos.verifySelectChecklists' | translate }}</label>
+    @if (assignedTodoItems().length > 0) {
+      <button
+        type="button"
+        class="btn btn-secondary btn-small todo-action-btn"
+        (click)="toggleSelectAllAssignedChecklists()"
+        [attr.aria-label]="
+          allAssignedChecklistsSelected()
+            ? ('todos.verifyDeselectAllChecklists' | translate)
+            : ('todos.verifySelectAllChecklists' | translate)
+        "
+        [title]="
+          allAssignedChecklistsSelected()
+            ? ('todos.verifyDeselectAllChecklists' | translate)
+            : ('todos.verifySelectAllChecklists' | translate)
+        "
+      >
+        <span class="todo-action-icon" aria-hidden="true">
+          @if (allAssignedChecklistsSelected()) {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          }
+        </span>
+        <span class="todo-action-label">
+          @if (allAssignedChecklistsSelected()) {
+            {{ 'todos.verifyDeselectAllChecklists' | translate }}
+          } @else {
+            {{ 'todos.verifySelectAllChecklists' | translate }}
+          }
+        </span>
+      </button>
+    }
+  </header>
+
+  <div class="verify-preview-panel">
+    @if (assignedTodoItems().length === 0) {
+      <p class="panel-empty">{{ 'todos.verifyNoAssignmentsYet' | translate }}</p>
+    } @else {
+      <section class="verify-checklist-section" aria-label="{{ 'todos.verifySelectChecklists' | translate }}">
+        <ul class="checklist-verify-list">
+          @for (item of assignedTodoItems(); track trackTodoItemId(item)) {
+            <li class="checklist-verify-item">
+              <label class="checklist-verify-label">
+                <input
+                  type="checkbox"
+                  [checked]="isChecklistSelected(item)"
+                  (change)="toggleChecklist(item, $any($event.target).checked)"
+                />
+                <span class="checklist-verify-text">
+                  <span class="checklist-verify-title">{{ item.title }}</span>
+                  @if (item.note?.trim()) {
+                    <span class="checklist-verify-note">({{ item.note }})</span>
+                  }
+                  <span class="checklist-verify-count">
+                    {{ 'todos.verifyObjectCount' | translate: { count: assignedObjectCount(item) } }}
+                  </span>
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+      </section>
+
+      @if (!hasChecklistSelection()) {
+        <p class="panel-empty panel-empty--grow">{{ 'todos.verifySelectChecklistsHint' | translate }}</p>
+      } @else {
+        <section class="verify-results">
+          <h3 class="verify-results-title">{{ 'todos.verifyAssignedObjects' | translate }}</h3>
+
+          @if (matchingObjects().length === 0) {
+            <p class="panel-empty panel-empty--inline">{{ 'todos.verifyNoMatchingObjects' | translate }}</p>
+          } @else {
+            <ul class="object-verify-list">
+              @for (object of matchingObjects(); track object._id?.$oid) {
+                <li class="object-verify-item">
+                  <div class="object-verify-name">{{ objectLabel(object) }}</div>
+                  <ul class="object-verify-assignments">
+                    @for (item of matchingChecklistsForObject(object); track trackTodoItemId(item)) {
+                      <li class="object-verify-assignment">
+                        <span class="object-verify-checklist">{{ item.title }}</span>
+                        <span class="object-verify-detail">{{ assignmentDetail(object, item) }}</span>
+                      </li>
+                    }
+                  </ul>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+    }
+  </div>
+
+  <footer class="form-actions">
+    @if (hasChecklistSelection()) {
+      <span class="verify-summary">
+        {{
+          'todos.verifySummary'
+            | translate
+              : {
+                  checklistCount: selectedTodoItemIds().length,
+                  objectCount: matchingObjects().length,
+                }
+        }}
+      </span>
+    }
+
+    <div class="form-actions-buttons">
+      <button
+        type="button"
+        class="btn btn-primary todo-action-btn"
+        (click)="back()"
+        [attr.aria-label]="'todos.verifyBackToAssign' | translate"
+        [title]="'todos.verifyBackToAssign' | translate"
+      >
+        <span class="todo-action-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M11 18l-6-6 6-6" />
+          </svg>
+        </span>
+        <span class="todo-action-label">{{ 'todos.verifyBackToAssign' | translate }}</span>
+      </button>
+    </div>
+  </footer>
+</div>

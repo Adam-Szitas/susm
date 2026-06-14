@@ -27,6 +27,7 @@ import {
 } from '@models';
 import { TrashIconComponent } from '../shared/trash-icon.component';
 import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-panel.component';
+import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assignment-verify-panel.component';
 
 @Component({
   selector: 'app-project-todo-modal',
@@ -37,6 +38,7 @@ import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-p
     TranslateModule,
     TrashIconComponent,
     ProjectTodoAssignmentPanelComponent,
+    ProjectTodoAssignmentVerifyPanelComponent,
   ],
   templateUrl: './project-todo-modal.component.html',
   styleUrl: './project-todo-modal.component.scss',
@@ -59,6 +61,7 @@ export class ProjectTodoModalComponent implements OnInit {
   form: FormGroup;
   saving = signal(false);
   activeTab = signal<'items' | 'assign'>('items');
+  assignTabMode = signal<'assign' | 'verify'>('assign');
 
   constructor() {
     this.form = this.#fb.group({
@@ -229,6 +232,7 @@ export class ProjectTodoModalComponent implements OnInit {
       );
       return;
     }
+    this.assignTabMode.set('assign');
     this.activeTab.set(tab);
   }
 
