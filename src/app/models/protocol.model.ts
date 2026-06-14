@@ -45,6 +45,8 @@ export interface ProtocolRecord {
   to_date?: string;
   file_group_categories?: string[];
   custom_object_order?: boolean;
+  /** When false, checklist sections were omitted from this protocol PDF. */
+  include_checklists?: boolean;
   /** Older protocol IDs merged after this one in the PDF (stored order). */
   linked_protocol_ids?: string[];
 }
@@ -69,4 +71,6 @@ export interface GenerateProtocolRequest {
   save_to_project?: boolean;
   /** When true, `object_ids` order is used as the protocol object order. */
   custom_object_order?: boolean;
+  /** When false, project checklist sections are omitted from preview/PDF and TOC. */
+  include_checklists?: boolean;
 }

@@ -208,6 +208,15 @@ export class ProtocolGenerateModalComponent {
   loadingPreview = signal(false);
   /** When on, generated PDF is stored under project → Generated Protocols. */
   saveToProject = signal(true);
+  /** When on, project checklist sections appear in preview, TOC, and PDF. */
+  includeChecklists = signal(true);
+
+  readonly displayPreviewData = computed(() => {
+    const data = this.previewData();
+    if (!data) return null;
+    if (this.includeChecklists()) return data;
+    return this.#stripChecklistsFromMainPreview(data);
+  });
 
   selectedTemplate = computed(() => {
     const templateId = this.form.get('template_id')?.value;
@@ -438,7 +447,45 @@ export class ProtocolGenerateModalComponent {
       linked_protocol_ids: linkedIds.length > 0 ? linkedIds : undefined,
       save_to_project: this.saveToProject(),
       custom_object_order: this.customObjectOrder(),
+      include_checklists: this.includeChecklists(),
       ...(fgCats ? { file_group_categories: fgCats } : {}),
+    };
+  }
+
+  /** Hide checklist TOC entries and content in the main preview when toggled off. */
+  #stripChecklistsFromMainPreview(data: ProtocolPreviewData): ProtocolPreviewData {
+    const todoSections = data.todo_sections ?? [];
+    if (todoSections.length === 0) {
+      return { ...data, todo_sections: [] };
+    }
+
+    const checklistTitles = new Set(todoSections.map((section) => section.title));
+    let tocCutIndex = data.table_of_contents.length;
+    for (let i = 0; i < data.table_of_contents.length; i++) {
+      const entry = data.table_of_contents[i];
+      if (entry.level !== 1) continue;
+
+      let matched = 0;
+      let j = i + 1;
+      while (
+        j < data.table_of_contents.length &&
+        data.table_of_contents[j].level === 2 &&
+        checklistTitles.has(data.table_of_contents[j].title)
+      ) {
+        matched++;
+        j++;
+      }
+
+      if (matched > 0 && matched === todoSections.length) {
+        tocCutIndex = i;
+        break;
+      }
+    }
+
+    return {
+      ...data,
+      table_of_contents: data.table_of_contents.slice(0, tocCutIndex),
+      todo_sections: [],
     };
   }
 

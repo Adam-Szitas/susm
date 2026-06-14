@@ -10,6 +10,12 @@
           [disabled]="generating()"
           (checkedChange)="saveToProject.set($event)"
         />
+        <app-toggle-switch
+          [checked]="includeChecklists()"
+          [label]="'protocols.includeChecklists' | translate"
+          [disabled]="generating() || loadingPreview()"
+          (checkedChange)="includeChecklists.set($event)"
+        />
       </div>
 
       <div class="preview-actions">
@@ -257,7 +263,7 @@
         </div>
       }
 
-      <app-protocol-preview [previewData]="previewData()!" />
+      <app-protocol-preview [previewData]="displayPreviewData()!" />
     </div>
   } @else {
     <form [formGroup]="form" (ngSubmit)="loadPreview()">
