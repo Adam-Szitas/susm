@@ -224,11 +224,13 @@
                 'fileUpload.note' | translate
               }}</label>
               <textarea
+                #groupNoteTextarea
                 [id]="'group-note-' + group._id.$oid"
                 class="group-edit-input group-edit-note"
                 [ngModel]="editNote()"
-                (ngModelChange)="editNote.set($event)"
-                rows="2"
+                (ngModelChange)="onEditNoteChange($event, groupNoteTextarea)"
+                (focus)="autoResizeTextarea(groupNoteTextarea)"
+                rows="1"
                 placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
               ></textarea>
             </div>

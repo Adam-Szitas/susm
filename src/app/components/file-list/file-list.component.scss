@@ -620,8 +620,12 @@
 
 .group-edit-note {
   width: 100%;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   min-height: 44px;
+  max-height: none;
+  line-height: 1.45;
+  field-sizing: content;
 }
 
 .group-note-field .group-note {

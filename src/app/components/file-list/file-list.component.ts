@@ -223,6 +223,25 @@ export class FileListComponent implements OnDestroy {
     this.editCategories.set([...fileGroupCategoryLabels(group)]);
     this.categoryCustomDraft.set('');
     this.editNote.set(group.note ?? '');
+    queueMicrotask(() => {
+      const textarea = document.getElementById(`group-note-${id}`);
+      if (textarea instanceof HTMLTextAreaElement) {
+        this.autoResizeTextarea(textarea);
+      }
+    });
+  }
+
+  public onEditNoteChange(value: string, textarea: HTMLTextAreaElement): void {
+    this.editNote.set(value);
+    this.autoResizeTextarea(textarea);
+  }
+
+  public autoResizeTextarea(target: HTMLTextAreaElement | Event | null | undefined): void {
+    const el =
+      target instanceof Event ? (target.target as HTMLTextAreaElement | null) : target;
+    if (!el || el.nodeName !== 'TEXTAREA') return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
   }
 
   public isEditCategorySelected(label: string): boolean {

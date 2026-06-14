@@ -44,7 +44,6 @@ import { CategoryManagementModalComponent } from '../category-management-modal.c
 import { ProjectTodoAssignmentModalComponent } from '../../todos/project-todo-assignment-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { UserStore } from '@store/user.store';
-import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { ImageCompressionService } from '@services/image-compression.service';
@@ -68,7 +67,6 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
     RouterLink,
     TranslateModule,
     FileListComponent,
-    StatusPillComponent,
     DatePipe,
     BreadcrumbComponent,
     TrashIconComponent,
@@ -173,8 +171,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   /** Query params forwarded when opening an object from this view (multi-selected file-group categories). */
   readonly objectTabLinkQueryParams = computed(() => {
-    const cats =
-      this.#currentFilter().selectedCategories?.filter((c) => !!c?.trim()) ?? [];
+    const cats = this.#currentFilter().selectedCategories?.filter((c) => !!c?.trim()) ?? [];
     return cats.length ? { categories: cats } : {};
   });
 
@@ -426,9 +423,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     this.#protocolService.deleteProtocol(projectId, protocolId).subscribe({
       next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('protocol.deleted'),
-        );
+        this.#notificationService.showSuccess(this.#translationService.instant('protocol.deleted'));
         this.#projectStore.removeProtocolInstance(protocolId);
         this.#projectStore.loadProject(projectId);
       },
@@ -582,8 +577,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.#notificationService.showError(
-            error.message ||
-              this.#translationService.instant('projects.objectOrderSaveFailed'),
+            error.message || this.#translationService.instant('projects.objectOrderSaveFailed'),
           );
         },
       });
@@ -848,12 +842,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (!file) return;
 
     const lower = file.name.toLowerCase();
-    const isPdf =
-      file.type === 'application/pdf' || lower.endsWith('.pdf');
+    const isPdf = file.type === 'application/pdf' || lower.endsWith('.pdf');
     if (!isPdf) {
-      this.#notificationService.showError(
-        this.#translationService.instant('protocols.pdfOnly'),
-      );
+      this.#notificationService.showError(this.#translationService.instant('protocols.pdfOnly'));
       return;
     }
 
@@ -871,8 +862,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.#notificationService.showError(
-          error.message ||
-            this.#translationService.instant('protocols.uploadPdfFailed'),
+          error.message || this.#translationService.instant('protocols.uploadPdfFailed'),
         );
         this.uploadingProtocolPdf.set(false);
       },
