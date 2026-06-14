@@ -13,6 +13,8 @@
   .card-wrapper {
     display: block;
     width: 100%;
+    max-height: none;
+    overflow: visible;
   }
   app-file-list {
     width: 100%;
@@ -24,6 +26,9 @@
     grid-template-columns: unset;
     text-align: left;
     max-height: none;
+    min-height: auto;
+    flex-shrink: 0;
+    overflow: visible;
     width: 100%;
   }
 }
