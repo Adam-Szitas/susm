@@ -9,6 +9,7 @@ nav {
   font-weight: bold;
   position: relative;
   z-index: 100;
+  padding: var(--space-small) 0;
 
   span {
     margin-left: var(--space-large);
@@ -141,7 +142,6 @@ nav {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  margin: var(--space-small) 0;
 
   & > ul {
     flex-direction: row;
@@ -158,10 +158,19 @@ nav {
 }
 
 .hamburger-menu {
-  width: 26px;
-  margin: var(--space);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 var(--space-small);
+  padding: var(--space-small) var(--space);
   color: white;
   cursor: pointer;
+
+  svg {
+    display: block;
+    width: 26px;
+    height: 20px;
+  }
 }
 
 li {
@@ -200,7 +209,5 @@ li {
     .logout-menu {
       display: none;
     }
-
-    padding: var(--space) 0;
   }
 }
