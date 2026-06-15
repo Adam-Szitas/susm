@@ -3,14 +3,34 @@
 .project-todo-form {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
+  touch-action: pan-y;
+
+  &:has(app-project-todo-assignment-panel),
+  &:has(app-project-todo-assignment-verify-panel) {
+    overflow: hidden;
+  }
+
+  &:not(:has(app-project-todo-assignment-panel)):not(:has(app-project-todo-assignment-verify-panel)) {
+    overflow: hidden;
+
+    > form {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+  }
 
   app-project-todo-assignment-panel,
   app-project-todo-assignment-verify-panel {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     overflow: hidden;
   }
@@ -21,6 +41,7 @@
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
   }
 
   .todo-modal-tab {
