@@ -169,6 +169,13 @@ export class FilterComponent implements OnInit {
     this.filtersVisibleChange.emit(this.areFiltersVisible);
   }
 
+  /** Clear only the sort direction (e.g. after persisting sort as stored object order). */
+  clearSortDirection(): void {
+    this.searchForm.patchValue({ sortDirection: '' }, { emitEvent: false });
+    this.currentFilter = { ...this.currentFilter, sortDirection: '' as SortDirection };
+    this.emitFilterChange();
+  }
+
   clearFilters(): void {
     this.selectedFileGroupCategories = [];
     this.searchForm.reset(

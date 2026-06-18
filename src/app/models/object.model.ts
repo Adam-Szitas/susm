@@ -45,3 +45,15 @@ export interface ObjectWithProject {
   project_name: string;
   object: Object;
 }
+
+/**
+ * Place visible IDs first (in their display order), then hidden IDs in their original order.
+ */
+export function packFilteredFirstOrder(fullOrder: string[], visibleOrder: string[]): string[] {
+  if (visibleOrder.length === 0) {
+    return fullOrder;
+  }
+  const visibleSet = new Set(visibleOrder);
+  const hidden = fullOrder.filter((id) => !visibleSet.has(id));
+  return [...visibleOrder, ...hidden];
+}

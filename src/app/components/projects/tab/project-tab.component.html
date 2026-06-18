@@ -347,6 +347,24 @@
     (filtersVisibleChange)="onFiltersVisibleChange($event)"
   ></app-filter>
 
+  @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
+    <div class="apply-sort-order-toolbar">
+      <p class="apply-sort-order-hint">{{ 'projects.applySortOrderHint' | translate }}</p>
+      <button
+        type="button"
+        class="button button-primary apply-sort-order-btn"
+        (click)="applySortOrder()"
+        [disabled]="objectReorderSaving() || filteredObjects().length === 0"
+      >
+        @if (objectReorderSaving()) {
+          {{ 'common.loading' | translate }}
+        } @else {
+          {{ 'projects.applySortOrder' | translate }}
+        }
+      </button>
+    </div>
+  }
+
   <div class="content-wrapper">
     @if (objectReorderMode() && objectsInReorderMode().length > 0) {
       <div

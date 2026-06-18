@@ -29,6 +29,7 @@ import {
   ProtocolRecord,
   isUploadedProtocol,
   sortObjectsByStoredOrder,
+  packFilteredFirstOrder,
   objectTodoCardClassNames,
 } from '@models';
 import { ModalService } from '@services/modal.service';
@@ -568,7 +569,34 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  #saveObjectOrder(objectIds: string[]): void {
+  hasSortDirection(): boolean {
+    const dir = this.#currentFilter().sortDirection;
+    return dir === 'asc' || dir === 'desc';
+  }
+
+  applySortOrder(): void {
+    if (!this.hasSortDirection() || this.objectReorderMode() || this.objectReorderSaving()) {
+      return;
+    }
+
+    const fullOrder = this.sortedObjects()
+      .map((o) => o._id?.$oid)
+      .filter((id): id is string => !!id);
+    const visibleOrder = this.filteredObjects()
+      .map((o) => o._id?.$oid)
+      .filter((id): id is string => !!id);
+    if (!visibleOrder.length) {
+      return;
+    }
+
+    const newOrder = packFilteredFirstOrder(fullOrder, visibleOrder);
+    this.#saveObjectOrder(newOrder, { clearSortAfter: true });
+  }
+
+  #saveObjectOrder(
+    objectIds: string[],
+    options?: { clearSortAfter?: boolean },
+  ): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId || this.objectReorderSaving()) return;
 
@@ -579,8 +607,15 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.objectOrderIds.set(objectIds);
+          if (options?.clearSortAfter) {
+            this.projectFilter()?.clearSortDirection();
+          }
           this.#notificationService.showSuccess(
-            this.#translationService.instant('projects.objectOrderSaved'),
+            this.#translationService.instant(
+              options?.clearSortAfter
+                ? 'projects.applySortOrderSuccess'
+                : 'projects.objectOrderSaved',
+            ),
           );
         },
         error: (error) => {

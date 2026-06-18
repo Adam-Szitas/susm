@@ -20,6 +20,28 @@
   }
 }
 
+.apply-sort-order-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: var(--space-small);
+  padding: 0.85rem 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.apply-sort-order-hint {
+  margin: 0;
+  color: #444;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.apply-sort-order-btn {
+  align-self: flex-start;
+}
+
 .content-wrapper {
   width: 100%;
   max-width: 100%;
