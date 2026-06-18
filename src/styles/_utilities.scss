@@ -148,3 +148,7 @@
   @include scrollable(50vh);
 }
 
+.visually-hidden {
+  @include visually-hidden;
+}
+

@@ -1,3 +1,5 @@
+@use '../../../../styles/mixins' as *;
+
 .object-bulk-form {
   .intro {
     margin: 0 0 1rem;
@@ -217,7 +219,7 @@
   }
 }
 
-@media screen and (max-width: 768px) {
+@include mobile {
   .object-bulk-form {
     .add-row-btn--header {
       display: none;

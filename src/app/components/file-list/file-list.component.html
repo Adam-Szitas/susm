@@ -19,7 +19,7 @@
       </span>
       <div class="selection-actions">
         @if (selectedFileIds().size > 0 && moveTargetGroups().length > 1) {
-          <label class="file-list-visually-hidden" for="filelist-move-target-select">{{
+          <label class="visually-hidden" for="filelist-move-target-select">{{
             'fileList.moveToGroup' | translate
           }}</label>
           <select
@@ -55,31 +55,44 @@
   @if (objectId()) {
   @if (activeGroupCount() > 1) {
     <div class="file-groups-reorder-toolbar">
-      <button
-        type="button"
-        class="button button-outline file-groups-reorder-toggle"
-        [class.active]="groupReorderMode()"
-        (click)="toggleGroupReorderMode()"
-        [disabled]="groupReorderSaving()"
-        [attr.aria-label]="
-          groupReorderMode()
-            ? ('fileList.doneReorderGroups' | translate)
-            : ('fileList.reorderGroups' | translate)
-        "
-        [attr.title]="
-          groupReorderMode()
-            ? ('fileList.doneReorderGroups' | translate)
-            : ('fileList.reorderGroups' | translate)
-        "
-      >
-        {{ groupReorderMode() ? ('fileList.doneReorderGroups' | translate) : ('fileList.reorderGroups' | translate) }}
-      </button>
-      @if (groupReorderSaving()) {
-        <span class="reorder-saving-hint">{{ 'fileList.savingOrder' | translate }}</span>
-      }
-      @if (groupReorderMode() && categoryFilter().length > 0) {
-        <span class="reorder-filter-hint">{{ 'fileList.groupReorderFilteredHint' | translate }}</span>
-      }
+      <div class="file-groups-reorder-toolbar__info">
+        <span class="file-groups-reorder-toolbar__title">{{
+          'fileList.reorderGroupsSectionTitle' | translate
+        }}</span>
+        <span class="file-groups-reorder-toolbar__hint">
+          @if (groupReorderMode() && categoryFilter().length > 0) {
+            {{ 'fileList.groupReorderFilteredHint' | translate }}
+          } @else if (groupReorderMode()) {
+            {{ 'fileList.reorderGroupsActiveHint' | translate }}
+          } @else {
+            {{ 'fileList.reorderGroupsHint' | translate }}
+          }
+        </span>
+      </div>
+      <div class="file-groups-reorder-toolbar__actions">
+        <button
+          type="button"
+          class="button button-outline file-groups-reorder-toggle"
+          [class.active]="groupReorderMode()"
+          (click)="toggleGroupReorderMode()"
+          [disabled]="groupReorderSaving()"
+          [attr.aria-label]="
+            groupReorderMode()
+              ? ('fileList.doneReorderGroups' | translate)
+              : ('fileList.reorderGroups' | translate)
+          "
+          [attr.title]="
+            groupReorderMode()
+              ? ('fileList.doneReorderGroups' | translate)
+              : ('fileList.reorderGroups' | translate)
+          "
+        >
+          {{ groupReorderMode() ? ('fileList.doneReorderGroups' | translate) : ('fileList.reorderGroups' | translate) }}
+        </button>
+        @if (groupReorderSaving()) {
+          <span class="reorder-saving-hint">{{ 'fileList.savingOrder' | translate }}</span>
+        }
+      </div>
     </div>
   }
   @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
@@ -188,7 +201,7 @@
                   [attr.aria-label]="'fileList.uploadToGroup' | translate"
                   title="{{ 'fileList.uploadToGroup' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{
+                  <span class="visually-hidden">{{
                     'fileList.uploadToGroup' | translate
                   }}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true">
@@ -267,12 +280,12 @@
                     : ('fileList.reorderPictures' | translate)
                 "
               >
-                <span class="file-list-visually-hidden">{{
+                <span class="visually-hidden">{{
                   reorderMode()
                     ? ('fileList.doneReorderPictures' | translate)
                     : ('fileList.reorderPictures' | translate)
                 }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M3 7h18M3 12h18M3 17h18"/>
                   <path d="M7 3l-4 4 4 4M17 13l4 4-4 4"/>
                 </svg>
@@ -285,7 +298,7 @@
                 [attr.aria-label]="'fileList.uploadToGroup' | translate"
                 title="{{ 'fileList.uploadToGroup' | translate }}"
               >
-                <span class="file-list-visually-hidden">{{
+                <span class="visually-hidden">{{
                   'fileList.uploadToGroup' | translate
                 }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true">
@@ -302,7 +315,7 @@
               [attr.aria-label]="'common.edit' | translate"
               title="{{ 'common.edit' | translate }}"
             >
-              <span class="file-list-visually-hidden">{{ 'common.edit' | translate }}</span>
+              <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
               ✎
             </button>
             @if (objectId()) {
@@ -313,7 +326,7 @@
                 [attr.aria-label]="'fileList.deleteFileGroup' | translate"
                 title="{{ 'fileList.deleteFileGroup' | translate }}"
               >
-                <span class="file-list-visually-hidden">{{ 'fileList.deleteFileGroup' | translate }}</span>
+                <span class="visually-hidden">{{ 'fileList.deleteFileGroup' | translate }}</span>
                 <app-trash-icon [size]="18" />
               </button>
             }
@@ -396,7 +409,7 @@
                     [attr.aria-label]="'fileList.zoom' | translate"
                     title="{{ 'fileList.zoom' | translate }}"
                   >
-                    <span class="file-list-visually-hidden">{{ 'fileList.zoom' | translate }}</span>
+                    <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
                     <svg
                       class="zoom-hint-icon"
                       xmlns="http://www.w3.org/2000/svg"
@@ -422,7 +435,7 @@
                       title="{{ 'fileList.movePicture' | translate }}"
                       [disabled]="moveFileInProgress()"
                     >
-                      <span class="file-list-visually-hidden">{{
+                      <span class="visually-hidden">{{
                         'fileList.movePicture' | translate
                       }}</span>
                       <svg
@@ -448,7 +461,7 @@
                     [attr.aria-label]="'fileList.download' | translate"
                     title="{{ 'fileList.download' | translate }}"
                   >
-                    <span class="file-list-visually-hidden">{{
+                    <span class="visually-hidden">{{
                       'fileList.download' | translate
                     }}</span>
                     <svg
@@ -474,7 +487,7 @@
                     [attr.aria-label]="'fileList.delete' | translate"
                     title="{{ 'fileList.delete' | translate }}"
                   >
-                    <span class="file-list-visually-hidden">{{
+                    <span class="visually-hidden">{{
                       'fileList.delete' | translate
                     }}</span>
                     <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
@@ -538,7 +551,7 @@
                   [attr.aria-label]="'common.edit' | translate"
                   title="{{ 'common.edit' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{ 'common.edit' | translate }}</span>
+                  <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
                   ✎
                 </button>
               }
@@ -570,7 +583,7 @@
                   [attr.aria-label]="'fileList.zoom' | translate"
                   title="{{ 'fileList.zoom' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{ 'fileList.zoom' | translate }}</span>
+                  <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
                   <svg
                     class="zoom-hint-icon"
                     xmlns="http://www.w3.org/2000/svg"
@@ -594,7 +607,7 @@
                   [attr.aria-label]="'fileList.download' | translate"
                   title="{{ 'fileList.download' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{
+                  <span class="visually-hidden">{{
                     'fileList.download' | translate
                   }}</span>
                   <svg
@@ -620,7 +633,7 @@
                   [attr.aria-label]="'fileList.delete' | translate"
                   title="{{ 'fileList.delete' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{
+                  <span class="visually-hidden">{{
                     'fileList.delete' | translate
                   }}</span>
                   <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
@@ -684,7 +697,7 @@
                   [attr.aria-label]="'common.edit' | translate"
                   title="{{ 'common.edit' | translate }}"
                 >
-                  <span class="file-list-visually-hidden">{{ 'common.edit' | translate }}</span>
+                  <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
                   ✎
                 </button>
               }
@@ -710,7 +723,7 @@
         [attr.aria-label]="'fileList.closeImagePreview' | translate"
         title="{{ 'fileList.closeImagePreview' | translate }}"
       >
-        <span class="file-list-visually-hidden">{{
+        <span class="visually-hidden">{{
           'fileList.closeImagePreview' | translate
         }}</span>
         ×

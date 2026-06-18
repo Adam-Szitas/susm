@@ -1,3 +1,5 @@
+@use '../../../styles/mixins' as *;
+
 .wrapper.filter-wrapper {
   display: flex;
   justify-content: center;
@@ -132,24 +134,23 @@ select.filter-input {
 }
 
 /* Mobile and smaller screens */
-@media (max-width: 768px) {
+@include mobile {
   .filter-header {
     justify-content: flex-start;
   }
 
   label {
-    font-size: 0.9rem; /* Slightly smaller for mobile */
+    font-size: 0.9rem;
   }
 
   .filter-input {
     padding: 8px 10px;
     font-size: 0.9rem;
-    min-height: 44px; /* Ensure touch target size for accessibility */
+    min-height: 44px;
   }
 }
 
-/* Extra small screens (e.g., very small phones) */
-@media (max-width: 480px) {
+@include mobile-small {
   .wrapper.filter-wrapper {
     padding: var(--space-small) 0;
   }

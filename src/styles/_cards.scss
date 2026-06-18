@@ -11,10 +11,12 @@
 
 @media screen and (max-width: 768px) {
   .card-wrapper {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     max-height: none;
     overflow: visible;
+    gap: var(--space);
   }
   app-file-list {
     width: 100%;

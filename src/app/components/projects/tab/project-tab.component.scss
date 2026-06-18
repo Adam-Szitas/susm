@@ -13,7 +13,7 @@
   margin-right: auto;
 }
 
-@media screen and (max-width: 768px) {
+@include mobile {
   .wrapper {
     display: flex;
     flex-direction: column;
@@ -48,7 +48,7 @@
   margin-top: var(--space);
   gap: var(--space-small);
 
-  @media screen and (max-width: 768px) {
+  @include mobile {
     > * {
       width: 100%;
       min-width: 0;
@@ -70,6 +70,7 @@
   gap: 0.5rem 0.75rem;
   width: 100%;
   margin: var(--space) 0 var(--space-small);
+  contain: layout style paint;
 
   .project-toolbar-btn {
     display: inline-flex;
@@ -80,6 +81,12 @@
     flex: 0 1 auto;
     font-size: var(--font-4);
     white-space: nowrap;
+    contain: layout style paint;
+
+    &:hover:not(:disabled) {
+      box-shadow: none;
+      transform: none;
+    }
   }
 
   .project-toolbar-btn.icon-only {
@@ -96,9 +103,7 @@
   }
 
   .object-reorder-toggle.active {
-    border-color: var(--primary-default, #9d0000);
-    color: var(--primary-default, #9d0000);
-    background: rgba(157, 0, 0, 0.06);
+    @include primary-active-toggle;
   }
 }
 
@@ -115,6 +120,7 @@
   padding: 0;
   max-height: none;
   overflow: visible;
+  contain: layout style;
 
   & .card {
     width: 100%;
@@ -122,7 +128,7 @@
   }
 
   &--reorder {
-    @media (min-width: 769px) {
+    @include tablet-up {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
     }
@@ -139,6 +145,7 @@
   border: 1px solid #e5e5e5;
   border-radius: 10px;
   background: #fafafa;
+  contain: layout style paint;
   transition:
     box-shadow 0.2s,
     border-color 0.2s,
@@ -228,70 +235,15 @@
 }
 
 .drag-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  min-width: 2rem;
-  min-height: 2rem;
-  color: #888;
-  font-size: 0.85rem;
-  letter-spacing: -0.15em;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: none;
-  cursor: grab;
-  padding: 0.15rem 0.25rem;
-
-  &:active {
-    cursor: grabbing;
-  }
+  @include drag-handle;
 }
 
 .reorder-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  min-height: 2rem;
-  padding: 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.7rem;
-  line-height: 1;
-
-  &:hover:not(:disabled) {
-    border-color: var(--primary-default, #9d0000);
-    color: var(--primary-default, #9d0000);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
+  @include reorder-btn-compact;
 }
 
 .reorder-position {
-  min-width: 1.5rem;
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #666;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  @include reorder-position-label;
 }
 
 .protocols-section {
@@ -530,76 +482,19 @@
 }
 
 .project-details-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 0.5rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid #eee;
+  @include details-footer;
 }
 
 .project-data-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0.4rem 1.25rem;
-  color: var(--primary-default, #9d0000);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 6px;
-
-  &:hover {
-    background: rgba(157, 0, 0, 0.06);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary-focus, #c41e3a);
-    outline-offset: 2px;
-  }
+  @include data-collapse-toggle;
 }
 
 .project-data-toggle .chevron {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-
-  &.collapsed {
-    transform: rotate(-135deg);
-  }
+  @include collapse-chevron;
 }
 
 .project-details-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.5rem;
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-.summary-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  line-height: 1.3;
-  max-width: 100%;
-
-  &--category {
-    color: var(--primary-default, #9d0000);
-    background: rgba(157, 0, 0, 0.06);
-    border-color: rgba(157, 0, 0, 0.2);
-    font-weight: 600;
-  }
+  @include details-summary;
 }
 
 .project-details-body {
@@ -767,7 +662,7 @@ h2 {
   }
 }
 
-@media screen and (max-width: 768px) {
+@include mobile {
   .card-wrapper,
   .card-wrapper--reorder {
     display: flex;
@@ -832,7 +727,7 @@ h2 {
   }
 }
 
-@media screen and (min-width: 769px) {
+@include tablet-up {
   .headline .headline-text {
     white-space: normal;
     overflow: visible;

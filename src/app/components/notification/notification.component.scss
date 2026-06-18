@@ -1,3 +1,5 @@
+@use '../../../styles/mixins' as *;
+
 .notification-container {
   position: fixed;
   top: 60px;
@@ -121,7 +123,7 @@
 }
 
 // Responsive design for mobile
-@media (max-width: 768px) {
+@include mobile {
   .notification-container {
     top: 10px;
     right: 10px;

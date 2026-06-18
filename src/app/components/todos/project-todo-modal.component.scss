@@ -60,9 +60,7 @@
     }
 
     &--active {
-      border-color: var(--primary-default, #9d0000);
-      background: rgba(157, 0, 0, 0.06);
-      color: var(--primary-default, #9d0000);
+      @include primary-active-toggle;
     }
 
     &:disabled {
