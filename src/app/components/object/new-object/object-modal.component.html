@@ -83,14 +83,16 @@
       <div class="range-actions">
         <button
           type="button"
-          class="btn btn-secondary"
+          class="btn btn-primary range-create-btn"
           [disabled]="progressing() || !getRangePreview().valid"
           (click)="createFromRange()"
         >
           @if (progressing()) {
             {{ 'common.saving' | translate }}
+          } @else if (getRangePreview().valid) {
+            {{ 'objects.createFromRange' | translate: { count: getRangePreview().toCreate.length } }}
           } @else {
-            {{ 'objects.createFromRange' | translate: { count: getRangePreview().toCreate.length || 0 } }}
+            {{ 'objects.createFromRangeAction' | translate }}
           }
         </button>
       </div>

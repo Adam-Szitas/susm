@@ -95,8 +95,12 @@
 
   .range-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: stretch;
     margin-top: 0.85rem;
+  }
+
+  .range-create-btn {
+    width: 100%;
   }
 
   .rows-header {

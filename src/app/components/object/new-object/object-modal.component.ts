@@ -20,6 +20,7 @@ import {
   MAX_HOUSE_NUMBER_RANGE_SIZE,
   parseHouseNumberBound,
 } from '../../../utils/house-number-range';
+import { resolveObjectPrefix } from '../../../utils/object-prefix';
 
 @Component({
   selector: 'app-new-object',
@@ -119,7 +120,7 @@ export class ObjectModalComponent implements OnInit {
       },
       note: '',
       status,
-      prefix: prefix?.trim() || null,
+      prefix: resolveObjectPrefix(prefix, house_number),
     }));
 
     this.#createObjects(projectId, objects, preview.skippedCount, skipExistingHouseNumbers);
@@ -143,16 +144,19 @@ export class ObjectModalComponent implements OnInit {
         level: string;
         door_number: string;
         note: string;
-      }) => ({
-        address: {
-          house_number: row.house_number?.trim() ?? '',
-          level: row.level?.trim() ?? '',
-          door_number: row.door_number?.trim() ?? '',
-        },
-        note: row.note?.trim() ?? '',
-        status,
-        prefix: prefix?.trim() || null,
-      }),
+      }) => {
+        const house_number = row.house_number?.trim() ?? '';
+        return {
+          address: {
+            house_number,
+            level: row.level?.trim() ?? '',
+            door_number: row.door_number?.trim() ?? '',
+          },
+          note: row.note?.trim() ?? '',
+          status,
+          prefix: resolveObjectPrefix(prefix, house_number),
+        };
+      },
     );
 
     this.#createObjects(projectId, objects);
