@@ -1,0 +1,35 @@
+<section class="registration-invite-panel">
+  <div class="panel-header">
+    <div>
+      <h2>{{ 'registrationInvite.title' | translate }}</h2>
+      <p class="panel-intro">{{ 'registrationInvite.intro' | translate }}</p>
+    </div>
+    <button
+      type="button"
+      class="button button-primary"
+      [disabled]="loading()"
+      (click)="generateInvite()"
+    >
+      @if (loading()) {
+        {{ 'registrationInvite.generating' | translate }}
+      } @else {
+        {{ 'registrationInvite.generate' | translate }}
+      }
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="panel-error">{{ error() }}</p>
+  }
+
+  @if (shareQrDataUrl()) {
+    <div class="share-block">
+      <img [src]="shareQrDataUrl()" alt="Registration invite QR code" />
+      <p class="share-hint">{{ shareUrl() }}</p>
+      <small>{{ 'registrationInvite.shareHint' | translate }}</small>
+      <button type="button" class="button button-secondary" (click)="copyLink()">
+        {{ 'registrationInvite.copyLink' | translate }}
+      </button>
+    </div>
+  }
+</section>

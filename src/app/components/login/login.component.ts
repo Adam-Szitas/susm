@@ -31,7 +31,11 @@ export class LoginComponent {
     }
     const credentials = this.form.getRawValue();
     const returnUrl = safeInternalReturnUrl(this.#route.snapshot.queryParams['returnUrl']);
-    this.#userStore.login(credentials.email, credentials.password, returnUrl);
+    this.#userStore.login(
+      credentials.email.trim().toLowerCase(),
+      credentials.password,
+      returnUrl,
+    );
   }
 
   public getEmailControl(): FormControl {

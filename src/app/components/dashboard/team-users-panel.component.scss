@@ -1,0 +1,159 @@
+.team-users-panel {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.team-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.35rem;
+    color: #333;
+  }
+}
+
+.team-users-intro {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.team-user-form {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: #fff;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.team-users-status {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+}
+
+.team-users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.team-user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  background: #fafafa;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.team-user-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.team-user-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.team-user-email {
+  color: #666;
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.team-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.role-badge,
+.owner-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.role-badge {
+  background: #eef2f7;
+  color: #4a5568;
+
+  &--admin {
+    background: rgba(157, 0, 0, 0.1);
+    color: var(--primary-default, #9d0000);
+  }
+}
+
+.owner-badge {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-small {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}

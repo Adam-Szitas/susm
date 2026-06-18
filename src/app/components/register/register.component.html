@@ -1,5 +1,22 @@
 <div>
-  @if (form) {
+  @if (inviteLoading()) {
+    <p>{{ 'register.inviteLoading' | translate }}</p>
+  } @else if (inviteError()) {
+    <p class="register-error">{{ inviteError() | translate }}</p>
+    <p>
+      <a routerLink="/login">{{ 'register.login' | translate }}</a>
+    </p>
+  } @else if (form) {
+    @if (inviterCompanyName()) {
+      <p class="register-invite-banner">
+        {{ 'register.inviteFrom' | translate: { company: inviterCompanyName() } }}
+      </p>
+    }
+
+    @if (submitError()) {
+      <p class="register-error">{{ submitError() | translate }}</p>
+    }
+
     <form [formGroup]="form">
       <div formGroupName="user" class="control">
         <h2>{{ 'register.user' | translate }}</h2>
@@ -100,10 +117,14 @@
         <button
           type="button"
           class="button button-primary"
-          [disabled]="form.invalid"
+          [disabled]="form.invalid || submitting() || !inviteValid()"
           (click)="Submit()"
         >
-          {{ 'common.submit' | translate }}
+          @if (submitting()) {
+            {{ 'register.submitting' | translate }}
+          } @else {
+            {{ 'common.submit' | translate }}
+          }
         </button>
       </div>
     </form>

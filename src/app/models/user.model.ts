@@ -12,13 +12,34 @@ export interface ObjectAddress {
   postal_code?: string;
 }
 
+export type UserRole = 'admin' | 'member';
+
 export interface User {
   id?: string;
   uuid?: string;
   name: string;
   email: string;
   addresses?: ProjectAddress;
-  language: string;
-  /** Set by backend for super_user (company admin). Used to show delete project etc. */
-  role?: string;
+  language?: string;
+  /** admin = full company admin; member = standard team user */
+  role?: UserRole;
+  /** true when this user is the company owner (super_user) */
+  is_company_owner?: boolean;
+}
+
+export interface TeamUser {
+  _id: { $oid: string };
+  name: string;
+  email: string;
+  language?: string;
+  role: UserRole;
+  is_owner: boolean;
+}
+
+export interface CreateTeamUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  language?: string;
+  role: UserRole;
 }

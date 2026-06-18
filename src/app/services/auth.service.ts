@@ -9,8 +9,12 @@ import { User } from '../models/user.model';
 export class AuthService {
   #httpService = inject(HttpService);
 
-  login(email: string, password: string): Observable<any> {
-    return this.#httpService.post<string>('login', { email, password });
+  login(email: string, password: string): Observable<unknown> {
+    return this.#httpService.post<unknown>('login', { email, password });
+  }
+
+  renewToken(): Observable<unknown> {
+    return this.#httpService.post<unknown>('session/renew', {});
   }
 
   register(userInput: User): Observable<any> {

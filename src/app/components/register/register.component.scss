@@ -5,3 +5,14 @@ form {
   justify-content: flex-start;
   margin: 0 calc(100vw/2 - 150px);
 }
+
+.register-error {
+  color: #b42318;
+  text-align: center;
+}
+
+.register-invite-banner {
+  text-align: center;
+  color: #444;
+  margin-bottom: 1rem;
+}

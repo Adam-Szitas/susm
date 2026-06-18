@@ -134,4 +134,12 @@
       </div>
     }
   }
+
+  @if (isAdmin()) {
+    <app-team-users-panel />
+  }
+
+  @if (isCompanyOwner()) {
+    <app-registration-invite-panel />
+  }
 </div>

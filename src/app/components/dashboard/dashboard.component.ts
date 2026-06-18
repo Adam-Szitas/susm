@@ -6,6 +6,8 @@ import { UserStore } from '../../store/user.store';
 import { TranslationService } from '../../services/translation.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TeamUsersPanelComponent } from './team-users-panel.component';
+import { RegistrationInvitePanelComponent } from './registration-invite-panel.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,13 +15,15 @@ import { FormsModule } from '@angular/forms';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
-  imports: [TranslateModule, CommonModule, FormsModule],
+  imports: [TranslateModule, CommonModule, FormsModule, TeamUsersPanelComponent, RegistrationInvitePanelComponent],
 })
 export class DashboardComponent implements OnInit {
   #httpService = inject(HttpService);
   #userStore = inject(UserStore);
   #translationService = inject(TranslationService);
 
+  readonly isAdmin = this.#userStore.isAdmin;
+  readonly isCompanyOwner = this.#userStore.isCompanyOwner;
   public stats = signal<DashboardStats | null>(null);
   public loading = signal(true);
   public currentLanguage = signal<string>('en');

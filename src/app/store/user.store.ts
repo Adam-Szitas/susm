@@ -9,7 +9,9 @@ import { UrlPersistenceService } from '../services/url-persistence.service';
 import { ProjectStore } from './project.store';
 import { TranslationStore } from './translation.store';
 import { safeInternalReturnUrl } from '../utils/platform';
-import { catchError, finalize, map, of, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, finalize, map, of, switchMap, tap } from 'rxjs';
+import { SessionRenewalService } from '../services/session-renewal.service';
+import { shouldRenewTokenNow } from '../utils/jwt';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -23,6 +25,7 @@ export class UserStore {
   readonly token = computed(() => this._token());
   readonly isAuthenticated = computed(() => !!this._token());
   readonly isAdmin = computed(() => this._user()?.role === 'admin');
+  readonly isCompanyOwner = computed(() => !!this._user()?.is_company_owner);
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
   readonly initialized = computed(() => this._initialized());
@@ -33,8 +36,20 @@ export class UserStore {
   #urlPersistenceService = inject(UrlPersistenceService);
   #projectStore = inject(ProjectStore);
   #translationStore = inject(TranslationStore);
+  #sessionRenewal = inject(SessionRenewalService);
   #platformId = inject(PLATFORM_ID);
   #invalidatingSession = false;
+  #renewingSession = false;
+
+  constructor() {
+    if (isPlatformBrowser(this.#platformId)) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && this._token()) {
+          this.#renewSessionIfNeeded();
+        }
+      });
+    }
+  }
 
   initialize(): Promise<void> {
     if (!isPlatformBrowser(this.#platformId)) {
@@ -51,11 +66,18 @@ export class UserStore {
         return Promise.resolve();
       }
 
-      this._token.set(token);
+      this.#applyToken(token);
       const cachedUser = this.#readUserFromStorage();
       if (cachedUser) {
         this._user.set(cachedUser);
         finish();
+        this.#httpService
+          .get<User>('profile')
+          .pipe(
+            tap((profile) => this.#persistUser(profile)),
+            catchError(() => of(null)),
+          )
+          .subscribe();
         return Promise.resolve();
       }
 
@@ -94,8 +116,7 @@ export class UserStore {
       .pipe(
         map((token) => this.#normalizeToken(token)),
         switchMap((token) => {
-          this._token.set(token);
-          this.#writeTokenToStorage(token);
+          this.#applyToken(token);
           return this.#httpService.get<User>('profile').pipe(
             tap((user) => this.#persistUser(user)),
             map((user) => ({ token, user })),
@@ -170,9 +191,56 @@ export class UserStore {
     });
   }
 
+  #applyToken(token: string): void {
+    this._token.set(token);
+    this.#writeTokenToStorage(token);
+    this.#scheduleSessionRenewal(token);
+  }
+
+  #scheduleSessionRenewal(token: string): void {
+    this.#sessionRenewal.schedule(token, () => this.#renewSession());
+  }
+
+  #renewSessionIfNeeded(): void {
+    const token = this._token();
+    if (!token || !shouldRenewTokenNow(token)) {
+      return;
+    }
+    this.#renewSession();
+  }
+
+  #renewSession(): void {
+    const token = this._token();
+    if (!token || this.#renewingSession || this.#invalidatingSession) {
+      return;
+    }
+
+    this.#renewingSession = true;
+    this.#authService
+      .renewToken()
+      .pipe(
+        map((response) => this.#normalizeToken(response)),
+        tap((nextToken) => this.#applyToken(nextToken)),
+        catchError(() => {
+          this.logout();
+          return EMPTY;
+        }),
+        finalize(() => {
+          this.#renewingSession = false;
+        }),
+      )
+      .subscribe();
+  }
+
   #normalizeToken(token: unknown): string {
     if (typeof token === 'string') {
       return token;
+    }
+    if (token != null && typeof token === 'object' && 'token' in token) {
+      const value = (token as { token: unknown }).token;
+      if (typeof value === 'string') {
+        return value;
+      }
     }
     if (token != null) {
       return String(token);
@@ -227,6 +295,7 @@ export class UserStore {
   }
 
   #clearSessionState(): void {
+    this.#sessionRenewal.clear();
     this._user.set(null);
     this._token.set(null);
     this._error.set(null);

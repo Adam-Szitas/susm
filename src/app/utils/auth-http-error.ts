@@ -2,7 +2,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 /** Login/register — never trigger session logout on failed auth. */
 export function isAuthFreeRequestUrl(url: string): boolean {
-  return url.includes('/login') || url.includes('/register');
+  return (
+    url.includes('/login') ||
+    url.includes('/register') ||
+    url.includes('/public/registration-invite')
+  );
+}
+
+/** Session renewal failures are handled by UserStore; avoid duplicate logout handling. */
+export function isSessionRenewRequestUrl(url: string): boolean {
+  return url.includes('/session/renew');
 }
 
 /** Read error string from common API shapes (Actix, JSON, plain). */

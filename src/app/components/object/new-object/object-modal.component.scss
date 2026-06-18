@@ -40,6 +40,65 @@
     color: #777;
   }
 
+  .range-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .range-header {
+    margin-bottom: 0.75rem;
+
+    h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+    }
+  }
+
+  .range-intro {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .range-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .range-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    input {
+      width: auto;
+    }
+  }
+
+  .range-preview {
+    margin: 0.75rem 0 0;
+    color: #2e7d32;
+    font-size: 0.9rem;
+  }
+
+  .range-error {
+    margin: 0.75rem 0 0;
+    color: #b42318;
+    font-size: 0.9rem;
+  }
+
+  .range-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.85rem;
+  }
+
   .rows-header {
     display: flex;
     align-items: center;

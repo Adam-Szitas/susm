@@ -1,0 +1,101 @@
+<section class="team-users-panel">
+  <div class="team-users-header">
+    <div>
+      <h2>{{ 'teamUsers.title' | translate }}</h2>
+      <p class="team-users-intro">{{ 'teamUsers.intro' | translate }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="toggleForm()">
+      @if (showForm()) {
+        {{ 'common.cancel' | translate }}
+      } @else {
+        {{ 'teamUsers.addUser' | translate }}
+      }
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <form class="team-user-form" [formGroup]="form" (ngSubmit)="createUser()">
+      <div class="form-grid">
+        <label class="form-field">
+          <span>{{ 'register.name' | translate }}</span>
+          <input type="text" formControlName="name" [placeholder]="'register.namePlaceholder' | translate" />
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'register.email' | translate }}</span>
+          <input type="email" formControlName="email" [placeholder]="'register.emailPlaceholder' | translate" />
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'register.password' | translate }}</span>
+          <input
+            type="password"
+            formControlName="password"
+            [placeholder]="'register.passwordPlaceholder' | translate"
+          />
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'register.language' | translate }}</span>
+          <select formControlName="language">
+            @for (lang of languageOptions; track lang.code) {
+              <option [value]="lang.code">{{ lang.labelKey | translate }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'teamUsers.role' | translate }}</span>
+          <select formControlName="role">
+            @for (role of roleOptions; track role) {
+              <option [value]="role">{{ roleLabel(role) }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || form.invalid">
+          @if (saving()) {
+            {{ 'common.saving' | translate }}
+          } @else {
+            {{ 'teamUsers.createUser' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="team-users-status">{{ 'common.loading' | translate }}</p>
+  } @else if (users().length === 0) {
+    <p class="team-users-status">{{ 'teamUsers.empty' | translate }}</p>
+  } @else {
+    <ul class="team-users-list">
+      @for (user of users(); track user._id.$oid) {
+        <li class="team-user-row">
+          <div class="team-user-main">
+            <span class="team-user-name">{{ user.name }}</span>
+            <span class="team-user-email">{{ user.email }}</span>
+          </div>
+          <div class="team-user-meta">
+            <span class="role-badge" [class.role-badge--admin]="user.role === 'admin'">
+              {{ roleLabel(user.role) }}
+            </span>
+            @if (isOwner(user)) {
+              <span class="owner-badge">{{ 'teamUsers.owner' | translate }}</span>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-secondary btn-small"
+                (click)="deleteUser(user)"
+              >
+                {{ 'common.delete' | translate }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
