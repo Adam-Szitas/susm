@@ -3,13 +3,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
+  ElementRef,
   inject,
   OnDestroy,
   OnInit,
   PLATFORM_ID,
   signal,
   viewChild,
+  afterNextRender,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -39,21 +42,27 @@ import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { FileService } from '@services/file.service';
 import { FileListComponent } from '../../file-list/file-list.component';
+import { ProjectObjectOption } from '../../file-list/send-project-file-modal.component';
+import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
 import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
-import { ProjectTodoAssignmentModalComponent } from '../../todos/project-todo-assignment-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { UserStore } from '@store/user.store';
 import { DatePipe } from '@angular/common';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
-import { ImageCompressionService } from '@services/image-compression.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import {
   FilterPersistenceService,
   PersistedFilterState,
 } from '@services/filter-persistence.service';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
+import { TabGroupComponent, TabItem } from '../../shared/tab-group.component';
+import { TabPanelComponent } from '../../shared/tab-panel.component';
+import {
+  VirtualScrollViewportComponent,
+  VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
+} from '../../shared/virtual-scroll-viewport.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
 import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 
@@ -68,9 +77,13 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
     RouterLink,
     TranslateModule,
     FileListComponent,
+    FileUploadModalComponent,
     DatePipe,
     BreadcrumbComponent,
     TrashIconComponent,
+    TabGroupComponent,
+    TabPanelComponent,
+    VirtualScrollViewportComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -83,19 +96,24 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #translationService = inject(TranslationService);
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
-  #imageCompressionService = inject(ImageCompressionService);
   #filterPersistence = inject(FilterPersistenceService);
   #userStore = inject(UserStore);
   #platformId = inject(PLATFORM_ID);
+  #destroyRef = inject(DestroyRef);
+  #host = inject(ElementRef<HTMLElement>);
   #routeSubscription?: Subscription;
+  #mobilePanelHeightMq?: MediaQueryList;
+
+  readonly projectTabChrome = viewChild<ElementRef<HTMLElement>>('projectTabChrome');
 
   readonly isAdmin = this.#userStore.isAdmin;
 
   project = this.#projectStore.project;
   objects = this.#projectStore.objects;
   files = this.#projectStore.files;
-  imagePreviewUrl = signal<string | null>(null);
   uploading = signal(false);
+  uploadModalOpen = signal(false);
+  selectedFiles = signal<globalThis.File[]>([]);
   updatingCategory = signal(false);
   downloadingProtocol = signal<string | null>(null);
   loadingTemplates = signal(false);
@@ -107,6 +125,11 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   readonly projectFilter = viewChild(FilterComponent);
   /** Icon-only toolbar buttons on viewports ≤768px. */
   readonly toolbarIconOnly = compactFormActions();
+  readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
+  /** Virtual scroll only on desktop columns — mobile tab panel scrolls the full list. */
+  readonly objectVirtualScrollThreshold = computed(() =>
+    this.toolbarIconOnly() ? Number.MAX_SAFE_INTEGER : VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
+  );
   #projectFilterKey = '';
   restoredFilterState = signal<PersistedFilterState | null>(null);
   /** Collapsed by default — compact summary; expand for full project data + category. */
@@ -138,6 +161,42 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
 
+  readonly projectObjectOptions = computed<ProjectObjectOption[]>(() =>
+    this.sortedObjects()
+      .map((object) => {
+        const objectId = object._id?.$oid;
+        if (!objectId) return null;
+        return {
+          objectId,
+          label: this.objectCardHeadline(object) || this.objectCardMobileLabel(object) || objectId,
+        };
+      })
+      .filter((row): row is ProjectObjectOption => row !== null),
+  );
+
+  /** Precomputed per-object todo card classes — avoids O(n) work each change detection pass. */
+  readonly objectCardClassMap = computed(() => {
+    const todoItems = this.project()?.todo_items;
+    const map = new Map<string, string[]>();
+    for (const object of this.filteredObjects()) {
+      const id = object._id?.$oid;
+      if (!id) continue;
+      map.set(id, objectTodoCardClassNames(object.todo_entries, todoItems));
+    }
+    for (const object of this.objectsInReorderMode()) {
+      const id = object._id?.$oid;
+      if (!id || map.has(id)) continue;
+      map.set(id, objectTodoCardClassNames(object.todo_entries, todoItems));
+    }
+    return map;
+  });
+
+  /** Fixed virtual row height (px), including inter-card gap. */
+  readonly objectCardItemSize = computed(() => (this.toolbarIconOnly() ? 60 : 96));
+
+  readonly objectListMaxHeight = computed(() => 'min(65dvh, 720px)');
+  readonly objectListFillHeight = computed(() => false);
+
   readonly objectsInReorderMode = computed(() => {
     const byId = new Map(
       this.sortedObjects()
@@ -148,6 +207,37 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       .map((id) => byId.get(id))
       .filter((o): o is Object => !!o);
   });
+
+  /** Active mobile content tab (objects | protocols | files). */
+  activeContentTab = signal('objects');
+
+  readonly contentTabs = computed<TabItem[]>(() => {
+    const objectCount = this.objectReorderMode()
+      ? this.objectsInReorderMode().length
+      : this.filteredObjects().length;
+
+    return [
+      {
+        id: 'objects',
+        label: this.#translationService.instant('navbar.objects'),
+        badge: objectCount > 0 ? objectCount : null,
+      },
+      {
+        id: 'protocols',
+        label: this.#translationService.instant('protocols.title'),
+        badge: this.projectProtocols().length || null,
+      },
+      {
+        id: 'files',
+        label: this.#translationService.instant('files.title'),
+        badge: this.files()?.length ? this.files()!.length : null,
+      },
+    ];
+  });
+
+  readonly contentTabsAriaLabel = computed(() =>
+    this.#translationService.instant('projects.contentSections'),
+  );
 
   readonly projectAddressLine = computed(() => {
     const addr = this.project()?.address;
@@ -188,6 +278,17 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       const objects = this.objects() || [];
       const appliedFilter = this.#currentFilter();
       this.filteredObjects.set(this.#applyFilters(objects, appliedFilter));
+    });
+
+    afterNextRender(() => {
+      if (!isPlatformBrowser(this.#platformId)) return;
+      this.#setupMobileTabPanelHeight();
+    });
+
+    effect(() => {
+      this.projectDataExpanded();
+      this.filtersVisible();
+      queueMicrotask(() => this.#syncMobileTabPanelHeight());
     });
   }
 
@@ -286,13 +387,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  manageTodoItems(): void {
+  openProjectChecklist(): void {
     const project = this.project();
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!project || !projectId) return;
 
     this.#modalService.open({
-      title: 'todos.manageProjectChecklist',
+      title: 'todos.projectChecklist',
       component: ProjectTodoModalComponent,
       componentInputs: {
         projectId,
@@ -303,40 +404,14 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  assignTodoItems(): void {
-    const project = this.project();
-    const projectId = this.#route.snapshot.paramMap.get('id');
-    const todoItems = project?.todo_items ?? [];
-    const projectObjects = this.sortedObjects();
-
-    if (!project || !projectId) return;
-    if (!todoItems.length) {
-      this.#notificationService.showError(
-        this.#translationService.instant('todos.noItemsToAssign'),
-      );
-      return;
-    }
-    if (!projectObjects.length) {
-      this.#notificationService.showError(
-        this.#translationService.instant('todos.noObjectsToAssign'),
-      );
-      return;
-    }
-
-    this.#modalService.open({
-      title: 'todos.assignChecklist',
-      component: ProjectTodoAssignmentModalComponent,
-      componentInputs: {
-        projectId,
-        todoItems,
-        objects: projectObjects,
-      },
-      wide: true,
-    });
+  objectTodoCardClasses(object: Object): string[] {
+    const id = object._id?.$oid;
+    if (!id) return [];
+    return this.objectCardClassMap().get(id) ?? [];
   }
 
-  objectTodoCardClasses(object: Object): string[] {
-    return objectTodoCardClassNames(object.todo_entries, this.project()?.todo_items);
+  trackObjectById(_index: number, object: Object): string {
+    return object._id?.$oid ?? String(_index);
   }
 
   generateProtocol(): void {
@@ -456,74 +531,61 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     return prefix && prefix !== key ? `${prefix}: ${date}` : date;
   }
 
-  async onFileSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      input.value = '';
-      return;
-    }
+  openUploadModal(): void {
+    this.uploadModalOpen.set(true);
+    this.selectedFiles.set([]);
+  }
 
-    const file = input.files[0];
+  onFilesSelected(files: globalThis.File[]): void {
+    this.selectedFiles.set(files);
+  }
 
-    // Validate file type (images only)
-    if (!this.#imageCompressionService.isImageFile(file)) {
-      this.#notificationService.showError(
-        this.#translationService.instant('errors.imageFileRequired'),
-      );
-      this.imagePreviewUrl.set(null);
-      input.value = '';
-      return;
-    }
-
-    // Upload file
+  onUploadFile(data: {
+    files: globalThis.File[];
+    description: string;
+    categories: string[];
+    note: string;
+  }): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) {
       this.#notificationService.showError(
         this.#translationService.instant('errors.objectIdNotFound'),
       );
-      input.value = '';
+      this.uploadModalOpen.set(false);
       return;
     }
 
-    try {
-      // Compress image before upload
-      const compressedFile = await this.#imageCompressionService.compressImage(file);
-
-      // Show preview
-      const reader = new FileReader();
-      reader.onerror = () => {
-        this.#notificationService.showError(
-          this.#translationService.instant('errors.fileReadFailed'),
-        );
-        input.value = '';
-      };
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.imagePreviewUrl.set(e.target?.result as string);
-      };
-      reader.readAsDataURL(compressedFile);
-
-      // Upload compressed file
-      this.uploadFile(compressedFile, projectId);
-    } catch (error) {
-      this.#notificationService.showError(
-        error instanceof Error
-          ? error.message
-          : this.#translationService.instant('errors.imageCompressionFailed'),
-      );
-      input.value = '';
-    }
+    this.uploadFiles(data.files, data.description, projectId, data.note);
   }
 
-  private uploadFile(file: File, projectId: string): void {
-    // Prevent multiple simultaneous uploads
-    if (this.uploading()) {
+  onCancelUpload(): void {
+    this.uploadModalOpen.set(false);
+    this.selectedFiles.set([]);
+  }
+
+  private uploadFiles(
+    files: globalThis.File[],
+    description: string,
+    projectId: string,
+    note?: string,
+  ): void {
+    if (!files.length || this.uploading()) {
       return;
     }
 
     this.uploading.set(true);
 
     const form = new FormData();
-    form.append('avatar', file, file.name);
+    files.forEach((file) => {
+      form.append('avatar', file, file.name);
+    });
+
+    if (description) {
+      form.append('description', description);
+    }
+    if (note) {
+      form.append('note', note);
+    }
 
     this.#fileService.uploadFileForProject(form, projectId).subscribe({
       next: () => {
@@ -532,24 +594,14 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         );
         this.#projectStore.loadProject(projectId);
         this.uploading.set(false);
-        this.imagePreviewUrl.set(null);
-        // Reset file input
-        const fileInput = document.getElementById('file') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
+        this.uploadModalOpen.set(false);
+        this.selectedFiles.set([]);
       },
       error: (error) => {
         this.#notificationService.showError(
           error.message || this.#translationService.instant('errors.uploadFailed'),
         );
         this.uploading.set(false);
-        this.imagePreviewUrl.set(null);
-        // Reset file input on error
-        const fileInput = document.getElementById('file') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
       },
     });
   }
@@ -562,6 +614,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         .map((o) => o._id?.$oid)
         .filter((id): id is string => !!id);
       this.objectOrderIds.set(ids);
+      if (this.toolbarIconOnly()) {
+        this.activeContentTab.set('objects');
+      }
     } else {
       this.#touchObjectReorderActive = false;
       this.draggedObjectId.set(null);
@@ -948,5 +1003,64 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.updatingCategory.set(false);
       },
     });
+  }
+
+  #setupMobileTabPanelHeight(): void {
+    this.#mobilePanelHeightMq = window.matchMedia('(max-width: 768px)');
+    const chrome = this.projectTabChrome()?.nativeElement;
+    if (!chrome) return;
+
+    const sync = () => this.#syncMobileTabPanelHeight();
+    sync();
+
+    const ro = new ResizeObserver(sync);
+    ro.observe(chrome);
+
+    this.#mobilePanelHeightMq.addEventListener('change', sync);
+    window.addEventListener('resize', sync, { passive: true });
+    window.visualViewport?.addEventListener('resize', sync);
+
+    this.#destroyRef.onDestroy(() => {
+      ro.disconnect();
+      this.#mobilePanelHeightMq?.removeEventListener('change', sync);
+      window.removeEventListener('resize', sync);
+      window.visualViewport?.removeEventListener('resize', sync);
+    });
+  }
+
+  #syncMobileTabPanelHeight(): void {
+    if (!isPlatformBrowser(this.#platformId)) return;
+
+    const mq = this.#mobilePanelHeightMq ?? window.matchMedia('(max-width: 768px)');
+    const host = this.#host.nativeElement;
+
+    if (!mq.matches) {
+      host.style.removeProperty('--project-tab-panel-height');
+      return;
+    }
+
+    const chrome = this.projectTabChrome()?.nativeElement;
+    if (!chrome) return;
+
+    const tabBarHeight = 48;
+    const layoutGap = 12;
+    const navbarHeight = this.#readNavbarHeightPx();
+    const chromeHeight = chrome.getBoundingClientRect().height;
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const panelHeight = Math.round(
+      viewportHeight - navbarHeight - chromeHeight - tabBarHeight - layoutGap,
+    );
+
+    host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, 120)}px`);
+  }
+
+  #readNavbarHeightPx(): number {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue('--app-navbar-block')
+      .trim();
+    if (!raw) return 56;
+    if (raw.endsWith('rem')) return parseFloat(raw) * 16;
+    if (raw.endsWith('px')) return parseFloat(raw);
+    return 56;
   }
 }

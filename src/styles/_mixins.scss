@@ -60,6 +60,31 @@
   justify-content: center;
 }
 
+/// Square box (icons, avatars, FAB shells).
+@mixin square-size($size) {
+  inline-size: $size;
+  block-size: $size;
+  flex-shrink: 0;
+}
+
+/// Inline icon glyph size.
+@mixin icon-size($size: var(--icon-size-md)) {
+  @include square-size($size);
+}
+
+/// SVG fills its sized parent.
+@mixin svg-fill {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/// Minimum tap target (WCAG 2.5.5).
+@mixin touch-target-min($size: var(--touch-target-min)) {
+  min-inline-size: $size;
+  min-block-size: $size;
+}
+
 // Flexbox column mixin
 @mixin flex-column($gap: var(--space, 1rem)) {
   display: flex;
@@ -95,11 +120,25 @@
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-// Scrollable container
-@mixin scrollable($max-height: 70vh) {
+// Scrollable container (bounded region — prefer scroll-region-fill when filling flex parents)
+@mixin scrollable($max-height: clamp(12rem, 70dvh, calc(100dvh - var(--app-page-chrome)))) {
   max-height: $max-height;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/// Scroll inside a flex column parent that fills the viewport below fixed chrome.
+@mixin scroll-region-fill($min-height: 8rem) {
+  flex: 1 1 auto;
+  min-height: $min-height;
+  min-width: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 // Aspect ratio container
@@ -166,8 +205,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  @include square-size(var(--icon-button-sm));
   padding: 0;
   border-radius: 8px;
   border: $border;
@@ -175,6 +213,10 @@
   color: $color;
   cursor: pointer;
   flex-shrink: 0;
+
+  svg {
+    @include icon-size(var(--icon-size-lg));
+  }
 
   &:disabled {
     opacity: 0.5;
@@ -232,8 +274,7 @@
 }
 
 @mixin collapse-chevron {
-  width: 10px;
-  height: 10px;
+  @include square-size(var(--icon-size-2xs));
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);

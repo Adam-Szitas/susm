@@ -2,55 +2,49 @@
 
 :host {
   display: block;
+  min-height: calc(100dvh - var(--app-navbar-block, 3.5rem));
 }
 
 .wrapper {
   padding: 0 var(--space);
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: inherit;
+}
+
+.object-tab-chrome {
+  flex-shrink: 0;
 }
 
 .content-wrapper {
-  margin-top: 1.5rem;
+  margin-top: var(--space);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space);
+  flex: 1 1 auto;
+  min-height: 0;
 
   & > * {
     width: 100%;
+  }
+
+  &--file-list-fill {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 
 .url-file-group-filter-hint {
   margin: 0;
-  font-size: 0.95rem;
-  opacity: 0.9;
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.4;
 }
 
 .filter-empty {
   margin: 0 0 0.75rem;
-}
-
-.share-block {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-
-  button {
-    padding: 0.65rem 1.5rem;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-  }
-
-  .primary {
-    background: #111;
-    color: #fff;
-  }
-
-  .ghost {
-    background: transparent;
-    border: 1px solid #ccc;
-  }
+  color: #6b7280;
 }
 
 .qr-preview {
@@ -58,7 +52,8 @@
   background: #fff;
   padding: 1rem;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   text-align: center;
   max-width: 280px;
 
@@ -78,10 +73,11 @@
 
 .share-error {
   color: #b81d13;
+  margin: 0;
 }
 
 .object-details {
-  margin-bottom: var(--space);
+  margin-bottom: var(--space-small);
   padding: 0.75rem 1rem;
   border: 1px solid #e5e5e5;
   border-radius: 12px;
@@ -184,18 +180,21 @@
       width: 100%;
       max-width: 28rem;
       padding: 0.45rem 0.6rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
       font-size: 0.95rem;
       background-color: #fff;
       cursor: pointer;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
       }
 
-      &:focus {
+      &:focus-visible {
         outline: none;
         border-color: var(--primary-default, #9d0000);
         box-shadow: 0 0 0 2px rgba(157, 0, 0, 0.12);
@@ -211,7 +210,7 @@
 
 .note-empty {
   font-style: italic;
-  color: #999;
+  color: #9ca3af;
 }
 
 .file-upload {

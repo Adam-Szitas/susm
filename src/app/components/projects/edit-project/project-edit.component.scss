@@ -1,3 +1,5 @@
+@use '../../../../styles/mixins' as *;
+
 :host {
   .form-actions {
     display: flex;
@@ -36,14 +38,12 @@
 
   .delete-action.icon-only,
   .submit-action.icon-only {
-    min-width: 44px;
-    min-height: 44px;
+    @include touch-target-min;
     padding: 0.5rem !important;
   }
 
   .submit-icon {
-    width: 1.125rem;
-    height: 1.125rem;
+    @include icon-size(var(--icon-size-compact));
     display: block;
   }
 

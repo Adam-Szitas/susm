@@ -1,0 +1,52 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.virtual-scroll-viewport {
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.virtual-scroll-spacer {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-scroll-content {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.virtual-scroll-item {
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-bottom: var(--space-small, 8px);
+
+  > .card {
+    height: calc(100% - var(--space-small, 8px));
+    margin: 0;
+  }
+}
+
+.virtual-scroll-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space, 16px);
+  width: 100%;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .virtual-scroll-content {
+    will-change: auto;
+  }
+}

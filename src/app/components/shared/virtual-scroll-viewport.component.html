@@ -1,0 +1,44 @@
+@if (useVirtualScroll()) {
+  <div
+    #viewport
+    class="virtual-scroll-viewport"
+    [class.virtual-scroll-viewport--fill]="fill()"
+    [style.max-height]="fill() ? null : maxHeight()"
+    [style.height]="fill() ? '100%' : null"
+    (scroll)="onScroll()"
+    [attr.role]="ariaLabel() ? 'list' : null"
+    [attr.aria-label]="ariaLabel() || null"
+  >
+    <div class="virtual-scroll-spacer" [style.height.px]="totalHeight()">
+      <div class="virtual-scroll-content" [style.transform]="transform()">
+        @for (row of visibleRows(); track trackRow($index, row)) {
+          <div
+            class="virtual-scroll-item"
+            [style.height.px]="itemSize()"
+            role="listitem"
+          >
+            @if (itemTemplate()) {
+              <ng-container
+                *ngTemplateOutlet="itemTemplate()!; context: { $implicit: row.item, index: row.index }"
+              />
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div
+    class="virtual-scroll-fallback"
+    [attr.role]="ariaLabel() ? 'list' : null"
+    [attr.aria-label]="ariaLabel() || null"
+  >
+    @for (item of items(); track trackItem($index, item); let i = $index) {
+      @if (itemTemplate()) {
+        <ng-container
+          *ngTemplateOutlet="itemTemplate()!; context: { $implicit: item, index: i }"
+        />
+      }
+    }
+  </div>
+}

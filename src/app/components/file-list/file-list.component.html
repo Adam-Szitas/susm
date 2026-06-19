@@ -54,45 +54,65 @@
   <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
   @if (objectId()) {
   @if (activeGroupCount() > 1) {
-    <div class="file-groups-reorder-toolbar">
-      <div class="file-groups-reorder-toolbar__info">
-        <span class="file-groups-reorder-toolbar__title">{{
-          'fileList.reorderGroupsSectionTitle' | translate
-        }}</span>
-        <span class="file-groups-reorder-toolbar__hint">
-          @if (groupReorderMode() && categoryFilter().length > 0) {
-            {{ 'fileList.groupReorderFilteredHint' | translate }}
-          } @else if (groupReorderMode()) {
-            {{ 'fileList.reorderGroupsActiveHint' | translate }}
-          } @else {
-            {{ 'fileList.reorderGroupsHint' | translate }}
-          }
-        </span>
-      </div>
-      <div class="file-groups-reorder-toolbar__actions">
-        <button
-          type="button"
-          class="button button-outline file-groups-reorder-toggle"
-          [class.active]="groupReorderMode()"
-          (click)="toggleGroupReorderMode()"
-          [disabled]="groupReorderSaving()"
-          [attr.aria-label]="
-            groupReorderMode()
-              ? ('fileList.doneReorderGroups' | translate)
-              : ('fileList.reorderGroups' | translate)
-          "
-          [attr.title]="
-            groupReorderMode()
-              ? ('fileList.doneReorderGroups' | translate)
-              : ('fileList.reorderGroups' | translate)
-          "
-        >
-          {{ groupReorderMode() ? ('fileList.doneReorderGroups' | translate) : ('fileList.reorderGroups' | translate) }}
-        </button>
+    <div class="file-groups-toolbar">
+      <button
+        type="button"
+        class="button button-outline file-groups-reorder-toggle"
+        [class.active]="groupReorderMode()"
+        (click)="toggleGroupReorderMode()"
+        [disabled]="groupReorderSaving()"
+        [attr.aria-label]="
+          groupReorderMode()
+            ? ('fileList.doneReorderGroups' | translate)
+            : ('fileList.reorderGroups' | translate)
+        "
+        [attr.title]="
+          groupReorderSaving()
+            ? ('fileList.savingOrder' | translate)
+            : groupReorderMode() && categoryFilter().length > 0
+              ? ('fileList.groupReorderFilteredHint' | translate)
+              : groupReorderMode()
+                ? ('fileList.reorderGroupsActiveHint' | translate)
+                : ('fileList.reorderGroups' | translate)
+        "
+      >
         @if (groupReorderSaving()) {
-          <span class="reorder-saving-hint">{{ 'fileList.savingOrder' | translate }}</span>
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="file-groups-reorder-label">{{ 'fileList.savingOrder' | translate }}</span>
+        } @else if (groupReorderMode()) {
+          <svg
+            class="file-groups-reorder-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span class="file-groups-reorder-label">{{ 'fileList.doneReorderGroups' | translate }}</span>
+        } @else {
+          <svg
+            class="file-groups-reorder-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4" width="18" height="4" rx="1" />
+            <rect x="3" y="10" width="18" height="4" rx="1" />
+            <rect x="3" y="16" width="18" height="4" rx="1" />
+          </svg>
+          <span class="file-groups-reorder-label">{{ 'fileList.reorderGroups' | translate }}</span>
         }
-      </div>
+      </button>
     </div>
   }
   @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
@@ -565,8 +585,54 @@
 
   <!-- Project Files (simple, no groups) -->
   @if (filteredProjectFiles().length > 0) {
+    @if (canSendProjectFiles() && (selectionMode() || selectedFileIds().size > 0)) {
+      <div class="selection-toolbar project-send-toolbar">
+        <span class="selection-count">
+          {{ selectedFileIds().size }}
+          {{
+            (selectedFileIds().size === 1 ? 'fileList.fileSelected' : 'fileList.filesSelected')
+              | translate
+          }}
+        </span>
+        <div class="selection-actions">
+          @if (selectedFileIds().size > 0) {
+            <button
+              type="button"
+              class="button button-primary selection-send-btn"
+              (click)="openSendProjectFilesModal()"
+              [disabled]="sendProjectFilesInProgress()"
+            >
+              {{ 'fileList.sendToObject' | translate }}
+            </button>
+          }
+          <button type="button" class="button button-secondary" (click)="clearSelection()">
+            {{
+              selectionMode() && selectedFileIds().size === 0
+                ? ('fileList.cancelSelect' | translate)
+                : ('fileList.clearSelection' | translate)
+            }}
+          </button>
+        </div>
+      </div>
+    } @else if (canSendProjectFiles()) {
+      <div class="selection-toolbar project-send-toolbar">
+        <button
+          type="button"
+          class="button button-outline project-send-select-btn"
+          (click)="selectionMode.set(true)"
+        >
+          {{ 'fileList.selectPictures' | translate }}
+        </button>
+      </div>
+    }
+
     <div class="file-group ungrouped">
-      <ul class="file-gallery">@for (file of filteredProjectFiles(); track file._id.$oid) {<li class="file-item">
+      <ul
+        class="file-gallery"
+        [class.file-gallery--defer-items]="deferProjectFileItems()"
+      >
+        @for (file of windowedProjectFiles(); track file._id.$oid) {
+          <li class="file-item file-item--deferred">
             <div class="image-container" (click)="onImageContainerClick($event, file)">
               <img
                 [src]="getImageUrl(file.path)"
@@ -575,6 +641,15 @@
                 loading="lazy"
                 (error)="onImageError(file, $event)"
               />
+              @if (selectionMode()) {
+                <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
+                  @if (isFileSelected(file)) {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  }
+                </div>
+              } @else {
               <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()">
                 <button
                   type="button"
@@ -600,6 +675,32 @@
                     <path d="M11 8v6M8 11h6" />
                   </svg>
                 </button>
+                @if (canSendProjectFiles()) {
+                  <button
+                    type="button"
+                    class="move-hint"
+                    (click)="openSendProjectFileModal($event, file)"
+                    [attr.aria-label]="'fileList.sendToObject' | translate"
+                    [title]="'fileList.sendToObject' | translate"
+                    [disabled]="sendProjectFilesInProgress()"
+                  >
+                    <span class="visually-hidden">{{ 'fileList.sendToObject' | translate }}</span>
+                    <svg
+                      class="move-hint-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="M13 6l6 6-6 6" />
+                    </svg>
+                  </button>
+                }
                 <button
                   type="button"
                   class="download-hint"
@@ -639,6 +740,7 @@
                   <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
                 </button>
               </div>
+              }
             </div>
             @if (editingFileId() === file._id.$oid) {
               <input
@@ -705,6 +807,18 @@
           </li>
         }
       </ul>
+      @if (hasMoreProjectFiles()) {
+        <div class="file-gallery-load-more">
+          <button
+            type="button"
+            class="button button-outline file-gallery-load-more-btn"
+            (click)="loadMoreProjectFiles()"
+          >
+            {{ 'common.showMore' | translate }}
+            ({{ remainingProjectFilesCount() }})
+          </button>
+        </div>
+      }
     </div>
   }
 

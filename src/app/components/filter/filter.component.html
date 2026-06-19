@@ -39,21 +39,35 @@
 
         @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
           @if (filter().multiSelectCategories) {
-            <fieldset class="control category-multi">
-              <legend>{{ 'filter.category' | translate }}</legend>
-              <div class="category-checkboxes" role="group" [attr.aria-label]="'filter.category' | translate">
-                @for (category of filter().categories; track category) {
-                  <label class="category-checkbox-label">
-                    <input
-                      type="checkbox"
-                      [checked]="isMultiCategorySelected(category)"
-                      (change)="onMultiCategoryToggle(category, $any($event.target).checked)"
-                    />
-                    {{ category }}
-                  </label>
+            <div class="control category-filter">
+              <div class="category-filter-header">
+                <span class="category-filter-label" id="categoryFilterLabel">
+                  {{ 'filter.category' | translate }}
+                </span>
+                @if (selectedFileGroupCategories.length > 0) {
+                  <span class="category-filter-count" aria-hidden="true">
+                    {{ selectedFileGroupCategories.length }}
+                  </span>
                 }
               </div>
-            </fieldset>
+              <div
+                class="category-chip-list"
+                role="group"
+                [attr.aria-labelledby]="'categoryFilterLabel'"
+              >
+                @for (category of filter().categories; track category) {
+                  <button
+                    type="button"
+                    class="category-chip"
+                    [class.category-chip--selected]="isMultiCategorySelected(category)"
+                    [attr.aria-pressed]="isMultiCategorySelected(category)"
+                    (click)="toggleMultiCategory(category)"
+                  >
+                    {{ category }}
+                  </button>
+                }
+              </div>
+            </div>
           } @else {
             <div class="control">
               <label for="category">{{ 'filter.category' | translate }}</label>

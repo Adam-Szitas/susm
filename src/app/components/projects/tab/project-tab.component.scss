@@ -2,22 +2,30 @@
 
 :host {
   display: block;
+
+  @include mobile {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--app-navbar-block, 3.5rem));
+    overflow: hidden;
+  }
 }
 
 .wrapper {
   padding: 0 var(--space);
   width: 100%;
-  height: 100%;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
-}
 
-@include mobile {
-  .wrapper {
+  @include mobile {
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
   }
+}
+
+.project-tab-chrome {
+  flex-shrink: 0;
 }
 
 .apply-sort-order-toolbar {
@@ -42,17 +50,23 @@
   align-self: flex-start;
 }
 
-.content-wrapper {
+.project-content-tabs {
   width: 100%;
   max-width: 100%;
   margin-top: var(--space);
-  gap: var(--space-small);
 
   @include mobile {
-    > * {
-      width: 100%;
-      min-width: 0;
-    }
+    flex: 1 1 0;
+    min-height: 0;
+    margin-top: var(--space-small);
+  }
+}
+
+@include mobile {
+  .wrapper > app-tab-group.project-content-tabs {
+    flex: 1 1 0;
+    min-height: 0;
+    margin-top: 0;
   }
 }
 
@@ -90,16 +104,17 @@
   }
 
   .project-toolbar-btn.icon-only {
-    min-width: 44px;
-    min-height: 44px;
+    @include touch-target-min;
     padding: 0.5rem !important;
   }
 
+  .project-toolbar-filters {
+    margin-inline-start: auto;
+  }
+
   .project-toolbar-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    @include icon-size(var(--icon-size-md));
     display: block;
-    flex-shrink: 0;
   }
 
   .object-reorder-toggle.active {
@@ -110,6 +125,20 @@
 .project-toolbar-hint {
   font-size: 0.85rem;
   color: #666;
+}
+
+.object-list-viewport {
+  width: 100%;
+  min-width: 0;
+}
+
+.card--deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 72px;
+}
+
+.card-wrapper--defer .card--deferred {
+  contain-intrinsic-size: auto none auto 56px;
 }
 
 .card-wrapper {
@@ -250,7 +279,7 @@
   border-radius: 12px;
   background: #fff;
   border: 1px solid #e5e5e5;
-  height: 100%;
+  min-height: 0;
 
   .protocols-section-header {
     display: flex;
@@ -295,8 +324,10 @@
   border-radius: 12px;
   background: #fff;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid #e5e5e5;
-  height: 100%;
+  overflow: clip;
 
   .file-list-section-header {
     padding: 1rem 1.25rem;
@@ -305,6 +336,18 @@
     h3 {
       margin: 0;
       font-size: 1.25rem;
+    }
+  }
+
+  .file-list-section-content {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+
+    app-file-list {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
     }
   }
 }
@@ -605,8 +648,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
+      @include square-size(var(--icon-button-sm));
       padding: 0;
       border: none;
       border-radius: 6px;
@@ -624,8 +666,7 @@
       }
 
       svg {
-        width: 1.15rem;
-        height: 1.15rem;
+        @include icon-size(var(--icon-size-compact));
       }
     }
   }

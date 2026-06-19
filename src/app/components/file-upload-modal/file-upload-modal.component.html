@@ -72,7 +72,7 @@
           ></textarea>
         </div>
 
-        @if (categories().length > 0) {
+        @if (showCategories() && categories().length > 0) {
           <div class="form-group form-group-categories">
             <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
             <div class="selected-category-chips">

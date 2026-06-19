@@ -1,0 +1,214 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  &.project-content-tabs {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  &.checklist-modal-tabs {
+    .tab-group-list {
+      justify-content: flex-start;
+      gap: 0.15rem;
+
+      @include tablet-up {
+        display: flex;
+      }
+    }
+
+    .tab-group-tab {
+      flex: 0 1 auto;
+      width: auto;
+      max-width: 11.5rem;
+      padding-inline: 1rem;
+    }
+  }
+
+  :host-context(.project-todo-form--assign).checklist-modal-tabs {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.tab-group {
+  width: 100%;
+  min-width: 0;
+
+  :host.project-content-tabs &--collapsed,
+  :host.checklist-modal-tabs &--collapsed {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  :host.project-content-tabs &--collapsed {
+    flex: 1 1 0;
+    height: 100%;
+  }
+
+  :host.checklist-modal-tabs &--collapsed {
+    flex: 0 1 auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  :host-context(.project-todo-form--assign).checklist-modal-tabs &--collapsed {
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.tab-group-list {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border-bottom: 1px solid #e8eaed;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+
+  @include tablet-up {
+    display: none;
+  }
+
+  &--hidden {
+    display: none;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab-group-tab {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0.7rem 0.45rem 0.65rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover:not(:disabled):not(.tab-group-tab--active) {
+    color: #374151;
+  }
+
+  &:focus-visible {
+    @include focus-state;
+    z-index: 1;
+  }
+
+  &--active {
+    color: var(--primary-default, #9d0000);
+    border-bottom-color: var(--primary-default, #9d0000);
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.tab-group-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-group-badge {
+  flex-shrink: 0;
+  min-width: 1.1rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.tab-group-tab--active .tab-group-badge {
+  background: rgba(157, 0, 0, 0.1);
+  color: var(--primary-default, #9d0000);
+}
+
+.tab-group-panels {
+  width: 100%;
+  min-width: 0;
+
+  .tab-group--collapsed & {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--space-small, 0.75rem);
+  }
+
+  :host.checklist-modal-tabs .tab-group--collapsed & {
+    flex: 0 1 auto;
+    overflow: visible;
+    padding-top: 0.5rem;
+  }
+
+  :host-context(.project-todo-form--assign).checklist-modal-tabs .tab-group--collapsed & {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    padding-top: 0.5rem;
+  }
+}
+
+.tab-group--expanded .tab-group-panels {
+  display: flex;
+  gap: var(--space-small);
+  align-items: stretch;
+  width: 100%;
+
+  app-tab-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-group-tab {
+    transition: none;
+  }
+}

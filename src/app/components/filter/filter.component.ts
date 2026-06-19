@@ -144,6 +144,10 @@ export class FilterComponent implements OnInit {
     return this.selectedFileGroupCategories.includes(category);
   }
 
+  toggleMultiCategory(category: string): void {
+    this.onMultiCategoryToggle(category, !this.isMultiCategorySelected(category));
+  }
+
   onMultiCategoryToggle(category: string, checked: boolean): void {
     if (checked) {
       if (!this.selectedFileGroupCategories.includes(category)) {

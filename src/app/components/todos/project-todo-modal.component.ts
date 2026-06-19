@@ -26,6 +26,8 @@ import {
   todoSubItemId,
 } from '@models';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+import { TabGroupComponent, TabItem } from '../shared/tab-group.component';
+import { TabPanelComponent } from '../shared/tab-panel.component';
 import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-panel.component';
 import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assignment-verify-panel.component';
 
@@ -37,6 +39,8 @@ import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assign
     ReactiveFormsModule,
     TranslateModule,
     TrashIconComponent,
+    TabGroupComponent,
+    TabPanelComponent,
     ProjectTodoAssignmentPanelComponent,
     ProjectTodoAssignmentVerifyPanelComponent,
   ],
@@ -62,6 +66,18 @@ export class ProjectTodoModalComponent implements OnInit {
   saving = signal(false);
   activeTab = signal<'items' | 'assign'>('items');
   assignTabMode = signal<'assign' | 'verify'>('assign');
+
+  readonly checklistTabs = computed<TabItem[]>(() => [
+    {
+      id: 'items',
+      label: this.#translationService.instant('todos.defineItems'),
+    },
+    {
+      id: 'assign',
+      label: this.#translationService.instant('todos.assignToObjects'),
+      disabled: !this.canAssign(),
+    },
+  ]);
 
   constructor() {
     this.form = this.#fb.group({
@@ -234,6 +250,11 @@ export class ProjectTodoModalComponent implements OnInit {
     }
     this.assignTabMode.set('assign');
     this.activeTab.set(tab);
+  }
+
+  onChecklistTabIdChange(tabId: string): void {
+    this.setTab(tabId as 'items' | 'assign');
+    this.#cdr.markForCheck();
   }
 
   onAssignmentsSaved(): void {

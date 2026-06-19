@@ -1,11 +1,12 @@
 <div class="wrapper">
-  <app-breadcrumb [items]="breadcrumbItems()" />
+  <div class="object-tab-chrome">
+    <app-breadcrumb [items]="breadcrumbItems()" />
 
-  @if (object()) {
-    <section
-      class="object-details"
-      [class.object-details--expanded]="objectDataExpanded()"
-    >
+    @if (object()) {
+      <section
+        class="object-details"
+        [class.object-details--expanded]="objectDataExpanded()"
+      >
       <header class="object-details-header">
         <div class="object-details-title-row">
           <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
@@ -65,12 +66,6 @@
                 <dd>{{ object()?.prefix }}</dd>
               </div>
             }
-            <div class="object-data-item">
-              <dt>{{ 'objects.status' | translate }}</dt>
-              <dd>
-                <app-status-pill [status]="object()?.status || defaultStatus" />
-              </dd>
-            </div>
             <div class="object-data-item object-data-item--category">
               <dt>
                 <label for="objectCategory">{{ 'objects.category' | translate }}</label>
@@ -144,6 +139,7 @@
       </div>
     </section>
   }
+  </div>
 
   @if (object() && hasAssignedChecklist()) {
     <app-object-todos-section
@@ -154,7 +150,7 @@
     />
   }
 
-  <div class="content-wrapper">
+  <div class="content-wrapper" [class.content-wrapper--file-list-fill]="displayedFileGroups().length > 0">
     @if (shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>
     }

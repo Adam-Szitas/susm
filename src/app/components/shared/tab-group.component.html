@@ -1,0 +1,37 @@
+<div
+  class="tab-group"
+  [class.tab-group--collapsed]="collapsed()"
+  [class.tab-group--expanded]="!collapsed()"
+>
+  <div
+    class="tab-group-list"
+    role="tablist"
+    [attr.aria-label]="ariaLabel() || null"
+    [class.tab-group-list--hidden]="!collapsed()"
+  >
+    @for (tab of tabs(); track tab.id; let i = $index) {
+      <button
+        type="button"
+        class="tab-group-tab"
+        role="tab"
+        [class.tab-group-tab--active]="activeTabId() === tab.id"
+        [id]="tabButtonId(tab.id)"
+        [attr.aria-selected]="activeTabId() === tab.id"
+        [attr.aria-controls]="tabPanelId(tab.id)"
+        [attr.tabindex]="collapsed() && activeTabId() === tab.id ? 0 : -1"
+        [disabled]="tab.disabled"
+        (click)="selectTab(tab.id)"
+        (keydown)="onTabKeydown($event, i)"
+      >
+        <span class="tab-group-tab-label">{{ tab.label }}</span>
+        @if (tab.badge != null && tab.badge !== '') {
+          <span class="tab-group-badge" aria-hidden="true">{{ tab.badge }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="tab-group-panels">
+    <ng-content />
+  </div>
+</div>

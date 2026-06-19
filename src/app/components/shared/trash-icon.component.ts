@@ -4,14 +4,15 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'app-trash-icon',
   standalone: true,
+  host: {
+    '[style.--icon-size.px]': 'size()',
+  },
   template: `
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      [attr.width]="size()"
-      [attr.height]="size()"
       [attr.stroke-width]="strokeWidth()"
       stroke-linecap="round"
       stroke-linejoin="round"
@@ -29,6 +30,14 @@ import { Component, input } from '@angular/core';
       display: inline-flex;
       line-height: 0;
       flex-shrink: 0;
+      inline-size: var(--icon-size, var(--icon-size-md));
+      block-size: var(--icon-size, var(--icon-size-md));
+    }
+
+    svg {
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
     }
   `,
 })

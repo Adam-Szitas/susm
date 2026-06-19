@@ -60,8 +60,7 @@
 
 .notification__icon {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  @include square-size(var(--icon-size-xl));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,8 +105,7 @@
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    @include icon-size(var(--icon-size-sm));
   }
 }
 

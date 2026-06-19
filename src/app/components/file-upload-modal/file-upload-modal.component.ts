@@ -28,6 +28,8 @@ export class FileUploadModalComponent {
   isOpen = input<boolean>(false);
   files = input<globalThis.File[]>([]);
   categories = input<string[]>([]);
+  /** When false, category pickers are hidden (e.g. project-level photo uploads). */
+  showCategories = input(true);
   uploading = input<boolean>(false);
 
   filesSelected = output<globalThis.File[]>();

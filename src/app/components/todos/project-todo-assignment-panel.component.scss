@@ -22,6 +22,10 @@
   background: #fff;
 }
 
+:host-context(.project-todo-form--assign) .todo-assignment-form {
+  height: 100%;
+}
+
 .mobile-step-nav {
   flex-shrink: 0;
 }
@@ -292,8 +296,9 @@
   border-top: 1px solid #ddd;
 
   @include mobile {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 

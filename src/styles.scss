@@ -51,6 +51,27 @@
   --z-modal: 10500;
   --z-notification: 10600;
   --z-lightbox: 10700;
+
+  // Viewport layout — navbar block + page padding for scroll region math (use dvh, not vh)
+  --app-navbar-block: 3.5rem;
+  --app-page-chrome: calc(var(--app-navbar-block) + var(--space) * 2);
+  --app-floating-action-clearance: calc(var(--space) + var(--floating-action-size) + var(--space));
+
+  // Icon glyphs & interactive targets (rem — scales with root font size)
+  --icon-size-2xs: 0.625rem;
+  --icon-size-xs: 0.875rem;
+  --icon-size-sm: 1rem;
+  --icon-size-compact: 1.125rem;
+  --icon-size-md: 1.25rem;
+  --icon-size-lg: 1.375rem;
+  --icon-size-xl: 1.5rem;
+  --icon-size-2xl: 1.75rem;
+  --icon-button-sm: 2.5rem;
+  --touch-target-min: 2.75rem;
+  --touch-target-nav: 3rem;
+  --icon-button-md: 3rem;
+  --floating-action-size: 3.75rem;
+  --floating-action-size-mobile: 3.25rem;
 }
 
 html,

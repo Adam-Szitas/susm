@@ -1,0 +1,60 @@
+<div class="send-project-file-modal">
+  <p class="send-project-file-hint">
+    {{
+      'fileList.sendPickDestination'
+        | translate: { count: fileCount() }
+    }}
+  </p>
+
+  <div class="form-group">
+    <label for="send-object-select">{{ 'objects.title' | translate }}</label>
+    <select
+      id="send-object-select"
+      class="filter-input"
+      [ngModel]="selectedObjectId()"
+      (ngModelChange)="onObjectChange($event)"
+    >
+      <option value="">{{ 'fileList.sendSelectObject' | translate }}</option>
+      @for (obj of objectOptions(); track obj.objectId) {
+        <option [value]="obj.objectId">{{ obj.label }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="send-group-select">{{ 'fileList.fileGroup' | translate }}</label>
+    <select
+      id="send-group-select"
+      class="filter-input"
+      [ngModel]="selectedGroupId()"
+      (ngModelChange)="selectedGroupId.set($event)"
+      [disabled]="!selectedObjectId() || loadingGroups()"
+    >
+      <option value="">{{ 'fileList.sendSelectGroup' | translate }}</option>
+      @for (row of groupRows(); track row.groupId) {
+        <option [value]="row.groupId">{{ row.label }}</option>
+      }
+    </select>
+    @if (loadingGroups()) {
+      <p class="send-project-file-status">{{ 'common.loading' | translate }}</p>
+    } @else if (selectedObjectId() && groupRows().length === 0) {
+      <p class="send-project-file-status send-project-file-status--empty">
+        {{ 'fileList.sendNoGroups' | translate }}
+      </p>
+    }
+  </div>
+
+  <div class="send-project-file-actions">
+    <button type="button" class="button button-secondary" (click)="cancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      type="button"
+      class="button button-primary"
+      (click)="confirm()"
+      [disabled]="!canConfirm()"
+    >
+      {{ 'fileList.sendToObject' | translate }}
+    </button>
+  </div>
+</div>

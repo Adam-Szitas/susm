@@ -84,8 +84,7 @@
     color: #666;
 
     svg {
-      width: 48px;
-      height: 48px;
+      @include icon-size(var(--icon-button-md));
       stroke-width: 1.5;
     }
 
@@ -113,7 +112,7 @@
   @include mobile {
     padding: 8px 10px;
     font-size: 16px;
-    min-height: 44px; // Touch target size
+    min-block-size: var(--touch-target-min);
   }
 
   &:focus {
@@ -135,6 +134,13 @@
   input {
     flex: 1;
   }
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  inline-size: var(--icon-size-sm);
+  block-size: var(--icon-size-sm);
+  flex-shrink: 0;
 }
 
 // iOS Safari zooms focused inputs when font-size is below 16px.

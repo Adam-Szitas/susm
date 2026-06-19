@@ -29,12 +29,7 @@ form {
 }
 
 .chevron {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
+  @include collapse-chevron;
 }
 
 .chevron.collapsed {
@@ -72,30 +67,95 @@ form {
   flex-direction: column;
 }
 
-.control.category-multi {
+.control.category-filter {
   grid-column: 1 / -1;
+  gap: 0.55rem;
 }
 
-.control.category-multi legend {
-  padding: 0;
-  margin-bottom: 0.35rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--default-color);
-}
-
-.category-checkboxes {
+.category-filter-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-.category-checkbox-label {
+.category-filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.3;
+}
+
+.category-filter-count {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-weight: normal;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(157, 0, 0, 0.1);
+  color: var(--primary-default, #9d0000);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.category-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+  }
+
+  &:focus-visible {
+    @include focus-state;
+    z-index: 1;
+  }
+
+  &--selected {
+    @include primary-active-toggle;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(157, 0, 0, 0.1);
+
+    &:hover:not(:disabled) {
+      @include primary-active-toggle;
+      filter: brightness(0.97);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-chip {
+    transition: none;
+  }
 }
 
 .control.date-range {
@@ -146,7 +206,12 @@ select.filter-input {
   .filter-input {
     padding: 8px 10px;
     font-size: 0.9rem;
-    min-height: 44px;
+    min-block-size: var(--touch-target-min);
+  }
+
+  .category-chip {
+    min-block-size: var(--touch-target-min);
+    padding-inline: 1rem;
   }
 }
 

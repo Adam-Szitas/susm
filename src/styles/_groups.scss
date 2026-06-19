@@ -129,9 +129,8 @@
 
 button.group-edit-toggle,
 button.file-description-edit {
-  height: 40px;
-  width: 40px;
-  font-size: 22px;
+  @include square-size(var(--icon-button-sm));
+  font-size: var(--icon-size-lg);
 }
 
 .section-header {

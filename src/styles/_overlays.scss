@@ -66,6 +66,7 @@
 .image-container {
   position: relative;
   width: 100%;
+  max-width: 100%;
   overflow: hidden;
   background: var(--background-color-secondary, #f5f5f5);
   cursor: pointer;
@@ -73,6 +74,7 @@
 
   img {
     object-fit: cover;
+    max-width: 100%;
     @include transition(transform);
   }
 
@@ -111,8 +113,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  @include square-size(var(--touch-target-min));
   margin: 0;
   padding: 0;
   border: none;

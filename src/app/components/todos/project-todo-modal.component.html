@@ -1,153 +1,146 @@
-<div class="project-todo-form">
-  <nav class="todo-modal-tabs" [attr.aria-label]="'todos.projectChecklist' | translate">
-    <button
-      type="button"
-      class="todo-modal-tab"
-      [class.todo-modal-tab--active]="activeTab() === 'items'"
-      (click)="setTab('items')"
-    >
-      {{ 'todos.defineItems' | translate }}
-    </button>
-    <button
-      type="button"
-      class="todo-modal-tab"
-      [class.todo-modal-tab--active]="activeTab() === 'assign'"
-      [disabled]="!canAssign()"
-      (click)="setTab('assign')"
-    >
-      {{ 'todos.assignToObjects' | translate }}
-    </button>
-  </nav>
+<div
+  class="project-todo-form"
+  [class.project-todo-form--assign]="checklistTabGroup.activeTabId() === 'assign'"
+>
+  <app-tab-group
+    #checklistTabGroup
+    class="checklist-modal-tabs"
+    [forceTabs]="true"
+    [tabs]="checklistTabs()"
+    [activeTabId]="activeTab()"
+    (activeTabIdChange)="onChecklistTabIdChange($event)"
+  >
+    <app-tab-panel id="items">
+      <form [formGroup]="form">
+        <div class="form-group">
+          <label for="newTodoTitle">{{ 'todos.addItem' | translate }}</label>
+          <div class="add-row">
+            <input
+              type="text"
+              id="newTodoTitle"
+              formControlName="newTitle"
+              [placeholder]="'todos.itemTitle' | translate"
+            />
+            <input
+              type="text"
+              formControlName="newNote"
+              [placeholder]="'todos.itemNoteOptional' | translate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="addItem()">
+              {{ 'common.add' | translate }}
+            </button>
+          </div>
+        </div>
 
-  @if (activeTab() === 'items') {
-    <form [formGroup]="form">
-      <div class="form-group">
-        <label for="newTodoTitle">{{ 'todos.addItem' | translate }}</label>
-        <div class="add-row">
-          <input
-            type="text"
-            id="newTodoTitle"
-            formControlName="newTitle"
-            [placeholder]="'todos.itemTitle' | translate"
-          />
-          <input
-            type="text"
-            formControlName="newNote"
-            [placeholder]="'todos.itemNoteOptional' | translate"
-          />
-          <button type="button" class="btn btn-secondary" (click)="addItem()">
-            {{ 'common.add' | translate }}
+        <div class="items-list" formArrayName="items">
+          @for (control of itemsArray.controls; track $index; let idx = $index) {
+            <div class="todo-item-block" [formGroupName]="idx">
+              <input type="hidden" formControlName="id" />
+              <div class="todo-item-row">
+                <div class="todo-item-fields">
+                  <input type="text" formControlName="title" [placeholder]="'todos.itemTitle' | translate" />
+                  <input type="text" formControlName="note" [placeholder]="'todos.itemNoteOptional' | translate" />
+                </div>
+                <button
+                  type="button"
+                  class="delete-btn"
+                  (click)="removeItem(idx)"
+                  [attr.aria-label]="'common.delete' | translate"
+                  [title]="'common.delete' | translate"
+                >
+                  <app-trash-icon [size]="18" />
+                </button>
+              </div>
+
+              <div class="sub-items-section">
+                <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
+
+                <div class="sub-items-list" formArrayName="subItems">
+                  @for (subControl of subItemsArray(idx).controls; track subIdx; let subIdx = $index) {
+                    <div class="sub-item-row" [formGroupName]="subIdx">
+                      <input type="hidden" formControlName="id" />
+                      <input
+                        type="text"
+                        formControlName="title"
+                        [placeholder]="'todos.subItemTitle' | translate"
+                      />
+                      <div
+                        class="color-picker"
+                        role="group"
+                        [attr.aria-label]="'todos.subItemColor' | translate"
+                      >
+                        @for (color of colorOptions; track color) {
+                          <button
+                            type="button"
+                            class="color-swatch color-swatch--{{ color }}"
+                            [class.color-swatch--selected]="subControl.get('color')?.value === color"
+                            [attr.title]="colorLabel(color) | translate"
+                            [attr.aria-label]="colorLabel(color) | translate"
+                            [attr.aria-pressed]="subControl.get('color')?.value === color"
+                            (click)="setSubItemColor(idx, subIdx, color)"
+                          ></button>
+                        }
+                      </div>
+                      <button
+                        type="button"
+                        class="delete-btn delete-btn--compact"
+                        (click)="removeSubItem(idx, subIdx)"
+                        [attr.aria-label]="'common.delete' | translate"
+                        [title]="'common.delete' | translate"
+                      >
+                        <app-trash-icon [size]="16" />
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <button type="button" class="btn btn-secondary add-sub-btn" (click)="addSubItem(idx)">
+                  {{ 'todos.addSubItem' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+          @if (itemsArray.length === 0) {
+            <p class="empty-message">{{ 'todos.noItems' | translate }}</p>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="close()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+            @if (saving()) {
+              {{ 'common.saving' | translate }}
+            } @else {
+              {{ 'common.save' | translate }}
+            }
           </button>
         </div>
-      </div>
+      </form>
+    </app-tab-panel>
 
-      <div class="items-list" formArrayName="items">
-        <h3>{{ 'todos.projectChecklist' | translate }}</h3>
-        @for (control of itemsArray.controls; track $index; let idx = $index) {
-          <div class="todo-item-block" [formGroupName]="idx">
-            <input type="hidden" formControlName="id" />
-            <div class="todo-item-row">
-              <div class="todo-item-fields">
-                <input type="text" formControlName="title" [placeholder]="'todos.itemTitle' | translate" />
-                <input type="text" formControlName="note" [placeholder]="'todos.itemNoteOptional' | translate" />
-              </div>
-              <button
-                type="button"
-                class="delete-btn"
-                (click)="removeItem(idx)"
-                [attr.aria-label]="'common.delete' | translate"
-                [title]="'common.delete' | translate"
-              >
-                <app-trash-icon [size]="18" />
-              </button>
-            </div>
-
-            <div class="sub-items-section">
-              <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
-
-              <div class="sub-items-list" formArrayName="subItems">
-                @for (subControl of subItemsArray(idx).controls; track subIdx; let subIdx = $index) {
-                  <div class="sub-item-row" [formGroupName]="subIdx">
-                    <input type="hidden" formControlName="id" />
-                    <input
-                      type="text"
-                      formControlName="title"
-                      [placeholder]="'todos.subItemTitle' | translate"
-                    />
-                    <div
-                      class="color-picker"
-                      role="group"
-                      [attr.aria-label]="'todos.subItemColor' | translate"
-                    >
-                      @for (color of colorOptions; track color) {
-                        <button
-                          type="button"
-                          class="color-swatch color-swatch--{{ color }}"
-                          [class.color-swatch--selected]="subControl.get('color')?.value === color"
-                          [attr.title]="colorLabel(color) | translate"
-                          [attr.aria-label]="colorLabel(color) | translate"
-                          [attr.aria-pressed]="subControl.get('color')?.value === color"
-                          (click)="setSubItemColor(idx, subIdx, color)"
-                        ></button>
-                      }
-                    </div>
-                    <button
-                      type="button"
-                      class="delete-btn delete-btn--compact"
-                      (click)="removeSubItem(idx, subIdx)"
-                      [attr.aria-label]="'common.delete' | translate"
-                      [title]="'common.delete' | translate"
-                    >
-                      <app-trash-icon [size]="16" />
-                    </button>
-                  </div>
-                }
-              </div>
-
-              <button type="button" class="btn btn-secondary add-sub-btn" (click)="addSubItem(idx)">
-                {{ 'todos.addSubItem' | translate }}
-              </button>
-            </div>
-          </div>
+    <app-tab-panel id="assign">
+      @if (checklistTabGroup.activeTabId() === 'assign') {
+        @if (!canAssign()) {
+          <p class="empty-message">{{ 'todos.saveItemsBeforeAssign' | translate }}</p>
+        } @else if (assignTabMode() === 'verify') {
+          <app-project-todo-assignment-verify-panel
+            [todoItems]="savedTodoItems()"
+            [objects]="objects()"
+            [embedded]="true"
+            (backRequested)="assignTabMode.set('assign')"
+          />
+        } @else {
+          <app-project-todo-assignment-panel
+            [todoItems]="savedTodoItems()"
+            [objects]="objects()"
+            [embedded]="true"
+            (saved)="onAssignmentsSaved()"
+            (verifyRequested)="assignTabMode.set('verify')"
+          />
         }
-        @if (itemsArray.length === 0) {
-          <p class="empty-message">{{ 'todos.noItems' | translate }}</p>
-        }
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" (click)="close()">
-          {{ 'common.cancel' | translate }}
-        </button>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
-          @if (saving()) {
-            {{ 'common.saving' | translate }}
-          } @else {
-            {{ 'common.save' | translate }}
-          }
-        </button>
-      </div>
-    </form>
-  } @else {
-    @if (!canAssign()) {
-      <p class="empty-message">{{ 'todos.saveItemsBeforeAssign' | translate }}</p>
-    } @else {
-      @if (assignTabMode() === 'verify') {
-        <app-project-todo-assignment-verify-panel
-          [todoItems]="savedTodoItems()"
-          [objects]="objects()"
-          [embedded]="true"
-          (backRequested)="assignTabMode.set('assign')"
-        />
-      } @else {
-        <app-project-todo-assignment-panel
-          [todoItems]="savedTodoItems()"
-          [objects]="objects()"
-          [embedded]="true"
-          (saved)="onAssignmentsSaved()"
-          (verifyRequested)="assignTabMode.set('verify')"
-        />
       }
-    }
-  }
+    </app-tab-panel>
+  </app-tab-group>
 </div>

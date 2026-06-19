@@ -56,8 +56,8 @@
   z-index: 5;
   background-color: var(--default-color);
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  inline-size: var(--floating-action-size);
+  block-size: var(--floating-action-size);
   cursor: pointer;
 }
 .icon svg {

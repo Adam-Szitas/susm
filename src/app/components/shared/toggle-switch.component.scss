@@ -32,8 +32,7 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 1.25rem;
-  height: 1.25rem;
+  @include square-size(var(--icon-size-md));
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
@@ -45,7 +44,7 @@
 }
 
 .toggle-switch-input:checked + .toggle-switch-track .toggle-switch-thumb {
-  transform: translateX(1.25rem);
+  transform: translateX(var(--icon-size-md));
 }
 
 .toggle-switch-input:focus-visible + .toggle-switch-track {

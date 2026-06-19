@@ -1,19 +1,36 @@
 @if (visibleItems().length > 0) {
-  <section class="object-todos-section" [class.object-todos-section--saving]="saving()">
+  <section
+    class="object-todos-section"
+    [class.object-todos-section--expanded]="expanded()"
+    [class.object-todos-section--saving]="saving()"
+  >
     <button
       type="button"
       class="object-todos-header"
       (click)="toggleExpanded()"
       [attr.aria-expanded]="expanded()"
+      [attr.aria-controls]="'objectTodoList'"
       [attr.aria-label]="
         expanded() ? ('todos.collapseChecklist' | translate) : ('todos.expandChecklist' | translate)
       "
     >
-      <span class="object-todos-header-text">
+      <span class="object-todos-header-leading">
+        <svg
+          class="object-todos-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
         <span class="object-todos-title">{{ 'todos.objectChecklist' | translate }}</span>
-        @if (!expanded()) {
-          <span class="object-todos-count">{{ visibleCount() }}</span>
-        }
+        <span class="object-todos-count">{{ visibleCount() }}</span>
       </span>
       <span class="object-todos-header-end">
         @if (saving()) {
@@ -24,57 +41,62 @@
     </button>
 
     @if (expanded()) {
-      <ul class="todo-list">
-        @for (item of visibleItems(); track todoItemId(item)) {
-          <li
-            class="todo-list-item"
-            [class.todo-list-item--assigned]="isAssigned(item)"
-          >
-            <div class="todo-row">
-              <div class="todo-main">
-                <span class="todo-label" [title]="itemDisplayLabel(item)">
-                  <span class="todo-label-title">{{ item.title }}</span>
-                  @if (item.note?.trim()) {
-                    <span class="todo-label-note"> ({{ item.note }})</span>
-                  }
-                </span>
-              </div>
-
-              @if (!itemHasSubItems(item)) {
-                <select
-                  class="status-select"
-                  [class.status-select--finished]="itemStatus(item) === 'finished'"
-                  [class.status-select--under-process]="itemStatus(item) === 'under_process'"
-                  [ngModel]="itemStatus(item) ?? 'under_process'"
-                  [attr.aria-label]="'todos.status' | translate"
-                  (ngModelChange)="setStatus(item, $event)"
-                >
-                  <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
-                  <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
-                </select>
-              } @else {
-                <div class="sub-item-select-wrap">
-                  <span class="color-dot color-dot--{{ selectedSubColor(item) }}"></span>
-                  <select
-                    class="status-select status-select--sub"
-                    [class.status-select--sub-red]="selectedSubColor(item) === 'red'"
-                    [class.status-select--sub-blue]="selectedSubColor(item) === 'blue'"
-                    [class.status-select--sub-green]="selectedSubColor(item) === 'green'"
-                    [class.status-select--sub-orange]="selectedSubColor(item) === 'orange'"
-                    [ngModel]="selectedSubItemId(item) ?? ''"
-                    [attr.aria-label]="'todos.selectSubItem' | translate"
-                    (ngModelChange)="setSelectedSubItem(item, $event)"
-                  >
-                    @for (sub of subItems(item); track todoSubItemId(sub)) {
-                      <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>
+      <div id="objectTodoList" class="object-todos-body">
+        <ul class="todo-list">
+          @for (item of visibleItems(); track todoItemId(item)) {
+            <li
+              class="todo-list-item"
+              [class.todo-list-item--assigned]="isAssigned(item)"
+            >
+              <div class="todo-row">
+                <div class="todo-main">
+                  <span class="todo-label" [title]="itemDisplayLabel(item)">
+                    <span class="todo-label-title">{{ item.title }}</span>
+                    @if (item.note?.trim()) {
+                      <span class="todo-label-note">{{ item.note }}</span>
                     }
-                  </select>
+                  </span>
                 </div>
-              }
-            </div>
-          </li>
-        }
-      </ul>
+
+                @if (!itemHasSubItems(item)) {
+                  <select
+                    class="status-select"
+                    [class.status-select--finished]="itemStatus(item) === 'finished'"
+                    [class.status-select--under-process]="itemStatus(item) === 'under_process'"
+                    [ngModel]="itemStatus(item) ?? 'under_process'"
+                    [attr.aria-label]="'todos.status' | translate"
+                    (ngModelChange)="setStatus(item, $event)"
+                  >
+                    <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
+                    <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
+                  </select>
+                } @else {
+                  <div class="sub-item-select-wrap">
+                    <span
+                      class="color-dot color-dot--{{ selectedSubColor(item) }}"
+                      aria-hidden="true"
+                    ></span>
+                    <select
+                      class="status-select status-select--sub"
+                      [class.status-select--sub-red]="selectedSubColor(item) === 'red'"
+                      [class.status-select--sub-blue]="selectedSubColor(item) === 'blue'"
+                      [class.status-select--sub-green]="selectedSubColor(item) === 'green'"
+                      [class.status-select--sub-orange]="selectedSubColor(item) === 'orange'"
+                      [ngModel]="selectedSubItemId(item) ?? ''"
+                      [attr.aria-label]="'todos.selectSubItem' | translate"
+                      (ngModelChange)="setSelectedSubItem(item, $event)"
+                    >
+                      @for (sub of subItems(item); track todoSubItemId(sub)) {
+                        <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
     }
   </section>
 }

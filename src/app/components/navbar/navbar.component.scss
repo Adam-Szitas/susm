@@ -1,3 +1,5 @@
+@use '../../../styles/mixins' as *;
+
 nav {
   display: flex;
   flex-direction: row;
@@ -91,8 +93,7 @@ nav {
       }
 
       svg {
-        height: 24px;
-        width: 24px;
+        @include icon-size(var(--icon-size-xl));
       }
     }
   }
@@ -116,7 +117,7 @@ nav {
       align-items: center;
       font-size: var(--font-2);
       transition: background-color 0.2s;
-      min-height: 48px;
+      min-block-size: var(--touch-target-nav);
       box-sizing: border-box;
 
       &:hover,
@@ -169,8 +170,9 @@ nav {
 
   svg {
     display: block;
-    width: 26px;
-    height: 20px;
+    block-size: var(--icon-size-md);
+    inline-size: auto;
+    aspect-ratio: 26 / 20;
   }
 }
 

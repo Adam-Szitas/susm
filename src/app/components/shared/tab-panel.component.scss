@@ -1,0 +1,113 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+:host.tab-panel-host--inactive {
+  display: none !important;
+}
+
+:host-context(.project-content-tabs):not(.tab-panel-host--inactive) {
+  @include mobile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: none;
+    height: var(--project-tab-panel-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 16rem));
+    max-height: var(--project-tab-panel-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 16rem));
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+:host-context(.checklist-modal-tabs):not(.tab-panel-host--inactive) {
+  flex: 0 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible;
+}
+
+:host-context(.tab-group--expanded) {
+  @include tablet-up {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+  }
+}
+
+.tab-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  @include mobile {
+    height: 100%;
+    max-height: 100%;
+  }
+}
+
+:host-context(.checklist-modal-tabs):not(.tab-panel-host--inactive) .tab-panel {
+  flex: 0 1 auto;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  padding-bottom: 0;
+
+  @include mobile {
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  @include tablet-up {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+:host-context(.project-todo-form--assign):host-context(.checklist-modal-tabs):not(.tab-panel-host--inactive) {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+
+  .tab-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    max-height: none;
+    overflow: hidden;
+  }
+}
+
+:host:not(.tab-panel-host--inactive) .tab-panel {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+
+  @include mobile {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--app-floating-action-clearance, 5rem);
+  }
+
+  @include tablet-up {
+    overflow-y: auto;
+    max-height: min(72dvh, 820px);
+  }
+}
+
+.tab-panel--inactive {
+  display: none;
+}

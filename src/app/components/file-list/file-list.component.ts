@@ -34,6 +34,10 @@ import { TranslationService } from '../../services/translation.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.component';
+import {
+  ProjectObjectOption,
+  SendProjectFileModalComponent,
+} from './send-project-file-modal.component';
 import { TrashIconComponent } from '../shared/trash-icon.component';
 
 @Component({
@@ -67,6 +71,8 @@ export class FileListComponent implements OnDestroy {
   public categoryFilter = input<string[]>([]);
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
+  /** Project objects available as send destinations (project tab). */
+  public projectObjectOptions = input<ProjectObjectOption[]>([]);
   /** Parent object's project categories — all of these appear in the file-group category select. */
   public projectCategories = input<string[]>([]);
 
@@ -96,6 +102,11 @@ export class FileListComponent implements OnDestroy {
           this.failedFileIds.delete(id);
         }
       });
+    });
+
+    effect(() => {
+      this.filteredProjectFiles();
+      this.projectFilesDisplayLimit.set(FileListComponent.PROJECT_FILES_CHUNK);
     });
   }
 
@@ -144,6 +155,36 @@ export class FileListComponent implements OnDestroy {
     );
   });
 
+  private static readonly PROJECT_FILES_CHUNK = 36;
+  private static readonly PROJECT_FILES_WINDOW_THRESHOLD = 48;
+
+  /** Incremental render limit for large flat project file galleries. */
+  projectFilesDisplayLimit = signal(FileListComponent.PROJECT_FILES_CHUNK);
+
+  readonly windowedProjectFiles = computed(() => {
+    const all = this.filteredProjectFiles();
+    if (all.length <= FileListComponent.PROJECT_FILES_WINDOW_THRESHOLD) {
+      return all;
+    }
+    return all.slice(0, this.projectFilesDisplayLimit());
+  });
+
+  readonly hasMoreProjectFiles = computed(
+    () => this.filteredProjectFiles().length > this.windowedProjectFiles().length,
+  );
+
+  readonly remainingProjectFilesCount = computed(
+    () => this.filteredProjectFiles().length - this.windowedProjectFiles().length,
+  );
+
+  readonly deferProjectFileItems = computed(
+    () => this.filteredProjectFiles().length > FileListComponent.PROJECT_FILES_WINDOW_THRESHOLD,
+  );
+
+  loadMoreProjectFiles(): void {
+    this.projectFilesDisplayLimit.update((count) => count + FileListComponent.PROJECT_FILES_CHUNK);
+  }
+
   // All unique categories from file groups (for group editor checkboxes)
   public allCategories = computed(() => {
     const groups = this.filteredFileGroups();
@@ -176,6 +217,14 @@ export class FileListComponent implements OnDestroy {
   public moveTargetGroups = computed(() => this.filteredFileGroups());
 
   public moveFileInProgress = signal(false);
+  public sendProjectFilesInProgress = signal(false);
+
+  readonly canSendProjectFiles = computed(
+    () =>
+      !this.objectId() &&
+      this.filteredProjectFiles().length > 0 &&
+      this.projectObjectOptions().length > 0,
+  );
 
   public activeFileId = signal<string | null>(null);
   /** Full-resolution image URL when lightbox is open */
@@ -378,6 +427,90 @@ export class FileListComponent implements OnDestroy {
           );
         },
       });
+  }
+
+  public openSendProjectFilesModal(fileIds?: string[]): void {
+    if (!this.canSendProjectFiles() || this.sendProjectFilesInProgress()) return;
+
+    const ids =
+      fileIds && fileIds.length > 0 ? fileIds : Array.from(this.selectedFileIds());
+    if (ids.length === 0) return;
+
+    this.activeFileId.set(null);
+
+    const { childRef } = this.#modalService.open({
+      title: 'fileList.sendToObject',
+      component: SendProjectFileModalComponent,
+      componentInputs: {
+        objectOptions: this.projectObjectOptions(),
+        fileCount: ids.length,
+      },
+      wide: true,
+    });
+
+    if (childRef) {
+      const inst = childRef.instance as SendProjectFileModalComponent;
+      const sub = inst.destinationConfirmed.subscribe((dest) => {
+        sub.unsubscribe();
+        this.#sendProjectFilesToGroup(ids, dest.objectId, dest.groupId);
+      });
+    }
+  }
+
+  public openSendProjectFileModal(event: Event, file: ProjectFile): void {
+    event.stopPropagation();
+    event.preventDefault();
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.openSendProjectFilesModal([id]);
+  }
+
+  #sendProjectFilesToGroup(
+    fileIds: string[],
+    objectId: string,
+    groupId: string,
+  ): void {
+    if (!fileIds.length || this.sendProjectFilesInProgress()) return;
+
+    this.sendProjectFilesInProgress.set(true);
+    let completed = 0;
+    const total = fileIds.length;
+
+    const sendNext = () => {
+      if (completed >= total) {
+        this.sendProjectFilesInProgress.set(false);
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('fileList.moveSuccess', { count: total }) ||
+            `Moved ${total} picture(s) to object`,
+        );
+        this.clearSelection();
+        this.metadataUpdated.emit();
+        return;
+      }
+
+      const fileId = fileIds[completed];
+      this.#fileService
+        .sendProjectFileToGroup(fileId, objectId, groupId)
+        .pipe(finalize(() => {}))
+        .subscribe({
+          next: () => {
+            completed++;
+            sendNext();
+          },
+          error: (error: Error) => {
+            this.sendProjectFilesInProgress.set(false);
+            this.#notificationService.showError(
+              error.message ||
+                this.#translationService.instant('fileList.moveFailed') ||
+                'Failed to move picture',
+            );
+            this.clearSelection();
+            this.metadataUpdated.emit();
+          },
+        });
+    };
+
+    sendNext();
   }
 
   public moveSelectedToGroup(targetGroupId?: string): void {

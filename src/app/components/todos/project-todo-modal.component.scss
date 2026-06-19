@@ -3,70 +3,42 @@
 .project-todo-form {
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
+  flex: 0 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   touch-action: pan-y;
 
-  &:has(app-project-todo-assignment-panel),
-  &:has(app-project-todo-assignment-verify-panel) {
-    overflow: hidden;
-  }
-
-  &:not(:has(app-project-todo-assignment-panel)):not(:has(app-project-todo-assignment-verify-panel)) {
-    overflow: hidden;
-
-    > form {
-      flex: 1 1 0;
-      min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-    }
-  }
-
-  app-project-todo-assignment-panel,
-  app-project-todo-assignment-verify-panel {
-    display: flex;
+  &--assign {
     flex: 1 1 0;
     min-height: 0;
     overflow: hidden;
   }
 
-  .todo-modal-tabs {
-    display: flex;
-    gap: 0.35rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #e5e5e5;
-    flex-shrink: 0;
+  app-tab-group.checklist-modal-tabs {
+    flex: 0 1 auto;
+    min-height: 0;
   }
 
-  .todo-modal-tab {
-    margin: 0;
-    padding: 0.45rem 0.85rem;
-    border: 1px solid #ddd;
-    border-radius: 999px;
-    background: #fff;
-    color: #444;
-    font-size: 0.88rem;
-    font-weight: 500;
-    cursor: pointer;
+  &--assign app-tab-group.checklist-modal-tabs {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
 
-    &:hover:not(:disabled) {
-      border-color: #bbb;
-    }
+  app-tab-panel form {
+    flex: 0 1 auto;
+    overflow: visible;
+    touch-action: pan-y;
+    padding-bottom: var(--space-small);
+  }
 
-    &--active {
-      @include primary-active-toggle;
-    }
-
-    &:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+  app-tab-panel app-project-todo-assignment-panel,
+  app-tab-panel app-project-todo-assignment-verify-panel {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    height: 100%;
   }
 
   input[type='hidden'] {
@@ -74,11 +46,11 @@
   }
 
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
       font-weight: 500;
     }
   }
@@ -101,13 +73,9 @@
   }
 
   .items-list {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid #ddd;
-
-    h3 {
-      margin-bottom: 1rem;
-    }
   }
 
   .todo-item-block {
@@ -210,8 +178,7 @@
 
   .color-swatch {
     display: block;
-    width: 1.25rem;
-    height: 1.25rem;
+    @include square-size(var(--icon-size-md));
     padding: 0;
     border-radius: 999px;
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -284,10 +251,21 @@
 
   .form-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid #ddd;
+    flex-shrink: 0;
+
+    .btn {
+      margin: 0;
+    }
+
+    @include mobile {
+      margin-top: 0;
+      padding-top: 0.5rem;
+    }
   }
 }

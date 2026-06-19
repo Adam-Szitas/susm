@@ -5,17 +5,38 @@
 // Visible to screen readers & HTML validators that ignore Angular `title` bindings
 // Uses global `.visually-hidden` from styles/_utilities.scss
 
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// Object tab: parent `.content-wrapper--file-list-fill` — fill remaining viewport, scroll inside
+:host-context(.content-wrapper--file-list-fill) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .file-wrapper {
   position: relative;
   width: 100%;
+  min-width: 0;
   padding: var(--space, 1rem);
-  @include scrollable(70vh);
   @include flex-column(2rem);
 
+  :host-context(.content-wrapper--file-list-fill) & {
+    @include scroll-region-fill(10rem);
+    padding-bottom: max(var(--space, 1rem), var(--app-floating-action-clearance, 5rem));
+  }
+
   @include mobile {
-    max-height: calc(100% - var(--space-xlarge));
     gap: 1.5rem;
     padding: 0.75rem;
+
+    :host-context(.content-wrapper--file-list-fill) & {
+      padding-bottom: max(0.75rem, var(--app-floating-action-clearance, 4.5rem));
+    }
   }
 }
 
@@ -92,20 +113,34 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.125rem;
-  height: 1.125rem;
-  flex-shrink: 0;
+  @include icon-size(var(--icon-size-compact));
 }
 
 .file-item {
   cursor: pointer;
   @include flex-column;
+  min-width: 0;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--default-color, #e0e0e0);
   background: var(--background-color, #fff);
   @include card-hover;
   gap: var(--space-small, 0.5rem);
+}
+
+.file-gallery--defer-items .file-item--deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 280px;
+}
+
+.file-gallery-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space, 1rem);
+}
+
+.file-gallery-load-more-btn {
+  margin: 0;
 }
 
 // Overlay action buttons: use button for reliable touch on mobile
@@ -116,8 +151,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
+  @include touch-target-min;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
@@ -151,9 +185,7 @@
 
 .zoom-hint-icon,
 .move-hint-icon {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  @include icon-size(var(--icon-size-lg));
 }
 
 .zoom-hint-label {
@@ -367,7 +399,7 @@
   @include mobile {
     min-width: 100%;
     padding: 0.65rem 1rem;
-    min-height: 44px;
+    min-block-size: var(--touch-target-min);
   }
 }
 
@@ -375,13 +407,6 @@
   @include icon-button-40;
   @include transition(background-color, border-color, transform);
   @include icon-button-40-primary-hover;
-
-  svg {
-    width: 22px;
-    height: 22px;
-    display: block;
-    fill: currentColor;
-  }
 }
 
 .group-delete-btn {
@@ -399,8 +424,7 @@
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    @include icon-size(var(--icon-size-md));
     display: block;
   }
 }
@@ -413,8 +437,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  @include touch-target-min;
   padding: 0 1rem;
   font-size: 1.25rem;
   font-weight: 500;
@@ -530,8 +553,8 @@
   user-select: none;
 
   input {
-    width: 1.1rem;
-    height: 1.1rem;
+    inline-size: var(--icon-size-sm);
+    block-size: var(--icon-size-sm);
     accent-color: var(--primary-default, #9d0000);
   }
 }
@@ -569,7 +592,7 @@
   width: 100%;
   resize: none;
   overflow: hidden;
-  min-height: 44px;
+  min-block-size: var(--touch-target-min);
   max-height: none;
   line-height: 1.45;
   field-sizing: content;
@@ -637,8 +660,7 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
-  width: 28px;
-  height: 28px;
+  @include square-size(var(--icon-size-2xl));
   border-radius: 6px;
   border: 2px solid rgba(255, 255, 255, 0.9);
   background: rgba(0, 0, 0, 0.35);
@@ -649,8 +671,7 @@
   pointer-events: none;
 
   svg {
-    width: 18px;
-    height: 18px;
+    @include icon-size(var(--icon-size-compact));
     color: #fff;
   }
 
@@ -691,55 +712,62 @@ p {
 // Drag-and-drop reorder mode
 // ============================================================================
 
-.file-groups-reorder-toolbar {
-  padding: 1rem 1.15rem;
-  margin-bottom: var(--space-medium, 1rem);
-  @include toolbar-surface(linear-gradient(135deg, #fafafa 0%, #fff 100%));
-  @include toolbar-row-layout;
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    min-width: 0;
-    flex: 1 1 12rem;
-  }
-
-  &__title {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--text-color, #333);
-  }
-
-  &__hint {
-    font-size: 0.85rem;
-    color: #666;
-    line-height: 1.45;
-  }
-
-  &__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
-
-    @include mobile {
-      justify-content: flex-end;
-    }
-  }
+.file-groups-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0 var(--space-small);
+  flex-shrink: 0;
 }
 
 .file-groups-reorder-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  border-radius: 8px;
   white-space: nowrap;
+  align-self: flex-start;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not(:disabled):not(.active) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  &:focus-visible {
+    @include focus-state;
+  }
 
   &.active {
     @include primary-active-toggle;
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    flex-shrink: 0;
   }
 }
 
-.reorder-saving-hint {
-  @include muted-hint-text;
+.file-groups-reorder-icon {
+  @include icon-size(var(--icon-size-compact));
+}
+
+.file-groups-reorder-label {
+  line-height: 1.25;
 }
 
 .group-block-reorder-controls {
@@ -749,8 +777,7 @@ p {
   margin-bottom: 0.5rem;
 
   .reorder-btn {
-    width: 40px;
-    height: 40px;
+    @include square-size(var(--icon-button-sm));
     font-size: 0.9rem;
     border-radius: 8px;
   }
@@ -775,12 +802,6 @@ p {
 
   &.active {
     @include primary-active-toggle;
-  }
-
-  svg {
-    width: 22px;
-    height: 22px;
-    display: block;
   }
 }
 
@@ -824,8 +845,7 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  @include square-size(var(--icon-size-2xl));
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 4px;
   background: white;
