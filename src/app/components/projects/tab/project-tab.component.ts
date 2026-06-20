@@ -71,6 +71,9 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
   templateUrl: './project-tab.component.html',
   styleUrl: './project-tab.component.scss',
   standalone: true,
+  host: {
+    '[class.project-tab--details-expanded]': 'projectDataExpanded()',
+  },
   imports: [
     CommonModule,
     FilterComponent,
@@ -194,10 +197,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   /** Fixed virtual row height (px), including inter-card gap. */
   readonly objectCardItemSize = computed(() => (this.toolbarIconOnly() ? 60 : 96));
 
-  readonly objectListMaxHeight = computed(() =>
-    this.toolbarIconOnly() ? 'none' : 'min(65dvh, 720px)',
-  );
-  readonly objectListFillHeight = computed(() => this.toolbarIconOnly());
+  readonly objectListMaxHeight = computed(() => 'min(65dvh, 720px)');
+  readonly objectListFillHeight = computed(() => false);
 
   readonly objectsInReorderMode = computed(() => {
     const byId = new Map(
@@ -1038,7 +1039,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (!mq.matches) {
       host.style.removeProperty('--project-tab-panel-height');
-      host.style.removeProperty('--project-tab-panel-min-height');
       return;
     }
 
@@ -1053,21 +1053,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     const panelHeight = Math.round(
       viewportHeight - navbarHeight - chromeHeight - tabBarHeight - layoutGap,
     );
-    const detailsExpanded = this.projectDataExpanded();
-    const minPanelHeight = detailsExpanded
-      ? Math.round(viewportHeight * 0.5)
-      : 120;
 
-    if (detailsExpanded) {
-      host.style.setProperty('--project-tab-panel-min-height', '50dvh');
-    } else {
-      host.style.removeProperty('--project-tab-panel-min-height');
-    }
-
-    host.style.setProperty(
-      '--project-tab-panel-height',
-      `${Math.max(panelHeight, minPanelHeight)}px`,
-    );
+    host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, 120)}px`);
   }
 
   #readNavbarHeightPx(): number {

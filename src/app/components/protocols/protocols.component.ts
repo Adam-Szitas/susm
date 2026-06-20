@@ -7,11 +7,12 @@ import { TranslationService } from '@services/translation.service';
 import { ProtocolTemplate } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProtocolTemplateModalComponent } from './protocol-template-modal.component';
+import { TrashIconComponent } from '../shared/trash-icon.component';
 
 @Component({
   selector: 'app-protocols',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, TrashIconComponent],
   templateUrl: './protocols.component.html',
   styleUrl: './protocols.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

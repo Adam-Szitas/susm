@@ -5,6 +5,37 @@ import { FileUploadTarget, FileGroup, ProjectFile } from '../models/file.model';
 import { NotificationService } from './notification.service';
 import { HttpHeaders } from '@angular/common/http';
 
+export interface FileWithContext {
+  file: {
+    _id: { $oid: string };
+    path: string;
+    filename: string;
+    description?: string;
+    category?: string;
+    created_at: string;
+  };
+  project: {
+    id: string;
+    name: string;
+  } | null;
+  object: {
+    id: string;
+    street?: string;
+    description?: string;
+    house_number?: string;
+  } | null;
+}
+
+export interface PaginatedPicturesResponse {
+  items: FileWithContext[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  projects: { id: string; name: string }[];
+  categories: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -155,11 +186,33 @@ export class FileService {
   }
 
   /**
-   * Gets all files with their project and object context
+   * Paginated picture listing with project/object context (images only).
    */
-  getAllFilesWithContext(): Observable<any[]> {
-    const endpoint = 'files';
-    return this.#httpService.get<any[]>(endpoint);
+  getPicturesPage(query: {
+    page: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    project_id?: string;
+    date_from?: string;
+    date_to?: string;
+  }): Observable<PaginatedPicturesResponse> {
+    return this.#httpService.get<PaginatedPicturesResponse>('files', {
+      page: query.page,
+      limit: query.limit ?? 50,
+      search: query.search,
+      category: query.category,
+      project_id: query.project_id,
+      date_from: query.date_from,
+      date_to: query.date_to,
+    });
+  }
+
+  /**
+   * @deprecated Use {@link getPicturesPage} — returns paginated pictures from the server.
+   */
+  getAllFilesWithContext(): Observable<PaginatedPicturesResponse> {
+    return this.getPicturesPage({ page: 1, limit: 50 });
   }
 
   /**

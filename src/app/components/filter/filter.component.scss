@@ -39,10 +39,18 @@ form {
 /* 0fr → 1fr row: smooth height without display:none (avoids full-page layout flash) */
 .filter-controls {
   display: grid;
-  grid-template-rows: 1fr;
+  grid-template-rows: 0fr;
   overflow: hidden;
-  transition: grid-template-rows 0.28s ease;
+  transition: none;
   contain: layout style;
+
+  &:not(.collapsed) {
+    grid-template-rows: 1fr;
+  }
+
+  &.filter-controls-animate {
+    transition: grid-template-rows 0.28s ease;
+  }
 
   &.collapsed {
     grid-template-rows: 0fr;
@@ -57,7 +65,7 @@ form {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .filter-controls {
+  .filter-controls.filter-controls-animate {
     transition: none;
   }
 }

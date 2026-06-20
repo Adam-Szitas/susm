@@ -1,145 +1,135 @@
 <div class="wrapper">
-  <div class="dashboard-header">
-  <h1>{{ 'dashboard.title' | translate }}</h1>
+  <header class="dashboard-header">
+    <div class="dashboard-header-text">
+      <h1>{{ 'dashboard.title' | translate }}</h1>
+      @if (stats(); as data) {
+        <p class="dashboard-subtitle">
+          {{
+            'dashboard.summaryText'
+              | translate
+                : {
+                    projects: activeProjectsCount(),
+                    objects: data.total_objects,
+                    files: totalFilesCount(),
+                  }
+          }}
+        </p>
+      }
+    </div>
+
     <div class="language-selector">
-      <label for="language-select">{{ 'dashboard.language' | translate }}:</label>
+      <label class="visually-hidden" for="language-select">{{ 'dashboard.language' | translate }}</label>
       <select
         id="language-select"
+        class="language-select"
         [ngModel]="currentLanguage()"
         (ngModelChange)="onLanguageChange($event)"
-        class="language-select"
       >
         @for (lang of availableLanguages; track lang.code) {
           <option [value]="lang.code">{{ lang.label }}</option>
         }
       </select>
     </div>
-  </div>
+  </header>
 
   @if (loading()) {
-    <div class="loading">{{ 'dashboard.loading' | translate }}</div>
-  } @else if (stats()) {
-    <!-- At a glance summary -->
-    <section class="dashboard-summary">
-      <h2>{{ 'dashboard.atAGlance' | translate }}</h2>
-      <p class="summary-text">
-        {{ 'dashboard.summaryText' | translate: { projects: stats()!.total_projects, objects: stats()!.total_objects, files: (stats()!.project_files_count + stats()!.object_files_count) } }}
-      </p>
+    <div class="dashboard-loading" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>{{ 'dashboard.loading' | translate }}</span>
+    </div>
+  } @else if (stats(); as data) {
+    <section class="dashboard-metrics" [attr.aria-label]="'dashboard.atAGlance' | translate">
+      <a class="metric-card" routerLink="/projects">
+        <span class="metric-icon metric-icon--projects" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M4 7h16v12H4z" />
+            <path d="M4 7l2-3h12l2 3" />
+          </svg>
+        </span>
+        <span class="metric-body">
+          <span class="metric-value">{{ activeProjectsCount() }}</span>
+          <span class="metric-label">{{ 'dashboard.activeProjects' | translate }}</span>
+          @if ((data.archived_projects_count ?? 0) > 0) {
+            <span class="metric-meta">
+              {{ data.archived_projects_count }} {{ 'dashboard.archivedProjects' | translate }}
+            </span>
+          }
+        </span>
+      </a>
+
+      <a class="metric-card" routerLink="/objects">
+        <span class="metric-icon metric-icon--objects" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />
+            <path d="M12 12l8-4.5M12 12v9M12 12L4 7.5" />
+          </svg>
+        </span>
+        <span class="metric-body">
+          <span class="metric-value">{{ data.total_objects }}</span>
+          <span class="metric-label">{{ 'dashboard.totalObjects' | translate }}</span>
+        </span>
+      </a>
+
+      <a class="metric-card" routerLink="/files">
+        <span class="metric-icon metric-icon--files" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M14 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+          </svg>
+        </span>
+        <span class="metric-body">
+          <span class="metric-value">{{ totalFilesCount() }}</span>
+          <span class="metric-label">{{ 'dashboard.totalFiles' | translate }}</span>
+        </span>
+      </a>
+
+      @if (isAdmin()) {
+        <div class="metric-card metric-card--static">
+          <span class="metric-icon metric-icon--team" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="9" cy="8" r="3" />
+              <circle cx="17" cy="9" r="2.5" />
+              <path d="M3 19c0-2.2 2.7-4 6-4s6 1.8 6 4M14 19c0-1.6 1.8-3 4-3" />
+            </svg>
+          </span>
+          <span class="metric-body">
+            <span class="metric-value">{{ data.total_users ?? 0 }}</span>
+            <span class="metric-label">{{ 'dashboard.teamUsers' | translate }}</span>
+          </span>
+        </div>
+      }
     </section>
 
-    <div class="dashboard-grid">
-      <!-- Superuser Card -->
-      <div class="stat-card">
-        <div class="stat-icon">👤</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.superuser' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.superuser_name }}</p>
+    @if (topProjects().length > 0) {
+      <section class="dashboard-projects">
+        <div class="dashboard-projects-header">
+          <h2>{{ 'dashboard.topProjects' | translate }}</h2>
+          <a class="dashboard-projects-link" routerLink="/projects">{{ 'navbar.projects' | translate }}</a>
         </div>
-      </div>
-
-      <!-- Total Projects Card -->
-      <div class="stat-card">
-        <div class="stat-icon">📁</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.totalProjects' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_projects }}</p>
-        </div>
-      </div>
-
-      <!-- Archived Projects Card -->
-      <div class="stat-card stat-card-muted">
-        <div class="stat-icon">📂</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.archivedProjects' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.archived_projects_count ?? 0 }}</p>
-        </div>
-      </div>
-
-      <!-- Total Objects Card -->
-      <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.totalObjects' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_objects }}</p>
-        </div>
-      </div>
-
-      <!-- Team Users Card -->
-      <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.teamUsers' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_users ?? 0 }}</p>
-        </div>
-      </div>
-
-      <!-- Project Files Card -->
-      <div class="stat-card">
-        <div class="stat-icon">📄</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.projectFiles' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.project_files_count }}</p>
-        </div>
-      </div>
-
-      <!-- Object Files Card -->
-      <div class="stat-card">
-        <div class="stat-icon">📎</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.objectFiles' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.object_files_count }}</p>
-        </div>
-      </div>
-
-      <!-- File Groups Card -->
-      <div class="stat-card stat-card-muted">
-        <div class="stat-icon">🗂️</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.fileGroups' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_file_groups ?? 0 }}</p>
-        </div>
-      </div>
-
-      <!-- Protocol Templates Card -->
-      <div class="stat-card">
-        <div class="stat-icon">📋</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.protocolTemplates' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_protocol_templates ?? 0 }}</p>
-        </div>
-      </div>
-
-      <!-- Protocols Generated Card -->
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div class="stat-content">
-          <h3>{{ 'dashboard.protocolsGenerated' | translate }}</h3>
-          <p class="stat-value">{{ stats()?.total_protocols_generated ?? 0 }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Projects Breakdown -->
-    @if (stats()?.projects_with_objects && stats()!.projects_with_objects.length > 0) {
-      <div class="projects-breakdown">
-        <h2>{{ 'dashboard.projectsBreakdown' | translate }}</h2>
-        <div class="breakdown-list">
-          @for (project of stats()!.projects_with_objects; track project.name) {
-            <div class="breakdown-item">
-              <span class="project-name">{{ project.name }}</span>
-              <span class="object-count">{{ project.object_count }} {{ 'dashboard.objects' | translate }}</span>
-            </div>
+        <ol class="dashboard-projects-list">
+          @for (project of topProjects(); track project.name; let i = $index) {
+            <li class="dashboard-project-row">
+              <span class="dashboard-project-rank">{{ i + 1 }}</span>
+              <span class="dashboard-project-name" [title]="project.name">{{ project.name }}</span>
+              <span class="dashboard-project-count">
+                {{ project.object_count }}
+                {{ 'dashboard.objects' | translate }}
+              </span>
+            </li>
           }
-        </div>
-      </div>
+        </ol>
+      </section>
     }
   }
 
-  @if (isAdmin()) {
-    <app-team-users-panel />
-  }
-
-  @if (isCompanyOwner()) {
-    <app-registration-invite-panel />
+  @if (isAdmin() || isCompanyOwner()) {
+    <div class="dashboard-admin">
+      @if (isAdmin()) {
+        <app-team-users-panel />
+      }
+      @if (isCompanyOwner()) {
+        <app-registration-invite-panel />
+      }
+    </div>
   }
 </div>

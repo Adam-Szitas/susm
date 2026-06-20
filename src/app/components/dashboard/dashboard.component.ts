@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { HttpService } from '../../services/http.service';
-import { DashboardStats } from '../../models';
+import { DashboardStats, ProjectStats } from '../../models';
 import { TranslateModule } from '@ngx-translate/core';
 import { UserStore } from '../../store/user.store';
 import { TranslationService } from '../../services/translation.service';
@@ -15,7 +16,14 @@ import { RegistrationInvitePanelComponent } from './registration-invite-panel.co
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
-  imports: [TranslateModule, CommonModule, FormsModule, TeamUsersPanelComponent, RegistrationInvitePanelComponent],
+  imports: [
+    TranslateModule,
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    TeamUsersPanelComponent,
+    RegistrationInvitePanelComponent,
+  ],
 })
 export class DashboardComponent implements OnInit {
   #httpService = inject(HttpService);
@@ -24,23 +32,39 @@ export class DashboardComponent implements OnInit {
 
   readonly isAdmin = this.#userStore.isAdmin;
   readonly isCompanyOwner = this.#userStore.isCompanyOwner;
-  public stats = signal<DashboardStats | null>(null);
-  public loading = signal(true);
-  public currentLanguage = signal<string>('en');
-  public availableLanguages = [
+  readonly stats = signal<DashboardStats | null>(null);
+  readonly loading = signal(true);
+  readonly currentLanguage = signal<string>('en');
+  readonly availableLanguages = [
     { code: 'en', label: 'English' },
     { code: 'de', label: 'Deutsch' },
     { code: 'sk', label: 'Slovenčina' },
   ];
 
+  readonly activeProjectsCount = computed(() => {
+    const data = this.stats();
+    if (!data) return 0;
+    return Math.max(0, data.total_projects - (data.archived_projects_count ?? 0));
+  });
+
+  readonly totalFilesCount = computed(() => {
+    const data = this.stats();
+    if (!data) return 0;
+    return data.project_files_count + data.object_files_count;
+  });
+
+  readonly topProjects = computed((): ProjectStats[] => {
+    const projects = this.stats()?.projects_with_objects ?? [];
+    if (!projects.length) return [];
+    return [...projects].sort((a, b) => b.object_count - a.object_count).slice(0, 5);
+  });
+
   constructor() {
-    // Watch for user changes and update language
     effect(() => {
       const user = this.#userStore.user();
       if (user?.language) {
         this.currentLanguage.set(user.language);
       } else {
-        // Default to current translation service language or 'en'
         const currentLang = this.#translationService.getCurrentLang();
         this.currentLanguage.set(currentLang || 'en');
       }
@@ -49,27 +73,21 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardStats();
-    // Initialize current language from user store or translation service
-    const userLanguage = this.#userStore.user()?.language || 
-                        this.#translationService.getCurrentLang() || 
-                        'en';
+    const userLanguage =
+      this.#userStore.user()?.language || this.#translationService.getCurrentLang() || 'en';
     this.currentLanguage.set(userLanguage);
   }
 
   onLanguageChange(language: string): void {
     this.currentLanguage.set(language);
-    // Update translation service and wait for translations to load
     this.#translationService.use(language).subscribe({
       next: () => {
-        // Translations loaded successfully
-        // Update user's language preference in backend
         this.#userStore.updateLanguage(language);
       },
       error: (error) => {
         console.error('Failed to load translations:', error);
-        // Still update user preference even if translation load fails
         this.#userStore.updateLanguage(language);
-      }
+      },
     });
   }
 

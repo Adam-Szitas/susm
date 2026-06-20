@@ -18,8 +18,11 @@
     width: 100%;
     flex: none;
     height: var(--project-tab-panel-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 16rem));
-    max-height: var(--project-tab-panel-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 16rem));
-    min-height: var(--project-tab-panel-min-height, 0);
+    max-height: var(
+      --project-tab-panel-height,
+      calc(100dvh - var(--app-navbar-block, 3.5rem) - 16rem)
+    );
+    min-height: 0;
     overflow: hidden;
   }
 }
@@ -74,7 +77,9 @@
   }
 }
 
-:host-context(.project-todo-form--assign):host-context(.checklist-modal-tabs):not(.tab-panel-host--inactive) {
+:host-context(.project-todo-form--assign):host-context(.checklist-modal-tabs):not(
+    .tab-panel-host--inactive
+  ) {
   flex: 1 1 0;
   min-height: 0;
   height: 100%;

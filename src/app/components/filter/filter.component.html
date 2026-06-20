@@ -21,6 +21,7 @@
       id="filterControls"
       class="filter-controls"
       [class.collapsed]="!areFiltersVisible"
+      [class.filter-controls-animate]="filterControlsAnimate()"
       [attr.aria-hidden]="!areFiltersVisible"
       [attr.inert]="!areFiltersVisible ? '' : null"
     >

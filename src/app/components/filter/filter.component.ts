@@ -4,6 +4,8 @@ import {
   input,
   Output,
   OnInit,
+  afterNextRender,
+  signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -33,6 +35,8 @@ export class FilterComponent implements OnInit {
 
   private currentFilter = <FilterResult>({});
   public areFiltersVisible = false;
+  /** Delay expand/collapse transition until after the initial hidden state is painted. */
+  readonly filterControlsAnimate = signal(false);
   /** Selected labels when `multiSelectCategories` is enabled (project tab file-group categories). */
   selectedFileGroupCategories: string[] = [];
 
@@ -46,6 +50,10 @@ export class FilterComponent implements OnInit {
   });
 
   constructor() {
+    afterNextRender(() => {
+      requestAnimationFrame(() => this.filterControlsAnimate.set(true));
+    });
+
     // Emit search text immediately on change (with debounce)
     this.searchForm.get('search')?.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())

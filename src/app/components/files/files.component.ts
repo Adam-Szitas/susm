@@ -1,36 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FileService } from '../../services/file.service';
+import {
+  FileService,
+  FileWithContext,
+  PaginatedPicturesResponse,
+} from '../../services/file.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../environment';
-import { Filter, FilterResult, parseDateValue, parseMongoDateToMs } from '@models';
+import { Filter, FilterResult } from '@models';
 import { FilterComponent } from '../filter/filter.component';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
 
-export interface FileWithContext {
-  file: {
-    _id: { $oid: string };
-    path: string;
-    filename: string;
-    description?: string;
-    category?: string;
-    created_at: string;
-  };
-  project: {
-    id: string;
-    name: string;
-  } | null;
-  object: {
-    id: string;
-    street?: string;
-    description?: string;
-    house_number?: string;
-  } | null;
-}
-
 const FILTER_KEY = 'files';
+const PICTURES_PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-files',
@@ -47,6 +31,7 @@ export class FilesComponent implements OnInit {
 
   files = signal<FileWithContext[]>([]);
   loading = signal(false);
+  pageLoading = signal(false);
   error = signal<string | null>(null);
 
   #failedFileIds = new Set<string>();
@@ -56,96 +41,30 @@ export class FilesComponent implements OnInit {
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
   restoredFilterState = signal<PersistedFilterState | null>(null);
+  readonly pageSize = PICTURES_PAGE_SIZE;
+  currentPage = signal(1);
+  totalFileCount = signal(0);
+  totalPages = signal(1);
+  projects = signal<{ id: string; name: string }[]>([]);
+  categories = signal<string[]>([]);
 
-  // Exclude deleted and failed-to-load files from the list we work with
-  #filesForDisplay = computed(() => {
+  visibleFiles = computed(() => {
     this.#failedFileIdsVersion();
-    return this.files().filter((f) => {
-      const id = f?.file?._id?.$oid;
-      if (!id || this.#failedFileIds.has(id)) return false;
-      if (parseMongoDateToMs((f.file as { deleted_at?: unknown }).deleted_at) != null)
-        return false;
-      if (!f.file?.path) return false;
-      return true;
+    return this.files().filter((file) => {
+      const id = file?.file?._id?.$oid;
+      return !!id && !this.#failedFileIds.has(id);
     });
   });
 
-  // Computed values
-  projects = computed(() => {
-    const allProjects = new Set<string>();
-    this.#filesForDisplay().forEach((f) => {
-      if (f.project) {
-        allProjects.add(f.project.id);
-      }
-    });
-    return Array.from(allProjects).map((id) => {
-      const file = this.#filesForDisplay().find((f) => f.project?.id === id);
-      return { id, name: file?.project?.name || 'Unknown' };
-    });
-  });
-
-  categories = computed(() => {
-    const allCategories = new Set<string>();
-    this.#filesForDisplay().forEach((f) => {
-      if (f.file.category) {
-        allCategories.add(f.file.category);
-      }
-    });
-    return Array.from(allCategories).sort();
-  });
-
-  filteredFiles = computed(() => {
-    const filter = this.#currentFilter();
-    let result = this.#filesForDisplay();
-
-    if (filter.searchText) {
-      const search = filter.searchText.toLowerCase().trim();
-      result = result.filter((f) => {
-        const filename = f.file.filename?.toLowerCase() || '';
-        const description = f.file.description?.toLowerCase() || '';
-        const projectName = f.project?.name.toLowerCase() || '';
-        // ObjectAddress doesn't have street, use project name instead
-        const objectDesc = f.object?.description?.toLowerCase() || '';
-        return (
-          filename.includes(search) ||
-          description.includes(search) ||
-          projectName.includes(search) ||
-          objectDesc.includes(search)
-        );
-      });
+  pageRange = computed(() => {
+    const total = this.totalFileCount();
+    if (total === 0) {
+      return { from: 0, to: 0, total: 0 };
     }
-
-    if (filter.category) {
-      result = result.filter((f) => f.file.category === filter.category);
-    }
-
-    if (filter.dateFrom || filter.dateTo) {
-      result = result.filter((f) => {
-        const createdDate = parseDateValue(f.file.created_at);
-        if (!createdDate) return false;
-
-        if (filter.dateFrom) {
-          const from = new Date(filter.dateFrom);
-          if (!Number.isNaN(from.getTime()) && createdDate < from) return false;
-        }
-
-        if (filter.dateTo) {
-          const to = new Date(filter.dateTo);
-          if (!Number.isNaN(to.getTime())) {
-            to.setHours(23, 59, 59, 999);
-            if (createdDate > to) return false;
-          }
-        }
-
-        return true;
-      });
-    }
-
-    if (this.selectedProject()) {
-      result = result.filter((f) => f.project?.id === this.selectedProject());
-    }
-
-    return result;
+    const page = this.currentPage();
+    const from = (page - 1) * this.pageSize + 1;
+    const to = Math.min(page * this.pageSize, total);
+    return { from, to, total };
   });
 
   ngOnInit(): void {
@@ -155,31 +74,55 @@ export class FilesComponent implements OnInit {
       this.#currentFilter.set(restored.filter);
       this.#filtersVisible = restored.filtersVisible;
     }
-    this.loadFiles();
+    this.loadPage(1, true);
   }
 
-  loadFiles(): void {
-    this.loading.set(true);
+  loadPage(page: number, initial = false): void {
+    if (initial) {
+      this.loading.set(true);
+    } else {
+      this.pageLoading.set(true);
+    }
     this.error.set(null);
     this.#failedFileIds.clear();
+    this.#failedFileIdsVersion.update((v) => v + 1);
 
-    this.#fileService.getAllFilesWithContext().subscribe({
-      next: (files) => {
-        this.files.set(Array.isArray(files) ? files : []);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        this.error.set(error.message || 'Failed to load files');
-        this.loading.set(false);
-      },
-    });
+    const filter = this.#currentFilter();
+    this.#fileService
+      .getPicturesPage({
+        page,
+        limit: this.pageSize,
+        search: filter.searchText,
+        category: filter.category,
+        project_id: this.selectedProject() || undefined,
+        date_from: filter.dateFrom,
+        date_to: filter.dateTo,
+      })
+      .subscribe({
+        next: (response) => this.#applyPageResponse(response),
+        error: (err) => {
+          this.error.set(err.message || 'Failed to load pictures');
+          this.loading.set(false);
+          this.pageLoading.set(false);
+        },
+      });
+  }
+
+  #applyPageResponse(response: PaginatedPicturesResponse): void {
+    this.files.set(Array.isArray(response.items) ? response.items : []);
+    this.totalFileCount.set(response.total ?? 0);
+    this.totalPages.set(Math.max(1, response.total_pages ?? 1));
+    this.currentPage.set(response.page ?? 1);
+    this.projects.set(Array.isArray(response.projects) ? response.projects : []);
+    this.categories.set(Array.isArray(response.categories) ? response.categories : []);
+    this.loading.set(false);
+    this.pageLoading.set(false);
   }
 
   getImageUrl(path: string): string {
     if (!path || typeof path !== 'string') {
       return '';
     }
-    // Normalize: strip leading . / and \, then backslashes to slashes (handles Windows paths)
     let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
     if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
       return normalizedPath;
@@ -187,7 +130,10 @@ export class FilesComponent implements OnInit {
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.substring('uploads/'.length);
     }
-    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
+    const pathSegments = normalizedPath
+      .split('/')
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment));
     const encodedPath = pathSegments.join('/');
     return `${environment.be}${environment.folderBase}/${encodedPath}`;
   }
@@ -214,6 +160,8 @@ export class FilesComponent implements OnInit {
   onFilterChange(filter: FilterResult): void {
     this.#currentFilter.set(filter);
     this.#filterPersistence.save(FILTER_KEY, { filter, filtersVisible: this.#filtersVisible });
+    this.currentPage.set(1);
+    this.loadPage(1);
   }
 
   onFiltersVisibleChange(visible: boolean): void {
@@ -221,19 +169,35 @@ export class FilesComponent implements OnInit {
     this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
   }
 
-  clearProjectFilter(): void {
-    this.selectedProject.set('');
+  onProjectFilterChange(projectId: string): void {
+    this.selectedProject.set(projectId);
+    this.currentPage.set(1);
+    this.loadPage(1);
+  }
+
+  goToPreviousPage(): void {
+    const nextPage = Math.max(1, this.currentPage() - 1);
+    if (nextPage === this.currentPage()) {
+      return;
+    }
+    this.currentPage.set(nextPage);
+    this.loadPage(nextPage);
+  }
+
+  goToNextPage(): void {
+    const nextPage = Math.min(this.totalPages(), this.currentPage() + 1);
+    if (nextPage === this.currentPage()) {
+      return;
+    }
+    this.currentPage.set(nextPage);
+    this.loadPage(nextPage);
   }
 
   onFileClick(fileWithContext: FileWithContext): void {
-    // If file belongs to an object, navigate to object page
     if (fileWithContext.object?.id) {
       this.#router.navigate(['/objects/tab', fileWithContext.object.id]);
-    }
-    // Otherwise, if file belongs to a project, navigate to project page
-    else if (fileWithContext.project?.id) {
+    } else if (fileWithContext.project?.id) {
       this.#router.navigate(['/projects/tab', fileWithContext.project.id]);
     }
   }
 }
-

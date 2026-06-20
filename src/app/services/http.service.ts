@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../environment';
 import { ErrorHandlerService, AppError } from './error-handler.service';
@@ -17,10 +17,20 @@ export class HttpService {
     this.apiUrl = environment.be;
   }
 
-  get<T>(url: string): Observable<T> {
+  get<T>(url: string, query?: Record<string, string | number | undefined | null>): Observable<T> {
+    let params = new HttpParams();
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, String(value));
+        }
+      }
+    }
+
     return this.#http
       .get<T>(`${this.apiUrl}/${url}`, {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        params,
       })
       .pipe(catchError((error) => this.handleError(error, url)));
   }

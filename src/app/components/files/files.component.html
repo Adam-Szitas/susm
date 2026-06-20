@@ -5,7 +5,7 @@
   </header>
 
   @if (loading()) {
-    <p>{{ 'common.loading' | translate }}</p>
+    <p class="files-status">{{ 'common.loading' | translate }}</p>
   } @else if (error()) {
     <p class="error">{{ error() }}</p>
   } @else {
@@ -22,7 +22,7 @@
         <select
           id="project"
           [value]="selectedProject()"
-          (change)="selectedProject.set($any($event.target).value)"
+          (change)="onProjectFilterChange($any($event.target).value)"
         >
           <option value="">{{ 'files.allProjects' | translate }}</option>
           @for (project of projects(); track project.id) {
@@ -32,58 +32,78 @@
       </div>
     </div>
 
-    <div class="files-grid">
-      @for (fileWithContext of filteredFiles(); track fileWithContext.file._id.$oid) {
-        <div
-          class="file-card"
-          (click)="onFileClick(fileWithContext)"
-          [style.cursor]="
-            fileWithContext.object?.id || fileWithContext.project?.id ? 'pointer' : 'default'
-          "
-        >
-          <div class="file-image">
+    @if (totalFileCount() > 0) {
+      <div class="files-pagination" [class.files-pagination--loading]="pageLoading()">
+        <p class="files-pagination-summary">
+          {{
+            'files.paginationSummary'
+              | translate
+                : {
+                    from: pageRange().from,
+                    to: pageRange().to,
+                    total: pageRange().total,
+                  }
+          }}
+        </p>
+        <div class="files-pagination-controls">
+          <button
+            type="button"
+            class="button button-outline files-pagination-btn"
+            (click)="goToPreviousPage()"
+            [disabled]="currentPage() <= 1 || pageLoading()"
+          >
+            {{ 'files.paginationPrevious' | translate }}
+          </button>
+          <span class="files-pagination-page">
+            {{
+              'files.paginationPage'
+                | translate: { current: currentPage(), total: totalPages() }
+            }}
+          </span>
+          <button
+            type="button"
+            class="button button-outline files-pagination-btn"
+            (click)="goToNextPage()"
+            [disabled]="currentPage() >= totalPages() || pageLoading()"
+          >
+            {{ 'files.paginationNext' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <ul class="files-gallery" [class.files-gallery--loading]="pageLoading()">
+      @for (fileWithContext of visibleFiles(); track fileWithContext.file._id.$oid) {
+        <li class="files-gallery-item">
+          <button
+            type="button"
+            class="files-thumb"
+            (click)="onFileClick(fileWithContext)"
+            [disabled]="!fileWithContext.object?.id && !fileWithContext.project?.id"
+            [attr.aria-label]="fileWithContext.file.filename"
+          >
             <img
               [src]="getImageUrl(fileWithContext.file.path)"
               [alt]="fileWithContext.file.filename"
               loading="lazy"
               (error)="onImageError(fileWithContext)"
             />
-          </div>
-          <div class="file-info">
-            <h3 class="file-name">{{ fileWithContext.file.filename }}</h3>
-            @if (fileWithContext.file.description) {
-              <p class="file-description">{{ fileWithContext.file.description }}</p>
-            }
-            <div class="file-context">
-              <div class="project-info">
-                <strong>{{ 'files.project' | translate }}:</strong>
-                <span>{{ fileWithContext.project?.name || 'N/A' }}</span>
-              </div>
-              @if (fileWithContext.object) {
-                <div class="object-info">
-                  <strong>{{ 'files.object' | translate }}:</strong>
-                  <div class="object-details">
-                    @if (fileWithContext.object.street) {
-                      <span>{{ fileWithContext.object.street }}</span>
-                    }
-                    @if (fileWithContext.object.description) {
-                      <span>{{ fileWithContext.object.description }}</span>
-                    }
-                    @if (fileWithContext.object.house_number) {
-                      <span>{{ fileWithContext.object.house_number }}</span>
-                    }
-                  </div>
-                </div>
+          </button>
+          <div class="files-caption">
+            <span class="files-caption-name" [title]="fileWithContext.file.filename">{{
+              fileWithContext.file.filename
+            }}</span>
+            <span class="files-caption-meta" [title]="fileWithContext.project?.name || ''">
+              {{ fileWithContext.project?.name || '—' }}
+              @if (fileWithContext.object?.house_number) {
+                · {{ fileWithContext.object?.house_number }}
               }
-            </div>
-            @if (fileWithContext.file.category) {
-              <span class="file-category">{{ fileWithContext.file.category }}</span>
-            }
+            </span>
           </div>
-        </div>
+        </li>
       } @empty {
-        <p class="empty-state">{{ 'files.noFiles' | translate }}</p>
+        <li class="files-gallery-empty">{{ 'files.noPictures' | translate }}</li>
       }
-    </div>
+    </ul>
   }
 </div>

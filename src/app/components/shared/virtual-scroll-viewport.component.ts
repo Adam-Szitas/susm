@@ -22,9 +22,6 @@ export const VIRTUAL_SCROLL_DEFAULT_THRESHOLD = 50;
   selector: 'app-virtual-scroll-viewport',
   standalone: true,
   imports: [CommonModule],
-  host: {
-    '[class.virtual-scroll-host--fill]': 'fill()',
-  },
   templateUrl: './virtual-scroll-viewport.component.html',
   styleUrl: './virtual-scroll-viewport.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
