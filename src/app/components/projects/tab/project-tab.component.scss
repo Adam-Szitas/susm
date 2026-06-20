@@ -132,6 +132,30 @@
   min-width: 0;
 }
 
+@include mobile {
+  .wrapper--details-expanded {
+    .project-tab-chrome {
+      flex-shrink: 1;
+      min-height: 0;
+      max-height: 45dvh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .project-content-tabs {
+      flex: 1 1 50dvh;
+      min-height: 50dvh;
+    }
+
+    .object-list-viewport {
+      flex: 1 1 auto;
+      min-height: 50dvh;
+      height: 100%;
+    }
+  }
+}
+
 .card--deferred {
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 72px;

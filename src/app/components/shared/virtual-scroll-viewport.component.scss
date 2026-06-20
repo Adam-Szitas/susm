@@ -6,12 +6,25 @@
   min-width: 0;
 }
 
+:host.virtual-scroll-host--fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
 .virtual-scroll-viewport {
   width: 100%;
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+
+  &--fill {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
 }
 
 .virtual-scroll-spacer {

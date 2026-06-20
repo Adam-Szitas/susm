@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="wrapper" [class.wrapper--details-expanded]="projectDataExpanded()">
   <div #projectTabChrome class="project-tab-chrome">
   <app-breadcrumb [items]="breadcrumbItems()" />
   <section class="project-details" [class.project-details--expanded]="projectDataExpanded()">
