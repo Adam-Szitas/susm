@@ -31,6 +31,7 @@ import { lockDocumentScroll, unlockDocumentScroll } from '../../services/documen
 import { ModalService } from '../../services/modal.service';
 import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
+import { DateFormatService } from '../../services/date-format.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.component';
@@ -54,6 +55,7 @@ export class FileListComponent implements OnDestroy {
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #dateFormat = inject(DateFormatService);
   #imageCompression = inject(ImageCompressionService);
 
   /** Parent object id — required for uploading into an existing file group. */
@@ -754,11 +756,8 @@ export class FileListComponent implements OnDestroy {
   public getCreatedAtDisplay(file: FileGroupItem | ProjectFile): string | null {
     const ms = parseMongoDateToMs(file.created_at as unknown);
     if (ms === null) return null;
-    const d = new Date(ms);
-    const day = String(d.getUTCDate()).padStart(2, '0');
-    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const year = d.getUTCFullYear();
-    return `${day}.${month}.${year}`;
+    const formatted = this.#dateFormat.formatUtcDate(ms);
+    return formatted || null;
   }
 
   public getImageUrl(path: string): string {

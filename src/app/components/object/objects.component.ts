@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { FilterComponent } from '../filter/filter.component';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
-import { DatePipe } from '@angular/common';
+import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
 
 const FILTER_KEY = 'objects';
@@ -15,7 +15,7 @@ const FILTER_KEY = 'objects';
   templateUrl: './objects.component.html',
   styleUrl: './objects.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, FilterComponent, StatusPillComponent, DatePipe],
+  imports: [RouterLink, TranslateModule, FilterComponent, StatusPillComponent, LocaleDatePipe],
 })
 export class ObjectComponent implements OnInit {
   #projectStore = inject(ProjectStore);

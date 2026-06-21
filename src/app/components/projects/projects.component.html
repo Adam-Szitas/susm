@@ -35,7 +35,7 @@
               }
             </ul>
             @if (project?.created_at) {
-              <div class="created-at">{{ project.created_at | date: 'dd.MM.yyyy' }}</div>
+              <div class="created-at">{{ project.created_at | localeDate }}</div>
             }
             @if (project.archive_comment) {
               <div class="archive-comment-preview">

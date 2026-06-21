@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { DEFAULT_WORK_STATUS, formatWorkStatus } from '@models';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
-import { DatePipe } from '@angular/common';
+import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 
 @Component({
   selector: 'app-projects',
@@ -14,7 +14,7 @@ import { DatePipe } from '@angular/common';
   styleUrl: './projects.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, StatusPillComponent, DatePipe],
+  imports: [RouterLink, TranslateModule, StatusPillComponent, LocaleDatePipe],
 })
 export class ProjectsComponent implements OnInit {
   #projectStore = inject(ProjectStore);

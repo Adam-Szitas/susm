@@ -39,6 +39,7 @@ import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
+import { DateFormatService } from '@services/date-format.service';
 import { TranslationService } from '@services/translation.service';
 import { FileService } from '@services/file.service';
 import { FileListComponent } from '../../file-list/file-list.component';
@@ -49,7 +50,7 @@ import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generat
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { UserStore } from '@store/user.store';
-import { DatePipe } from '@angular/common';
+import { LocaleDatePipe } from '../../../pipes/locale-date.pipe';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import {
@@ -81,7 +82,7 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
     TranslateModule,
     FileListComponent,
     FileUploadModalComponent,
-    DatePipe,
+    LocaleDatePipe,
     BreadcrumbComponent,
     TrashIconComponent,
     TabGroupComponent,
@@ -97,6 +98,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #dateFormat = inject(DateFormatService);
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
   #filterPersistence = inject(FilterPersistenceService);
@@ -528,7 +530,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (!protocol.generated_at) {
       return '';
     }
-    const date = new Date(protocol.generated_at).toLocaleString();
+    const date = this.#dateFormat.formatDateTime(protocol.generated_at);
     const key = isUploadedProtocol(protocol) ? 'protocols.uploadedAt' : 'protocols.generatedAt';
     const prefix = this.#translationService.instant(key);
     return prefix && prefix !== key ? `${prefix}: ${date}` : date;

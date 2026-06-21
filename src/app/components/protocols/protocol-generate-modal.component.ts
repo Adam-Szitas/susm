@@ -5,6 +5,7 @@ import { ProtocolService } from '@services/protocol.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { DateFormatService } from '@services/date-format.service';
 import {
   GenerateProtocolRequest,
   FileGroup,
@@ -42,6 +43,7 @@ export class ProtocolGenerateModalComponent {
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #dateFormat = inject(DateFormatService);
   #projectStore = inject(ProjectStore);
 
   projectId = input.required<string>();
@@ -973,7 +975,7 @@ export class ProtocolGenerateModalComponent {
 
   formatProtocolLabel(protocol: ProtocolRecord): string {
     const name = protocol.template_name || '';
-    const date = protocol.generated_at ? new Date(protocol.generated_at).toLocaleDateString() : '';
+    const date = protocol.generated_at ? this.#dateFormat.formatDate(protocol.generated_at) : '';
     const objects = protocol.object_names?.length ? protocol.object_names.join(', ') : '';
     const sourceKey = isUploadedProtocol(protocol)
       ? 'protocols.badgeUploaded'

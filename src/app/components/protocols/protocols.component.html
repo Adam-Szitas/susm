@@ -47,12 +47,12 @@
               </span>
               @if (template.created_at) {
                 <span class="protocol-meta-chip">
-                  {{ 'protocols.created' | translate }}: {{ template.created_at | date: 'dd.MM.yyyy' }}
+                  {{ 'protocols.created' | translate }}: {{ template.created_at | localeDate }}
                 </span>
               }
               @if (template.updated_at) {
                 <span class="protocol-meta-chip protocol-meta-chip--muted">
-                  {{ 'protocols.updated' | translate }}: {{ template.updated_at | date: 'dd.MM.yyyy' }}
+                  {{ 'protocols.updated' | translate }}: {{ template.updated_at | localeDate }}
                 </span>
               }
             </div>

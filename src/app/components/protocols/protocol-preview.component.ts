@@ -64,10 +64,12 @@ export interface ProtocolPreviewData {
   generated_at?: string;
 }
 
+import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
+
 @Component({
   selector: 'app-protocol-preview',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LocaleDatePipe],
   templateUrl: './protocol-preview.component.html',
   styleUrl: './protocol-preview.component.scss',
 })

@@ -31,7 +31,7 @@
             <div class="note">{{ objectItem.note }}</div>
           }
           <div class="created-at">
-            <span>{{ objectItem.created_at | date: 'dd.MM.yyyy HH:mm' }}</span>
+            <span>{{ objectItem.created_at | localeDate:'datetime' }}</span>
             <span>{{ objectItem.category || '' }}</span>
           </div>
         </div>

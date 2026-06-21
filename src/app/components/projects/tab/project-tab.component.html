@@ -439,7 +439,7 @@
                   <span class="headline-text">{{ objectCardHeadline(object) }}</span>
                 </h2>
                 <div class="created-at">
-                  <span>{{ object.created_at | date: 'dd.MM.yyyy' }}</span>
+                  <span>{{ object.created_at | localeDate }}</span>
                   <span>{{ object.category }}</span>
                 </div>
               </div>

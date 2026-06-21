@@ -133,7 +133,7 @@
           <h3 class="template-name">{{ linked.template_name || linked.project_name }}</h3>
           @if (linked.generated_at) {
             <p class="linked-generated-at">
-              {{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | date: 'medium' }}
+              {{ 'protocols.generatedAt' | translate }}: {{ linked.generated_at | localeDate:'datetime' }}
             </p>
           }
           @if (linked.subtitle) {
