@@ -1,11 +1,21 @@
 @if (isLoggedIn()) {
   <nav [class.mobile]="isMobile()">
-    <div class="mobile">
-      <i class="hamburger-menu" (click)="toggleMobileMenu()">
-        <svg viewBox="0 0 100 80" fill="white">
-          <path d="M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z" />
-        </svg>
-      </i>
+    <div class="navbar-start">
+      <div class="mobile">
+        <i class="hamburger-menu" (click)="toggleMobileMenu()">
+          <svg viewBox="0 0 100 80" fill="white">
+            <path d="M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z" />
+          </svg>
+        </i>
+      </div>
+      <a
+        class="navbar-brand"
+        routerLink="/dashboard"
+        (click)="hideMobileMenu()"
+        [attr.aria-label]="'navbar.logo' | translate"
+      >
+        <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+      </a>
     </div>
     <div class="desktop">
       <ul>
@@ -31,7 +41,14 @@
   <div class="mobile-menu-backdrop" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></div>
   <div class="mobile-menu" [class.open]="toggledMenu()">
     <div class="mobile-menu-header">
-      <span>{{ 'navbar.logo' | translate }}</span>
+      <a
+        class="navbar-brand navbar-brand--menu"
+        routerLink="/dashboard"
+        (click)="hideMobileMenu()"
+        [attr.aria-label]="'navbar.logo' | translate"
+      >
+        <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+      </a>
       <i class="close" (click)="hideMobileMenu()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
           <path
@@ -63,7 +80,9 @@
   </div>
 } @else {
   <nav>
-    <span>{{ 'navbar.logo' | translate }}</span>
+    <a class="navbar-brand" routerLink="/login" [attr.aria-label]="'navbar.logo' | translate">
+      <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+    </a>
     <ul>
       <li [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
     </ul>

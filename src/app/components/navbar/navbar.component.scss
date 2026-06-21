@@ -19,6 +19,33 @@ nav {
     align-self: center;
   }
 
+  .navbar-start {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: var(--space);
+    text-decoration: none;
+    flex-shrink: 0;
+
+    &--menu {
+      margin-inline-start: 0;
+    }
+  }
+
+  .navbar-logo {
+    display: block;
+    block-size: 2.25rem;
+    inline-size: auto;
+    max-inline-size: 7.5rem;
+    object-fit: contain;
+  }
+
   .logout-menu {
     margin-right: var(--space-large);
   }
@@ -73,10 +100,8 @@ nav {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     background-color: var(--default-color);
 
-    span {
+    .navbar-brand {
       margin: 0;
-      font-size: var(--font-2);
-      font-weight: bold;
     }
 
     .close {
