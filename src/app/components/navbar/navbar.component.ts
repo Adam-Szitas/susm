@@ -3,6 +3,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/rout
 import { filter } from 'rxjs';
 import { FacadeStore } from '../../store/facade.store';
 import { TranslateModule } from '@ngx-translate/core';
+import { SusmLogoComponent } from '../../icons/susm-logo.component';
 
 @Component({
   selector: 'app-navbar',
@@ -10,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './navbar.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule],
+  imports: [RouterLink, TranslateModule, SusmLogoComponent],
 })
 export class NavbarComponent implements OnInit {
   #router = inject(Router);

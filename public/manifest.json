@@ -2,17 +2,18 @@
   "name": "Susm",
   "short_name": "Susm",
   "description": "Susm Application",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#9d0000",
+  "background_color": "#9d0000",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "susm.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "susm.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }

@@ -1,8 +1,8 @@
-const CACHE_NAME = 'susm-cache-v3'; // Increment version to clear old cache
+const CACHE_NAME = 'susm-cache-v4'; // Increment version to clear old cache
 const urlsToCache = [
   '/',
   '/index.html',
-  '/susm.png'
+  '/susm.svg'
 ];
 
 // Install event - cache resources

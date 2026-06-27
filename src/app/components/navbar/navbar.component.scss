@@ -32,18 +32,11 @@ nav {
     margin-inline-start: var(--space);
     text-decoration: none;
     flex-shrink: 0;
+    color: inherit;
 
     &--menu {
       margin-inline-start: 0;
     }
-  }
-
-  .navbar-logo {
-    display: block;
-    block-size: 2.25rem;
-    inline-size: auto;
-    max-inline-size: 7.5rem;
-    object-fit: contain;
   }
 
   .logout-menu {

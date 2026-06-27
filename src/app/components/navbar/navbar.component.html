@@ -12,9 +12,9 @@
         class="navbar-brand"
         routerLink="/dashboard"
         (click)="hideMobileMenu()"
-        [attr.aria-label]="'navbar.logo' | translate"
+        aria-label="SUSM"
       >
-        <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+        <app-susm-logo />
       </a>
     </div>
     <div class="desktop">
@@ -45,9 +45,9 @@
         class="navbar-brand navbar-brand--menu"
         routerLink="/dashboard"
         (click)="hideMobileMenu()"
-        [attr.aria-label]="'navbar.logo' | translate"
+        aria-label="SUSM"
       >
-        <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+        <app-susm-logo />
       </a>
       <i class="close" (click)="hideMobileMenu()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
@@ -80,8 +80,8 @@
   </div>
 } @else {
   <nav>
-    <a class="navbar-brand" routerLink="/login" [attr.aria-label]="'navbar.logo' | translate">
-      <img class="navbar-logo" src="susm.png" alt="" width="120" height="40" />
+    <a class="navbar-brand" routerLink="/login" aria-label="SUSM">
+      <app-susm-logo />
     </a>
     <ul>
       <li [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
