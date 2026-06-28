@@ -56,8 +56,7 @@
           </button>
           <span class="files-pagination-page">
             {{
-              'files.paginationPage'
-                | translate: { current: currentPage(), total: totalPages() }
+              'files.paginationPage' | translate: { current: currentPage(), total: totalPages() }
             }}
           </span>
           <button
@@ -88,6 +87,7 @@
               <img
                 [src]="getImageUrl(fileWithContext.file.path)"
                 [alt]="fileWithContext.file.filename"
+                loading="lazy"
                 (error)="onImageError(fileWithContext)"
               />
             }
