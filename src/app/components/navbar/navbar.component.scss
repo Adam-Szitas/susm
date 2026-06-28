@@ -227,6 +227,22 @@ li {
   }
 
   nav {
+    justify-content: flex-start;
+
+    .navbar-start {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .navbar-brand {
+      margin-inline-start: var(--space);
+      margin-inline-end: 0;
+    }
+
+    .mobile {
+      margin-inline-start: auto;
+    }
+
     .logout-menu {
       display: none;
     }

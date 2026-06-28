@@ -73,7 +73,7 @@
     }
 
     <ul class="files-gallery" [class.files-gallery--loading]="pageLoading()">
-      @for (fileWithContext of visibleFiles(); track fileWithContext.file._id.$oid) {
+      @for (fileWithContext of files(); track fileWithContext.file._id.$oid) {
         <li class="files-gallery-item">
           <button
             type="button"
@@ -82,12 +82,16 @@
             [disabled]="!fileWithContext.object?.id && !fileWithContext.project?.id"
             [attr.aria-label]="fileWithContext.file.filename"
           >
-            <img
-              [src]="getImageUrl(fileWithContext.file.path)"
-              [alt]="fileWithContext.file.filename"
-              loading="lazy"
-              (error)="onImageError(fileWithContext)"
-            />
+            @if (hasImageFailed(fileWithContext)) {
+              <span class="files-thumb-fallback" aria-hidden="true">?</span>
+            } @else {
+              <img
+                [src]="getImageUrl(fileWithContext.file.path)"
+                [alt]="fileWithContext.file.filename"
+                loading="lazy"
+                (error)="onImageError(fileWithContext)"
+              />
+            }
           </button>
           <div class="files-caption">
             <span class="files-caption-name" [title]="fileWithContext.file.filename">{{

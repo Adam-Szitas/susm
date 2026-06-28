@@ -4,7 +4,7 @@
   <section class="project-details" [class.project-details--expanded]="projectDataExpanded()">
     <header class="project-details-header">
       <div class="project-details-title-row">
-        <h2>{{ project()?.name }}</h2>
+        <h2>{{ projectDisplayName() }}</h2>
         <button
           type="button"
           class="group-edit-toggle button button-primary"
@@ -376,8 +376,8 @@
                   >⋮⋮</span
                 >
                 <span class="reorder-position">{{ i + 1 }}</span>
-                <h2 class="headline" [attr.title]="objectCardHeadline(object)">
-                  <span class="headline-text">{{ objectCardHeadline(object) }}</span>
+                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
+                  <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
                 </h2>
                 <div class="reorder-arrows">
                   <button
@@ -424,8 +424,8 @@
                 [routerLink]="['/objects/tab', object._id?.$oid]"
                 [queryParams]="objectTabLinkQueryParams()"
               >
-                <h2 class="headline" [attr.title]="objectCardMobileLabel(object) || objectCardHeadline(object)">
-                  <span class="headline-text">{{ objectCardMobileLabel(object) || objectCardHeadline(object) }}</span>
+                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object, true)">
+                  <span class="headline-text">{{ objectCardDisplayLabel(object, true) }}</span>
                 </h2>
               </div>
             } @else {
@@ -435,8 +435,8 @@
                 [routerLink]="['/objects/tab', object._id?.$oid]"
                 [queryParams]="objectTabLinkQueryParams()"
               >
-                <h2 class="headline" [attr.title]="objectCardHeadline(object)">
-                  <span class="headline-text">{{ objectCardHeadline(object) }}</span>
+                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
+                  <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
                 </h2>
                 <div class="created-at">
                   <span>{{ object.created_at | localeDate }}</span>
@@ -594,11 +594,11 @@
     type="button"
     class="add-icon floating-icon"
     (click)="addObject()"
-    [tabIndex]="2"
     [attr.aria-label]="'objects.add' | translate"
+    [attr.title]="'objects.add' | translate"
   >
-    <i class="add" role="button">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <span class="add" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path
           stroke="white"
           stroke-linecap="round"
@@ -607,6 +607,6 @@
           d="M12 5v14m-7-7h14"
         />
       </svg>
-    </i>
+    </span>
   </button>
 </div>

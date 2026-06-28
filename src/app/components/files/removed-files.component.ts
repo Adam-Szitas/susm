@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { FileService } from '../../services/file.service';
-import { environment } from '../../environment';
+import { buildUploadImageUrl } from '../../utils/upload-image-url';
 
 export interface RemovedFileItem {
   object_name: string;
@@ -48,18 +48,7 @@ export class RemovedFilesComponent implements OnInit {
   }
 
   getImageUrl(path: string | undefined): string {
-    if (!path || typeof path !== 'string') return '';
-    // Normalize: strip leading . / and \, then backslashes to slashes (handles Windows paths)
-    let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
-    if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
-      return normalizedPath;
-    }
-    if (normalizedPath.startsWith('uploads/')) {
-      normalizedPath = normalizedPath.substring('uploads/'.length);
-    }
-    const pathSegments = normalizedPath.split('/').filter(Boolean).map((segment) => encodeURIComponent(segment));
-    const encodedPath = pathSegments.join('/');
-    return `${environment.be}${environment.folderBase}/${encodedPath}`;
+    return buildUploadImageUrl(path);
   }
 
   onImageError(item: RemovedFileItem): void {

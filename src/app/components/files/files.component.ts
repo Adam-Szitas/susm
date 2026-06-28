@@ -8,10 +8,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { environment } from '../../environment';
 import { Filter, FilterResult } from '@models';
 import { FilterComponent } from '../filter/filter.component';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+import { buildUploadImageUrl } from '../../utils/upload-image-url';
 
 const FILTER_KEY = 'files';
 const PICTURES_PAGE_SIZE = 50;
@@ -47,14 +47,6 @@ export class FilesComponent implements OnInit {
   totalPages = signal(1);
   projects = signal<{ id: string; name: string }[]>([]);
   categories = signal<string[]>([]);
-
-  visibleFiles = computed(() => {
-    this.#failedFileIdsVersion();
-    return this.files().filter((file) => {
-      const id = file?.file?._id?.$oid;
-      return !!id && !this.#failedFileIds.has(id);
-    });
-  });
 
   pageRange = computed(() => {
     const total = this.totalFileCount();
@@ -120,22 +112,13 @@ export class FilesComponent implements OnInit {
   }
 
   getImageUrl(path: string): string {
-    if (!path || typeof path !== 'string') {
-      return '';
-    }
-    let normalizedPath = path.replace(/^[.\\/]+/, '').replace(/\\/g, '/');
-    if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
-      return normalizedPath;
-    }
-    if (normalizedPath.startsWith('uploads/')) {
-      normalizedPath = normalizedPath.substring('uploads/'.length);
-    }
-    const pathSegments = normalizedPath
-      .split('/')
-      .filter(Boolean)
-      .map((segment) => encodeURIComponent(segment));
-    const encodedPath = pathSegments.join('/');
-    return `${environment.be}${environment.folderBase}/${encodedPath}`;
+    return buildUploadImageUrl(path);
+  }
+
+  hasImageFailed(fileWithContext: FileWithContext): boolean {
+    this.#failedFileIdsVersion();
+    const id = fileWithContext?.file?._id?.$oid;
+    return !!id && this.#failedFileIds.has(id);
   }
 
   onImageError(fileWithContext: FileWithContext): void {

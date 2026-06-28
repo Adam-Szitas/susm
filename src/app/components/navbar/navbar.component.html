@@ -1,13 +1,6 @@
 @if (isLoggedIn()) {
   <nav [class.mobile]="isMobile()">
     <div class="navbar-start">
-      <div class="mobile">
-        <i class="hamburger-menu" (click)="toggleMobileMenu()">
-          <svg viewBox="0 0 100 80" fill="white">
-            <path d="M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z" />
-          </svg>
-        </i>
-      </div>
       <a
         class="navbar-brand"
         routerLink="/dashboard"
@@ -16,6 +9,13 @@
       >
         <app-susm-logo />
       </a>
+      <div class="mobile">
+        <i class="hamburger-menu" (click)="toggleMobileMenu()">
+          <svg viewBox="0 0 100 80" fill="white">
+            <path d="M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z" />
+          </svg>
+        </i>
+      </div>
     </div>
     <div class="desktop">
       <ul>

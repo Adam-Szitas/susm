@@ -54,11 +54,11 @@
     type="button"
     class="add-icon floating-icon"
     (click)="newProject()"
-    [tabIndex]="2"
-    [attr.aria-label]="'objects.add' | translate"
+    [attr.aria-label]="'projects.addNew' | translate"
+    [attr.title]="'projects.addNew' | translate"
   >
-    <i class="add" role="button">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <span class="add" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path
           stroke="white"
           stroke-linecap="round"
@@ -67,6 +67,6 @@
           d="M12 5v14m-7-7h14"
         />
       </svg>
-    </i>
+    </span>
   </button>
 </div>

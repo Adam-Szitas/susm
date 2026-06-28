@@ -164,6 +164,23 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     return object.address?.house_number?.trim() ?? '';
   }
 
+  /** Non-empty label for object card headings (accessibility + file pickers). */
+  objectCardDisplayLabel(object: Object, compact = false): string {
+    const addressLabel = compact
+      ? this.objectCardMobileLabel(object) || this.objectCardHeadline(object)
+      : this.objectCardHeadline(object) || this.objectCardMobileLabel(object);
+    return (
+      addressLabel ||
+      object._id?.$oid ||
+      this.#translationService.instant('objects.newObject')
+    );
+  }
+
+  readonly projectDisplayName = computed(() => {
+    const name = this.project()?.name?.trim();
+    return name || '…';
+  });
+
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
 
   readonly projectObjectOptions = computed<ProjectObjectOption[]>(() =>
@@ -173,7 +190,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         if (!objectId) return null;
         return {
           objectId,
-          label: this.objectCardHeadline(object) || this.objectCardMobileLabel(object) || objectId,
+          label: this.objectCardDisplayLabel(object),
         };
       })
       .filter((row): row is ProjectObjectOption => row !== null),
