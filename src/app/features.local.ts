@@ -4,5 +4,5 @@
  */
 export const localFeatures = {
   /** Each object and file group starts on a new page in protocol preview and PDF (with TOC page links). */
-  protocolFileGroupOnNewPage: true,
+  protocolFileGroupOnNewPage: false,
 } as const;
