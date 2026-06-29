@@ -632,7 +632,7 @@ export class ProtocolGenerateModalComponent {
     this.#protocolService.downloadProtocol(request).subscribe({
       next: () => {
         if (saveToProject) {
-          this.#projectStore.loadProject(projectId);
+          this.#projectStore.loadProject(projectId).subscribe();
         }
         this.generating.set(false);
         this.#notificationService.showSuccess(

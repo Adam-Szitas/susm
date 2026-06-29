@@ -66,6 +66,8 @@ import {
 } from '../../shared/virtual-scroll-viewport.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
 import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
+import type { AppError } from '@services/error-handler.service';
+import { isMissingResource404 } from '../../../utils/auth-http-error';
 
 @Component({
   selector: 'app-project-tab',
@@ -326,7 +328,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         distinctUntilChanged(),
       )
       .subscribe((projectId) => {
-        this.#projectStore.loadProject(projectId);
+        this.#projectStore.loadProject(projectId).subscribe({
+          error: (error: AppError) => {
+            if (isMissingResource404(error)) {
+              void this.#router.navigate(['/projects']);
+            }
+          },
+        });
 
         this.#projectFilterKey = `project_${projectId}`;
         const restored = this.#filterPersistence.restore(this.#projectFilterKey);
@@ -531,7 +539,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       next: () => {
         this.#notificationService.showSuccess(this.#translationService.instant('protocol.deleted'));
         this.#projectStore.removeProtocolInstance(protocolId);
-        this.#projectStore.loadProject(projectId);
+        this.#projectStore.loadProject(projectId).subscribe();
       },
       error: (error) => {
         this.#notificationService.showError(
@@ -614,7 +622,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.#notificationService.showSuccess(
           this.#translationService.instant('objects.uploadSuccess'),
         );
-        this.#projectStore.loadProject(projectId);
+        this.#projectStore.loadProject(projectId).subscribe();
         this.uploading.set(false);
         this.uploadModalOpen.set(false);
         this.selectedFiles.set([]);
@@ -950,7 +958,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   onFileDeleted(): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (projectId) {
-      this.#projectStore.loadProject(projectId);
+      this.#projectStore.loadProject(projectId).subscribe();
     }
   }
 
@@ -977,7 +985,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.#notificationService.showSuccess(
           this.#translationService.instant('protocols.uploadPdfSuccess'),
         );
-        this.#projectStore.loadProject(projectId);
+        this.#projectStore.loadProject(projectId).subscribe();
         this.uploadingProtocolPdf.set(false);
       },
       error: (error) => {

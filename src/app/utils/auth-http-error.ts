@@ -79,3 +79,18 @@ export function shouldLogoutOnHttpError(err: HttpErrorResponse, requestUrl: stri
   }
   return false;
 }
+
+/** True when a 404 means the requested entity is gone (not an auth/session 404). */
+export function isMissingResource404(error: {
+  status?: number;
+  originalError?: unknown;
+}): boolean {
+  if (error.status !== 404) {
+    return false;
+  }
+  const original = error.originalError;
+  if (original instanceof HttpErrorResponse) {
+    return !responseIndicatesAuthSessionInvalid(original);
+  }
+  return true;
+}

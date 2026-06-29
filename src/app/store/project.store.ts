@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpService } from '../services/http.service';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, throwError } from 'rxjs';
+import type { AppError } from '../services/error-handler.service';
 import {
   Project,
   Object,
@@ -48,32 +49,16 @@ export class ProjectStore {
     this._project.set({ ...project, protocols: next });
   }
 
-  loadProject(id: string | null): void {
+  loadProject(id: string | null): Observable<Project> {
     if (!id) {
-      this._error.set('Project ID is required');
-      return;
+      const message = 'Project ID is required';
+      this._error.set(message);
+      return throwError(() => ({ message } satisfies AppError));
     }
 
     const requestId = ++this.#loadProjectRequestId;
     this._loading.set(true);
     this._error.set(null);
-
-    this.#httpService.get<Project>(`project/${id}`).subscribe({
-      next: (result) => {
-        if (requestId !== this.#loadProjectRequestId) {
-          return;
-        }
-        this._project.set(result);
-        this.loadObjects(requestId);
-      },
-      error: (error) => {
-        if (requestId !== this.#loadProjectRequestId) {
-          return;
-        }
-        this._error.set(error.message || 'Failed to load project');
-        this._loading.set(false);
-      },
-    });
 
     this.#httpService.get<ProjectFile[]>(`file/project/${id}`).subscribe({
       next: (files) => {
@@ -83,6 +68,25 @@ export class ProjectStore {
         this._files.set(files);
       },
     });
+
+    return this.#httpService.get<Project>(`project/${id}`).pipe(
+      tap({
+        next: (result) => {
+          if (requestId !== this.#loadProjectRequestId) {
+            return;
+          }
+          this._project.set(result);
+          this.loadObjects(requestId);
+        },
+        error: (error: AppError) => {
+          if (requestId !== this.#loadProjectRequestId) {
+            return;
+          }
+          this._error.set(error.message || 'Failed to load project');
+          this._loading.set(false);
+        },
+      }),
+    );
   }
 
   loadProjects(): void {

@@ -40,6 +40,7 @@ import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb
 import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.component';
 import { UserStore } from '@store/user.store';
 import type { AppError } from '@services/error-handler.service';
+import { isMissingResource404 } from '../../../utils/auth-http-error';
 import { filter, map } from 'rxjs';
 
 @Component({
@@ -193,8 +194,8 @@ export class ObjectTabComponent implements OnInit {
         this.#notificationService.showError(
           error.message || this.#translationService.instant('errors.loadObjectFailed'),
         );
-        if (error.status === 404) {
-          this.#router.navigate(['/objects']);
+        if (isMissingResource404(error)) {
+          void this.#router.navigate(['/objects']);
         }
       },
     });
