@@ -21,6 +21,7 @@ import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
 import { ProtocolPreviewComponent, ProtocolPreviewData } from './protocol-preview.component';
+import { features } from '../../features';
 import { ToggleSwitchComponent } from '../shared/toggle-switch.component';
 import { reorderTargetIdFromTouch } from '../../utils/touch-reorder';
 
@@ -450,6 +451,7 @@ export class ProtocolGenerateModalComponent {
       save_to_project: this.saveToProject(),
       custom_object_order: this.customObjectOrder(),
       include_checklists: this.includeChecklists(),
+      file_group_on_new_page: features.protocolFileGroupOnNewPage,
       ...(fgCats ? { file_group_categories: fgCats } : {}),
     };
   }

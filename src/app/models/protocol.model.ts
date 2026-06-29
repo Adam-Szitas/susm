@@ -73,4 +73,6 @@ export interface GenerateProtocolRequest {
   custom_object_order?: boolean;
   /** When false, project checklist sections are omitted from preview/PDF and TOC. */
   include_checklists?: boolean;
+  /** When true, each file group begins on a new protocol page. */
+  file_group_on_new_page?: boolean;
 }

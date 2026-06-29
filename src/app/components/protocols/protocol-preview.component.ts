@@ -23,6 +23,8 @@ export interface ProtocolPreviewFileGroup {
   note?: string;
   categories?: string[];
   images: ProtocolPreviewImage[];
+  /** When true, this group starts on a new PDF page (preview styling). */
+  page_break_before?: boolean;
 }
 
 export interface ProtocolPreviewTodoLine {
@@ -47,6 +49,8 @@ export interface ProtocolPreviewContentSection {
   object_address?: string;
   file_groups: ProtocolPreviewFileGroup[];
   ungrouped_images?: ProtocolPreviewImage[];
+  /** When true, this object section starts on a new PDF page (preview styling). */
+  page_break_before?: boolean;
 }
 
 export interface ProtocolPreviewData {
@@ -57,11 +61,12 @@ export interface ProtocolPreviewData {
   field_values?: ProtocolPreviewFieldValue[];
   project_name?: string;
   project_address: string;
-  table_of_contents: { title: string; level: number }[];
+  table_of_contents: { title: string; level: number; page?: number }[];
   content_sections: ProtocolPreviewContentSection[];
   todo_sections?: ProtocolPreviewTodoSection[];
   linked_previews?: (ProtocolPreviewData & { protocol_id?: string })[];
   generated_at?: string;
+  file_group_on_new_page?: boolean;
 }
 
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';

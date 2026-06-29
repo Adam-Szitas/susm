@@ -32,7 +32,10 @@
       <ul class="toc-list">
         @for (entry of data.table_of_contents; track $index) {
           <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
-            {{ entry.title }}
+            <span class="toc-title">{{ entry.title }}</span>
+            @if (entry.page != null) {
+              <span class="toc-page">{{ entry.page }}</span>
+            }
           </li>
         }
       </ul>
@@ -40,7 +43,10 @@
   }
 
   @for (section of data.content_sections; track $index) {
-    <div class="preview-section content-section">
+    <div
+      class="preview-section content-section"
+      [class.content-section--new-page]="section.page_break_before"
+    >
       @if (objectHeadline(section)) {
         <h3 class="object-headline">{{ objectHeadline(section) }}</h3>
       }
@@ -50,7 +56,7 @@
       }
 
       @for (group of section.file_groups; track $index) {
-        <div class="file-group">
+        <div class="file-group" [class.file-group--new-page]="group.page_break_before">
           @if (group.description) {
             <h4 class="group-description">{{ group.description }}</h4>
           }
@@ -162,7 +168,10 @@
             <ul class="toc-list">
               @for (entry of linked.table_of_contents; track $index) {
                 <li [class.level-1]="entry.level === 1" [class.level-2]="entry.level === 2">
-                  {{ entry.title }}
+                  <span class="toc-title">{{ entry.title }}</span>
+                  @if (entry.page != null) {
+                    <span class="toc-page">{{ entry.page }}</span>
+                  }
                 </li>
               }
             </ul>
@@ -171,7 +180,10 @@
 
         @if (linked.content_sections) {
           @for (section of linked.content_sections; track $index) {
-            <div class="preview-section content-section">
+            <div
+              class="preview-section content-section"
+              [class.content-section--new-page]="section.page_break_before"
+            >
               @if (objectHeadline(section)) {
                 <h3 class="object-headline">{{ objectHeadline(section) }}</h3>
               }
@@ -179,7 +191,7 @@
                 <p class="object-note">{{ section.object_note }}</p>
               }
               @for (group of section.file_groups; track $index) {
-                <div class="file-group">
+                <div class="file-group" [class.file-group--new-page]="group.page_break_before">
                   @if (group.description) {
                     <h4 class="group-description">{{ group.description }}</h4>
                   }
