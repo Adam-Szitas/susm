@@ -35,12 +35,21 @@ export class HttpService {
       .pipe(catchError((error) => this.handleError(error, url)));
   }
 
-  post<T>(url: string, body: unknown, postHeaders?: HttpHeaders): Observable<T> {
+  post<T>(
+    url: string,
+    body: unknown,
+    postHeaders?: HttpHeaders,
+    options?: { suppressErrorNotification?: boolean },
+  ): Observable<T> {
     const headers = postHeaders || new HttpHeaders({ 'Content-Type': 'application/json' });
 
     return this.#http
       .post<T>(`${this.apiUrl}/${url}`, body, { headers })
-      .pipe(catchError((error) => this.handleError(error, url)));
+      .pipe(
+        catchError((error) =>
+          this.handleError(error, url, options?.suppressErrorNotification),
+        ),
+      );
   }
 
   put<T>(url: string, body: unknown): Observable<T> {
@@ -57,8 +66,14 @@ export class HttpService {
       .pipe(catchError((error) => this.handleError(error, url)));
   }
 
-  private handleError(error: unknown, _url: string): Observable<never> {
-    const appError = this.#errorHandler.handleHttpError(error);
+  private handleError(
+    error: unknown,
+    _url: string,
+    suppressNotification = false,
+  ): Observable<never> {
+    const appError = this.#errorHandler.handleHttpError(error, {
+      notify: !suppressNotification,
+    });
     // Session expiry / auth invalid: logout is handled in AuthInterceptor (all HttpClient calls).
     return throwError(() => appError);
   }

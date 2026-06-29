@@ -18,23 +18,28 @@ export class ErrorHandlerService {
   /**
    * Handles HTTP errors and displays appropriate notifications
    */
-  handleHttpError(error: unknown): AppError {
+  handleHttpError(error: unknown, options?: { notify?: boolean }): AppError {
+    const notify = options?.notify !== false;
     if (error instanceof HttpErrorResponse) {
-      return this.handleHttpErrorResponse(error);
+      return this.handleHttpErrorResponse(error, notify);
     }
 
     if (error && typeof error === 'object' && 'message' in error) {
       const appError = error as AppError;
-      this.#notificationService.showError(appError.message);
+      if (notify) {
+        this.#notificationService.showError(appError.message);
+      }
       return appError;
     }
 
     const message = 'An unexpected error occurred';
-    this.#notificationService.showError(message);
+    if (notify) {
+      this.#notificationService.showError(message);
+    }
     return { message, originalError: error };
   }
 
-  private handleHttpErrorResponse(error: HttpErrorResponse): AppError {
+  private handleHttpErrorResponse(error: HttpErrorResponse, notify: boolean): AppError {
     let message = 'An unknown error occurred';
 
     if (error.error instanceof Error) {
@@ -55,21 +60,22 @@ export class ErrorHandlerService {
       url: error.url,
     });
 
-    // Show notification based on error type
-    const sessionLike =
-      error.status === 401 ||
-      (error.status === 404 && responseIndicatesAuthSessionInvalid(error)) ||
-      (error.status === 403 && responseIndicatesAuthSessionInvalid(error));
-    if (sessionLike) {
-      this.#notificationService.showError('Session expired. Please log in again.');
-    } else if (error.status === 403) {
-      this.#notificationService.showError('You do not have permission to perform this action.');
-    } else if (error.status === 404) {
-      this.#notificationService.showError('The requested resource was not found.');
-    } else if (error.status >= 500) {
-      this.#notificationService.showError('Server error. Please try again later.');
-    } else {
-      this.#notificationService.showError(message);
+    if (notify) {
+      const sessionLike =
+        error.status === 401 ||
+        (error.status === 404 && responseIndicatesAuthSessionInvalid(error)) ||
+        (error.status === 403 && responseIndicatesAuthSessionInvalid(error));
+      if (sessionLike) {
+        this.#notificationService.showError('Session expired. Please log in again.');
+      } else if (error.status === 403) {
+        this.#notificationService.showError('You do not have permission to perform this action.');
+      } else if (error.status === 404) {
+        this.#notificationService.showError('The requested resource was not found.');
+      } else if (error.status >= 500) {
+        this.#notificationService.showError('Server error. Please try again later.');
+      } else {
+        this.#notificationService.showError(message);
+      }
     }
 
     return {

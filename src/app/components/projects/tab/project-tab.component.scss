@@ -327,7 +327,7 @@
   max-width: 100%;
   min-width: 0;
   border: 1px solid #e5e5e5;
-  overflow: clip;
+  overflow: visible;
 
   .file-list-section-header {
     padding: 1rem 1.25rem;
@@ -343,6 +343,10 @@
     min-width: 0;
     max-width: 100%;
     overflow-x: clip;
+
+    @include mobile {
+      padding-bottom: 0.5rem;
+    }
 
     app-file-list {
       display: block;

@@ -1,9 +1,17 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import { Observable } from 'rxjs';
+import { Observable, defer, from, throwError, timer } from 'rxjs';
+import { catchError, concatMap, map, toArray } from 'rxjs/operators';
 import { FileUploadTarget, FileGroup, ProjectFile } from '../models/file.model';
 import { NotificationService } from './notification.service';
+import { ErrorHandlerService } from './error-handler.service';
 import { HttpHeaders } from '@angular/common/http';
+import type { AppError } from './error-handler.service';
+import {
+  isRetryableUploadError,
+  UPLOAD_MAX_ATTEMPTS,
+  uploadRetryDelayMs,
+} from '../utils/upload-retry';
 
 export interface FileWithContext {
   file: {
@@ -36,26 +44,31 @@ export interface PaginatedPicturesResponse {
   categories: string[];
 }
 
+export interface FileUploadMetadata {
+  description?: string;
+  note?: string;
+  categories?: string[];
+  groupId?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class FileService {
   #httpService = inject(HttpService);
   #notificationService = inject(NotificationService);
+  #errorHandler = inject(ErrorHandlerService);
 
   /**
-   * Uploads files for an object or project
-   * For objects: Creates a new file group
-   * For projects: Creates simple files without groups
-   * @param fileData - FormData containing the file(s)
-   * @param target - 'object' or 'project'
-   * @param id - The ID of the object or project
-   * @returns Observable with the upload result (array of uploaded file paths)
+   * Uploads files for an object or project.
+   * Project files and appends to an existing group are sent one file per request (smaller payloads, retries).
+   * New object groups keep a single multipart request so all photos land in one group.
    */
   uploadFile(
     fileData: FormData,
     target: FileUploadTarget = 'object',
-    id?: string
+    id?: string,
+    options?: { files?: globalThis.File[]; metadata?: FileUploadMetadata },
   ): Observable<string[]> {
     if (!id) {
       const errorMsg =
@@ -63,35 +76,111 @@ export class FileService {
           ? 'Project ID is required for project file upload'
           : 'Object ID is required for object file upload';
       this.#notificationService.showError(errorMsg);
-      throw new Error(errorMsg);
+      return throwError(() => new Error(errorMsg));
     }
 
     const endpoint = `file/${target}/${id}`;
-    // Don't set Content-Type header for FormData - browser will set it with boundary
-    const headers = new HttpHeaders();
-    return this.#httpService.post<string[]>(endpoint, fileData, headers);
+    const files = options?.files;
+    const metadata = options?.metadata;
+    const groupId = metadata?.groupId ?? fileData.get('group_id')?.toString();
+
+    if (files?.length && (target === 'project' || groupId)) {
+      return this.#uploadFilesSequentially(endpoint, files, metadata ?? {});
+    }
+
+    return this.#uploadWithRetry(() =>
+      this.#httpService.post<string[]>(endpoint, fileData, new HttpHeaders(), {
+        suppressErrorNotification: true,
+      }),
+    );
   }
 
-  /**
-   * Uploads files for an object. Without `groupId`, creates a new file group; with `groupId`,
-   * appends files to that existing group (multipart field `group_id`).
-   */
   uploadFileForObject(
     fileData: FormData,
     objectId: string,
-    options?: { groupId?: string },
+    options?: { groupId?: string; files?: globalThis.File[]; metadata?: FileUploadMetadata },
   ): Observable<string[]> {
+    const metadata: FileUploadMetadata = {
+      ...(options?.metadata ?? {}),
+      groupId: options?.groupId,
+    };
     if (options?.groupId) {
       fileData.append('group_id', options.groupId);
     }
-    return this.uploadFile(fileData, 'object', objectId);
+    return this.uploadFile(fileData, 'object', objectId, {
+      files: options?.files,
+      metadata,
+    });
   }
 
-  /**
-   * Uploads files for a project (simple file storage)
-   */
-  uploadFileForProject(fileData: FormData, projectId: string): Observable<string[]> {
-    return this.uploadFile(fileData, 'project', projectId);
+  uploadFileForProject(
+    fileData: FormData,
+    projectId: string,
+    files?: globalThis.File[],
+    metadata?: FileUploadMetadata,
+  ): Observable<string[]> {
+    return this.uploadFile(fileData, 'project', projectId, { files, metadata });
+  }
+
+  #uploadFilesSequentially(
+    endpoint: string,
+    files: globalThis.File[],
+    metadata: FileUploadMetadata,
+  ): Observable<string[]> {
+    return from(files).pipe(
+      concatMap((file) => {
+        const form = this.#buildSingleFileForm(file, metadata);
+        return this.#uploadWithRetry(() =>
+          this.#httpService.post<string[]>(endpoint, form, new HttpHeaders(), {
+            suppressErrorNotification: true,
+          }),
+        );
+      }),
+      toArray(),
+      map((batches) => batches.flat()),
+    );
+  }
+
+  #buildSingleFileForm(file: globalThis.File, metadata: FileUploadMetadata): FormData {
+    const form = new FormData();
+    form.append('avatar', file, file.name);
+    if (metadata.description) {
+      form.append('description', metadata.description);
+    }
+    if (metadata.note) {
+      form.append('note', metadata.note);
+    }
+    if (metadata.categories?.length) {
+      const unique = [...new Set(metadata.categories.map((c) => c.trim()).filter(Boolean))];
+      if (unique.length > 0) {
+        form.append('categories', JSON.stringify(unique));
+      }
+    }
+    if (metadata.groupId) {
+      form.append('group_id', metadata.groupId);
+    }
+    return form;
+  }
+
+  #uploadWithRetry<T>(request: () => Observable<T>): Observable<T> {
+    let attempt = 0;
+    const run = (): Observable<T> =>
+      defer(request).pipe(
+        catchError((error) => {
+          attempt += 1;
+          if (attempt < UPLOAD_MAX_ATTEMPTS && isRetryableUploadError(error)) {
+            return timer(uploadRetryDelayMs(attempt - 1)).pipe(concatMap(() => run()));
+          }
+          return throwError(() => error);
+        }),
+      );
+
+    return run().pipe(
+      catchError((error) => {
+        this.#errorHandler.handleHttpError(error, { notify: true });
+        return throwError(() => error as AppError);
+      }),
+    );
   }
 
   /**

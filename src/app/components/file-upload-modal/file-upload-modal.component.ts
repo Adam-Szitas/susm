@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+import { lockDocumentScroll, unlockDocumentScroll } from '@services/document-scroll-lock';
 
 interface FilePreview {
   file: globalThis.File;
@@ -24,6 +25,16 @@ export class FileUploadModalComponent {
   #imageCompressionService = inject(ImageCompressionService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+
+  constructor() {
+    effect((onCleanup) => {
+      if (!this.isOpen()) {
+        return;
+      }
+      lockDocumentScroll();
+      onCleanup(() => unlockDocumentScroll());
+    });
+  }
 
   isOpen = input<boolean>(false);
   files = input<globalThis.File[]>([]);

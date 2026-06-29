@@ -416,7 +416,12 @@ export class ObjectTabComponent implements OnInit {
       form.append('note', note);
     }
 
-    this.#fileService.uploadFileForObject(form, objectId).subscribe({
+    this.#fileService
+      .uploadFileForObject(form, objectId, {
+        files,
+        metadata: { description, note, categories },
+      })
+      .subscribe({
       next: () => {
         this.#notificationService.showSuccess(
           this.#translationService.instant('objects.uploadSuccess'),

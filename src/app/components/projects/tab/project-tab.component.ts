@@ -617,7 +617,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       form.append('note', note);
     }
 
-    this.#fileService.uploadFileForProject(form, projectId).subscribe({
+    this.#fileService
+      .uploadFileForProject(form, projectId, files, { description, note })
+      .subscribe({
       next: () => {
         this.#notificationService.showSuccess(
           this.#translationService.instant('objects.uploadSuccess'),
@@ -1075,10 +1077,11 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     const tabBarHeight = 48;
     const layoutGap = 12;
     const navbarHeight = this.#readNavbarHeightPx();
+    const fabClearance = this.#readFloatingActionClearancePx();
     const chromeHeight = chrome.getBoundingClientRect().height;
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
     const panelHeight = Math.round(
-      viewportHeight - navbarHeight - chromeHeight - tabBarHeight - layoutGap,
+      viewportHeight - navbarHeight - chromeHeight - tabBarHeight - layoutGap - fabClearance,
     );
 
     host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, 120)}px`);
@@ -1092,5 +1095,15 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (raw.endsWith('rem')) return parseFloat(raw) * 16;
     if (raw.endsWith('px')) return parseFloat(raw);
     return 56;
+  }
+
+  #readFloatingActionClearancePx(): number {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue('--app-floating-action-clearance')
+      .trim();
+    if (!raw) return 80;
+    if (raw.endsWith('rem')) return parseFloat(raw) * 16;
+    if (raw.endsWith('px')) return parseFloat(raw);
+    return 80;
   }
 }

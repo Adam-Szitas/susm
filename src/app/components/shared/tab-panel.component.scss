@@ -104,7 +104,11 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: var(--app-floating-action-clearance, 5rem);
+    padding-bottom: max(
+      var(--app-floating-action-clearance, 5rem),
+      calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
+    );
+    scroll-padding-bottom: var(--app-floating-action-clearance, 5rem);
   }
 
   @include tablet-up {

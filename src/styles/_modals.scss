@@ -43,9 +43,11 @@ body.modal-open .floating-icon {
 
   @include mobile {
     padding: 0.75rem;
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
-    align-items: center;
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -68,7 +70,11 @@ body.modal-open .floating-icon {
 
   @include mobile {
     max-width: 100%;
-    max-height: min(92vh, 92dvh);
+    max-height: min(
+      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+      92dvh
+    );
+    margin: auto 0;
     border-radius: 16px;
     animation: slideUp 0.3s ease-out;
   }
@@ -82,10 +88,16 @@ body.modal-open .floating-icon {
     }
 
     @include mobile {
-      max-height: min(92dvh, 92vh);
+      max-height: min(
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        92dvh
+      );
 
       &:has(.project-todo-form--assign) {
-        height: min(92dvh, 92vh);
+        height: min(
+          calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+          92dvh
+        );
       }
     }
   }

@@ -616,7 +616,10 @@ export class FileListComponent implements OnDestroy {
     });
 
     this.#fileService
-      .uploadFileForObject(form, objectId, { groupId })
+      .uploadFileForObject(form, objectId, {
+        groupId,
+        files,
+      })
       .pipe(finalize(() => this.groupPhotoUploading.set(false)))
       .subscribe({
         next: () => {
