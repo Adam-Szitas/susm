@@ -67,6 +67,10 @@ export interface ProtocolPreviewData {
   linked_previews?: (ProtocolPreviewData & { protocol_id?: string })[];
   generated_at?: string;
   file_group_on_new_page?: boolean;
+  /** Cover + TOC pages before object content (matches PDF). */
+  front_matter_pages?: number;
+  /** First object/content page number in the PDF. */
+  content_start_page?: number;
 }
 
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
