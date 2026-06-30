@@ -30,6 +30,7 @@ import { TabGroupComponent, TabItem } from '../shared/tab-group.component';
 import { TabPanelComponent } from '../shared/tab-panel.component';
 import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-panel.component';
 import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assignment-verify-panel.component';
+import { ProjectTodoChecklistObjectsPanelComponent } from './project-todo-checklist-objects-panel.component';
 
 @Component({
   selector: 'app-project-todo-modal',
@@ -43,6 +44,7 @@ import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assign
     TabPanelComponent,
     ProjectTodoAssignmentPanelComponent,
     ProjectTodoAssignmentVerifyPanelComponent,
+    ProjectTodoChecklistObjectsPanelComponent,
   ],
   templateUrl: './project-todo-modal.component.html',
   styleUrl: './project-todo-modal.component.scss',
@@ -65,7 +67,8 @@ export class ProjectTodoModalComponent implements OnInit {
   form: FormGroup;
   saving = signal(false);
   activeTab = signal<'items' | 'assign'>('items');
-  assignTabMode = signal<'assign' | 'verify'>('assign');
+  assignTabMode = signal<'assign' | 'verify' | 'checklistObjects'>('assign');
+  focusChecklistItem = signal<TodoItem | null>(null);
 
   readonly checklistTabs = computed<TabItem[]>(() => [
     {
@@ -258,6 +261,18 @@ export class ProjectTodoModalComponent implements OnInit {
   }
 
   onAssignmentsSaved(): void {
+    this.#cdr.markForCheck();
+  }
+
+  onViewObjectsForChecklist(item: TodoItem): void {
+    this.focusChecklistItem.set(item);
+    this.assignTabMode.set('checklistObjects');
+    this.#cdr.markForCheck();
+  }
+
+  onChecklistObjectsBack(): void {
+    this.assignTabMode.set('assign');
+    this.focusChecklistItem.set(null);
     this.#cdr.markForCheck();
   }
 }

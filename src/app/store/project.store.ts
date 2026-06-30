@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { HttpHeaders } from '@angular/common/http';
 import { HttpService } from '../services/http.service';
 import { Observable, tap, throwError } from 'rxjs';
 import type { AppError } from '../services/error-handler.service';
@@ -7,7 +8,9 @@ import {
   Object,
   ObjectWithProject,
   ProjectFile,
+  StreetPlan,
   TodoItem,
+  MapPin,
   ObjectTodoEntry,
   normalizeTodoItemStatus,
   todoEntrySubItemId,
@@ -397,6 +400,76 @@ export class ProjectStore {
         }
       }),
     );
+  }
+
+  /** Replace in-memory street plan after upload. */
+  setStreetPlan(plan: StreetPlan): void {
+    const project = this._project();
+    if (!project) return;
+    this._project.set({ ...project, street_plan: plan });
+  }
+
+  /** Merge an updated object (e.g. map pin) into project + objects signals. */
+  mergeUpdatedObject(updatedObject: Object): void {
+    const objectId = updatedObject._id?.$oid;
+    if (!objectId) return;
+
+    const project = this._project();
+    if (project?.objects) {
+      const index = project.objects.findIndex((o) => o._id?.$oid === objectId);
+      if (index !== -1) {
+        const objects = [...project.objects];
+        objects[index] = updatedObject;
+        this._project.set({ ...project, objects });
+      }
+    }
+
+    const objects = this._objects();
+    const objIndex = objects.findIndex((o) => o._id?.$oid === objectId);
+    if (objIndex !== -1) {
+      const next = [...objects];
+      next[objIndex] = updatedObject;
+      this._objects.set(next);
+    }
+  }
+
+  updateObjectMapPin(objectId: string, pin: MapPin | null): Observable<Object> {
+    const body = pin ? { x: pin.x, y: pin.y } : { clear: true };
+    return this.#httpService.put<Object>(`object/${objectId}/map-pin`, body).pipe(
+      tap((updated) => this.mergeUpdatedObject(updated)),
+    );
+  }
+
+  uploadStreetPlan(projectId: string, file: globalThis.File): Observable<StreetPlan> {
+    const form = new FormData();
+    form.append('avatar', file, file.name);
+    return this.#httpService
+      .post<StreetPlan>(`project/${projectId}/street-plan`, form, new HttpHeaders())
+      .pipe(tap((plan) => this.setStreetPlan(plan)));
+  }
+
+  /** Removes street plan image and clears all map pins on project objects. */
+  clearStreetPlan(projectId: string): Observable<{ message: string; pins_cleared?: number }> {
+    return this.#httpService
+      .delete<{ message: string; pins_cleared?: number }>(`project/${projectId}/street-plan`)
+      .pipe(
+        tap(() => {
+          const project = this._project();
+          const cleared = (obj: Object): Object => {
+            const next = { ...obj };
+            delete next.map_pin;
+            return next;
+          };
+          this._objects.set(this._objects().map(cleared));
+          if (project) {
+            this._project.set({
+              ...project,
+              street_plan: undefined,
+              objects: project.objects?.map(cleared),
+            });
+          }
+        }),
+      );
   }
 
   public toggleArchiveProject(projectId: string, archive: boolean, archive_comment?: string): Observable<Project> {

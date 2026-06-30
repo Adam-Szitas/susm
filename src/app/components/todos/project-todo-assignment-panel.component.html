@@ -120,28 +120,75 @@
         <ul class="checklist-assign-list">
           @for (item of sortedTodoItems(); track trackTodoItemId(item)) {
             <li class="checklist-assign-item">
-              <label class="checklist-assign-label">
-                <input
-                  type="checkbox"
-                  [checked]="isTodoAssignedForSelection(item)"
-                  [indeterminate]="isTodoIndeterminateForSelection(item)"
-                  (change)="toggleAssignmentForSelection(item, $any($event.target).checked)"
-                />
-                <span class="checklist-assign-text">
-                  <span class="checklist-assign-title">{{ item.title }}</span>
-                  @if (item.note?.trim()) {
-                    <span class="checklist-assign-note">({{ item.note }})</span>
-                  }
-                  @if (itemHasSubItems(item)) {
-                    <span class="checklist-assign-hint">{{ 'todos.includesSubItems' | translate }}</span>
-                  }
-                </span>
-              </label>
+              <div class="checklist-assign-row">
+                <label class="checklist-assign-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isTodoAssignedForSelection(item)"
+                    [indeterminate]="isTodoIndeterminateForSelection(item)"
+                    (change)="toggleAssignmentForSelection(item, $any($event.target).checked)"
+                  />
+                  <span class="checklist-assign-text">
+                    <span class="checklist-assign-title">{{ item.title }}</span>
+                    @if (item.note?.trim()) {
+                      <span class="checklist-assign-note">({{ item.note }})</span>
+                    }
+                    @if (itemHasSubItems(item)) {
+                      <span class="checklist-assign-hint">{{ 'todos.includesSubItems' | translate }}</span>
+                    }
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  class="checklist-view-objects-btn"
+                  (click)="viewObjectsForChecklist(item, $event)"
+                  [attr.aria-label]="
+                    'todos.viewAssignedObjects'
+                      | translate: { count: assignedObjectCount(item), title: item.title }
+                  "
+                  [title]="
+                    'todos.viewAssignedObjects'
+                      | translate: { count: assignedObjectCount(item), title: item.title }
+                  "
+                >
+                  <span class="checklist-view-objects-count">{{ assignedObjectCount(item) }}</span>
+                  <span class="checklist-view-objects-label">{{ 'todos.viewObjectsShort' | translate }}</span>
+                </button>
+              </div>
             </li>
           }
         </ul>
       } @else {
-        <p class="checklist-panel-empty">{{ 'todos.selectObjectToAssign' | translate }}</p>
+        <div class="checklist-browse">
+          <p class="checklist-browse-hint">{{ 'todos.checklistBrowseHint' | translate }}</p>
+          <ul class="checklist-browse-list">
+            @for (item of sortedTodoItems(); track trackTodoItemId(item)) {
+              <li class="checklist-browse-item">
+                <div class="checklist-browse-main">
+                  <span class="checklist-browse-title">{{ item.title }}</span>
+                  @if (item.note?.trim()) {
+                    <span class="checklist-browse-note">({{ item.note }})</span>
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="checklist-view-objects-btn"
+                  (click)="viewObjectsForChecklist(item, $event)"
+                  [attr.aria-label]="
+                    'todos.viewAssignedObjects'
+                      | translate: { count: assignedObjectCount(item), title: item.title }
+                  "
+                >
+                  <span class="checklist-view-objects-count">{{ assignedObjectCount(item) }}</span>
+                  <span class="checklist-view-objects-label">{{ 'todos.viewObjectsShort' | translate }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+          <p class="checklist-panel-empty checklist-panel-empty--browse">
+            {{ 'todos.selectObjectToAssign' | translate }}
+          </p>
+        </div>
       }
     </section>
   </div>

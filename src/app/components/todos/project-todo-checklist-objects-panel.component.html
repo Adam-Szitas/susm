@@ -1,0 +1,80 @@
+<div class="checklist-objects-form">
+  <header class="checklist-objects-header">
+    <button
+      type="button"
+      class="btn btn-secondary btn-small todo-action-btn checklist-objects-back"
+      (click)="back()"
+      [attr.aria-label]="'todos.checklistObjectsBack' | translate"
+      [title]="'todos.checklistObjectsBack' | translate"
+    >
+      <span class="todo-action-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M11 18l-6-6 6-6" />
+        </svg>
+      </span>
+      <span class="todo-action-label">{{ 'todos.checklistObjectsBack' | translate }}</span>
+    </button>
+
+    <div class="checklist-objects-heading">
+      <h2 class="checklist-objects-title">{{ todoItem().title }}</h2>
+      @if (todoItem().note?.trim()) {
+        <p class="checklist-objects-note">{{ todoItem().note }}</p>
+      }
+      <p class="checklist-objects-count">
+        {{ 'todos.checklistObjectsCount' | translate: { count: assignedObjects().length } }}
+      </p>
+    </div>
+  </header>
+
+  @if (assignedObjects().length === 0) {
+    <p class="checklist-objects-empty">{{ 'todos.checklistObjectsEmpty' | translate }}</p>
+  } @else {
+    <label class="search-label" for="checklistObjectSearch">
+      {{ 'todos.checklistObjectsSearch' | translate }}
+    </label>
+    <input
+      id="checklistObjectSearch"
+      type="search"
+      class="object-search"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      [placeholder]="'todos.searchObjects' | translate"
+    />
+
+    <ul class="checklist-objects-list">
+      @for (object of filteredObjects(); track object._id?.$oid) {
+        <li class="checklist-objects-row" [class.checklist-objects-row--saving]="isSaving(object)">
+          <span class="checklist-objects-label">{{ objectLabel(object) }}</span>
+          <app-todo-item-value-control
+            [item]="todoItem()"
+            [entries]="object.todo_entries ?? []"
+            [disabled]="isSaving(object)"
+            (entriesChange)="onEntriesChange(object, $event)"
+          />
+        </li>
+      }
+      @if (filteredObjects().length === 0) {
+        <li class="checklist-objects-empty">{{ 'todos.noObjectsMatchSearch' | translate }}</li>
+      }
+    </ul>
+  }
+
+  <footer class="form-actions">
+    <div class="form-actions-buttons">
+      <button
+        type="button"
+        class="btn btn-primary todo-action-btn"
+        (click)="back()"
+        [attr.aria-label]="'todos.checklistObjectsBack' | translate"
+        [title]="'todos.checklistObjectsBack' | translate"
+      >
+        <span class="todo-action-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M11 18l-6-6 6-6" />
+          </svg>
+        </span>
+        <span class="todo-action-label">{{ 'todos.checklistObjectsBack' | translate }}</span>
+      </button>
+    </div>
+  </footer>
+</div>

@@ -4,6 +4,12 @@ import { Object } from './object.model';
 import { ProtocolRecord } from './protocol.model';
 import { TodoItem } from './todo.model';
 
+/** Uploaded street plan image — interactive map for object pins. */
+export interface StreetPlan {
+  path: string;
+  updated_at?: string;
+}
+
 export interface Project {
   _id?: {
     $oid: string;
@@ -23,4 +29,5 @@ export interface Project {
   archive_comment?: string;
   deleted_at?: string;
   created_at?: string;
+  street_plan?: StreetPlan;
 }

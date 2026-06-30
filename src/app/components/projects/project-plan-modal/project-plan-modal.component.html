@@ -1,0 +1,243 @@
+@if (!hasPlan()) {
+  <section class="plan-upload">
+    <p class="plan-upload-lead">{{ 'projectPlan.uploadIntro' | translate }}</p>
+    <p class="plan-upload-hint">{{ 'projectPlan.uploadHint' | translate }}</p>
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      class="visually-hidden"
+      (change)="onPlanFileSelected($event)"
+    />
+    <button
+      type="button"
+      class="button button-primary"
+      (click)="triggerUpload()"
+      [disabled]="uploading()"
+    >
+      @if (uploading()) {
+        <span class="spinner"></span>
+        {{ 'common.loading' | translate }}
+      } @else {
+        {{ 'projectPlan.uploadPlan' | translate }}
+      }
+    </button>
+  </section>
+} @else {
+  <div class="plan-map-layout">
+    <aside class="plan-sidebar">
+      <p class="plan-sidebar-help">{{ 'projectPlan.sidebarHelp' | translate }}</p>
+      <p class="plan-sidebar-label">{{ 'projectPlan.pinObject' | translate }}</p>
+      <select
+        class="plan-object-select"
+        [ngModel]="pinTargetObjectId() ?? ''"
+        (ngModelChange)="onPinTargetChange($event)"
+      >
+        <option value="">{{ 'projectPlan.selectObject' | translate }}</option>
+        @for (object of unpinnedObjects(); track object._id?.$oid) {
+          <option [value]="object._id?.$oid">{{ objectLabel(object) }}</option>
+        }
+      </select>
+      @if (pinPlacementActive()) {
+        <p class="plan-sidebar-hint">{{ 'projectPlan.clickToPlacePin' | translate }}</p>
+        <button type="button" class="button button-outline plan-cancel-pin" (click)="clearPinTarget()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      }
+
+      @if (pinnedObjects().length > 0) {
+        <p class="plan-sidebar-label plan-sidebar-label--spaced">
+          {{ 'projectPlan.pinnedObjects' | translate }}
+        </p>
+        <ul class="plan-pinned-list">
+          @for (object of pinnedObjects(); track object._id?.$oid) {
+            <li class="plan-pinned-row">
+              <button
+                type="button"
+                class="plan-pinned-item"
+                [class.is-selected]="selectedPinObjectId() === object._id?.$oid"
+                (click)="togglePinMenu(object._id?.$oid ?? null)"
+              >
+                {{ objectLabel(object) }}
+              </button>
+              <button
+                type="button"
+                class="plan-pinned-unpin"
+                [attr.aria-label]="'projectPlan.removeFromPlan' | translate"
+                [title]="'projectPlan.removeFromPlan' | translate"
+                [disabled]="savingPin()"
+                (click)="removeFromPlan(object._id!.$oid!, $event)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="plan-sidebar-empty">{{ 'projectPlan.noPinnedYet' | translate }}</p>
+      }
+
+      <div class="plan-manage">
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          class="visually-hidden"
+          (change)="onPlanFileSelected($event)"
+        />
+        <button
+          type="button"
+          class="plan-manage-btn"
+          (click)="triggerUpload()"
+          [disabled]="uploading() || droppingPlan()"
+        >
+          {{ 'projectPlan.replacePlan' | translate }}
+        </button>
+        @if (!dropPlanConfirmOpen()) {
+          <button
+            type="button"
+            class="plan-drop-btn"
+            (click)="requestDropPlan()"
+            [disabled]="uploading() || droppingPlan()"
+          >
+            {{ 'projectPlan.dropPlan' | translate }}
+          </button>
+        } @else {
+          <div
+            class="plan-drop-confirm"
+            role="alertdialog"
+            aria-labelledby="plan-drop-confirm-title"
+            aria-describedby="plan-drop-confirm-desc"
+          >
+            <p id="plan-drop-confirm-title" class="plan-drop-confirm-title">
+              {{ 'projectPlan.dropPlanConfirmTitle' | translate }}
+            </p>
+            <p id="plan-drop-confirm-desc" class="plan-drop-confirm-desc">
+              {{ 'projectPlan.dropPlanConfirmMessage' | translate }}
+            </p>
+            <div class="plan-drop-confirm-actions">
+              <button
+                type="button"
+                class="plan-drop-cancel"
+                (click)="cancelDropPlan()"
+                [disabled]="droppingPlan()"
+              >
+                {{ 'common.cancel' | translate }}
+              </button>
+              <button
+                type="button"
+                class="plan-drop-confirm-btn"
+                (click)="confirmDropPlan()"
+                [disabled]="droppingPlan()"
+              >
+                @if (droppingPlan()) {
+                  {{ 'common.loading' | translate }}
+                } @else {
+                  {{ 'projectPlan.dropPlanConfirmAction' | translate }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <div class="plan-map-panel">
+      <div class="plan-zoom-toolbar">
+        <button type="button" class="button button-outline plan-zoom-btn" (click)="zoomOut()">−</button>
+        <button type="button" class="button button-outline plan-zoom-btn" (click)="resetView()">
+          {{ 'projectPlan.resetZoom' | translate }}
+        </button>
+        <button type="button" class="button button-outline plan-zoom-btn" (click)="zoomIn()">+</button>
+      </div>
+
+      @if (pinPlacementActive()) {
+        <p class="plan-placement-banner" role="status">
+          {{ 'projectPlan.placementBanner' | translate }}
+        </p>
+      }
+
+      <div
+        #planViewport
+        class="plan-viewport"
+        [class.plan-viewport--pin-mode]="pinPlacementActive()"
+        (pointerdown)="onViewportPointerDown($event)"
+        (pointermove)="onViewportPointerMove($event)"
+        (pointerup)="onViewportPointerUp($event)"
+        (pointercancel)="onViewportPointerUp($event)"
+        (wheel)="onWheel($event)"
+      >
+        <div class="plan-transform" [style.transform]="transformStyle()">
+          <div
+            class="plan-image-wrap"
+            [class.plan-image-wrap--pin-mode]="pinPlacementActive()"
+          >
+            <img
+              #planImage
+              class="plan-image"
+              [src]="planImageUrl()"
+              [alt]="'projectPlan.planImageAlt' | translate"
+              draggable="false"
+              (load)="onPlanImageLoad()"
+            />
+          </div>
+        </div>
+
+        <div class="plan-pin-overlay" aria-hidden="false">
+          @for (object of pinnedObjects(); track object._id?.$oid) {
+            @if (pinPixelPosition(object); as pos) {
+              <button
+                type="button"
+                class="plan-pin"
+                [class.is-selected]="selectedPinObjectId() === object._id?.$oid"
+                [style.left.px]="pos.x"
+                [style.top.px]="pos.y"
+                [attr.aria-expanded]="selectedPinObjectId() === object._id?.$oid"
+                [attr.aria-label]="objectLabel(object)"
+                (pointerdown)="onPinPointerDown($event, object._id!.$oid!)"
+              >
+                <span class="plan-pin-dot" aria-hidden="true"></span>
+              </button>
+            }
+          }
+          @if (selectedPinObject(); as menuObject) {
+            @if (menuPixelPosition(); as menuPos) {
+              <div
+                class="plan-pin-menu"
+                role="menu"
+                [style.left.px]="menuPos.x"
+                [style.top.px]="menuPos.y"
+                [attr.aria-label]="'projectPlan.pinActions' | translate"
+                (pointerdown)="$event.stopPropagation()"
+                (click)="$event.stopPropagation()"
+              >
+                <button
+                  type="button"
+                  class="plan-pin-open-btn"
+                  role="menuitem"
+                  (click)="openObject(menuObject._id!.$oid!, $event)"
+                >
+                  {{ 'projectPlan.openObject' | translate }}
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

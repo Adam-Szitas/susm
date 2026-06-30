@@ -3,6 +3,12 @@ import { ObjectAddress } from './user.model';
 import { WorkStatus } from './status.model';
 import { ObjectTodoEntry } from './todo.model';
 
+/** Position on the project street plan (percentages 0–100). */
+export interface MapPin {
+  x: number;
+  y: number;
+}
+
 export interface Object {
   _id?: {
     $oid: string;
@@ -22,6 +28,7 @@ export interface Object {
   /** User-defined order within the project (lower = earlier). Omitted until first reorder. */
   sort_order?: number;
   todo_entries?: ObjectTodoEntry[];
+  map_pin?: MapPin;
 }
 
 /** True when any object has a saved `sort_order`. */

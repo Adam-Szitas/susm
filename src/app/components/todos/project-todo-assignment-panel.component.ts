@@ -16,6 +16,7 @@ import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import {
   countAssignedTodoItems,
+  countObjectsAssignedToTodoItem,
   entriesForAssignedParent,
   entriesForUnassignedParent,
   hasSubItems,
@@ -56,6 +57,7 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
   saved = output<void>();
   cancelRequested = output<void>();
   verifyRequested = output<void>();
+  viewObjectsRequested = output<TodoItem>();
 
   readonly sortedTodoItems = computed(() => sortTodoItems(this.todoItems()));
   readonly sortedObjects = computed(() => sortObjectsByStoredOrder(this.objects()));
@@ -185,6 +187,16 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
 
   itemHasSubItems(item: TodoItem): boolean {
     return hasSubItems(item);
+  }
+
+  assignedObjectCount(item: TodoItem): number {
+    return countObjectsAssignedToTodoItem(this.sortedObjects(), todoItemId(item));
+  }
+
+  viewObjectsForChecklist(item: TodoItem, event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
+    this.viewObjectsRequested.emit(item);
   }
 
   isTodoAssignedForSelection(item: TodoItem): boolean {

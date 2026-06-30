@@ -49,6 +49,7 @@ import { ProtocolService } from '@services/protocol.service';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
+import { ProjectPlanModalComponent } from '../project-plan-modal/project-plan-modal.component';
 import { UserStore } from '@store/user.store';
 import { LocaleDatePipe } from '../../../pipes/locale-date.pipe';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
@@ -430,6 +431,18 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         todoItems: project.todo_items || [],
         objects: this.sortedObjects(),
       },
+      wide: true,
+    });
+  }
+
+  openStreetPlan(): void {
+    const projectId = this.#route.snapshot.paramMap.get('id');
+    if (!projectId) return;
+
+    this.#modalService.open({
+      title: 'projectPlan.title',
+      component: ProjectPlanModalComponent,
+      componentInputs: { projectId },
       wide: true,
     });
   }

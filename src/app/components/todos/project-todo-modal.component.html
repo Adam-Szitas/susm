@@ -131,6 +131,12 @@
             [embedded]="true"
             (backRequested)="assignTabMode.set('assign')"
           />
+        } @else if (assignTabMode() === 'checklistObjects' && focusChecklistItem(); as checklistItem) {
+          <app-project-todo-checklist-objects-panel
+            [todoItem]="checklistItem"
+            [objects]="objects()"
+            (backRequested)="onChecklistObjectsBack()"
+          />
         } @else {
           <app-project-todo-assignment-panel
             [todoItems]="savedTodoItems()"
@@ -138,6 +144,7 @@
             [embedded]="true"
             (saved)="onAssignmentsSaved()"
             (verifyRequested)="assignTabMode.set('verify')"
+            (viewObjectsRequested)="onViewObjectsForChecklist($event)"
           />
         }
       }

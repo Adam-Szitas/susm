@@ -1,0 +1,36 @@
+@if (!itemHasSubItems(item())) {
+  <select
+    class="status-select"
+    [class.status-select--finished]="itemStatus(item()) === 'finished'"
+    [class.status-select--under-process]="itemStatus(item()) === 'under_process'"
+    [ngModel]="itemStatus(item()) ?? 'under_process'"
+    [disabled]="disabled()"
+    [attr.aria-label]="'todos.status' | translate"
+    (ngModelChange)="setStatus(item(), $event)"
+  >
+    <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
+    <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
+  </select>
+} @else {
+  <div class="sub-item-select-wrap">
+    <span
+      class="color-dot color-dot--{{ selectedSubColor(item()) }}"
+      aria-hidden="true"
+    ></span>
+    <select
+      class="status-select status-select--sub"
+      [class.status-select--sub-red]="selectedSubColor(item()) === 'red'"
+      [class.status-select--sub-blue]="selectedSubColor(item()) === 'blue'"
+      [class.status-select--sub-green]="selectedSubColor(item()) === 'green'"
+      [class.status-select--sub-orange]="selectedSubColor(item()) === 'orange'"
+      [ngModel]="selectedSubItemId(item()) ?? ''"
+      [disabled]="disabled()"
+      [attr.aria-label]="'todos.selectSubItem' | translate"
+      (ngModelChange)="setSelectedSubItem(item(), $event)"
+    >
+      @for (sub of subItems(item()); track todoSubItemId(sub)) {
+        <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>
+      }
+    </select>
+  </div>
+}
