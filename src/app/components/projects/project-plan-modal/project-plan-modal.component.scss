@@ -312,6 +312,9 @@
   overflow: hidden;
   background: #eef0f2;
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   cursor: grab;
 
   &--pin-mode {

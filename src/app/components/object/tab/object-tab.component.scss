@@ -125,6 +125,17 @@
   @include details-summary;
 }
 
+.object-plan-pin-flag {
+  margin: 0.45rem 0 0;
+}
+
+.object-plan-pin-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  color: var(--primary-default, #9d0000);
+}
+
 .object-details-body {
   margin-top: 0.65rem;
 }

@@ -36,12 +36,32 @@ interface ActivePointer {
   objectId: string;
 }
 
+interface TrackedPointer {
+  x: number;
+  y: number;
+}
+
+interface PinchSession {
+  pointerIds: [number, number];
+  startDistance: number;
+  startScale: number;
+  startTx: number;
+  startTy: number;
+  startMidX: number;
+  startMidY: number;
+  viewportCenterX: number;
+  viewportCenterY: number;
+}
+
 interface PinPixelPoint {
   x: number;
   y: number;
 }
 
 const MOVE_THRESHOLD_PX = 8;
+const MIN_PINCH_DISTANCE_PX = 12;
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 4;
 
 @Component({
   selector: 'app-project-plan-modal',
@@ -84,6 +104,9 @@ export class ProjectPlanModalComponent {
   dragPreviewPosition = signal<(PinPixelPoint & { objectId: string }) | null>(null);
 
   #activePointer: ActivePointer | null = null;
+  #trackedPointers = new Map<number, TrackedPointer>();
+  #pinchSession: PinchSession | null = null;
+  #touchMoveCleanup: (() => void) | null = null;
 
   streetPlan = computed(() => this.#projectStore.project()?.street_plan ?? null);
   objects = computed(() => sortObjectsByStoredOrder(this.#projectStore.objects()));
@@ -142,7 +165,24 @@ export class ProjectPlanModalComponent {
       this.#resizeObserver?.disconnect();
       this.#resizeObserver = new ResizeObserver(() => this.#scheduleOverlayLayout());
       this.#resizeObserver.observe(viewport);
-      return () => this.#resizeObserver?.disconnect();
+
+      this.#touchMoveCleanup?.();
+      const onTouchMove = (event: TouchEvent) => {
+        if (this.pinPlacementActive()) {
+          return;
+        }
+        if (event.touches.length >= 2 || this.#pinchSession) {
+          event.preventDefault();
+        }
+      };
+      viewport.addEventListener('touchmove', onTouchMove, { passive: false });
+      this.#touchMoveCleanup = () => viewport.removeEventListener('touchmove', onTouchMove);
+
+      return () => {
+        this.#resizeObserver?.disconnect();
+        this.#touchMoveCleanup?.();
+        this.#touchMoveCleanup = null;
+      };
     });
   }
 
@@ -277,7 +317,7 @@ export class ProjectPlanModalComponent {
   }
 
   onViewportPointerDown(event: PointerEvent): void {
-    if (event.button !== 0) {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
     if ((event.target as HTMLElement).closest('.plan-pin')) {
@@ -292,26 +332,71 @@ export class ProjectPlanModalComponent {
       return;
     }
 
-    this.closePinMenu();
-    const pinTarget = this.pinTargetObjectId();
+    this.#trackedPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
+    if (this.pinPlacementActive()) {
+      if (this.#trackedPointers.size > 1) {
+        this.#trackedPointers.delete(event.pointerId);
+        return;
+      }
+      this.closePinMenu();
+      this.#activePointer = {
+        mode: 'place-pin',
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startTx: this.translateX(),
+        startTy: this.translateY(),
+        objectId: this.pinTargetObjectId() ?? '',
+      };
+      viewport.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      return;
+    }
+
+    if (this.#trackedPointers.size === 2) {
+      this.#cancelSinglePointerInteraction(viewport);
+      if (this.#startPinchSession()) {
+        event.preventDefault();
+      }
+      return;
+    }
+
+    if (this.#trackedPointers.size > 2) {
+      event.preventDefault();
+      return;
+    }
+
+    this.closePinMenu();
     this.#activePointer = {
-      mode: pinTarget ? 'place-pin' : 'pan',
+      mode: 'pan',
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       startTx: this.translateX(),
       startTy: this.translateY(),
-      objectId: pinTarget ?? '',
+      objectId: '',
     };
-
-    viewport.setPointerCapture(event.pointerId);
-    if (pinTarget) {
-      event.preventDefault();
-    }
   }
 
   onViewportPointerMove(event: PointerEvent): void {
+    this.#trackedPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (
+      !this.#pinchSession &&
+      !this.pinPlacementActive() &&
+      this.#trackedPointers.size >= 2
+    ) {
+      this.#cancelSinglePointerInteraction(this.planViewport()?.nativeElement ?? document.body);
+      this.#startPinchSession();
+    }
+
+    if (this.#pinchSession) {
+      this.#updatePinch();
+      event.preventDefault();
+      return;
+    }
+
     const active = this.#activePointer;
     if (!active || active.pointerId !== event.pointerId) {
       return;
@@ -345,11 +430,28 @@ export class ProjectPlanModalComponent {
 
     const dx = event.clientX - active.startX;
     const dy = event.clientY - active.startY;
+    if (Math.hypot(dx, dy) > MOVE_THRESHOLD_PX) {
+      const viewport = this.planViewport()?.nativeElement;
+      viewport?.setPointerCapture(event.pointerId);
+    }
     this.translateX.set(active.startTx + dx);
     this.translateY.set(active.startTy + dy);
   }
 
   onViewportPointerUp(event: PointerEvent): void {
+    this.#trackedPointers.delete(event.pointerId);
+
+    if (this.#pinchSession) {
+      const [idA, idB] = this.#pinchSession.pointerIds;
+      if (!this.#trackedPointers.has(idA) || !this.#trackedPointers.has(idB)) {
+        this.#pinchSession = null;
+      }
+      if (this.#pinchSession) {
+        event.preventDefault();
+        return;
+      }
+    }
+
     const active = this.#activePointer;
     if (!active || active.pointerId !== event.pointerId) {
       return;
@@ -384,11 +486,13 @@ export class ProjectPlanModalComponent {
   }
 
   onPinPointerDown(event: PointerEvent, objectId: string): void {
-    if (event.button !== 0) {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
     event.stopPropagation();
 
+    this.#pinchSession = null;
+    this.#trackedPointers.clear();
     this.pinTargetObjectId.set(null);
 
     this.#activePointer = {
@@ -460,17 +564,19 @@ export class ProjectPlanModalComponent {
   }
 
   zoomIn(): void {
-    this.scale.update((s) => Math.min(4, +(s + 0.25).toFixed(2)));
+    this.scale.update((s) => Math.min(MAX_SCALE, +(s + 0.25).toFixed(2)));
   }
 
   zoomOut(): void {
-    this.scale.update((s) => Math.max(0.5, +(s - 0.25).toFixed(2)));
+    this.scale.update((s) => Math.max(MIN_SCALE, +(s - 0.25).toFixed(2)));
   }
 
   resetView(): void {
     this.scale.set(1);
     this.translateX.set(0);
     this.translateY.set(0);
+    this.#pinchSession = null;
+    this.#trackedPointers.clear();
   }
 
   onWheel(event: WheelEvent): void {
@@ -479,7 +585,84 @@ export class ProjectPlanModalComponent {
     }
     event.preventDefault();
     const delta = event.deltaY > 0 ? -0.15 : 0.15;
-    this.scale.update((s) => Math.min(4, Math.max(0.5, +(s + delta).toFixed(2))));
+    this.scale.update((s) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, +(s + delta).toFixed(2))));
+  }
+
+  #cancelSinglePointerInteraction(viewport: HTMLElement): void {
+    if (this.#activePointer) {
+      try {
+        viewport.releasePointerCapture(this.#activePointer.pointerId);
+      } catch {
+        // Pointer may already be released.
+      }
+    }
+    this.#activePointer = null;
+    this.dragPreviewPosition.set(null);
+  }
+
+  #startPinchSession(): boolean {
+    const ids = [...this.#trackedPointers.keys()];
+    if (ids.length < 2) {
+      return false;
+    }
+    const p1 = this.#trackedPointers.get(ids[0]);
+    const p2 = this.#trackedPointers.get(ids[1]);
+    const viewport = this.planViewport()?.nativeElement;
+    if (!p1 || !p2 || !viewport) {
+      return false;
+    }
+
+    const distance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    if (distance < MIN_PINCH_DISTANCE_PX) {
+      return false;
+    }
+
+    const rect = viewport.getBoundingClientRect();
+    this.closePinMenu();
+    this.#pinchSession = {
+      pointerIds: [ids[0], ids[1]],
+      startDistance: distance,
+      startScale: this.scale(),
+      startTx: this.translateX(),
+      startTy: this.translateY(),
+      startMidX: (p1.x + p2.x) / 2,
+      startMidY: (p1.y + p2.y) / 2,
+      viewportCenterX: rect.left + rect.width / 2,
+      viewportCenterY: rect.top + rect.height / 2,
+    };
+    return true;
+  }
+
+  #updatePinch(): void {
+    const session = this.#pinchSession;
+    if (!session) {
+      return;
+    }
+
+    const p1 = this.#trackedPointers.get(session.pointerIds[0]);
+    const p2 = this.#trackedPointers.get(session.pointerIds[1]);
+    if (!p1 || !p2) {
+      return;
+    }
+
+    const distance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    if (distance < 1) {
+      return;
+    }
+
+    const ratio = distance / session.startDistance;
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, +(session.startScale * ratio).toFixed(3)));
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+    const midDx = midX - session.startMidX;
+    const midDy = midY - session.startMidY;
+    const focalOffsetX = session.startMidX - session.viewportCenterX;
+    const focalOffsetY = session.startMidY - session.viewportCenterY;
+    const scaleRatio = newScale / session.startScale;
+
+    this.scale.set(newScale);
+    this.translateX.set(+(session.startTx + midDx + focalOffsetX * (1 - scaleRatio)).toFixed(2));
+    this.translateY.set(+(session.startTy + midDy + focalOffsetY * (1 - scaleRatio)).toFixed(2));
   }
 
   #scheduleOverlayLayout(): void {

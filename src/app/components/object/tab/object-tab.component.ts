@@ -126,6 +126,8 @@ export class ObjectTabComponent implements OnInit {
     return [a.house_number, a.level, a.door_number].filter((p) => !!p?.trim()).join(', ');
   });
 
+  readonly isPinnedOnPlan = computed(() => !!this.object()?.map_pin);
+
   readonly hasAssignedChecklist = computed(() => {
     const entries = this.object()?.todo_entries ?? [];
     const items = this.projectTodoItems();

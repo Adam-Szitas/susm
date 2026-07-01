@@ -26,4 +26,13 @@
     background: transparent;
     border: none;
   }
+
+  &--plan-pin {
+    gap: 0.35rem;
+    color: #374151;
+    background: #f0f4f8;
+    border-color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
 }
