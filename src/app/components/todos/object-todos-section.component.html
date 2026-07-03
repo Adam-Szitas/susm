@@ -83,10 +83,15 @@
                       [ngModel]="itemStatus(item) ?? 'under_process'"
                       [disabled]="saving()"
                       [attr.aria-label]="'todos.status' | translate"
+                      [attr.title]="selectedStatusTitle(item)"
                       (ngModelChange)="setStatus(item, $event)"
                     >
-                      <option value="under_process">{{ 'todos.statusUnderProcess' | translate }}</option>
-                      <option value="finished">{{ 'todos.statusFinished' | translate }}</option>
+                      <option value="under_process">
+                        {{ truncateSelectLabel('todos.statusUnderProcess' | translate) }}
+                      </option>
+                      <option value="finished">
+                        {{ truncateSelectLabel('todos.statusFinished' | translate) }}
+                      </option>
                     </select>
                   } @else {
                     <div class="sub-item-select-wrap">
@@ -103,10 +108,13 @@
                         [ngModel]="selectedSubItemId(item) ?? ''"
                         [disabled]="saving()"
                         [attr.aria-label]="'todos.selectSubItem' | translate"
+                        [attr.title]="selectedSubItemTitle(item)"
                         (ngModelChange)="setSelectedSubItem(item, $event)"
                       >
                         @for (sub of subItems(item); track todoSubItemId(sub)) {
-                          <option [value]="todoSubItemId(sub)">{{ sub.title }}</option>
+                          <option [value]="todoSubItemId(sub)" [attr.title]="sub.title">
+                            {{ truncateSelectLabel(sub.title) }}
+                          </option>
                         }
                       </select>
                     </div>

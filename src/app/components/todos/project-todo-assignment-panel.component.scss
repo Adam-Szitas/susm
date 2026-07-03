@@ -128,6 +128,11 @@
     background: rgba(157, 0, 0, 0.09);
   }
 
+  &--dirty:not(&--selected) {
+    border-color: rgba(157, 0, 0, 0.35);
+    background: rgba(157, 0, 0, 0.04);
+  }
+
   &--dirty .object-list-item-label {
     font-weight: 600;
   }
@@ -163,6 +168,10 @@
   height: 0.45rem;
   border-radius: 999px;
   background: var(--primary-default, #9d0000);
+  flex-shrink: 0;
+}
+
+.unsaved-flag {
   flex-shrink: 0;
 }
 

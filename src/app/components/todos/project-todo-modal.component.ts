@@ -28,6 +28,7 @@ import {
 import { TrashIconComponent } from '../shared/trash-icon.component';
 import { TabGroupComponent, TabItem } from '../shared/tab-group.component';
 import { TabPanelComponent } from '../shared/tab-panel.component';
+import { ProjectTodoAssignToChecklistsPanelComponent } from './project-todo-assign-to-checklists-panel.component';
 import { ProjectTodoAssignmentPanelComponent } from './project-todo-assignment-panel.component';
 import { ProjectTodoAssignmentVerifyPanelComponent } from './project-todo-assignment-verify-panel.component';
 import { ProjectTodoChecklistObjectsPanelComponent } from './project-todo-checklist-objects-panel.component';
@@ -42,6 +43,7 @@ import { ProjectTodoChecklistObjectsPanelComponent } from './project-todo-checkl
     TrashIconComponent,
     TabGroupComponent,
     TabPanelComponent,
+    ProjectTodoAssignToChecklistsPanelComponent,
     ProjectTodoAssignmentPanelComponent,
     ProjectTodoAssignmentVerifyPanelComponent,
     ProjectTodoChecklistObjectsPanelComponent,
@@ -66,11 +68,16 @@ export class ProjectTodoModalComponent implements OnInit {
 
   form: FormGroup;
   saving = signal(false);
-  activeTab = signal<'items' | 'assign'>('items');
+  activeTab = signal<'items' | 'assign' | 'assignChecklists'>('items');
   assignTabMode = signal<'assign' | 'verify' | 'checklistObjects'>('assign');
   focusChecklistItem = signal<TodoItem | null>(null);
 
   readonly checklistTabs = computed<TabItem[]>(() => [
+    {
+      id: 'assignChecklists',
+      label: this.#translationService.instant('todos.assignToChecklists'),
+      disabled: !this.canAssign(),
+    },
     {
       id: 'assign',
       label: this.#translationService.instant('todos.assignToObjects'),
@@ -99,7 +106,7 @@ export class ProjectTodoModalComponent implements OnInit {
     if (items?.length) {
       items.forEach((item) => this.itemsArray.push(this.createItemGroup(item)));
     }
-    this.activeTab.set(this.canAssign() ? 'assign' : 'items');
+    this.activeTab.set(this.canAssign() ? 'assignChecklists' : 'items');
   }
 
   subItemsArray(itemIndex: number): FormArray {
@@ -224,7 +231,7 @@ export class ProjectTodoModalComponent implements OnInit {
         );
         this.saving.set(false);
         if (this.canAssign()) {
-          this.activeTab.set('assign');
+          this.activeTab.set('assignChecklists');
           this.#cdr.markForCheck();
         } else {
           this.#modalService.close();
@@ -243,8 +250,8 @@ export class ProjectTodoModalComponent implements OnInit {
     this.#modalService.close();
   }
 
-  setTab(tab: 'items' | 'assign'): void {
-    if (tab === 'assign' && !this.canAssign()) {
+  setTab(tab: 'items' | 'assign' | 'assignChecklists'): void {
+    if ((tab === 'assign' || tab === 'assignChecklists') && !this.canAssign()) {
       this.#notificationService.showError(
         this.#translationService.instant(
           this.savedTodoItems().length ? 'todos.noObjectsToAssign' : 'todos.saveItemsBeforeAssign',
@@ -257,7 +264,7 @@ export class ProjectTodoModalComponent implements OnInit {
   }
 
   onChecklistTabIdChange(tabId: string): void {
-    this.setTab(tabId as 'items' | 'assign');
+    this.setTab(tabId as 'items' | 'assign' | 'assignChecklists');
     this.#cdr.markForCheck();
   }
 

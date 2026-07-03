@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   input,
   output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { truncateSelectLabel } from '../../utils/truncate-select-label';
 import {
   getObjectTodoStatus,
   getSelectedSubItem,
@@ -35,6 +37,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TodoItemValueControlComponent {
+  #translationService = inject(TranslateService);
+
   item = input.required<TodoItem>();
   entries = input.required<ObjectTodoEntry[]>();
   disabled = input(false);
@@ -42,6 +46,23 @@ export class TodoItemValueControlComponent {
   entriesChange = output<ObjectTodoEntry[]>();
 
   readonly todoSubItemId = todoSubItemId;
+  readonly truncateSelectLabel = truncateSelectLabel;
+
+  statusLabel(status: TodoItemStatus): string {
+    return status === 'finished'
+      ? this.#translationService.instant('todos.statusFinished')
+      : this.#translationService.instant('todos.statusUnderProcess');
+  }
+
+  selectedSubItemTitle(item: TodoItem): string {
+    const sub = getSelectedSubItem(this.entries(), item);
+    return sub?.title?.trim() ?? '';
+  }
+
+  selectedStatusTitle(item: TodoItem): string {
+    const status = this.itemStatus(item);
+    return status ? this.statusLabel(status) : '';
+  }
 
   itemHasSubItems(item: TodoItem): boolean {
     return hasSubItems(item);

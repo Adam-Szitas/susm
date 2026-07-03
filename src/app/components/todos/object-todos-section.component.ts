@@ -36,6 +36,7 @@ import {
 import { ProjectStore } from '@store/project.store';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { truncateSelectLabel } from '../../utils/truncate-select-label';
 
 @Component({
   selector: 'app-object-todos-section',
@@ -74,6 +75,7 @@ export class ObjectTodosSectionComponent {
 
   readonly todoItemId = todoItemId;
   readonly todoSubItemId = todoSubItemId;
+  readonly truncateSelectLabel = truncateSelectLabel;
 
   constructor() {
     effect(() => {
@@ -104,6 +106,22 @@ export class ObjectTodosSectionComponent {
     const title = item.title?.trim() ?? '';
     const note = item.note?.trim();
     return note ? `${title} (${note})` : title;
+  }
+
+  statusLabel(status: TodoItemStatus): string {
+    return status === 'finished'
+      ? this.#translationService.instant('todos.statusFinished')
+      : this.#translationService.instant('todos.statusUnderProcess');
+  }
+
+  selectedSubItemTitle(item: TodoItem): string {
+    const sub = getSelectedSubItem(this.#activeEntries(), item);
+    return sub?.title?.trim() ?? '';
+  }
+
+  selectedStatusTitle(item: TodoItem): string {
+    const status = this.itemStatus(item);
+    return status ? this.statusLabel(status) : '';
   }
 
   itemStatus(item: TodoItem): TodoItemStatus | null {

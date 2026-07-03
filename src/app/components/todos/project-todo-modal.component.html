@@ -1,6 +1,9 @@
 <div
   class="project-todo-form"
-  [class.project-todo-form--assign]="checklistTabGroup.activeTabId() === 'assign'"
+  [class.project-todo-form--assign]="
+    checklistTabGroup.activeTabId() === 'assign' ||
+    checklistTabGroup.activeTabId() === 'assignChecklists'
+  "
 >
   <app-tab-group
     #checklistTabGroup
@@ -10,6 +13,21 @@
     [activeTabId]="activeTab()"
     (activeTabIdChange)="onChecklistTabIdChange($event)"
   >
+    <app-tab-panel id="assignChecklists">
+      @if (checklistTabGroup.activeTabId() === 'assignChecklists') {
+        @if (!canAssign()) {
+          <p class="empty-message">{{ 'todos.saveItemsBeforeAssign' | translate }}</p>
+        } @else {
+          <app-project-todo-assign-to-checklists-panel
+            [todoItems]="savedTodoItems()"
+            [objects]="objects()"
+            [embedded]="true"
+            (saved)="onAssignmentsSaved()"
+          />
+        }
+      }
+    </app-tab-panel>
+
     <app-tab-panel id="assign">
       @if (checklistTabGroup.activeTabId() === 'assign') {
         @if (!canAssign()) {

@@ -1,0 +1,440 @@
+@use '../../../styles/mixins' as *;
+@use './todo-assignment-mobile';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.todo-checklist-first-form {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+
+  .todo-action-label {
+    display: none;
+  }
+
+  .todo-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      @include icon-size(var(--icon-size-compact));
+    }
+  }
+
+  .todo-action-btn {
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
+    padding: 0.5rem !important;
+    margin: 0;
+  }
+}
+
+:host-context(.project-todo-form--assign) .todo-checklist-first-form {
+  height: 100%;
+}
+
+.assignment-layout {
+  display: grid;
+  grid-template-columns: minmax(11rem, 34%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 1rem;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+
+  > * {
+    min-height: 0;
+    min-width: 0;
+  }
+}
+
+.checklist-select-panel,
+.object-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fafafa;
+}
+
+.panel-toolbar,
+.object-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.panel-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.search-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.panel-search {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.checklist-select-list,
+.object-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.checklist-select-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  width: 100%;
+  margin: 0 0 0.3rem;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+
+  &:hover {
+    border-color: #ddd;
+  }
+
+  &--selected {
+    border-color: rgba(157, 0, 0, 0.35);
+    background: rgba(157, 0, 0, 0.04);
+  }
+}
+
+.checklist-select-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.1rem;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--primary-default, #9d0000);
+
+  svg {
+    @include icon-size(0.75rem);
+  }
+}
+
+.checklist-select-item--selected .checklist-select-checkbox {
+  border-color: var(--primary-default, #9d0000);
+  background: rgba(157, 0, 0, 0.08);
+}
+
+.checklist-select-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.checklist-select-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1f2937;
+}
+
+.checklist-select-note {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.object-detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 1rem;
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.4;
+  }
+}
+
+.object-detail-card {
+  margin: 0 0 0.45rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  background: #fff;
+  justify-content: space-between;
+
+  &--dirty {
+    border-color: rgba(157, 0, 0, 0.4);
+    box-shadow: inset 0 0 0 1px rgba(157, 0, 0, 0.12);
+  }
+
+  &.card--todo-complete {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &.card--todo-attention {
+    background: #fff8e1;
+    border-color: #ffe082;
+  }
+
+  &.card--todo-sub-red {
+    background: #ffebee;
+    border-color: #ef9a9a;
+  }
+
+  &.card--todo-sub-blue {
+    background: #e3f2fd;
+    border-color: #90caf9;
+  }
+
+  &.card--todo-sub-green {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &.card--todo-sub-orange {
+    background: #fff3e0;
+    border-color: #ffcc80;
+  }
+}
+
+.object-detail-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.object-detail-card-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1f2937;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.object-checklist-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.object-checklist-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 9.5rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid #f0f0f0;
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .object-checklist-assign {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  app-todo-item-value-control {
+    grid-column: 2;
+    justify-self: end;
+    width: 100%;
+    max-width: 9.5rem;
+  }
+}
+
+.object-checklist-assign {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.object-checklist-checkbox {
+  flex-shrink: 0;
+  margin: 0;
+  accent-color: var(--primary-default, #9d0000);
+}
+
+.object-checklist-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-empty {
+  padding: 0.75rem 0.35rem;
+  color: #666;
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+.form-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.form-actions-start,
+.form-actions-end {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.form-actions-start {
+  flex: 1 1 0;
+  justify-content: flex-start;
+}
+
+.form-actions-end {
+  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+.form-actions-next {
+  @include tablet-up {
+    display: none;
+  }
+}
+
+.form-actions-back {
+  @include tablet-up {
+    display: none;
+  }
+}
+
+.form-actions-save {
+  margin-inline-start: auto;
+}
+
+.form-actions--mobile-checklists .form-actions-save {
+  display: none;
+}
+
+.unsaved-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary-default, #9d0000);
+  line-height: 0;
+
+  svg {
+    @include icon-size(var(--icon-size-compact));
+  }
+}
+
+.changes-hint {
+  font-size: 0.78rem;
+  color: #666;
+  min-width: 0;
+}
+
+@include mobile {
+  .assignment-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .todo-checklist-first-form .assignment-layout--mobile-step-checklists,
+  .todo-checklist-first-form
+    .assignment-layout:not(.assignment-layout--mobile-step-objects) {
+    .object-detail-panel {
+      display: none !important;
+    }
+
+    .checklist-select-panel {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+  }
+
+  .todo-checklist-first-form .assignment-layout--mobile-step-objects {
+    .checklist-select-panel {
+      display: none !important;
+    }
+
+    .object-detail-panel {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+  }
+
+  .form-actions {
+    padding-top: 0.85rem;
+    padding-bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+  }
+}

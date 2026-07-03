@@ -1,0 +1,278 @@
+<div class="todo-checklist-first-form">
+  <div
+    class="assignment-layout"
+    [class.assignment-layout--mobile-step-checklists]="mobileStep() === 'checklists'"
+    [class.assignment-layout--mobile-step-objects]="mobileStep() === 'objects'"
+  >
+    <aside class="checklist-select-panel">
+      <div class="panel-toolbar">
+        <label class="search-label" for="checklistFirstSearch">{{
+          'todos.selectChecklists' | translate
+        }}</label>
+        <div class="panel-toolbar-actions">
+          <button
+            type="button"
+            class="btn btn-secondary btn-small todo-action-btn"
+            (click)="selectAllChecklists()"
+            [attr.aria-label]="'todos.selectAllChecklists' | translate"
+            [title]="'todos.selectAllChecklists' | translate"
+          >
+            <span class="todo-action-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+            </span>
+            <span class="todo-action-label">{{ 'todos.selectAllChecklists' | translate }}</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-small todo-action-btn"
+            (click)="clearChecklistSelection()"
+            [disabled]="!hasChecklistSelection()"
+            [attr.aria-label]="'todos.clearChecklistSelection' | translate"
+            [title]="'todos.clearChecklistSelection' | translate"
+          >
+            <span class="todo-action-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+            </span>
+            <span class="todo-action-label">{{ 'todos.clearChecklistSelection' | translate }}</span>
+          </button>
+        </div>
+      </div>
+
+      <input
+        id="checklistFirstSearch"
+        type="search"
+        class="panel-search"
+        [ngModel]="checklistSearchQuery()"
+        (ngModelChange)="checklistSearchQuery.set($event)"
+        [placeholder]="'todos.searchChecklists' | translate"
+      />
+
+      <ul
+        class="checklist-select-list"
+        role="listbox"
+        aria-multiselectable="true"
+        [attr.aria-label]="'todos.selectChecklists' | translate"
+      >
+        @for (item of filteredChecklists(); track trackTodoItemId(item)) {
+          <li>
+            <button
+              type="button"
+              class="checklist-select-item"
+              [class.checklist-select-item--selected]="isChecklistSelected(item)"
+              role="option"
+              [attr.aria-selected]="isChecklistSelected(item)"
+              (click)="toggleChecklist(item)"
+            >
+              <span class="checklist-select-checkbox" aria-hidden="true">
+                @if (isChecklistSelected(item)) {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                }
+              </span>
+              <span class="checklist-select-text">
+                <span class="checklist-select-title">{{ item.title }}</span>
+                @if (item.note?.trim()) {
+                  <span class="checklist-select-note">{{ item.note }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+        @if (filteredChecklists().length === 0) {
+          <li class="panel-empty">{{ 'todos.noChecklistsMatchSearch' | translate }}</li>
+        }
+      </ul>
+    </aside>
+
+    <section class="object-detail-panel">
+      @if (hasChecklistSelection()) {
+        <header class="object-detail-header">
+          <label class="search-label" for="checklistFirstObjectSearch">{{
+            'todos.selectObject' | translate
+          }}</label>
+          <div class="panel-toolbar-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-small todo-action-btn"
+              (click)="assignAllSelectedChecklistsToAllObjects()"
+              [attr.aria-label]="'todos.assignAllToObjects' | translate"
+              [title]="'todos.assignAllToObjects' | translate"
+            >
+              <span class="todo-action-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </span>
+              <span class="todo-action-label">{{ 'todos.assignAllToObjects' | translate }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-small todo-action-btn"
+              (click)="clearSelectedChecklistsFromAllObjects()"
+              [attr.aria-label]="'todos.clearAllFromObjects' | translate"
+              [title]="'todos.clearAllFromObjects' | translate"
+            >
+              <span class="todo-action-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </span>
+              <span class="todo-action-label">{{ 'todos.clearAllFromObjects' | translate }}</span>
+            </button>
+          </div>
+        </header>
+
+        <input
+          id="checklistFirstObjectSearch"
+          type="search"
+          class="panel-search"
+          [ngModel]="objectSearchQuery()"
+          (ngModelChange)="objectSearchQuery.set($event)"
+          [placeholder]="'todos.searchObjects' | translate"
+        />
+
+        <ul class="object-detail-list">
+          @for (object of sortedDisplayObjects(); track object._id?.$oid) {
+            <li
+              class="object-detail-card"
+              [ngClass]="objectRowClasses(object)"
+              [class.object-detail-card--dirty]="isObjectDirty(object._id!.$oid!)"
+            >
+              <div class="object-detail-card-header">
+                <span class="object-detail-card-label">{{ objectLabel(object) }}</span>
+                @if (isObjectDirty(object._id!.$oid!)) {
+                  <span
+                    class="unsaved-flag"
+                    [attr.title]="'todos.unsavedChanges' | translate"
+                    [attr.aria-label]="'todos.unsavedChanges' | translate"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 22V4" />
+                      <path d="M4 4h11l-1.5 3L15 10H4" />
+                    </svg>
+                  </span>
+                }
+              </div>
+
+              <ul class="object-checklist-rows">
+                @for (item of selectedTodoItems(); track trackTodoItemId(item)) {
+                  <li class="object-checklist-row">
+                    <label class="object-checklist-assign">
+                      <input
+                        type="checkbox"
+                        class="object-checklist-checkbox"
+                        [checked]="isTodoAssigned(object._id!.$oid!, item)"
+                        (change)="toggleObjectChecklist(object, item, $event)"
+                        [attr.aria-label]="
+                          isTodoAssigned(object._id!.$oid!, item)
+                            ? ('todos.unassignChecklistItem' | translate: { title: item.title })
+                            : ('todos.assignChecklistItem' | translate: { title: item.title })
+                        "
+                      />
+                      <span class="object-checklist-name">{{ item.title }}</span>
+                    </label>
+                    @if (isTodoAssigned(object._id!.$oid!, item)) {
+                      <app-todo-item-value-control
+                        [item]="item"
+                        [entries]="entriesForObject(object._id!.$oid!)"
+                        [disabled]="saving()"
+                        (entriesChange)="onObjectEntriesChange(object, $event)"
+                      />
+                    }
+                  </li>
+                }
+              </ul>
+            </li>
+          }
+          @if (sortedDisplayObjects().length === 0) {
+            <li class="panel-empty">{{ 'todos.noObjectsMatchSearch' | translate }}</li>
+          }
+        </ul>
+      } @else {
+        <div class="object-detail-empty">
+          <p>{{ 'todos.noChecklistsSelected' | translate }}</p>
+        </div>
+      }
+    </section>
+  </div>
+
+  <footer
+    class="form-actions"
+    [class.form-actions--mobile-checklists]="mobileStep() === 'checklists'"
+    [class.form-actions--mobile-objects]="mobileStep() === 'objects'"
+  >
+    <div class="form-actions-start">
+      @if (mobileStep() === 'objects') {
+        <button
+          type="button"
+          class="btn btn-secondary todo-action-btn form-actions-back"
+          (click)="goToChecklistsStep()"
+          [attr.aria-label]="'todos.mobileBackToChecklists' | translate"
+          [title]="'todos.mobileBackToChecklists' | translate"
+        >
+          <span class="todo-action-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M11 18l-6-6 6-6" />
+            </svg>
+          </span>
+          <span class="todo-action-label">{{ 'todos.mobileBackToChecklists' | translate }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="form-actions-end">
+      @if (mobileStep() === 'checklists') {
+        <button
+          type="button"
+          class="btn btn-primary todo-action-btn form-actions-next"
+          (click)="goToObjectsStep()"
+          [disabled]="!hasChecklistSelection()"
+          [attr.aria-label]="'todos.mobileContinueToObjects' | translate"
+          [title]="'todos.mobileContinueToObjects' | translate"
+        >
+          <span class="todo-action-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+          <span class="todo-action-label">{{ 'todos.mobileContinueToObjects' | translate }}</span>
+        </button>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primary todo-action-btn form-actions-save"
+        (click)="save()"
+        [disabled]="saving() || dirtyObjectCount() === 0 || !hasChecklistSelection()"
+        [attr.aria-label]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
+        [title]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
+      >
+        <span class="todo-action-icon" aria-hidden="true">
+          @if (saving()) {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          }
+        </span>
+        <span class="todo-action-label">
+          @if (saving()) {
+            {{ 'common.saving' | translate }}
+          } @else {
+            {{ 'todos.saveAssignments' | translate }}
+          }
+        </span>
+      </button>
+    </div>
+  </footer>
+</div>

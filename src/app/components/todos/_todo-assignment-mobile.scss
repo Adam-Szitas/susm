@@ -88,6 +88,19 @@
   min-width: 0;
 }
 
+.unsaved-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary-default, #9d0000);
+  line-height: 0;
+
+  svg {
+    @include icon-size(var(--icon-size-compact));
+  }
+}
+
 .todo-action-btn {
   margin: 0;
   max-width: 100%;
@@ -172,7 +185,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    padding-top: 0.85rem;
+    padding-bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
     margin-bottom: 0;
   }
 

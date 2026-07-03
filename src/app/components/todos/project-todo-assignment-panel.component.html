@@ -59,7 +59,16 @@
               <span class="object-list-item-meta">
                 <span class="assignment-badge">{{ assignmentSummary(object) }}</span>
                 @if (isObjectDirtyState(object)) {
-                  <span class="dirty-dot" [attr.title]="'todos.unsavedChanges' | translate"></span>
+                  <span
+                    class="unsaved-flag"
+                    [attr.title]="'todos.unsavedChanges' | translate"
+                    [attr.aria-label]="'todos.unsavedChanges' | translate"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 22V4" />
+                      <path d="M4 4h11l-1.5 3L15 10H4" />
+                    </svg>
+                  </span>
                 }
               </span>
             </button>
@@ -109,7 +118,7 @@
             >
               <span class="todo-action-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
               </span>
               <span class="todo-action-label">{{ 'todos.clearAll' | translate }}</span>
@@ -196,12 +205,6 @@
     [class.form-actions--mobile-objects]="mobileStep() === 'objects'"
     [class.form-actions--mobile-checklist]="mobileStep() === 'checklist'"
   >
-    @if (mobileStep() === 'checklist' && dirtyObjectCount() > 0) {
-      <span class="changes-hint">
-        {{ 'todos.objectsWithChanges' | translate: { count: dirtyObjectCount() } }}
-      </span>
-    }
-
     @if (mobileStep() === 'objects') {
       <div class="form-actions-buttons form-actions-buttons--continue">
         <button
