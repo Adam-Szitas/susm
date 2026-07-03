@@ -72,13 +72,13 @@ export class ProjectTodoModalComponent implements OnInit {
 
   readonly checklistTabs = computed<TabItem[]>(() => [
     {
-      id: 'items',
-      label: this.#translationService.instant('todos.defineItems'),
-    },
-    {
       id: 'assign',
       label: this.#translationService.instant('todos.assignToObjects'),
       disabled: !this.canAssign(),
+    },
+    {
+      id: 'items',
+      label: this.#translationService.instant('todos.defineItems'),
     },
   ]);
 
@@ -99,6 +99,7 @@ export class ProjectTodoModalComponent implements OnInit {
     if (items?.length) {
       items.forEach((item) => this.itemsArray.push(this.createItemGroup(item)));
     }
+    this.activeTab.set(this.canAssign() ? 'assign' : 'items');
   }
 
   subItemsArray(itemIndex: number): FormArray {

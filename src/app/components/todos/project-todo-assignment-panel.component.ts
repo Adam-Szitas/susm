@@ -294,13 +294,7 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
     }
 
     this.#workingEntries.set(map);
-
-    const first = this.filteredObjects()[0];
-    if (first?._id?.$oid) {
-      this.selectedObjectIds.set([first._id.$oid]);
-    } else {
-      this.selectedObjectIds.set([]);
-    }
+    this.selectedObjectIds.set([]);
   }
 
   #toggleAssignmentForObject(objectId: string, item: TodoItem, checked: boolean): void {

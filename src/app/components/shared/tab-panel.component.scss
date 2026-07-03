@@ -117,6 +117,20 @@
   }
 }
 
+:host(.project-tab-panel--internal-scroll):not(.tab-panel-host--inactive) .tab-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  scroll-padding-bottom: 0;
+
+  @include tablet-up {
+    max-height: min(72dvh, 820px);
+    overflow: hidden;
+  }
+}
+
 .tab-panel--inactive {
   display: none;
 }

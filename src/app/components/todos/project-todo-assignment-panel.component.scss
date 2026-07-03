@@ -288,16 +288,17 @@
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: center;
+  min-width: 1.65rem;
   margin: 0;
-  padding: 0.28rem 0.5rem;
+  padding: 0.28rem 0.45rem;
   border: 1px solid #d0d0d0;
   border-radius: 999px;
   background: #fff;
-  color: #444;
+  color: var(--primary-default, #9d0000);
   font: inherit;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   line-height: 1.2;
   cursor: pointer;
   white-space: nowrap;
@@ -306,16 +307,9 @@
   &:hover,
   &:focus-visible {
     border-color: var(--primary-default, #9d0000);
-    color: var(--primary-default, #9d0000);
     background: rgba(157, 0, 0, 0.05);
     outline: none;
   }
-}
-
-.checklist-view-objects-count {
-  min-width: 1.1rem;
-  text-align: center;
-  color: var(--primary-default, #9d0000);
 }
 
 .checklist-browse {

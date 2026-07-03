@@ -1,3 +1,38 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: inline-block;
+  vertical-align: middle;
+  min-width: 0;
+}
+
+:host-context(.checklist-objects-row) {
+  display: block;
+  width: 100%;
+  max-width: 9.5rem;
+
+  .status-select {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .sub-item-select-wrap {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    .status-select--sub {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: none;
+      width: auto;
+    }
+  }
+}
+
 .status-select {
   flex-shrink: 0;
   max-width: 9.5rem;
