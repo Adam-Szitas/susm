@@ -158,7 +158,7 @@
   }
   </div>
 
-  @if (object() && hasAssignedChecklist()) {
+  @if (object() && projectTodoItems().length > 0) {
     <app-object-todos-section
       [objectId]="object()!._id!.$oid"
       [todoItems]="projectTodoItems()"

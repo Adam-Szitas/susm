@@ -403,10 +403,19 @@
   }
 }
 
-.group-upload-btn {
+.group-upload-btn,
+.group-reorder-btn {
   @include icon-button-40;
   @include transition(background-color, border-color, transform);
   @include icon-button-40-primary-hover;
+
+  svg {
+    display: block;
+  }
+}
+
+.group-reorder-btn.active {
+  @include primary-active-toggle;
 }
 
 .group-delete-btn {
@@ -793,16 +802,6 @@ p {
   border-radius: 8px;
   padding: 0.5rem;
   margin-bottom: var(--space-medium, 1rem);
-}
-
-.group-reorder-btn {
-  @include icon-button-40;
-  @include transition(background-color, border-color, transform);
-  @include icon-button-40-primary-hover;
-
-  &.active {
-    @include primary-active-toggle;
-  }
 }
 
 .file-item.reorder-active {

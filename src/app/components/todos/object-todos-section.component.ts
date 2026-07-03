@@ -22,9 +22,10 @@ import {
   getSelectedSubItemId,
   getSubItems,
   hasSubItems,
+  entriesForAssignedParent,
+  entriesForUnassignedParent,
   isParentTodoAssigned,
   normalizeTodoSubItemColor,
-  resolveAssignedTodoItems,
   serializeTodoEntries,
   sortTodoItems,
   todoItemId,
@@ -62,9 +63,17 @@ export class ObjectTodosSectionComponent {
 
   readonly sortedItems = computed(() => sortTodoItems(this.todoItems()));
 
-  readonly visibleItems = computed(() =>
-    resolveAssignedTodoItems(this.todoItems(), this.#activeEntries()),
+  readonly assignedCount = computed(
+    () =>
+      this.sortedItems().filter((item) =>
+        isParentTodoAssigned(this.#activeEntries(), todoItemId(item)),
+      ).length,
   );
+
+  readonly visibleCount = computed(() => this.assignedCount());
+
+  readonly todoItemId = todoItemId;
+  readonly todoSubItemId = todoSubItemId;
 
   constructor() {
     effect(() => {
@@ -78,11 +87,6 @@ export class ObjectTodosSectionComponent {
       }
     });
   }
-
-  readonly visibleCount = computed(() => this.visibleItems().length);
-
-  readonly todoItemId = todoItemId;
-  readonly todoSubItemId = todoSubItemId;
 
   isAssigned(item: TodoItem): boolean {
     return isParentTodoAssigned(this.#activeEntries(), todoItemId(item));
@@ -119,7 +123,15 @@ export class ObjectTodosSectionComponent {
     this.expanded.update((value) => !value);
   }
 
-  toggleAssignment(_item: TodoItem, _event: Event): void {}
+  toggleAssignment(item: TodoItem, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const parentId = todoItemId(item);
+    const entries = checked
+      ? entriesForAssignedParent(item, this.#activeEntries())
+      : entriesForUnassignedParent(parentId, this.#activeEntries());
+    this.#optimisticEntries.set(entries);
+    this.#persist(entries);
+  }
 
   setStatus(item: TodoItem, status: TodoItemStatus): void {
     const entries = updateTodoEntryStatus(this.#activeEntries(), todoItemId(item), status);

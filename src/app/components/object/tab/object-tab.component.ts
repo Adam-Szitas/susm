@@ -25,7 +25,6 @@ import {
   WORK_STATUSES,
   TodoItem,
   ObjectTodoEntry,
-  resolveAssignedTodoItems,
 } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
@@ -127,12 +126,6 @@ export class ObjectTabComponent implements OnInit {
   });
 
   readonly isPinnedOnPlan = computed(() => !!this.object()?.map_pin);
-
-  readonly hasAssignedChecklist = computed(() => {
-    const entries = this.object()?.todo_entries ?? [];
-    const items = this.projectTodoItems();
-    return resolveAssignedTodoItems(items, entries).length > 0;
-  });
 
   readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
 
