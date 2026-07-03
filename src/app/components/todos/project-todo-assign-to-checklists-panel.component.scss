@@ -378,8 +378,10 @@
   margin-inline-start: auto;
 }
 
-.form-actions--mobile-checklists .form-actions-save {
-  display: none;
+@include mobile {
+  .form-actions--mobile-checklists .form-actions-save {
+    display: none;
+  }
 }
 
 .unsaved-flag {
