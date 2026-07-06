@@ -74,6 +74,8 @@ export class ObjectTabComponent implements OnInit {
   readonly isAdmin = this.#userStore.isAdmin;
 
   object = signal<Object | null>(null);
+  /** Project context for breadcrumb when the store was cleared (e.g. page refresh). */
+  objectProjectContext = signal<{ id: string; name: string } | null>(null);
   projectTodoItems = signal<TodoItem[]>([]);
   fileGroups = signal<FileGroup[]>([]);
   /** Category labels from `?categories=` (repeat or comma-separated); filters visible file groups. */
@@ -97,19 +99,29 @@ export class ObjectTabComponent implements OnInit {
 
   readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     const obj = this.object();
-    const project = this.#projectStore.project();
-    const objectsLabel = this.#translationService.instant('navbar.objects');
+    const storeProject = this.#projectStore.project();
+    const context = this.objectProjectContext();
     const projectsLabel = this.#translationService.instant('navbar.projects');
+    const objectsLabel = this.#translationService.instant('navbar.objects');
     const objectLabel = this.#objectDisplayName(obj);
+    const projectId = storeProject?._id?.$oid ?? context?.id;
+    const projectName = storeProject?.name ?? context?.name;
 
     if (!objectLabel) {
+      if (projectId && projectName) {
+        return [
+          { label: projectsLabel, url: '/projects' },
+          { label: projectName, url: `/projects/tab/${projectId}` },
+          { label: '…' },
+        ];
+      }
       return [{ label: objectsLabel, url: '/objects' }, { label: '…' }];
     }
 
-    if (project?._id?.$oid && project?.name) {
+    if (projectId && projectName) {
       return [
         { label: projectsLabel, url: '/projects' },
-        { label: project.name, url: `/projects/tab/${project._id.$oid}` },
+        { label: projectName, url: `/projects/tab/${projectId}` },
         { label: objectLabel },
       ];
     }
@@ -172,6 +184,9 @@ export class ObjectTabComponent implements OnInit {
   }
 
   #loadObjectForRoute(objectId: string): void {
+    this.objectProjectContext.set(null);
+    this.loadProjectCategories(objectId);
+
     this.#projectStore.loadObject(objectId).subscribe({
       next: (object) => {
         this.object.set(object);
@@ -183,7 +198,6 @@ export class ObjectTabComponent implements OnInit {
           this.projectTodoItems.set(projectItems);
         }
         this.loadFiles(objectId);
-        this.loadProjectCategories(objectId);
       },
       error: (error: AppError) => {
         this.#notificationService.showError(
@@ -198,15 +212,24 @@ export class ObjectTabComponent implements OnInit {
 
   private loadProjectCategories(objectId: string): void {
     this.#httpService
-      .get<{ categories?: string[]; todo_items?: TodoItem[] }>(
-        `object/${objectId}/project-categories`,
-      )
+      .get<{
+        project_id?: string;
+        project_name?: string;
+        categories?: string[];
+        todo_items?: TodoItem[];
+      }>(`object/${objectId}/project-categories`)
       .subscribe({
         next: (result) => {
+          const projectId = result.project_id?.trim();
+          const projectName = result.project_name?.trim();
+          if (projectId && projectName) {
+            this.objectProjectContext.set({ id: projectId, name: projectName });
+          }
           this.projectCategories.set(result.categories || []);
           this.projectTodoItems.set(result.todo_items || []);
         },
         error: () => {
+          this.objectProjectContext.set(null);
           this.projectCategories.set([]);
           this.projectTodoItems.set([]);
         },

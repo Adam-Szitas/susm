@@ -30,6 +30,8 @@ export interface ObjectTodoEntry {
   todo_item_id: { $oid: string } | string;
   todo_sub_item_id?: { $oid: string } | string | null;
   status: TodoItemStatus | string;
+  /** When true, object stays assigned but is omitted from protocol PDF checklist lines. */
+  hidden_from_protocol?: boolean;
 }
 
 export function safeTodoItemId(item: Pick<TodoItem, '_id'> | null | undefined): string {
@@ -241,6 +243,7 @@ export function entriesForAssignedParent(
       {
         todo_item_id: parentId,
         status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
+        hidden_from_protocol: previous?.hidden_from_protocol,
       },
     ];
   }
@@ -258,6 +261,7 @@ export function entriesForAssignedParent(
       todo_item_id: parentId,
       todo_sub_item_id: validSubId,
       status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
+      hidden_from_protocol: previous?.hidden_from_protocol,
     },
   ];
 }
@@ -328,8 +332,30 @@ export function updateSelectedSubItem(
       todo_item_id: parentId,
       todo_sub_item_id: subItemId,
       status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
+      hidden_from_protocol: previous?.hidden_from_protocol,
     },
   ];
+}
+
+export function isHiddenFromProtocol(
+  entries: ObjectTodoEntry[] | undefined,
+  parentId: string,
+): boolean {
+  const entry = entries?.find((e) => todoEntryItemId(e) === parentId);
+  return entry?.hidden_from_protocol === true;
+}
+
+export function updateTodoEntryHiddenFromProtocol(
+  entries: ObjectTodoEntry[],
+  parentId: string,
+  hidden: boolean,
+): ObjectTodoEntry[] {
+  return entries.map((entry) => {
+    if (todoEntryItemId(entry) !== parentId) {
+      return entry;
+    }
+    return { ...entry, hidden_from_protocol: hidden };
+  });
 }
 
 /** Objects that have the given checklist item assigned. */

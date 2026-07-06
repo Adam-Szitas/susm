@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../environment';
@@ -34,6 +34,7 @@ export interface ProtocolPreviewTodoLine {
 }
 
 export interface ProtocolPreviewTodoSection {
+  todo_item_id?: string;
   title: string;
   note?: string;
   lines?: ProtocolPreviewTodoLine[];
@@ -85,6 +86,31 @@ import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 /** Renders the preview payload from `POST protocols/preview` (aligned with PDF layout in `protocols/mod.rs`). */
 export class ProtocolPreviewComponent {
   previewData = input.required<ProtocolPreviewData>();
+  /** Full checklist rows for visibility toggles (unfiltered). */
+  checklistSourceSections = input<ProtocolPreviewTodoSection[]>([]);
+  excludedChecklistIds = input<string[]>([]);
+  checklistVisibilityEditable = input(false);
+
+  checklistVisibilityToggle = output<string>();
+
+  isChecklistExcluded(todoItemId: string | undefined): boolean {
+    if (!todoItemId) return false;
+    return this.excludedChecklistIds().includes(todoItemId);
+  }
+
+  onChecklistVisibilityToggle(todoItemId: string | undefined): void {
+    if (todoItemId) {
+      this.checklistVisibilityToggle.emit(todoItemId);
+    }
+  }
+
+  checklistSectionsForDisplay(): ProtocolPreviewTodoSection[] {
+    const source = this.checklistSourceSections();
+    if (source.length > 0) {
+      return source;
+    }
+    return this.previewData().todo_sections ?? [];
+  }
 
   objectHeadline(section: ProtocolPreviewContentSection): string {
     return (section.object_headline || section.headline || '').trim();

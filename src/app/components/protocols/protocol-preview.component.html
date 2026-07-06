@@ -97,32 +97,90 @@
     </div>
   }
 
-  @if (data.todo_sections && data.todo_sections.length > 0) {
+  @if (checklistSectionsForDisplay().length > 0) {
     <div class="preview-section todo-section">
       <h2 class="section-title">{{ 'protocol.pdf.projectChecklistInToc' | translate }}</h2>
       <ul class="todo-preview-list">
-        @for (todo of data.todo_sections; track $index) {
-          <li class="todo-preview-item">
-          <h3 class="todo-preview-title">{{ todo.title }}</h3>
-          @if (todo.note?.trim()) {
-            <p class="todo-preview-note">{{ todo.note }}</p>
-          }
-          @if (todo.lines?.length) {
-            <ul class="todo-preview-sub-list">
-              @for (line of todo.lines; track $index) {
-                <li class="todo-preview-sub-item">
-                  @if (line.color) {
-                    <span
-                      class="todo-preview-sub-dot todo-preview-sub-dot--{{ line.color || 'red' }}"
-                    ></span>
+        @for (todo of checklistSectionsForDisplay(); track todo.todo_item_id ?? todo.title) {
+          <li
+            class="todo-preview-item"
+            [class.todo-preview-item--excluded]="isChecklistExcluded(todo.todo_item_id)"
+          >
+            <div class="todo-preview-item-header">
+              <h3 class="todo-preview-title">{{ todo.title }}</h3>
+              @if (checklistVisibilityEditable() && todo.todo_item_id) {
+                <button
+                  type="button"
+                  class="todo-protocol-visibility-btn"
+                  [class.todo-protocol-visibility-btn--hidden]="isChecklistExcluded(todo.todo_item_id)"
+                  [attr.aria-pressed]="!isChecklistExcluded(todo.todo_item_id)"
+                  [attr.aria-label]="
+                    isChecklistExcluded(todo.todo_item_id)
+                      ? ('protocols.showChecklistInProtocol' | translate: { title: todo.title })
+                      : ('protocols.hideChecklistFromProtocol' | translate: { title: todo.title })
+                  "
+                  [attr.title]="
+                    isChecklistExcluded(todo.todo_item_id)
+                      ? ('protocols.showChecklistInProtocol' | translate: { title: todo.title })
+                      : ('protocols.hideChecklistFromProtocol' | translate: { title: todo.title })
+                  "
+                  (click)="onChecklistVisibilityToggle(todo.todo_item_id)"
+                >
+                  @if (isChecklistExcluded(todo.todo_item_id)) {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
+                      />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <path d="M1 1l22 22" />
+                      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                    </svg>
+                  } @else {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
                   }
-                  <span>
-                    {{ line.label }}@if (line.object_names?.length) {: {{ line.object_names!.join(', ') }}}
-                  </span>
-                </li>
+                </button>
               }
-            </ul>
-          }
+            </div>
+            @if (todo.note?.trim()) {
+              <p class="todo-preview-note">{{ todo.note }}</p>
+            }
+            @if (!isChecklistExcluded(todo.todo_item_id) && todo.lines?.length) {
+              <ul class="todo-preview-sub-list">
+                @for (line of todo.lines; track $index) {
+                  <li class="todo-preview-sub-item">
+                    @if (line.color) {
+                      <span
+                        class="todo-preview-sub-dot todo-preview-sub-dot--{{ line.color || 'red' }}"
+                      ></span>
+                    }
+                    <span>
+                      {{ line.label }}@if (line.object_names?.length) {: {{ line.object_names!.join(', ') }}}
+                    </span>
+                  </li>
+                }
+              </ul>
+            }
           </li>
         }
       </ul>

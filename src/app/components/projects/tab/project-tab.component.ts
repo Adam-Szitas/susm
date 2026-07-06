@@ -492,6 +492,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
             templates,
             existingProtocols: this.projectProtocols(),
             projectCategories: this.project()?.categories ?? [],
+            todoItems: this.project()?.todo_items ?? [],
           },
         });
       },

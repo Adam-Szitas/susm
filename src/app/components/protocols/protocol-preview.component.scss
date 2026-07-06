@@ -242,12 +242,70 @@
 
     .todo-preview-item {
       margin-bottom: 0.65rem;
-      padding-left: 1.25rem;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #eceff1;
+      border-radius: 8px;
+      background: #fafafa;
+
+      &--excluded {
+        background: #f3f4f6;
+        border-color: #e5e7eb;
+
+        .todo-preview-title {
+          color: #9ca3af;
+        }
+      }
+    }
+
+    .todo-preview-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+    }
+
+    .todo-protocol-visibility-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      margin: 0;
+      padding: 0;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fff;
+      color: #4b5563;
+      cursor: pointer;
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      &:hover {
+        border-color: #cbd5e1;
+        background: #f9fafb;
+      }
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--primary-default, #9d0000);
+        box-shadow: 0 0 0 2px rgba(157, 0, 0, 0.1);
+      }
+
+      &--hidden {
+        color: #9ca3af;
+        background: #f3f4f6;
+      }
     }
 
     .todo-preview-title {
       font-size: 1rem;
       margin: 0;
+      flex: 1;
+      min-width: 0;
     }
 
     .todo-preview-note {

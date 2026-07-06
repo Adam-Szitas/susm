@@ -47,6 +47,14 @@ export interface ProtocolRecord {
   custom_object_order?: boolean;
   /** When false, checklist sections were omitted from this protocol PDF. */
   include_checklists?: boolean;
+  /** When true, each file group started on a new page in this protocol PDF. */
+  file_group_on_new_page?: boolean;
+  /** Checklist item ids excluded from this protocol PDF. */
+  excluded_checklist_item_ids?: string[];
+  /** Checklist sections captured when this protocol was saved. */
+  todo_sections_snapshot?: ProtocolTodoSectionSnapshot[];
+  /** Per-object file group order captured when this protocol was saved. */
+  object_file_layouts?: Record<string, ProtocolObjectFileLayout>;
   /** Older protocol IDs merged after this one in the PDF (stored order). */
   linked_protocol_ids?: string[];
 }
@@ -75,4 +83,23 @@ export interface GenerateProtocolRequest {
   include_checklists?: boolean;
   /** When true, each file group begins on a new protocol page. */
   file_group_on_new_page?: boolean;
+  /** Checklist item ids to omit from preview/PDF. */
+  excluded_checklist_item_ids?: string[];
+}
+
+export interface ProtocolTodoLineSnapshot {
+  label: string;
+  object_names: string[];
+  color?: string;
+}
+
+export interface ProtocolTodoSectionSnapshot {
+  title: string;
+  note?: string;
+  lines: ProtocolTodoLineSnapshot[];
+}
+
+export interface ProtocolObjectFileLayout {
+  group_ids: string[];
+  file_ids_by_group?: Record<string, string[]>;
 }

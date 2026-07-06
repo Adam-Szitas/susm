@@ -298,6 +298,7 @@ export class ProjectStore {
             : entry.todo_item_id.$oid,
         todo_sub_item_id: todoEntrySubItemId(entry) ?? undefined,
         status: normalizeTodoItemStatus(entry.status),
+        hidden_from_protocol: entry.hidden_from_protocol === true,
       })),
     };
     return this.#httpService.put<Object>(`object/${objectId}/todos`, payload).pipe(

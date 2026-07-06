@@ -16,11 +16,18 @@ import {
   ProtocolTemplate,
   isUploadedProtocol,
   sortObjectsByStoredOrder,
+  sortTodoItems,
+  todoItemId,
+  TodoItem,
 } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectStore } from '@store/project.store';
-import { ProtocolPreviewComponent, ProtocolPreviewData } from './protocol-preview.component';
+import {
+  ProtocolPreviewComponent,
+  ProtocolPreviewData,
+  ProtocolPreviewTodoSection,
+} from './protocol-preview.component';
 import { features } from '../../features';
 import { ToggleSwitchComponent } from '../shared/toggle-switch.component';
 import { reorderTargetIdFromTouch } from '../../utils/touch-reorder';
@@ -54,6 +61,8 @@ export class ProtocolGenerateModalComponent {
   projectCategories = input<string[]>([]);
   /** Existing protocols for this project (older versions to optionally include in the new PDF). */
   existingProtocols = input<ProtocolRecord[]>([]);
+  /** Project checklist template items (for per-item include/exclude in protocol). */
+  todoItems = input<TodoItem[]>([]);
 
   form: FormGroup;
   generating = signal(false);
@@ -213,13 +222,31 @@ export class ProtocolGenerateModalComponent {
   saveToProject = signal(true);
   /** When on, project checklist sections appear in preview, TOC, and PDF. */
   includeChecklists = signal(true);
+  /** Checklist item ids excluded from this protocol (eye toggles in preview). */
+  excludedChecklistItemIds = signal<string[]>([]);
 
   readonly displayPreviewData = computed(() => {
     const data = this.previewData();
     if (!data) return null;
-    if (this.includeChecklists()) return data;
-    return this.#stripChecklistsFromMainPreview(data);
+    if (!this.includeChecklists()) {
+      return this.#stripChecklistsFromMainPreview(data);
+    }
+    const excluded = this.excludedChecklistItemIds();
+    const includedSections = this.#includedChecklistPreviewSections();
+    if (excluded.length === 0) {
+      return { ...data, todo_sections: includedSections };
+    }
+    return {
+      ...this.#filterExcludedChecklistsFromPreview(data, excluded),
+      todo_sections: includedSections,
+    };
   });
+
+  readonly checklistControlRows = computed(() => this.#buildChecklistPreviewSections());
+
+  isChecklistExcluded(todoItemIdValue: string): boolean {
+    return this.excludedChecklistItemIds().includes(todoItemIdValue);
+  }
 
   selectedTemplate = computed(() => {
     const templateId = this.form.get('template_id')?.value;
@@ -452,18 +479,111 @@ export class ProtocolGenerateModalComponent {
       custom_object_order: this.customObjectOrder(),
       include_checklists: this.includeChecklists(),
       file_group_on_new_page: features.protocolFileGroupOnNewPage,
+      ...(this.includeChecklists() && this.excludedChecklistItemIds().length > 0
+        ? { excluded_checklist_item_ids: this.excludedChecklistItemIds() }
+        : {}),
       ...(fgCats ? { file_group_categories: fgCats } : {}),
+    };
+  }
+
+  toggleExcludedChecklistItem(todoItemIdValue: string): void {
+    this.excludedChecklistItemIds.update((current) => {
+      if (current.includes(todoItemIdValue)) {
+        return current.filter((id) => id !== todoItemIdValue);
+      }
+      return [...current, todoItemIdValue];
+    });
+  }
+
+  #buildChecklistPreviewSections(): ProtocolPreviewTodoSection[] {
+    const previewSections = this.previewData()?.todo_sections ?? [];
+    const byId = new Map(
+      previewSections
+        .filter((section) => section.todo_item_id)
+        .map((section) => [section.todo_item_id!, section]),
+    );
+    const byTitle = new Map(previewSections.map((section) => [section.title, section]));
+    const items = sortTodoItems(this.todoItems());
+
+    if (items.length === 0) {
+      return previewSections;
+    }
+
+    return items.map((item) => {
+      const id = todoItemId(item);
+      const fromPreview = byId.get(id) ?? byTitle.get(item.title);
+      return {
+        todo_item_id: id,
+        title: item.title,
+        note: item.note ?? fromPreview?.note,
+        lines: fromPreview?.lines ?? [],
+      };
+    });
+  }
+
+  #includedChecklistPreviewSections(): ProtocolPreviewTodoSection[] {
+    const excluded = new Set(this.excludedChecklistItemIds());
+    return this.#buildChecklistPreviewSections().filter(
+      (section) => section.todo_item_id && !excluded.has(section.todo_item_id),
+    );
+  }
+
+  #excludedChecklistTitles(excludedIds: string[]): Set<string> {
+    const excluded = new Set(excludedIds);
+    const fromProject = sortTodoItems(this.todoItems())
+      .filter((item) => excluded.has(todoItemId(item)))
+      .map((item) => item.title);
+    if (fromProject.length > 0) {
+      return new Set(fromProject);
+    }
+    return new Set(
+      this.#buildChecklistPreviewSections()
+        .filter((section) => section.todo_item_id && excluded.has(section.todo_item_id))
+        .map((section) => section.title),
+    );
+  }
+
+  #allChecklistTitles(): Set<string> {
+    const fromProject = sortTodoItems(this.todoItems()).map((item) => item.title);
+    if (fromProject.length > 0) {
+      return new Set(fromProject);
+    }
+    return new Set(this.#buildChecklistPreviewSections().map((section) => section.title));
+  }
+
+  /** Remove excluded checklist items from TOC; checklist body uses included sections. */
+  #filterExcludedChecklistsFromPreview(
+    data: ProtocolPreviewData,
+    excludedIds: string[],
+  ): ProtocolPreviewData {
+    const excludedTitles = this.#excludedChecklistTitles(excludedIds);
+    if (excludedTitles.size === 0) {
+      return { ...data, todo_sections: [] };
+    }
+
+    const includedSections = this.#includedChecklistPreviewSections();
+    let tableOfContents = [...data.table_of_contents];
+    if (includedSections.length === 0) {
+      return this.#stripChecklistsFromMainPreview(data);
+    }
+
+    tableOfContents = tableOfContents.filter(
+      (entry) => entry.level !== 2 || !excludedTitles.has(entry.title),
+    );
+
+    return {
+      ...data,
+      table_of_contents: tableOfContents,
+      todo_sections: [],
     };
   }
 
   /** Hide checklist TOC entries and content in the main preview when toggled off. */
   #stripChecklistsFromMainPreview(data: ProtocolPreviewData): ProtocolPreviewData {
-    const todoSections = data.todo_sections ?? [];
-    if (todoSections.length === 0) {
+    const checklistTitles = this.#allChecklistTitles();
+    if (checklistTitles.size === 0) {
       return { ...data, todo_sections: [] };
     }
-
-    const checklistTitles = new Set(todoSections.map((section) => section.title));
     let tocCutIndex = data.table_of_contents.length;
     for (let i = 0; i < data.table_of_contents.length; i++) {
       const entry = data.table_of_contents[i];
@@ -480,7 +600,7 @@ export class ProtocolGenerateModalComponent {
         j++;
       }
 
-      if (matched > 0 && matched === todoSections.length) {
+      if (matched > 0 && matched === checklistTitles.size) {
         tocCutIndex = i;
         break;
       }
@@ -532,6 +652,21 @@ export class ProtocolGenerateModalComponent {
           }
         }
         this.previewData.set(previewResponse);
+        const validChecklistIds = new Set(
+          sortTodoItems(this.todoItems())
+            .map((item) => todoItemId(item))
+            .filter((id) => !!id),
+        );
+        if (validChecklistIds.size === 0) {
+          for (const id of this.#buildChecklistPreviewSections()
+            .map((section) => section.todo_item_id)
+            .filter((id): id is string => !!id)) {
+            validChecklistIds.add(id);
+          }
+        }
+        this.excludedChecklistItemIds.update((ids) =>
+          ids.filter((id) => validChecklistIds.has(id)),
+        );
         // Ensure fields are still populated when showing preview
         // Use template_id from form to get the template, not selectedTemplate() signal
         const tid = formValue.template_id;

@@ -24,6 +24,7 @@ import {
   hasSubItems,
   entriesForAssignedParent,
   entriesForUnassignedParent,
+  isHiddenFromProtocol,
   isParentTodoAssigned,
   normalizeTodoSubItemColor,
   serializeTodoEntries,
@@ -31,6 +32,7 @@ import {
   todoItemId,
   todoSubItemId,
   updateSelectedSubItem,
+  updateTodoEntryHiddenFromProtocol,
   updateTodoEntryStatus,
 } from '@models';
 import { ProjectStore } from '@store/project.store';
@@ -92,6 +94,10 @@ export class ObjectTodosSectionComponent {
 
   isAssigned(item: TodoItem): boolean {
     return isParentTodoAssigned(this.#activeEntries(), todoItemId(item));
+  }
+
+  isHiddenInProtocol(item: TodoItem): boolean {
+    return isHiddenFromProtocol(this.#activeEntries(), todoItemId(item));
   }
 
   itemHasSubItems(item: TodoItem): boolean {
@@ -163,11 +169,23 @@ export class ObjectTodosSectionComponent {
     this.#persist(entries);
   }
 
+  toggleHiddenInProtocol(item: TodoItem): void {
+    const parentId = todoItemId(item);
+    const hidden = !isHiddenFromProtocol(this.#activeEntries(), parentId);
+    const entries = updateTodoEntryHiddenFromProtocol(this.#activeEntries(), parentId, hidden);
+    const successMessage = this.#translationService.instant(
+      hidden ? 'todos.hiddenFromProtocolSuccess' : 'todos.shownInProtocolSuccess',
+      { title: item.title },
+    );
+    this.#optimisticEntries.set(entries);
+    this.#persist(entries, successMessage);
+  }
+
   #activeEntries(): ObjectTodoEntry[] {
     return this.#optimisticEntries() ?? this.todoEntries();
   }
 
-  #persist(entries: ObjectTodoEntry[]): void {
+  #persist(entries: ObjectTodoEntry[], successMessage?: string): void {
     this.saving.set(true);
     this.#projectStore.updateObjectTodos(this.objectId(), entries).subscribe({
       next: (updated) => {
@@ -175,6 +193,9 @@ export class ObjectTodosSectionComponent {
         this.#optimisticEntries.set(entries);
         this.entriesChanged.emit(entries);
         this.saving.set(false);
+        if (successMessage) {
+          this.#notificationService.showSuccess(successMessage);
+        }
       },
       error: (error) => {
         this.#optimisticEntries.set(null);
