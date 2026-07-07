@@ -19,23 +19,39 @@
     </div>
     <div class="desktop">
       <ul>
-        <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">
-          {{ 'navbar.dashboard' | translate }}
+        <li>
+          <a class="nav-link" routerLink="/dashboard" (click)="hideMobileMenu()">
+            {{ 'navbar.dashboard' | translate }}
+          </a>
         </li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/projects'">
-          {{ 'navbar.projects' | translate }}
+        <li>
+          <a class="nav-link" routerLink="/projects" (click)="hideMobileMenu()">
+            {{ 'navbar.projects' | translate }}
+          </a>
         </li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/objects'">
-          {{ 'navbar.objects' | translate }}
+        <li>
+          <a class="nav-link" routerLink="/objects" (click)="hideMobileMenu()">
+            {{ 'navbar.objects' | translate }}
+          </a>
         </li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/files'">{{ 'navbar.files' | translate }}</li>
-        <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">
-          {{ 'navbar.protocols' | translate }}
+        <li>
+          <a class="nav-link" routerLink="/files" (click)="hideMobileMenu()">
+            {{ 'navbar.files' | translate }}
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
+            {{ 'navbar.protocols' | translate }}
+          </a>
         </li>
       </ul>
     </div>
     <ul class="logout-menu">
-      <li (click)="logout()">{{ 'navbar.logout' | translate }}</li>
+      <li>
+        <button type="button" class="nav-link nav-link--button" (click)="logout()">
+          {{ 'navbar.logout' | translate }}
+        </button>
+      </li>
     </ul>
   </nav>
   <div class="mobile-menu-backdrop" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></div>
@@ -60,21 +76,35 @@
       </i>
     </div>
     <ul class="mobile-menu-items">
-      <li (click)="hideMobileMenu()" [routerLink]="'/dashboard'">
-        {{ 'navbar.dashboard' | translate }}
+      <li>
+        <a class="nav-link" routerLink="/dashboard" (click)="hideMobileMenu()">
+          {{ 'navbar.dashboard' | translate }}
+        </a>
       </li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/projects'">
-        {{ 'navbar.projects' | translate }}
+      <li>
+        <a class="nav-link" routerLink="/projects" (click)="hideMobileMenu()">
+          {{ 'navbar.projects' | translate }}
+        </a>
       </li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/objects'">
-        {{ 'navbar.objects' | translate }}
+      <li>
+        <a class="nav-link" routerLink="/objects" (click)="hideMobileMenu()">
+          {{ 'navbar.objects' | translate }}
+        </a>
       </li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/files'">{{ 'navbar.files' | translate }}</li>
-      <li (click)="hideMobileMenu()" [routerLink]="'/protocols'">
-        {{ 'navbar.protocols' | translate }}
+      <li>
+        <a class="nav-link" routerLink="/files" (click)="hideMobileMenu()">
+          {{ 'navbar.files' | translate }}
+        </a>
       </li>
-      <li class="logout-item" (click)="hideMobileMenu(); logout()">
-        {{ 'navbar.logout' | translate }}
+      <li>
+        <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
+          {{ 'navbar.protocols' | translate }}
+        </a>
+      </li>
+      <li class="logout-item">
+        <button type="button" class="nav-link nav-link--button" (click)="hideMobileMenu(); logout()">
+          {{ 'navbar.logout' | translate }}
+        </button>
       </li>
     </ul>
   </div>
@@ -84,7 +114,9 @@
       <app-susm-logo />
     </a>
     <ul>
-      <li [routerLink]="'/login'">{{ 'navbar.login' | translate }}</li>
+      <li>
+        <a class="nav-link" routerLink="/login">{{ 'navbar.login' | translate }}</a>
+      </li>
     </ul>
   </nav>
 }

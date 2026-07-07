@@ -475,31 +475,64 @@
       @if (project()) {
         <section class="protocols-section">
           <div class="protocols-section-header">
-            <h3>{{ 'protocols.generatedProtocols' | translate }}</h3>
-            @if (!project()?.archived_at) {
-              <div class="protocols-section-actions">
-                <input
-                  type="file"
-                  id="protocol-pdf-input"
-                  class="visually-hidden"
-                  accept="application/pdf,.pdf"
-                  (change)="onProtocolPdfSelected($event)"
-                  [disabled]="uploadingProtocolPdf()"
-                />
-                <label
-                  for="protocol-pdf-input"
-                  class="button button-secondary protocols-upload-label"
-                  [class.is-disabled]="uploadingProtocolPdf()"
-                >
-                  @if (uploadingProtocolPdf()) {
-                    <span class="spinner"></span>
-                    {{ 'protocols.uploadingPdf' | translate }}
-                  } @else {
-                    {{ 'protocols.uploadPdf' | translate }}
-                  }
-                </label>
-              </div>
-            }
+            <div class="protocols-section-title-row">
+              <h3>{{ 'protocols.generatedProtocols' | translate }}</h3>
+              @if (!project()?.archived_at) {
+                <div class="protocols-section-actions">
+                  <input
+                    type="file"
+                    id="protocol-pdf-input"
+                    class="visually-hidden"
+                    accept="application/pdf,.pdf"
+                    (change)="onProtocolPdfSelected($event)"
+                    [disabled]="uploadingProtocolPdf()"
+                  />
+                  <label
+                    for="protocol-pdf-input"
+                    class="button button-secondary protocols-upload-label"
+                    [class.protocols-upload-label--icon-only]="toolbarIconOnly()"
+                    [class.is-disabled]="uploadingProtocolPdf()"
+                    [attr.aria-label]="
+                      uploadingProtocolPdf()
+                        ? ('protocols.uploadingPdf' | translate)
+                        : ('protocols.uploadPdf' | translate)
+                    "
+                    [attr.title]="
+                      uploadingProtocolPdf()
+                        ? ('protocols.uploadingPdf' | translate)
+                        : ('protocols.uploadPdf' | translate)
+                    "
+                  >
+                    @if (uploadingProtocolPdf()) {
+                      <span class="spinner"></span>
+                      @if (!toolbarIconOnly()) {
+                        {{ 'protocols.uploadingPdf' | translate }}
+                      }
+                    } @else {
+                      <svg
+                        class="protocols-upload-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <path d="M12 12v6" />
+                        <path d="M9 15l3-3 3 3" />
+                      </svg>
+                      @if (!toolbarIconOnly()) {
+                        {{ 'protocols.uploadPdf' | translate }}
+                      }
+                    }
+                  </label>
+                </div>
+              }
+            </div>
           </div>
           <div class="protocols-section-content">
             @if (projectProtocols().length > 0) {

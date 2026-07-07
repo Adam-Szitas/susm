@@ -15,10 +15,10 @@ import {
   afterNextRender,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { finalize } from 'rxjs';
-import { filter, map, distinctUntilChanged } from 'rxjs/operators';
+import { catchError, EMPTY, finalize } from 'rxjs';
+import { filter, map, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { ProjectStore } from '@store/project.store';
 import { FilterComponent } from '../../filter/filter.component';
 import {
@@ -109,7 +109,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #platformId = inject(PLATFORM_ID);
   #destroyRef = inject(DestroyRef);
   #host = inject(ElementRef<HTMLElement>);
-  #routeSubscription?: Subscription;
   #mobileTabHeightMq?: MediaQueryList;
   #tabHeightResizeObserver?: ResizeObserver;
 
@@ -332,37 +331,39 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.#routeSubscription = this.#route.paramMap
+    this.#route.paramMap
       .pipe(
         map((params) => params.get('id')),
         filter((id): id is string => id !== null),
         distinctUntilChanged(),
-      )
-      .subscribe((projectId) => {
-        this.#projectStore.loadProject(projectId).subscribe({
-          error: (error: AppError) => {
-            if (isMissingResource404(error)) {
-              void this.#router.navigate(['/projects']);
-            }
-          },
-        });
+        switchMap((projectId) => {
+          this.#projectFilterKey = `project_${projectId}`;
+          const restored = this.#filterPersistence.restore(this.#projectFilterKey);
+          if (restored) {
+            this.restoredFilterState.set(restored);
+            this.#currentFilter.set(restored.filter);
+            this.#filtersVisible = restored.filtersVisible;
+            this.filtersVisible.set(restored.filtersVisible);
+          } else {
+            this.restoredFilterState.set(null);
+            this.#currentFilter.set({});
+          }
 
-        this.#projectFilterKey = `project_${projectId}`;
-        const restored = this.#filterPersistence.restore(this.#projectFilterKey);
-        if (restored) {
-          this.restoredFilterState.set(restored);
-          this.#currentFilter.set(restored.filter);
-          this.#filtersVisible = restored.filtersVisible;
-          this.filtersVisible.set(restored.filtersVisible);
-        } else {
-          this.restoredFilterState.set(null);
-          this.#currentFilter.set({});
-        }
-      });
+          return this.#projectStore.loadProject(projectId).pipe(
+            catchError((error: AppError) => {
+              if (isMissingResource404(error) && this.#router.url.startsWith('/projects/tab/')) {
+                void this.#router.navigate(['/projects']);
+              }
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.#destroyRef),
+      )
+      .subscribe();
   }
 
   ngOnDestroy(): void {
-    this.#routeSubscription?.unsubscribe();
     this.#touchObjectReorderActive = false;
   }
 

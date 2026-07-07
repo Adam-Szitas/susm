@@ -1,7 +1,7 @@
-const CACHE_NAME = 'susm-cache-v4'; // Increment version to clear old cache
+const CACHE_NAME = 'susm-cache-v5'; // Increment version to clear old cache
 const urlsToCache = [
   '/',
-  '/index.html',
+  '/index.csr.html',
   '/susm.svg'
 ];
 
@@ -119,7 +119,7 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // If both cache and network fail, return offline page if available
         if (request.destination === 'document') {
-          return caches.match('/index.html');
+          return caches.match('/index.csr.html');
         }
         // Return a basic offline response for other requests
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });

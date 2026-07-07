@@ -40,7 +40,8 @@ import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.co
 import { UserStore } from '@store/user.store';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
-import { filter, map } from 'rxjs';
+import { filter, map, switchMap, catchError } from 'rxjs';
+import { EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-object-tab',
@@ -176,19 +177,24 @@ export class ObjectTabComponent implements OnInit {
       .pipe(
         map((params) => params.get('id')),
         filter((id): id is string => !!id),
+        switchMap((objectId) => {
+          this.objectProjectContext.set(null);
+          this.loadProjectCategories(objectId);
+          return this.#projectStore.loadObject(objectId).pipe(
+            catchError((error: AppError) => {
+              this.#notificationService.showError(
+                error.message || this.#translationService.instant('errors.loadObjectFailed'),
+              );
+              if (isMissingResource404(error) && this.#router.url.startsWith('/objects/tab/')) {
+                void this.#router.navigate(['/objects']);
+              }
+              return EMPTY;
+            }),
+          );
+        }),
         takeUntilDestroyed(this.#destroyRef),
       )
-      .subscribe((objectId) => {
-        this.#loadObjectForRoute(objectId);
-      });
-  }
-
-  #loadObjectForRoute(objectId: string): void {
-    this.objectProjectContext.set(null);
-    this.loadProjectCategories(objectId);
-
-    this.#projectStore.loadObject(objectId).subscribe({
-      next: (object) => {
+      .subscribe((object) => {
         this.object.set(object);
         this.shareUrl.set(null);
         this.shareQrDataUrl.set(null);
@@ -197,17 +203,11 @@ export class ObjectTabComponent implements OnInit {
         if (projectItems.length) {
           this.projectTodoItems.set(projectItems);
         }
-        this.loadFiles(objectId);
-      },
-      error: (error: AppError) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('errors.loadObjectFailed'),
-        );
-        if (isMissingResource404(error)) {
-          void this.#router.navigate(['/objects']);
+        const objectId = object._id?.$oid;
+        if (objectId) {
+          this.loadFiles(objectId);
         }
-      },
-    });
+      });
   }
 
   private loadProjectCategories(objectId: string): void {

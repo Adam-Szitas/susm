@@ -1,7 +1,32 @@
 <div class="protocols-page">
   <header class="protocols-header">
     <div class="protocols-header-text">
-      <h1>{{ 'protocols.title' | translate }}</h1>
+      <div class="protocols-title-row">
+        <h1>{{ 'protocols.title' | translate }}</h1>
+        @if (!loading()) {
+          <button
+            type="button"
+            class="button button-primary protocols-create-btn"
+            (click)="createTemplate()"
+            [attr.aria-label]="'protocols.createTemplate' | translate"
+            [title]="'protocols.createTemplate' | translate"
+          >
+            <svg
+              class="protocols-create-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        }
+      </div>
       @if (!loading() && templates().length > 0) {
         <p class="protocols-subtitle">
           {{ templates().length }}
@@ -19,18 +44,8 @@
   } @else if (templates().length === 0) {
     <div class="protocols-empty">
       <p>{{ 'protocols.noTemplates' | translate }}</p>
-      <button type="button" class="button button-primary" (click)="createTemplate()">
-        {{ 'protocols.createFirstTemplate' | translate }}
-      </button>
     </div>
   } @else {
-    <div class="protocols-toolbar">
-      <p class="protocols-toolbar-hint">{{ 'protocols.pageHint' | translate }}</p>
-      <button type="button" class="button button-primary protocols-create-btn" (click)="createTemplate()">
-        {{ 'protocols.createTemplate' | translate }}
-      </button>
-    </div>
-
     <ul class="protocols-list">
       @for (template of templates(); track template._id?.$oid) {
         <li class="protocol-card">

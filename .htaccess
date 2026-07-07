@@ -18,10 +18,10 @@ Options -Indexes +FollowSymLinks
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   
   # Handle Angular client-side routing
-  # If the requested file or directory doesn't exist, serve index.html
+  # Use the CSR shell (not root index.html, which redirects to /projects)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^.*$ index.html [L]
+  RewriteRule ^.*$ /index.csr.html [L]
 </IfModule>
 
 # Set proper MIME types
