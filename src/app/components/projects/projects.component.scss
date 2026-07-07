@@ -11,13 +11,13 @@
 .projects-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 0.65rem;
-  flex-wrap: wrap;
-}
 
-h1 {
-  margin: 0;
+  h1 {
+    margin: 0;
+    text-align: center;
+  }
 }
 
 .projects-wrapper {
@@ -74,6 +74,7 @@ h1 {
   gap: 0.4rem;
   margin: 0;
   flex-shrink: 0;
+  box-sizing: border-box;
 
   &--active {
     border-color: rgba(157, 0, 0, 0.35);
@@ -91,16 +92,17 @@ h1 {
       height: 1rem;
     }
   }
+
+  &--spacer {
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 .archive-toggle-icon {
   width: 1.05rem;
   height: 1.05rem;
   flex-shrink: 0;
-}
-
-.archive-toggle-label {
-  white-space: nowrap;
 }
 
 .card-wrapper {

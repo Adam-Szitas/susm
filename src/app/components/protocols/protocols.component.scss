@@ -22,15 +22,15 @@
     font-weight: 700;
     color: #111827;
     line-height: 1.2;
+    text-align: center;
   }
 }
 
 .protocols-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 0.65rem;
-  flex-wrap: wrap;
 }
 
 .protocols-create-btn {
@@ -39,9 +39,16 @@
   justify-content: center;
   margin: 0;
   flex-shrink: 0;
+  box-sizing: border-box;
   @include touch-target-min;
   padding: 0.35rem !important;
   border-radius: 8px;
+  border: 1px solid transparent;
+
+  &--spacer {
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 .protocols-create-icon {

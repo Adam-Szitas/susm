@@ -1,10 +1,13 @@
 <div class="header-wrapper">
   <div class="projects-title-row">
+    <span
+      class="button button-secondary archive-toggle archive-toggle--icon-only archive-toggle--spacer"
+      aria-hidden="true"
+    ></span>
     <h1>{{ 'projects.title' | translate }}</h1>
     <button
       type="button"
-      class="button button-secondary archive-toggle"
-      [class.archive-toggle--icon-only]="archiveToggleIconOnly()"
+      class="button button-secondary archive-toggle archive-toggle--icon-only"
       [class.archive-toggle--active]="showArchived()"
       [attr.aria-pressed]="showArchived()"
       [attr.aria-label]="
@@ -34,15 +37,6 @@
         <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
         <path d="M10 12h4" />
       </svg>
-      @if (!archiveToggleIconOnly()) {
-        <span class="archive-toggle-label">
-          @if (showArchived()) {
-            {{ 'projects.hideArchived' | translate }}
-          } @else {
-            {{ 'projects.showArchived' | translate }}
-          }
-        </span>
-      }
     </button>
   </div>
 </div>
