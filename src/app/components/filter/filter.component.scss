@@ -46,6 +46,7 @@ form {
 
   &:not(.collapsed) {
     grid-template-rows: 1fr;
+    overflow: visible;
   }
 
   &.filter-controls-animate {

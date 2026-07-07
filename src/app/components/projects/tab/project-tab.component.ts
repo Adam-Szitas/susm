@@ -1082,23 +1082,33 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (!mq.matches) {
       host.style.removeProperty('--project-tab-panel-height');
+      host.style.removeProperty('--project-tab-chrome-max-height');
       return;
     }
 
     const chrome = this.projectTabChrome()?.nativeElement;
     if (!chrome) return;
 
+    const minPanelHeight = 120;
     const tabBarHeight = 48;
     const layoutGap = 12;
     const navbarHeight = this.#readNavbarHeightPx();
     const fabClearance = this.#readFloatingActionClearancePx();
-    const chromeHeight = chrome.getBoundingClientRect().height;
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-    const panelHeight = Math.round(
-      viewportHeight - navbarHeight - chromeHeight - tabBarHeight - layoutGap - fabClearance,
+    const availableBelowNavbar = viewportHeight - navbarHeight;
+    const maxChromeHeight = Math.max(
+      96,
+      availableBelowNavbar - tabBarHeight - layoutGap - minPanelHeight - fabClearance,
     );
 
-    host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, 120)}px`);
+    host.style.setProperty('--project-tab-chrome-max-height', `${Math.round(maxChromeHeight)}px`);
+
+    const chromeLayoutHeight = chrome.getBoundingClientRect().height;
+    const panelHeight = Math.round(
+      availableBelowNavbar - chromeLayoutHeight - tabBarHeight - layoutGap - fabClearance,
+    );
+
+    host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, minPanelHeight)}px`);
   }
 
   #readNavbarHeightPx(): number {

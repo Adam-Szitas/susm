@@ -26,6 +26,16 @@
 
 .project-tab-chrome {
   flex-shrink: 0;
+
+  @include mobile {
+    flex-shrink: 1;
+    min-height: 0;
+    max-height: var(--project-tab-chrome-max-height, 45dvh);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .apply-sort-order-toolbar {
