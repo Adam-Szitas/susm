@@ -47,6 +47,7 @@ form {
   &:not(.collapsed) {
     grid-template-rows: 1fr;
     overflow: visible;
+    contain: none;
   }
 
   &.filter-controls-animate {
@@ -63,6 +64,11 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 1rem;
+}
+
+.filter-controls:not(.collapsed) .filter-controls-inner {
+  min-height: min-content;
+  overflow: visible;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -226,7 +232,7 @@ select.filter-input {
 
 @include mobile-small {
   .wrapper.filter-wrapper {
-    padding: var(--space-small) 0;
+    padding: 0;
   }
 
   form {

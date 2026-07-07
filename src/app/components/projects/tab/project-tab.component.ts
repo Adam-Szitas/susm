@@ -76,7 +76,7 @@ import { isMissingResource404 } from '../../../utils/auth-http-error';
   styleUrl: './project-tab.component.scss',
   standalone: true,
   host: {
-    '[class.project-tab--details-expanded]': 'projectDataExpanded()',
+    '[class.project-tab--chrome-expanded]': 'mobileChromeExpanded()',
   },
   imports: [
     CommonModule,
@@ -110,9 +110,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #destroyRef = inject(DestroyRef);
   #host = inject(ElementRef<HTMLElement>);
   #routeSubscription?: Subscription;
-  #mobilePanelHeightMq?: MediaQueryList;
-
-  readonly projectTabChrome = viewChild<ElementRef<HTMLElement>>('projectTabChrome');
+  #mobileTabHeightMq?: MediaQueryList;
+  #tabHeightResizeObserver?: ResizeObserver;
 
   readonly isAdmin = this.#userStore.isAdmin;
 
@@ -131,8 +130,13 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #filtersVisible = false;
   filtersVisible = signal(false);
   readonly projectFilter = viewChild(FilterComponent);
+  readonly contentTabsHost = viewChild<ElementRef<HTMLElement>>('contentTabsHost');
   /** Icon-only toolbar buttons on viewports ≤768px. */
   readonly toolbarIconOnly = compactFormActions();
+  /** On mobile, filter or expanded project details stack above tabs without shrinking them. */
+  readonly mobileChromeExpanded = computed(
+    () => this.toolbarIconOnly() && (this.filtersVisible() || this.projectDataExpanded()),
+  );
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
   /** Virtual scroll only on desktop columns — mobile tab panel scrolls the full list. */
   readonly objectVirtualScrollThreshold = computed(() =>
@@ -220,7 +224,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   readonly objectCardItemSize = computed(() => (this.toolbarIconOnly() ? 60 : 96));
 
   readonly objectListMaxHeight = computed(() => 'min(65dvh, 720px)');
-  readonly objectListFillHeight = computed(() => false);
+  readonly objectListFillHeight = computed(() => this.toolbarIconOnly());
 
   readonly objectsInReorderMode = computed(() => {
     const byId = new Map(
@@ -307,13 +311,19 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     afterNextRender(() => {
       if (!isPlatformBrowser(this.#platformId)) return;
-      this.#setupMobileTabPanelHeight();
+      this.#setupMobileTabHeightPreservation();
     });
 
     effect(() => {
+      this.mobileChromeExpanded();
       this.projectDataExpanded();
       this.filtersVisible();
-      queueMicrotask(() => this.#syncMobileTabPanelHeight());
+      this.activeContentTab();
+      this.objects().length;
+      this.files().length;
+      if (!this.mobileChromeExpanded()) {
+        queueMicrotask(() => this.#capturePreservedTabHeight());
+      }
     });
   }
 
@@ -1017,6 +1027,46 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.projectDataExpanded.update((v) => !v);
   }
 
+  #setupMobileTabHeightPreservation(): void {
+    this.#mobileTabHeightMq = window.matchMedia('(max-width: 768px)');
+    const sync = () => this.#capturePreservedTabHeight();
+    sync();
+
+    const hostEl = this.#host.nativeElement;
+    this.#tabHeightResizeObserver = new ResizeObserver(() => {
+      if (!this.mobileChromeExpanded()) {
+        sync();
+      }
+    });
+    this.#tabHeightResizeObserver.observe(hostEl);
+
+    this.#mobileTabHeightMq.addEventListener('change', sync);
+    window.addEventListener('resize', sync, { passive: true });
+    window.visualViewport?.addEventListener('resize', sync);
+
+    this.#destroyRef.onDestroy(() => {
+      this.#tabHeightResizeObserver?.disconnect();
+      this.#mobileTabHeightMq?.removeEventListener('change', sync);
+      window.removeEventListener('resize', sync);
+      window.visualViewport?.removeEventListener('resize', sync);
+    });
+  }
+
+  #capturePreservedTabHeight(): void {
+    if (!isPlatformBrowser(this.#platformId)) return;
+
+    const mq = this.#mobileTabHeightMq ?? window.matchMedia('(max-width: 768px)');
+    if (!mq.matches || this.mobileChromeExpanded()) return;
+
+    const tabs = this.contentTabsHost()?.nativeElement;
+    if (!tabs) return;
+
+    const height = Math.round(tabs.getBoundingClientRect().height);
+    if (height < 1) return;
+
+    this.#host.nativeElement.style.setProperty('--project-tab-preserved-height', `${height}px`);
+  }
+
   startEditingProject(): void {
     this.#modalService.open({
       title: 'projects.editProject',
@@ -1049,85 +1099,5 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.updatingCategory.set(false);
       },
     });
-  }
-
-  #setupMobileTabPanelHeight(): void {
-    this.#mobilePanelHeightMq = window.matchMedia('(max-width: 768px)');
-    const chrome = this.projectTabChrome()?.nativeElement;
-    if (!chrome) return;
-
-    const sync = () => this.#syncMobileTabPanelHeight();
-    sync();
-
-    const ro = new ResizeObserver(sync);
-    ro.observe(chrome);
-
-    this.#mobilePanelHeightMq.addEventListener('change', sync);
-    window.addEventListener('resize', sync, { passive: true });
-    window.visualViewport?.addEventListener('resize', sync);
-
-    this.#destroyRef.onDestroy(() => {
-      ro.disconnect();
-      this.#mobilePanelHeightMq?.removeEventListener('change', sync);
-      window.removeEventListener('resize', sync);
-      window.visualViewport?.removeEventListener('resize', sync);
-    });
-  }
-
-  #syncMobileTabPanelHeight(): void {
-    if (!isPlatformBrowser(this.#platformId)) return;
-
-    const mq = this.#mobilePanelHeightMq ?? window.matchMedia('(max-width: 768px)');
-    const host = this.#host.nativeElement;
-
-    if (!mq.matches) {
-      host.style.removeProperty('--project-tab-panel-height');
-      host.style.removeProperty('--project-tab-chrome-max-height');
-      return;
-    }
-
-    const chrome = this.projectTabChrome()?.nativeElement;
-    if (!chrome) return;
-
-    const minPanelHeight = 120;
-    const tabBarHeight = 48;
-    const layoutGap = 12;
-    const navbarHeight = this.#readNavbarHeightPx();
-    const fabClearance = this.#readFloatingActionClearancePx();
-    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-    const availableBelowNavbar = viewportHeight - navbarHeight;
-    const maxChromeHeight = Math.max(
-      96,
-      availableBelowNavbar - tabBarHeight - layoutGap - minPanelHeight - fabClearance,
-    );
-
-    host.style.setProperty('--project-tab-chrome-max-height', `${Math.round(maxChromeHeight)}px`);
-
-    const chromeLayoutHeight = chrome.getBoundingClientRect().height;
-    const panelHeight = Math.round(
-      availableBelowNavbar - chromeLayoutHeight - tabBarHeight - layoutGap - fabClearance,
-    );
-
-    host.style.setProperty('--project-tab-panel-height', `${Math.max(panelHeight, minPanelHeight)}px`);
-  }
-
-  #readNavbarHeightPx(): number {
-    const raw = getComputedStyle(document.documentElement)
-      .getPropertyValue('--app-navbar-block')
-      .trim();
-    if (!raw) return 56;
-    if (raw.endsWith('rem')) return parseFloat(raw) * 16;
-    if (raw.endsWith('px')) return parseFloat(raw);
-    return 56;
-  }
-
-  #readFloatingActionClearancePx(): number {
-    const raw = getComputedStyle(document.documentElement)
-      .getPropertyValue('--app-floating-action-clearance')
-      .trim();
-    if (!raw) return 80;
-    if (raw.endsWith('rem')) return parseFloat(raw) * 16;
-    if (raw.endsWith('px')) return parseFloat(raw);
-    return 80;
   }
 }

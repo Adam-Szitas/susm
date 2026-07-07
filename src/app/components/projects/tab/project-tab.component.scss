@@ -24,18 +24,41 @@
   }
 }
 
+@include mobile {
+  :host.project-tab--chrome-expanded {
+    height: auto;
+    min-height: calc(100dvh - var(--app-navbar-block, 3.5rem));
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  :host.project-tab--chrome-expanded .wrapper {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+    padding-bottom: max(
+      var(--app-floating-action-clearance, 5rem),
+      calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
+    );
+  }
+
+  :host.project-tab--chrome-expanded .project-tab-chrome {
+    flex-shrink: 0;
+    overflow: visible;
+  }
+
+  :host.project-tab--chrome-expanded .project-content-tabs,
+  :host.project-tab--chrome-expanded .wrapper > app-tab-group.project-content-tabs {
+    flex: none;
+    height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+    min-height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+    max-height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+    overflow: hidden;
+  }
+}
+
 .project-tab-chrome {
   flex-shrink: 0;
-
-  @include mobile {
-    flex-shrink: 1;
-    min-height: 0;
-    max-height: var(--project-tab-chrome-max-height, 45dvh);
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
 }
 
 .apply-sort-order-toolbar {
@@ -93,7 +116,7 @@
   align-items: center;
   gap: 0.5rem 0.75rem;
   width: 100%;
-  margin: var(--space) 0 var(--space-small);
+  margin: var(--space-small) 0;
   contain: layout style paint;
 
   .project-toolbar-btn {
@@ -584,33 +607,41 @@
 .project-details-title-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem 0.75rem;
 
   h2 {
     margin: 0;
-    flex: 1;
     min-width: 0;
     font-size: 1.35rem;
     line-height: 1.25;
   }
 }
 
-.project-details-footer {
-  @include details-footer;
+.project-details-title-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.project-data-toggle {
+.project-details-expand-toggle {
   @include data-collapse-toggle;
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-radius: 8px;
+
+  .chevron {
+    @include collapse-chevron;
+  }
 }
 
-.project-data-toggle .chevron {
-  @include collapse-chevron;
-}
-
-.project-details-summary {
-  @include details-summary;
+.project-details-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.65rem;
 }
 
 .project-details-body {
@@ -851,7 +882,7 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-data-toggle .chevron {
+  .project-details-expand-toggle .chevron {
     transition: none;
   }
 }

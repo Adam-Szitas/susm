@@ -1,6 +1,7 @@
-import { computed, signal } from "@angular/core";
+import { computed, Injectable, signal } from "@angular/core";
 
 
+@Injectable({ providedIn: 'root' })
 export class TranslationStore {
   private _translations = signal<Record<string, string>>({});
   readonly translations = computed(() => this._translations())
@@ -19,4 +20,3 @@ export class TranslationStore {
 
 }
 
-export const translationStore = new TranslationStore();

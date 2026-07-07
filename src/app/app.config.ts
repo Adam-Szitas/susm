@@ -7,7 +7,6 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withFetch
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ApiTranslateLoader } from './loaders/api-translate-loader';
-import { TranslationStore } from './store/translation.store';
 import { UserStore } from './store/user.store';
 
 /**
@@ -48,7 +47,6 @@ export const appConfig: ApplicationConfig = {
         }
       })
     ),
-    TranslationStore,
     UserStore
   ]
 };

@@ -13,6 +13,29 @@
     overflow: hidden;
   }
 
+  :host-context(.project-tab--chrome-expanded).project-content-tabs {
+    @include mobile {
+      flex: none;
+      height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+      min-height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+      max-height: var(--project-tab-preserved-height, calc(100dvh - var(--app-navbar-block, 3.5rem) - 12rem));
+      overflow: hidden;
+
+      .tab-group--collapsed {
+        flex: 1 1 0;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .tab-group-panels {
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: hidden;
+      }
+    }
+  }
+
   &.checklist-modal-tabs {
     .tab-group-list {
       justify-content: flex-start;
@@ -54,7 +77,7 @@
 
   :host.project-content-tabs &--collapsed {
     flex: 1 1 0;
-    height: 100%;
+    min-height: 0;
   }
 
   :host.checklist-modal-tabs &--collapsed {

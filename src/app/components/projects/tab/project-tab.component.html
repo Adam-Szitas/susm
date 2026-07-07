@@ -4,35 +4,45 @@
   <section class="project-details" [class.project-details--expanded]="projectDataExpanded()">
     <header class="project-details-header">
       <div class="project-details-title-row">
-        <h2>{{ projectDisplayName() }}</h2>
-        <button
-          type="button"
-          class="group-edit-toggle button button-primary"
-          (click)="startEditingProject()"
-          [attr.aria-label]="'projects.editProject' | translate"
-          [title]="'projects.editProject' | translate"
-        >
-          ✎
-        </button>
-      </div>
-
-      @if (!projectDataExpanded()) {
-        <div class="project-details-summary">
-          <span class="summary-chip">
-            {{ 'dashboard.totalObjects' | translate }}: {{ objects().length }}
-          </span>
-          @if (projectAddressLine()) {
-            <span class="summary-chip">{{ projectAddressLine() }}</span>
-          }
-          @if (project()?.category) {
-            <span class="summary-chip summary-chip--category">{{ project()?.category }}</span>
-          }
+        <div class="project-details-title-group">
+          <h2>{{ projectDisplayName() }}</h2>
+          <button
+            type="button"
+            class="project-details-expand-toggle"
+            (click)="toggleProjectData()"
+            [attr.aria-expanded]="projectDataExpanded()"
+            [attr.aria-label]="
+              projectDataExpanded()
+                ? ('projects.hideProjectData' | translate)
+                : ('projects.showProjectData' | translate)
+            "
+            [attr.title]="
+              projectDataExpanded()
+                ? ('projects.hideProjectData' | translate)
+                : ('projects.showProjectData' | translate)
+            "
+            aria-controls="projectDetailsBody"
+          >
+            <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
+          </button>
         </div>
-      }
+      </div>
     </header>
 
     @if (projectDataExpanded()) {
       <div id="projectDetailsBody" class="project-details-body">
+        <div class="project-details-actions">
+          <button
+            type="button"
+            class="group-edit-toggle button button-primary"
+            (click)="startEditingProject()"
+            [attr.aria-label]="'projects.editProject' | translate"
+            [title]="'projects.editProject' | translate"
+          >
+            ✎
+          </button>
+        </div>
+
         @if (project()?.archived_at && project()?.archive_comment) {
           <div class="archive-comment-inline">
             <span class="archive-comment-label">{{ 'projects.archiveComment' | translate }}</span>
@@ -109,23 +119,6 @@
         </dl>
       </div>
     }
-
-    <div class="project-details-footer">
-      <button
-        type="button"
-        class="project-data-toggle"
-        (click)="toggleProjectData()"
-        [attr.aria-expanded]="projectDataExpanded()"
-        [attr.aria-label]="
-          projectDataExpanded()
-            ? ('projects.hideProjectData' | translate)
-            : ('projects.showProjectData' | translate)
-        "
-        aria-controls="projectDetailsBody"
-      >
-        <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
-      </button>
-    </div>
   </section>
 
   @if (!project()?.archived_at) {
@@ -363,6 +356,7 @@
   </div>
 
   <app-tab-group
+    #contentTabsHost
     class="project-content-tabs"
     [tabs]="contentTabs()"
     [activeTabId]="activeContentTab()"
