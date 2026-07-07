@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DEFAULT_WORK_STATUS, formatWorkStatus } from '@models';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
+import { compactFormActions } from '../shared/compact-form-actions';
 
 @Component({
   selector: 'app-projects',
@@ -21,6 +22,7 @@ export class ProjectsComponent implements OnInit {
   #modalService = inject(ModalService);
 
   public showArchived = signal(false);
+  readonly archiveToggleIconOnly = compactFormActions();
   public readonly defaultStatus = DEFAULT_WORK_STATUS;
   public readonly formatStatus = formatWorkStatus;
 
