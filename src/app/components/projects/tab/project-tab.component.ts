@@ -223,7 +223,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   readonly objectCardItemSize = computed(() => (this.toolbarIconOnly() ? 60 : 96));
 
   readonly objectListMaxHeight = computed(() => 'min(65dvh, 720px)');
-  readonly objectListFillHeight = computed(() => this.toolbarIconOnly());
+  /** Fill the tab column on mobile and in desktop side-by-side layout. */
+  readonly objectListFillHeight = computed(() => true);
 
   readonly objectsInReorderMode = computed(() => {
     const byId = new Map(
