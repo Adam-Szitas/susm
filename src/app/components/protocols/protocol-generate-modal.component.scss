@@ -1,3 +1,53 @@
+@use '../../../styles/mixins' as *;
+
+.protocol-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.protocol-action-icon {
+  display: none;
+  line-height: 0;
+  flex-shrink: 0;
+
+  svg {
+    @include icon-size(var(--icon-size-compact));
+  }
+}
+
+.protocol-action-label {
+  min-width: 0;
+}
+
+@include mobile {
+  .preview-actions,
+  .form-actions {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .protocol-action-btn,
+  .object-select-toggle.protocol-action-btn {
+    @include touch-target-min;
+    padding: 0.5rem !important;
+    flex: 0 0 auto;
+  }
+
+  .protocol-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .protocol-action-label {
+    display: none !important;
+  }
+}
+
 .save-to-project-row {
   display: flex;
   flex-direction: column;
@@ -21,19 +71,26 @@
 }
 
 .checklist-visibility-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  max-height: min(45dvh, 380px);
   margin-bottom: 1.25rem;
   padding: 0.85rem 1rem;
   border-radius: 8px;
   border: 1px solid var(--default-color, #e0e0e0);
   background: #fafafa;
+  overflow: hidden;
 
   .section-title {
     display: block;
+    flex-shrink: 0;
     font-weight: 500;
     margin: 0 0 0.25rem;
   }
 
   .helper-text {
+    flex-shrink: 0;
     margin: 0 0 0.75rem;
     font-size: 0.9rem;
     color: #666;
@@ -47,6 +104,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .checklist-visibility-item {

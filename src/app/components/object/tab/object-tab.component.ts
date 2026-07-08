@@ -30,7 +30,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
 import { HttpService } from '@services/http.service';
-import { StatusPillComponent } from '../../status-pill/app-status-pill.component';
 import { environment } from '../../../environment';
 import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
 import { ModalService } from '@services/modal.service';
@@ -49,7 +48,6 @@ import { EMPTY } from 'rxjs';
   imports: [
     TranslateModule,
     FileListComponent,
-    StatusPillComponent,
     FileUploadModalComponent,
     BreadcrumbComponent,
     FormsModule,
@@ -131,12 +129,6 @@ export class ObjectTabComponent implements OnInit {
   });
 
   readonly objectDisplayTitle = computed(() => this.#objectDisplayName(this.object()));
-
-  readonly objectAddressSummary = computed(() => {
-    const a = this.object()?.address;
-    if (!a) return '';
-    return [a.house_number, a.level, a.door_number].filter((p) => !!p?.trim()).join(', ');
-  });
 
   readonly isPinnedOnPlan = computed(() => !!this.object()?.map_pin);
 

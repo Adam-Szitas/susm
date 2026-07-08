@@ -7,58 +7,65 @@
         class="object-details"
         [class.object-details--expanded]="objectDataExpanded()"
       >
-      <header class="object-details-header">
-        <div class="object-details-title-row">
-          <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
-          <button
-            type="button"
-            class="group-edit-toggle button button-primary"
-            (click)="editObjectDetails()"
-            [attr.aria-label]="'objects.editObject' | translate"
-            [title]="'objects.editObject' | translate"
-          >
-            ✎
-          </button>
-        </div>
-
-        @if (isPinnedOnPlan()) {
-          <p class="object-plan-pin-flag" role="status">
-            <span class="summary-chip summary-chip--plan-pin">
-              <svg
-                class="object-plan-pin-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
+        <header class="object-details-header">
+          <div class="object-details-title-row">
+            <div class="object-details-title-group">
+              <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
+              <button
+                type="button"
+                class="object-details-expand-toggle object-details-expand-toggle--header"
+                (click)="toggleObjectData()"
+                [attr.aria-expanded]="objectDataExpanded()"
+                [attr.aria-label]="
+                  objectDataExpanded()
+                    ? ('objects.hideObjectData' | translate)
+                    : ('objects.showObjectData' | translate)
+                "
+                [attr.title]="
+                  objectDataExpanded()
+                    ? ('objects.hideObjectData' | translate)
+                    : ('objects.showObjectData' | translate)
+                "
+                aria-controls="objectDetailsBody"
               >
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
-              </svg>
-              {{ 'objects.pinnedOnPlan' | translate }}
-            </span>
-          </p>
-        }
-
-        @if (!objectDataExpanded()) {
-          <div class="object-details-summary">
-            @if (objectAddressSummary()) {
-              <span class="summary-chip">{{ objectAddressSummary() }}</span>
-            }
-            @if (object()?.prefix?.trim()) {
-              <span class="summary-chip">{{ object()?.prefix }}</span>
-            }
-            <span class="summary-chip summary-chip--status">
-              <app-status-pill [status]="object()?.status || defaultStatus" />
-            </span>
-            @if (object()?.category) {
-              <span class="summary-chip summary-chip--category">{{ object()?.category }}</span>
-            }
+                <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
+              </button>
+            </div>
           </div>
-        }
-      </header>
+        </header>
 
-      @if (objectDataExpanded()) {
-        <div id="objectDetailsBody" class="object-details-body">
-          <dl class="object-data-grid">
+        @if (objectDataExpanded()) {
+          <div id="objectDetailsBody" class="object-details-body">
+            <div class="object-details-actions">
+              <button
+                type="button"
+                class="group-edit-toggle button button-primary"
+                (click)="editObjectDetails()"
+                [attr.aria-label]="'objects.editObject' | translate"
+                [title]="'objects.editObject' | translate"
+              >
+                ✎
+              </button>
+            </div>
+
+            @if (isPinnedOnPlan()) {
+              <p class="object-plan-pin-flag" role="status">
+                <span class="summary-chip summary-chip--plan-pin">
+                  <svg
+                    class="object-plan-pin-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                  </svg>
+                  <span class="summary-chip-label">{{ 'objects.pinnedOnPlan' | translate }}</span>
+                </span>
+              </p>
+            }
+
+            <dl class="object-data-grid">
             @if (object()?.address?.house_number) {
               <div class="object-data-item">
                 <dt>{{ 'common.houseNumber' | translate }}</dt>
@@ -136,25 +143,39 @@
             </div>
           </dl>
         </div>
-      }
 
-      <div class="object-details-footer">
-        <button
-          type="button"
-          class="object-data-toggle"
-          (click)="toggleObjectData()"
-          [attr.aria-expanded]="objectDataExpanded()"
-          [attr.aria-label]="
-            objectDataExpanded()
-              ? ('objects.hideObjectData' | translate)
-              : ('objects.showObjectData' | translate)
-          "
-          aria-controls="objectDetailsBody"
-        >
-          <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
-        </button>
-      </div>
-    </section>
+        <div class="object-details-footer">
+          <button
+            type="button"
+            class="group-edit-toggle button button-primary"
+            (click)="editObjectDetails()"
+            [attr.aria-label]="'objects.editObject' | translate"
+            [title]="'objects.editObject' | translate"
+          >
+            ✎
+          </button>
+          <button
+            type="button"
+            class="object-details-expand-toggle"
+            (click)="toggleObjectData()"
+            [attr.aria-expanded]="objectDataExpanded()"
+            [attr.aria-label]="
+              objectDataExpanded()
+                ? ('objects.hideObjectData' | translate)
+                : ('objects.showObjectData' | translate)
+            "
+            [attr.title]="
+              objectDataExpanded()
+                ? ('objects.hideObjectData' | translate)
+                : ('objects.showObjectData' | translate)
+            "
+            aria-controls="objectDetailsBody"
+          >
+            <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
+          </button>
+        </div>
+      }
+      </section>
   }
   </div>
 

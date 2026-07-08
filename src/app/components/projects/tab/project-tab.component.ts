@@ -66,6 +66,7 @@ import {
   VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
 } from '../../shared/virtual-scroll-viewport.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
+import { DragReorderAutoScroll } from '../../../utils/drag-reorder-auto-scroll';
 import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
@@ -150,6 +151,14 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   draggedObjectId = signal<string | null>(null);
   dragOverObjectId = signal<string | null>(null);
   #touchObjectReorderActive = false;
+  readonly #objectReorderAutoScroll = new DragReorderAutoScroll();
+  readonly #onDocumentObjectDragOver = (event: DragEvent): void => {
+    if (!this.draggedObjectId()) {
+      return;
+    }
+    event.preventDefault();
+    this.#objectReorderAutoScroll.update(event.clientY);
+  };
   /** Working order while reorder mode is active (all project objects). */
   objectOrderIds = signal<string[]>([]);
   public readonly formatStatus = formatWorkStatus;
@@ -366,6 +375,27 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.#touchObjectReorderActive = false;
+    this.#stopObjectReorderAutoScroll();
+  }
+
+  #startObjectReorderAutoScroll(anchor: HTMLElement | null): void {
+    if (!anchor || !isPlatformBrowser(this.#platformId)) {
+      return;
+    }
+    this.#objectReorderAutoScroll.start(anchor);
+  }
+
+  #stopObjectReorderAutoScroll(): void {
+    this.#objectReorderAutoScroll.stop();
+    if (isPlatformBrowser(this.#platformId)) {
+      document.removeEventListener('dragover', this.#onDocumentObjectDragOver);
+    }
+  }
+
+  #updateObjectReorderAutoScroll(clientY: number): void {
+    if (this.draggedObjectId() || this.#touchObjectReorderActive) {
+      this.#objectReorderAutoScroll.update(clientY);
+    }
   }
 
   filterData(): Filter {
@@ -679,6 +709,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       this.#touchObjectReorderActive = false;
       this.draggedObjectId.set(null);
       this.dragOverObjectId.set(null);
+      this.#stopObjectReorderAutoScroll();
     }
   }
 
@@ -784,10 +815,22 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', id);
     }
+    this.#startObjectReorderAutoScroll(
+      (event.currentTarget as HTMLElement | null)?.closest('.card-wrapper--reorder') ?? null,
+    );
+    if (isPlatformBrowser(this.#platformId)) {
+      document.addEventListener('dragover', this.#onDocumentObjectDragOver);
+    }
+  }
+
+  onObjectListDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.#updateObjectReorderAutoScroll(event.clientY);
   }
 
   onObjectDragOver(event: DragEvent, object: Object): void {
     event.preventDefault();
+    this.#updateObjectReorderAutoScroll(event.clientY);
     const id = object._id?.$oid;
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
@@ -820,6 +863,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.#touchObjectReorderActive = false;
     this.draggedObjectId.set(null);
     this.dragOverObjectId.set(null);
+    this.#stopObjectReorderAutoScroll();
   }
 
   onObjectTouchStart(event: TouchEvent, object: Object): void {
@@ -830,11 +874,18 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.#touchObjectReorderActive = true;
     this.draggedObjectId.set(id);
+    this.#startObjectReorderAutoScroll(
+      (event.currentTarget as HTMLElement | null)?.closest('.card-wrapper--reorder') ?? null,
+    );
   }
 
   onObjectTouchMove(event: TouchEvent): void {
     if (!this.#touchObjectReorderActive) return;
     event.preventDefault();
+    const touch = event.touches[0];
+    if (touch) {
+      this.#updateObjectReorderAutoScroll(touch.clientY);
+    }
     const overId = reorderTargetIdFromTouch(event);
     const draggedId = this.draggedObjectId();
     if (overId && overId !== draggedId) {

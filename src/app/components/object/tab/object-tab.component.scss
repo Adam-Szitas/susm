@@ -96,37 +96,81 @@
 .object-details-title-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem 0.75rem;
 
   .object-title {
     margin: 0;
-    flex: 1;
     min-width: 0;
     font-size: 1.35rem;
     line-height: 1.25;
   }
 }
 
-.object-details-footer {
-  @include details-footer;
+.object-details-title-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.object-data-toggle {
+.object-details-expand-toggle {
   @include data-collapse-toggle;
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-radius: 8px;
+
+  .chevron {
+    @include collapse-chevron;
+  }
 }
 
-.object-data-toggle .chevron {
-  @include collapse-chevron;
+.object-details-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.65rem;
 }
 
-.object-details-summary {
-  @include details-summary;
+.object-details-footer {
+  display: none;
+}
+
+@include mobile {
+  .object-details--expanded {
+    .object-details-actions {
+      display: none;
+    }
+
+    .object-details-expand-toggle--header {
+      display: none;
+    }
+
+    .object-details-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #eee;
+    }
+
+    .summary-chip--plan-pin .summary-chip-label {
+      display: none;
+    }
+
+    .summary-chip--plan-pin {
+      padding: 0.35rem;
+      @include touch-target-min;
+      justify-content: center;
+    }
+  }
 }
 
 .object-plan-pin-flag {
-  margin: 0.45rem 0 0;
+  margin: 0 0 0.85rem;
 }
 
 .object-plan-pin-icon {
@@ -230,7 +274,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .object-data-toggle .chevron {
+  .object-details-expand-toggle .chevron {
     transition: none;
   }
 }

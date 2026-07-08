@@ -673,6 +673,32 @@
   margin-bottom: 0.65rem;
 }
 
+.project-details-footer {
+  display: none;
+}
+
+@include mobile {
+  .project-details--expanded {
+    .project-details-actions {
+      display: none;
+    }
+
+    .project-details-expand-toggle--header {
+      display: none;
+    }
+
+    .project-details-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #eee;
+    }
+  }
+}
+
 .project-details-body {
   margin-top: 0.65rem;
 }

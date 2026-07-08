@@ -8,7 +8,7 @@
           <h2>{{ projectDisplayName() }}</h2>
           <button
             type="button"
-            class="project-details-expand-toggle"
+            class="project-details-expand-toggle project-details-expand-toggle--header"
             (click)="toggleProjectData()"
             [attr.aria-expanded]="projectDataExpanded()"
             [attr.aria-label]="
@@ -117,6 +117,37 @@
             </div>
           }
         </dl>
+      </div>
+
+      <div class="project-details-footer">
+        <button
+          type="button"
+          class="group-edit-toggle button button-primary"
+          (click)="startEditingProject()"
+          [attr.aria-label]="'projects.editProject' | translate"
+          [title]="'projects.editProject' | translate"
+        >
+          ✎
+        </button>
+        <button
+          type="button"
+          class="project-details-expand-toggle"
+          (click)="toggleProjectData()"
+          [attr.aria-expanded]="projectDataExpanded()"
+          [attr.aria-label]="
+            projectDataExpanded()
+              ? ('projects.hideProjectData' | translate)
+              : ('projects.showProjectData' | translate)
+          "
+          [attr.title]="
+            projectDataExpanded()
+              ? ('projects.hideProjectData' | translate)
+              : ('projects.showProjectData' | translate)
+          "
+          aria-controls="projectDetailsBody"
+        >
+          <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
+        </button>
       </div>
     }
   </section>
@@ -368,7 +399,7 @@
         <div
           class="card-wrapper card-wrapper--reorder"
           [class.card-wrapper--defer]="objectsInReorderMode().length > virtualScrollThreshold"
-          (dragover)="$event.preventDefault()"
+          (dragover)="onObjectListDragOver($event)"
           (touchmove)="onObjectTouchMove($event)"
           (touchend)="onObjectTouchEnd($event)"
           (touchcancel)="onObjectTouchCancel()"
