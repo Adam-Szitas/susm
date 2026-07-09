@@ -37,7 +37,6 @@ export class ProjectsComponent implements OnInit {
 
   public showArchived = signal(false);
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
-  readonly projectCardItemSize = 196;
 
   public projects = computed(() => {
     const allProjects = this.#projectStore.projects();

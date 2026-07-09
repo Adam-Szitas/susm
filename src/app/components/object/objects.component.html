@@ -32,10 +32,8 @@
     <app-virtual-scroll-viewport
       class="objects-list-viewport"
       [items]="filteredObjects()"
-      [itemSize]="objectCardItemSize"
       [threshold]="virtualScrollThreshold"
       [trackBy]="trackObjectItemById"
-      [maxHeight]="'min(65dvh, 720px)'"
       [ariaLabel]="'objects.title' | translate"
       [gridLayout]="true"
     >

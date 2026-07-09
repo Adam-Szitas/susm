@@ -79,7 +79,8 @@
 :host.virtual-scroll-host--grid .virtual-scroll-fallback {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
-  gap: var(--space, 16px);
+  gap: var(--space-small, 8px);
+  align-items: start;
 }
 
 :host.virtual-scroll-host--fill .virtual-scroll-fallback {

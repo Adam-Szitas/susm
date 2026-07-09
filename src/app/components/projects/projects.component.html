@@ -26,10 +26,8 @@
     <app-virtual-scroll-viewport
       class="projects-list-viewport"
       [items]="projects()"
-      [itemSize]="projectCardItemSize"
       [threshold]="virtualScrollThreshold"
       [trackBy]="trackProjectById"
-      [maxHeight]="'min(65dvh, 720px)'"
       [ariaLabel]="'projects.title' | translate"
       [gridLayout]="true"
     >

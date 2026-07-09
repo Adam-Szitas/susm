@@ -64,7 +64,9 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   readonly #viewportHeight = signal(480);
   readonly #viewportWidth = signal(800);
 
-  readonly useVirtualScroll = computed(() => this.items().length > this.threshold());
+  readonly useVirtualScroll = computed(
+    () => !this.gridLayout() && this.items().length > this.threshold(),
+  );
 
   readonly columnCount = computed(() => {
     if (!this.gridLayout()) {

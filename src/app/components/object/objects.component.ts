@@ -42,8 +42,6 @@ export class ObjectComponent implements OnInit {
   filtersVisible = signal(false);
   restoredFilterState = signal<PersistedFilterState | null>(null);
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
-  /** Row height for virtual scroll; must fit tallest object card (incl. gap). */
-  readonly objectCardItemSize = 260;
 
   readonly allCategories = computed(() => {
     const objects = this.objects() || [];
