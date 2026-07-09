@@ -1,8 +1,29 @@
-<div class="wrapper">
-  <app-page-header [title]="'objects.title' | translate" />
+<app-page-header [title]="'objects.title' | translate" [balanceLeading]="true">
+  <button
+    pageHeaderLeading
+    type="button"
+    class="button button-secondary objects-filter-toggle objects-filter-toggle--icon-only"
+    (click)="toggleFilters()"
+    [attr.aria-expanded]="filtersVisible()"
+    [attr.aria-label]="
+      filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)
+    "
+    [attr.title]="filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)"
+    aria-controls="filterControls"
+  >
+    @if (filtersVisible()) {
+      <app-icon [icon]="icons.filterOff" svgClass="objects-filter-toggle-icon" />
+    } @else {
+      <app-icon [icon]="icons.filter" svgClass="objects-filter-toggle-icon" />
+    }
+  </button>
+</app-page-header>
+
+<div class="objects-wrapper">
   <app-filter
     [filter]="filterData()"
     [initialState]="restoredFilterState()"
+    [hideToggleButton]="true"
     (filterChange)="onFilterChange($event)"
     (filtersVisibleChange)="onFiltersVisibleChange($event)"
   ></app-filter>
@@ -16,6 +37,7 @@
       [trackBy]="trackObjectItemById"
       [maxHeight]="'min(65dvh, 720px)'"
       [ariaLabel]="'objects.title' | translate"
+      [gridLayout]="true"
     >
       <ng-template let-item>
         @if (item.object; as objectItem) {

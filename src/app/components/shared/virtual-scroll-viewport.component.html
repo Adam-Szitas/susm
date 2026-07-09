@@ -10,17 +10,29 @@
     [attr.aria-label]="ariaLabel() || null"
   >
     <div class="virtual-scroll-spacer" [style.height.px]="totalHeight()">
-      <div class="virtual-scroll-content" [style.transform]="transform()">
+      <div
+        class="virtual-scroll-content"
+        [style.transform]="transform()"
+        [style.--vs-columns]="columnCount()"
+      >
         @for (row of visibleRows(); track trackRow($index, row)) {
           <div
             class="virtual-scroll-item"
+            [class.virtual-scroll-item--grid]="gridLayout()"
             [style.height.px]="itemSize()"
-            role="listitem"
+            [attr.role]="gridLayout() ? null : 'listitem'"
           >
-            @if (itemTemplate()) {
-              <ng-container
-                *ngTemplateOutlet="itemTemplate()!; context: { $implicit: row.item, index: row.index }"
-              />
+            @for (cell of row.cells; track trackItem(cell.index, cell.item)) {
+              <div class="virtual-scroll-cell" [attr.role]="gridLayout() ? 'listitem' : null">
+                @if (itemTemplate()) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      itemTemplate()!;
+                      context: { $implicit: cell.item, index: cell.index }
+                    "
+                  />
+                }
+              </div>
             }
           </div>
         }

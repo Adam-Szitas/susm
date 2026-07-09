@@ -31,6 +31,7 @@
       [trackBy]="trackProjectById"
       [maxHeight]="'min(65dvh, 720px)'"
       [ariaLabel]="'projects.title' | translate"
+      [gridLayout]="true"
     >
       <ng-template let-project>
         <app-project-card [project]="project" [routerLink]="'tab/' + project._id?.$oid" />

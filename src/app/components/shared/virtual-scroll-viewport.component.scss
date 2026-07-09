@@ -53,6 +53,19 @@
     height: calc(100% - var(--space-small, 8px));
     margin: 0;
   }
+
+  &--grid {
+    display: grid;
+    grid-template-columns: repeat(var(--vs-columns, 1), minmax(0, 1fr));
+    gap: var(--space, 16px);
+    overflow: visible;
+    padding-bottom: var(--space-small, 8px);
+  }
+}
+
+.virtual-scroll-cell {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .virtual-scroll-fallback {
@@ -61,6 +74,12 @@
   gap: var(--space, 16px);
   width: 100%;
   min-width: 0;
+}
+
+:host.virtual-scroll-host--grid .virtual-scroll-fallback {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: var(--space, 16px);
 }
 
 :host.virtual-scroll-host--fill .virtual-scroll-fallback {

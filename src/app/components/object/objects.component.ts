@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Filter, FilterResult, ObjectWithProject, objectAddressSearchText, parseDateValue } from '@models';
 import { ProjectStore } from '@store/project.store';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,6 +10,8 @@ import {
   VirtualScrollViewportComponent,
   VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
 } from '../shared/virtual-scroll-viewport.component';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 
 const FILTER_KEY = 'objects';
 
@@ -24,15 +26,20 @@ const FILTER_KEY = 'objects';
     PageHeaderComponent,
     ObjectCardComponent,
     VirtualScrollViewportComponent,
+    IconComponent,
   ],
 })
 export class ObjectComponent implements OnInit {
+  protected readonly icons = icons;
+
   #projectStore = inject(ProjectStore);
   #filterPersistence = inject(FilterPersistenceService);
+  readonly objectsFilter = viewChild(FilterComponent);
   public objects = this.#projectStore.objectsWithProjects;
   public filteredObjects = signal<ObjectWithProject[]>([]);
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
+  filtersVisible = signal(false);
   restoredFilterState = signal<PersistedFilterState | null>(null);
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
   readonly objectCardItemSize = 132;
@@ -77,9 +84,14 @@ export class ObjectComponent implements OnInit {
       this.restoredFilterState.set(restored);
       this.#currentFilter.set(restored.filter);
       this.#filtersVisible = restored.filtersVisible;
+      this.filtersVisible.set(restored.filtersVisible);
     } else {
       this.#currentFilter.set({});
     }
+  }
+
+  toggleFilters(): void {
+    this.objectsFilter()?.toggleFilters();
   }
 
   public onFilterChange(filter: FilterResult): void {
@@ -89,6 +101,7 @@ export class ObjectComponent implements OnInit {
 
   public onFiltersVisibleChange(visible: boolean): void {
     this.#filtersVisible = visible;
+    this.filtersVisible.set(visible);
     this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
   }
 
