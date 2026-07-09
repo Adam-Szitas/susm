@@ -12,9 +12,12 @@ import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
-import { DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
+import { DEFAULT_WORK_STATUS } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
+import { StatusSelectComponent } from '../../shared/status-select.component';
 import {
   buildHouseNumberRange,
   MAX_HOUSE_NUMBER_RANGE_SIZE,
@@ -28,9 +31,10 @@ import { resolveObjectPrefix } from '../../../utils/object-prefix';
   styleUrl: './object-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TrashIconComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TrashIconComponent, StatusSelectComponent, IconComponent],
 })
 export class ObjectModalComponent implements OnInit {
+  protected readonly icons = icons;
   #formBuilder = inject(FormBuilder);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
@@ -38,8 +42,6 @@ export class ObjectModalComponent implements OnInit {
   #translationService = inject(TranslationService);
   #destroyRef = inject(DestroyRef);
 
-  readonly statuses = WORK_STATUSES;
-  readonly statusLabel = formatWorkStatus;
   readonly maxRangeSize = MAX_HOUSE_NUMBER_RANGE_SIZE;
   progressing = signal(false);
   readonly #rangePreviewRevision = signal(0);

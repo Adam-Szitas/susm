@@ -1,0 +1,12 @@
+<select
+  class="status-select"
+  [ngClass]="selectClass()"
+  [id]="id()"
+  [disabled]="isDisabled()"
+  [value]="value()"
+  (change)="onSelect($event)"
+>
+  @for (status of statuses; track status) {
+    <option [value]="status">{{ statusLabel(status) | translate }}</option>
+  }
+</select>

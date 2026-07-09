@@ -27,6 +27,7 @@ import {
   fileGroupCategoryLabels,
   fileGroupIsSoftDeleted,
   formatWorkStatus,
+  formatObjectDisplayLabel,
   Object,
   parseDateValue,
   ProtocolRecord,
@@ -51,13 +52,14 @@ import { CategoryManagementModalComponent } from '../category-management-modal.c
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { ProjectPlanModalComponent } from '../project-plan-modal/project-plan-modal.component';
 import { UserStore } from '@store/user.store';
-import { LocaleDatePipe } from '../../../pipes/locale-date.pipe';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import {
   FilterPersistenceService,
   PersistedFilterState,
 } from '@services/filter-persistence.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
 import { TabGroupComponent, TabItem } from '../../shared/tab-group.component';
 import { TabPanelComponent } from '../../shared/tab-panel.component';
@@ -68,6 +70,9 @@ import {
 import { compactFormActions } from '../../shared/compact-form-actions';
 import { DragReorderAutoScroll } from '../../../utils/drag-reorder-auto-scroll';
 import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
+import { ObjectCardComponent } from '../../shared/object-card.component';
+import { FloatingAddButtonComponent } from '../../shared/floating-add-button.component';
+import { DetailFieldComponent } from '../../shared/detail-field.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
 
@@ -86,16 +91,21 @@ import { isMissingResource404 } from '../../../utils/auth-http-error';
     TranslateModule,
     FileListComponent,
     FileUploadModalComponent,
-    LocaleDatePipe,
     BreadcrumbComponent,
     TrashIconComponent,
     TabGroupComponent,
     TabPanelComponent,
     VirtualScrollViewportComponent,
+    ObjectCardComponent,
+    FloatingAddButtonComponent,
+    DetailFieldComponent,
+    IconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTabComponent implements OnInit, OnDestroy {
+  protected readonly icons = icons;
+
   #route = inject(ActivatedRoute);
   #router = inject(Router);
   #projectStore = inject(ProjectStore);
@@ -163,32 +173,21 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   objectOrderIds = signal<string[]>([]);
   public readonly formatStatus = formatWorkStatus;
 
-  objectCardHeadline(object: Object): string {
-    const addr = object.address;
-    if (!addr) return '';
-    const parts = [
-      addr.house_number?.trim(),
-      addr.level?.trim(),
-      addr.door_number?.trim(),
-    ].filter((part): part is string => !!part);
-    return parts.join(', ');
-  }
-
-  /** Compact mobile card label — house number only. */
-  objectCardMobileLabel(object: Object): string {
-    return object.address?.house_number?.trim() ?? '';
-  }
-
-  /** Non-empty label for object card headings (accessibility + file pickers). */
   objectCardDisplayLabel(object: Object, compact = false): string {
-    const addressLabel = compact
-      ? this.objectCardMobileLabel(object) || this.objectCardHeadline(object)
-      : this.objectCardHeadline(object) || this.objectCardMobileLabel(object);
     return (
-      addressLabel ||
-      object._id?.$oid ||
-      this.#translationService.instant('objects.newObject')
+      formatObjectDisplayLabel(object, {
+        compact,
+        fallback: this.#translationService.instant('objects.newObject'),
+      }) || this.#translationService.instant('objects.newObject')
     );
+  }
+
+  get objectCardFallbackLabel(): string {
+    return this.#translationService.instant('objects.newObject');
+  }
+
+  objectCardSurfaceClasses(object: Object): string[] {
+    return ['card--deferred', ...this.objectTodoCardClasses(object)];
   }
 
   readonly projectDisplayName = computed(() => {

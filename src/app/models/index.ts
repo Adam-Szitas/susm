@@ -1,5 +1,6 @@
 // Centralized models and types
 export * from './user.model';
+export * from './object-address.util';
 export * from './project.model';
 export * from './object.model';
 export * from './mongo-date';

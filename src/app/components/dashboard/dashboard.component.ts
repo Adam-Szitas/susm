@@ -7,6 +7,8 @@ import { UserStore } from '../../store/user.store';
 import { TranslationService } from '../../services/translation.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TeamUsersPanelComponent } from './team-users-panel.component';
 import { RegistrationInvitePanelComponent } from './registration-invite-panel.component';
 
@@ -23,9 +25,12 @@ import { RegistrationInvitePanelComponent } from './registration-invite-panel.co
     RouterLink,
     TeamUsersPanelComponent,
     RegistrationInvitePanelComponent,
+    IconComponent,
   ],
 })
 export class DashboardComponent implements OnInit {
+  protected readonly icons = icons;
+
   #httpService = inject(HttpService);
   #userStore = inject(UserStore);
   #translationService = inject(TranslationService);

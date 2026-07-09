@@ -1,47 +1,7 @@
 <div class="wrapper">
   @if (form) {
     <form [formGroup]="form">
-      <div class="control" formGroupName="address">
-        <h4>{{ 'common.address' | translate }}</h4>
-        <div class="control">
-          <label for="house_number">{{ 'common.houseNumber' | translate }} *</label>
-          <input
-            placeholder="house number"
-            type="text"
-            id="house_number"
-            formControlName="house_number"
-          />
-        </div>
-        <div class="control">
-          <label for="level">{{ 'common.level' | translate }}</label>
-          <input placeholder="e.g. 3 or 3rd" type="text" id="level" formControlName="level" />
-        </div>
-        <div class="control">
-          <label for="door_number">{{ 'common.doorNumber' | translate }}</label>
-          <input
-            placeholder="door or flat number"
-            type="text"
-            id="door_number"
-            formControlName="door_number"
-          />
-        </div>
-      </div>
-      <div class="control">
-        <label for="note">{{ 'common.note' | translate }}</label>
-        <input placeholder="Note" type="text" id="note" formControlName="note" />
-      </div>
-      <div class="control">
-        <label for="prefix">{{ 'objects.prefix' | translate }}</label>
-        <input placeholder="{{ 'objects.prefixPlaceholder' | translate }}" type="text" id="prefix" formControlName="prefix" />
-      </div>
-      <div class="control">
-        <label for="status">{{ 'objects.status' | translate }}</label>
-        <select id="status" formControlName="status">
-          @for (status of statuses; track status) {
-            <option [value]="status">{{ statusLabel(status) | translate }}</option>
-          }
-        </select>
-      </div>
+      <app-object-form-fields [form]="form" />
       <div class="form-actions">
         @if (isAdmin()) {
           <button
@@ -69,19 +29,7 @@
           [title]="'common.submit' | translate"
         >
           @if (iconOnlyActions()) {
-            <svg
-              class="submit-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <app-icon [icon]="icons.check" [svgClass]="'submit-icon'" [strokeWidth]="2.5" />
           } @else {
             <span class="action-label">{{ 'common.submit' | translate }}</span>
           }

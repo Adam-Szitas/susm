@@ -1,0 +1,49 @@
+<ng-container [formGroup]="form()">
+  <div class="control" formGroupName="address">
+    <h4>{{ 'common.address' | translate }}</h4>
+    <div class="control">
+      <label [for]="idPrefix() + 'house_number'">{{ 'common.houseNumber' | translate }} *</label>
+      <input
+        placeholder="house number"
+        type="text"
+        [id]="idPrefix() + 'house_number'"
+        formControlName="house_number"
+      />
+    </div>
+    <div class="control">
+      <label [for]="idPrefix() + 'level'">{{ 'common.level' | translate }}</label>
+      <input
+        placeholder="e.g. 3 or 3rd"
+        type="text"
+        [id]="idPrefix() + 'level'"
+        formControlName="level"
+      />
+    </div>
+    <div class="control">
+      <label [for]="idPrefix() + 'door_number'">{{ 'common.doorNumber' | translate }}</label>
+      <input
+        placeholder="door or flat number"
+        type="text"
+        [id]="idPrefix() + 'door_number'"
+        formControlName="door_number"
+      />
+    </div>
+  </div>
+  <div class="control">
+    <label [for]="idPrefix() + 'note'">{{ 'common.note' | translate }}</label>
+    <input placeholder="Note" type="text" [id]="idPrefix() + 'note'" formControlName="note" />
+  </div>
+  <div class="control">
+    <label [for]="idPrefix() + 'prefix'">{{ 'objects.prefix' | translate }}</label>
+    <input
+      [placeholder]="'objects.prefixPlaceholder' | translate"
+      type="text"
+      [id]="idPrefix() + 'prefix'"
+      formControlName="prefix"
+    />
+  </div>
+  <div class="control">
+    <label [for]="idPrefix() + 'status'">{{ 'objects.status' | translate }}</label>
+    <app-status-select [id]="idPrefix() + 'status'" formControlName="status" />
+  </div>
+</ng-container>

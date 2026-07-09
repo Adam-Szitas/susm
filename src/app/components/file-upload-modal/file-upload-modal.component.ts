@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
 import { lockDocumentScroll, unlockDocumentScroll } from '@services/document-scroll-lock';
 
@@ -16,12 +18,14 @@ interface FilePreview {
 @Component({
   selector: 'app-file-upload-modal',
   standalone: true,
-  imports: [TranslateModule, FormsModule, TrashIconComponent],
+  imports: [TranslateModule, FormsModule, TrashIconComponent, IconComponent],
   templateUrl: './file-upload-modal.component.html',
   styleUrl: './file-upload-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileUploadModalComponent {
+  protected readonly icons = icons;
+
   #imageCompressionService = inject(ImageCompressionService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);

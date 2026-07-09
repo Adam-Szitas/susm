@@ -1,0 +1,30 @@
+@let link = routerLink();
+@let obj = object();
+
+<div
+  class="card"
+  [class.card--mobile-name]="compact()"
+  [ngClass]="cardClasses() ?? null"
+  [routerLink]="link"
+  [queryParams]="link ? (queryParams() ?? null) : null"
+  [class.card--linked]="!!link"
+>
+  @if (showStatus() && !compact()) {
+    <app-status-pill [status]="obj?.status || 'created'" />
+  }
+  @if (projectName()) {
+    <div class="project-name">{{ projectName() }}</div>
+  }
+  <h2 class="headline" [attr.title]="displayLabel()">
+    <span class="headline-text">{{ displayLabel() }}</span>
+  </h2>
+  @if (!compact() && obj.note) {
+    <div class="note">{{ obj.note }}</div>
+  }
+  @if (showMeta() && !compact()) {
+    <div class="created-at">
+      <span>{{ obj.created_at | localeDate: dateFormat() }}</span>
+      <span>{{ obj.category || '' }}</span>
+    </div>
+  }
+</div>

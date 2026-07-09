@@ -1,0 +1,13 @@
+:host {
+  display: inline-flex;
+  line-height: 0;
+  flex-shrink: 0;
+  inline-size: var(--icon-size, var(--icon-size-md, 1.25rem));
+  block-size: var(--icon-size, var(--icon-size-md, 1.25rem));
+}
+
+svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}

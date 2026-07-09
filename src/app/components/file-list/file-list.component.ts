@@ -39,6 +39,8 @@ import {
   ProjectObjectOption,
   SendProjectFileModalComponent,
 } from './send-project-file-modal.component';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
 
 @Component({
@@ -47,10 +49,11 @@ import { TrashIconComponent } from '../shared/trash-icon.component';
   styleUrl: './file-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, TrashIconComponent],
+  imports: [CommonModule, TranslateModule, FormsModule, TrashIconComponent, IconComponent],
   preserveWhitespaces: false,
 })
 export class FileListComponent implements OnDestroy {
+  protected readonly icons = icons;
   #fileService = inject(FileService);
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);

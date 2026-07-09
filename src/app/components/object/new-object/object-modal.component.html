@@ -15,11 +15,7 @@
       </div>
       <div class="control">
         <label for="status">{{ 'objects.status' | translate }}</label>
-        <select id="status" formControlName="status">
-          @for (status of statuses; track status) {
-            <option [value]="status">{{ statusLabel(status) | translate }}</option>
-          }
-        </select>
+        <app-status-select id="status" formControlName="status" />
         <span class="field-hint">{{ 'objects.sharedStatusHint' | translate }}</span>
       </div>
     </div>
@@ -184,15 +180,7 @@
         [attr.aria-label]="'objects.addRow' | translate"
         [attr.title]="'objects.addRow' | translate"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 5v14m-7-7h14"
-          />
-        </svg>
+        <app-icon [icon]="icons.plus" />
       </button>
       <button type="submit" class="btn btn-primary form-actions-submit" [disabled]="form.invalid || progressing()">
         @if (progressing()) {

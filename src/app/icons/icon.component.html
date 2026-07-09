@@ -1,0 +1,45 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  [attr.viewBox]="resolved().viewBox"
+  [attr.fill]="resolved().fill ?? 'none'"
+  [attr.stroke]="resolved().stroke"
+  [attr.stroke-width]="resolved().strokeWidth"
+  [attr.stroke-linecap]="resolved().strokeLinecap"
+  [attr.stroke-linejoin]="resolved().strokeLinejoin"
+  [attr.fill-rule]="resolved().fillRule"
+  [attr.clip-rule]="resolved().clipRule"
+  [class]="svgClass()"
+  aria-hidden="true"
+>
+  @for (element of resolved().elements; track $index) {
+    @switch (element.tag) {
+      @case ('path') {
+        <path
+          [attr.d]="element.d"
+          [attr.fill]="element.fill"
+          [attr.stroke]="element.stroke"
+          [attr.fill-rule]="element.fillRule"
+          [attr.clip-rule]="element.clipRule"
+        />
+      }
+      @case ('line') {
+        <line [attr.x1]="element.x1" [attr.y1]="element.y1" [attr.x2]="element.x2" [attr.y2]="element.y2" />
+      }
+      @case ('rect') {
+        <rect
+          [attr.x]="element.x"
+          [attr.y]="element.y"
+          [attr.width]="element.width"
+          [attr.height]="element.height"
+          [attr.rx]="element.rx"
+        />
+      }
+      @case ('circle') {
+        <circle [attr.cx]="element.cx" [attr.cy]="element.cy" [attr.r]="element.r" />
+      }
+      @case ('polyline') {
+        <polyline [attr.points]="element.points" />
+      }
+    }
+  }
+</svg>

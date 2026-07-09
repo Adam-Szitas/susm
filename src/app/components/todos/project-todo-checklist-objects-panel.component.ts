@@ -14,6 +14,7 @@ import { finalize } from 'rxjs/operators';
 import {
   ObjectTodoEntry,
   Object as ProjectObject,
+  formatObjectLabel,
   objectsAssignedToTodoItem,
   sortObjectsByStoredOrder,
   TodoItem,
@@ -22,17 +23,20 @@ import {
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TodoItemValueControlComponent } from './todo-item-value-control.component';
 
 @Component({
   selector: 'app-project-todo-checklist-objects-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TodoItemValueControlComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, TodoItemValueControlComponent, IconComponent],
   templateUrl: './project-todo-checklist-objects-panel.component.html',
   styleUrl: './project-todo-checklist-objects-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTodoChecklistObjectsPanelComponent {
+  protected readonly icons = icons;
   #projectStore = inject(ProjectStore);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
@@ -59,14 +63,7 @@ export class ProjectTodoChecklistObjectsPanelComponent {
   });
 
   objectLabel(object: ProjectObject): string {
-    const parts = [
-      object.address?.house_number,
-      object.address?.level,
-      object.address?.door_number,
-    ].filter((part) => !!part?.trim());
-    if (parts.length) return parts.join(', ');
-    if (object.prefix?.trim()) return object.prefix.trim();
-    return object._id?.$oid ?? '';
+    return formatObjectLabel(object);
   }
 
   isSaving(object: ProjectObject): boolean {

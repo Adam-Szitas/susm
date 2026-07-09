@@ -1,0 +1,37 @@
+<ng-container [formGroup]="form()">
+  <div class="control">
+    <label [for]="idPrefix() + 'name'">{{ 'projects.name' | translate }}</label>
+    <input placeholder="Name" type="text" [id]="idPrefix() + 'name'" formControlName="name" />
+  </div>
+  <div class="control" formGroupName="address">
+    <h4>{{ 'projects.address' | translate }}</h4>
+    <div class="control">
+      <label [for]="idPrefix() + 'street'">{{ 'projects.street' | translate }}</label>
+      <input
+        placeholder="street"
+        type="text"
+        [id]="idPrefix() + 'street'"
+        formControlName="street"
+      />
+    </div>
+    <div class="control">
+      <label [for]="idPrefix() + 'postal_code'">{{ 'projects.postalCode' | translate }}</label>
+      <input
+        [placeholder]="'projects.postalCode' | translate"
+        type="text"
+        [id]="idPrefix() + 'postal_code'"
+        formControlName="postal_code"
+      />
+    </div>
+  </div>
+  <div class="control">
+    <label [for]="idPrefix() + 'note'">{{ 'projects.note' | translate }}</label>
+    <input placeholder="Note" type="text" [id]="idPrefix() + 'note'" formControlName="note" />
+  </div>
+  @if (showStatus()) {
+    <div class="control">
+      <label [for]="idPrefix() + 'status'">{{ 'projects.status' | translate }}</label>
+      <app-status-select [id]="idPrefix() + 'status'" formControlName="status" />
+    </div>
+  }
+</ng-container>

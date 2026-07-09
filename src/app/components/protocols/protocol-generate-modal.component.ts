@@ -19,6 +19,7 @@ import {
   sortTodoItems,
   todoItemId,
   TodoItem,
+  formatObjectLabel as formatObjectAddressLabel,
 } from '@models';
 import type { Object } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
@@ -29,6 +30,8 @@ import {
   ProtocolPreviewTodoSection,
 } from './protocol-preview.component';
 import { features } from '../../features';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { ToggleSwitchComponent } from '../shared/toggle-switch.component';
 import { reorderTargetIdFromTouch } from '../../utils/touch-reorder';
 
@@ -41,11 +44,14 @@ import { reorderTargetIdFromTouch } from '../../utils/touch-reorder';
     TranslateModule,
     ProtocolPreviewComponent,
     ToggleSwitchComponent,
+    IconComponent,
   ],
   templateUrl: './protocol-generate-modal.component.html',
   styleUrl: './protocol-generate-modal.component.scss',
 })
 export class ProtocolGenerateModalComponent {
+  protected readonly icons = icons;
+
   #fb = inject(FormBuilder);
   #protocolService = inject(ProtocolService);
   #modalService = inject(ModalService);
@@ -1123,12 +1129,7 @@ export class ProtocolGenerateModalComponent {
   }
 
   formatObjectLabel(object: Object): string {
-    // ObjectAddress only has level, door_number, and postal_code
-    const houseNumber = object.address?.house_number ? `${object.address?.house_number}, ` : '';
-    const level = object.address?.level ? `${object.address?.level}, ` : '';
-    const door = object.address?.door_number ? `${object.address?.door_number}` : '';
-
-    return `${houseNumber}${level}${door}`.trim() || object._id?.$oid || '';
+    return formatObjectAddressLabel(object);
   }
 
   /**

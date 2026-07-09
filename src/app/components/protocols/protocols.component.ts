@@ -7,19 +7,25 @@ import { TranslationService } from '@services/translation.service';
 import { ProtocolTemplate } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProtocolTemplateModalComponent } from './protocol-template-modal.component';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+
+import { PageHeaderComponent } from '../shared/page-header.component';
 
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 
 @Component({
   selector: 'app-protocols',
   standalone: true,
-  imports: [CommonModule, TranslateModule, TrashIconComponent, LocaleDatePipe],
+  imports: [CommonModule, TranslateModule, TrashIconComponent, LocaleDatePipe, PageHeaderComponent, IconComponent],
   templateUrl: './protocols.component.html',
   styleUrl: './protocols.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProtocolsComponent implements OnInit {
+  protected readonly icons = icons;
+
   #protocolService = inject(ProtocolService);
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);

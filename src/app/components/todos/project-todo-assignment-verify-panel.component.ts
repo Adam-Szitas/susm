@@ -15,6 +15,7 @@ import {
   getSelectedSubItem,
   hasSubItems,
   Object as ProjectObject,
+  formatObjectLabel,
   objectsAssignedToAnyTodoItems,
   safeTodoItemId,
   selectedTodoItemsAssignedOnObject,
@@ -24,17 +25,20 @@ import {
   TodoItem,
   todoItemsWithAssignments,
 } from '@models';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-project-todo-assignment-verify-panel',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, IconComponent],
   templateUrl: './project-todo-assignment-verify-panel.component.html',
   styleUrl: './project-todo-assignment-verify-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTodoAssignmentVerifyPanelComponent {
+  protected readonly icons = icons;
   #translationService = inject(TranslationService);
 
   todoItems = input<TodoItem[]>([]);
@@ -71,14 +75,7 @@ export class ProjectTodoAssignmentVerifyPanelComponent {
   });
 
   objectLabel(object: ProjectObject): string {
-    const parts = [
-      object.address?.house_number,
-      object.address?.level,
-      object.address?.door_number,
-    ].filter((part) => !!part?.trim());
-    if (parts.length) return parts.join(', ');
-    if (object.prefix?.trim()) return object.prefix.trim();
-    return object._id?.$oid ?? '';
+    return formatObjectLabel(object);
   }
 
   assignedObjectCount(item: TodoItem): number {

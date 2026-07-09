@@ -1,0 +1,12 @@
+<div class="detail-field" [class.detail-field--full]="fullWidth()">
+  <dt>
+    @if (labelFor()) {
+      <label [for]="labelFor()!">{{ label() }}</label>
+    } @else {
+      {{ label() }}
+    }
+  </dt>
+  <dd>
+    <ng-content />
+  </dd>
+</div>

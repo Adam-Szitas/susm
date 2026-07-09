@@ -1,0 +1,32 @@
+@let item = project();
+
+<div class="card" [routerLink]="routerLink()">
+  <span class="space-between">
+    <app-status-pill [status]="item?.status || defaultStatus" />
+    @if (item.archived_at) {
+      <span class="archived-pill">
+        {{ 'projects.archived' | translate }}
+      </span>
+    }
+  </span>
+  <h2 class="headline">{{ item.name }}</h2>
+  <div class="content">
+    <ul class="data-list">
+      @for (line of addressLines(); track line) {
+        <li>{{ line }}</li>
+      }
+      @if (item.note) {
+        <li>{{ item.note }}</li>
+      }
+    </ul>
+    @if (item?.created_at) {
+      <div class="created-at">{{ item.created_at | localeDate }}</div>
+    }
+    @if (item.archive_comment) {
+      <div class="archive-comment-preview">
+        <strong>{{ 'projects.archiveComment' | translate }}:</strong>
+        {{ item.archive_comment }}
+      </div>
+    }
+  </div>
+</div>

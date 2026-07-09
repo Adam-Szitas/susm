@@ -2,42 +2,13 @@
   padding: 0 var(--space);
 }
 
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.objects-list-viewport {
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--space-small);
 }
 
-.project-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
-}
-
-.note {
-  font-size: 0.85rem;
-  color: #4a4a4a;
-}
-
-.category {
-  text-decoration: overline;
-  font-size: 0.85rem;
-  color: #4a4a4a;
-  font-weight: bold;
-}
-
-.card-wrapper {
-  align-items: stretch;
-  padding: var(--space-small) 0;
-}
-
-.created-at {
-  font-size: var(--font-4);
-  color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: space-between;
+.empty-state {
+  margin: var(--space-small) 0;
+  color: #666;
 }

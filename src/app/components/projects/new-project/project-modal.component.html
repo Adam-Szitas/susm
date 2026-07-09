@@ -1,33 +1,7 @@
 <div class="wrapper">
   @if (form) {
     <form [formGroup]="form">
-      <div class="control">
-        <label for="name">{{ 'projects.name' | translate }}</label>
-        <input placeholder="Name" type="name" id="name" formControlName="name" />
-      </div>
-      <div class="control" formGroupName="address">
-        <h4>{{ 'projects.address' | translate }}</h4>
-        <div class="control">
-          <label for="street">{{ 'projects.street' | translate }}</label>
-          <input placeholder="street" type="street" id="street" formControlName="street" />
-        </div>
-        <div class="control">
-          <label for="postal_code">{{ 'projects.postalCode' | translate }}</label>
-          <input placeholder="{{ 'projects.postalCode' | translate }}" type="postal_code" id="postal_code" formControlName="postal_code" />
-        </div>
-      </div>
-      <div class="control">
-        <label for="note">{{ 'projects.note' | translate }}</label>
-        <input placeholder="Note" type="note" id="note" formControlName="note" />
-      </div>
-      <div class="control">
-        <label for="status">{{ 'projects.status' | translate }}</label>
-        <select id="status" formControlName="status">
-          @for (status of statuses; track status) {
-            <option [value]="status">{{ statusLabel(status) | translate }}</option>
-          }
-        </select>
-      </div>
+      <app-project-form-fields [form]="form" />
       <div class="control buttons">
         <button
           type="button"

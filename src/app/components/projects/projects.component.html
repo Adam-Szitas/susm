@@ -1,104 +1,47 @@
-<div class="header-wrapper">
-  <div class="projects-title-row">
-    <span
-      class="button button-secondary archive-toggle archive-toggle--icon-only archive-toggle--spacer"
-      aria-hidden="true"
-    ></span>
-    <h1>{{ 'projects.title' | translate }}</h1>
-    <button
-      type="button"
-      class="button button-secondary archive-toggle archive-toggle--icon-only"
-      [class.archive-toggle--active]="showArchived()"
-      [attr.aria-pressed]="showArchived()"
-      [attr.aria-label]="
-        showArchived()
-          ? ('projects.hideArchived' | translate)
-          : ('projects.showArchived' | translate)
-      "
-      [attr.title]="
-        showArchived()
-          ? ('projects.hideArchived' | translate)
-          : ('projects.showArchived' | translate)
-      "
-      (click)="toggleArchived()"
-    >
-      <svg
-        class="archive-toggle-icon"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <rect x="2" y="3" width="20" height="5" rx="1" />
-        <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
-        <path d="M10 12h4" />
-      </svg>
-    </button>
-  </div>
-</div>
+<app-page-header [title]="'projects.title' | translate" [balanceActions]="true">
+  <button
+    pageHeaderAction
+    type="button"
+    class="button button-secondary archive-toggle archive-toggle--icon-only"
+    [class.archive-toggle--active]="showArchived()"
+    [attr.aria-pressed]="showArchived()"
+    [attr.aria-label]="
+      showArchived()
+        ? ('projects.hideArchived' | translate)
+        : ('projects.showArchived' | translate)
+    "
+    [attr.title]="
+      showArchived()
+        ? ('projects.hideArchived' | translate)
+        : ('projects.showArchived' | translate)
+    "
+    (click)="toggleArchived()"
+  >
+    <app-icon [icon]="icons.archive" svgClass="archive-toggle-icon" />
+  </button>
+</app-page-header>
+
 <div class="projects-wrapper">
   @if (projects().length) {
-    <div class="card-wrapper">
-      @for (project of projects(); track project['_id']) {
-        <div class="card" [routerLink]="'tab/' + project._id?.$oid">
-          <span class="space-between">
-            <app-status-pill [status]="project?.status || defaultStatus" />
-            @if (project.archived_at) {
-              <span class="archived-pill">
-                {{ 'projects.archived' | translate }}
-              </span>
-            }
-          </span>
-          <h2 class="headline">{{ project.name }}</h2>
-          <div class="content">
-            <ul class="data-list">
-              @if (project.address?.street) {
-                <li>{{ project.address?.street }}</li>
-              }
-              @if (project.address?.postal_code) {
-                <li>{{ project.address?.postal_code }}</li>
-              }
-              @if (project.note) {
-                <li>{{ project.note }}</li>
-              }
-            </ul>
-            @if (project?.created_at) {
-              <div class="created-at">{{ project.created_at | localeDate }}</div>
-            }
-            @if (project.archive_comment) {
-              <div class="archive-comment-preview">
-                <strong>{{ 'projects.archiveComment' | translate }}:</strong>
-                {{ project.archive_comment }}
-              </div>
-            }
-          </div>
-        </div>
-      }
-    </div>
+    <app-virtual-scroll-viewport
+      class="projects-list-viewport"
+      [items]="projects()"
+      [itemSize]="projectCardItemSize"
+      [threshold]="virtualScrollThreshold"
+      [trackBy]="trackProjectById"
+      [maxHeight]="'min(65dvh, 720px)'"
+      [ariaLabel]="'projects.title' | translate"
+    >
+      <ng-template let-project>
+        <app-project-card [project]="project" [routerLink]="'tab/' + project._id?.$oid" />
+      </ng-template>
+    </app-virtual-scroll-viewport>
   } @else {
-    {{ 'projects.noProjects' | translate }}
+    <p class="empty-state">{{ 'projects.noProjects' | translate }}</p>
   }
-  <button
-    type="button"
-    class="add-icon floating-icon"
-    (click)="newProject()"
-    [attr.aria-label]="'projects.addNew' | translate"
-    [attr.title]="'projects.addNew' | translate"
-  >
-    <span class="add" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          stroke="white"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 5v14m-7-7h14"
-        />
-      </svg>
-    </span>
-  </button>
+
+  <app-floating-add-button
+    [ariaLabel]="'projects.addNew' | translate"
+    (clicked)="newProject()"
+  />
 </div>

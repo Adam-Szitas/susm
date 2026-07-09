@@ -1,0 +1,17 @@
+.detail-field {
+  display: contents;
+
+  dt {
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+  }
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}

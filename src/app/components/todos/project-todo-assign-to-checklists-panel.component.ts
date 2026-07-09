@@ -21,6 +21,7 @@ import {
   ObjectTodoEntry,
   objectTodoCardClassNames,
   Object as ProjectObject,
+  formatObjectLabel,
   objectsAssignedToAnyTodoItems,
   safeTodoItemId,
   serializeTodoEntries,
@@ -33,6 +34,8 @@ import {
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TodoItemValueControlComponent } from './todo-item-value-control.component';
 
 export type ChecklistFirstMobileStep = 'checklists' | 'objects';
@@ -40,12 +43,13 @@ export type ChecklistFirstMobileStep = 'checklists' | 'objects';
 @Component({
   selector: 'app-project-todo-assign-to-checklists-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TodoItemValueControlComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, TodoItemValueControlComponent, IconComponent],
   templateUrl: './project-todo-assign-to-checklists-panel.component.html',
   styleUrl: './project-todo-assign-to-checklists-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
+  protected readonly icons = icons;
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
   #projectStore = inject(ProjectStore);
@@ -133,14 +137,7 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
   }
 
   objectLabel(object: ProjectObject): string {
-    const parts = [
-      object.address?.house_number,
-      object.address?.level,
-      object.address?.door_number,
-    ].filter((part) => !!part?.trim());
-    if (parts.length) return parts.join(', ');
-    if (object.prefix?.trim()) return object.prefix.trim();
-    return object._id?.$oid ?? '';
+    return formatObjectLabel(object);
   }
 
   isChecklistSelected(item: TodoItem): boolean {

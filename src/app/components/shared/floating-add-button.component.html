@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="add-icon floating-icon"
+  [ngClass]="extraClass()"
+  (click)="clicked.emit()"
+  [attr.aria-label]="ariaLabel()"
+  [attr.title]="ariaLabel()"
+>
+  <span class="add" aria-hidden="true">
+    <app-icon [icon]="icons.plus" />
+  </span>
+</button>

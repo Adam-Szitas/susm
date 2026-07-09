@@ -1,25 +1,7 @@
 <div class="wrapper">
   @if (projectForm) {
     <form [formGroup]="projectForm">
-      <div class="control">
-        <label for="name">{{ 'projects.name' | translate }}</label>
-        <input placeholder="Name" type="name" id="name" formControlName="name" />
-      </div>
-      <div class="control" formGroupName="address">
-        <h4>{{ 'projects.address' | translate }}</h4>
-        <div class="control">
-          <label for="street">{{ 'projects.street' | translate }}</label>
-          <input placeholder="street" type="street" id="street" formControlName="street" />
-        </div>
-        <div class="control">
-          <label for="postal_code">{{ 'projects.postalCode' | translate }}</label>
-          <input placeholder="{{ 'projects.postalCode' | translate }}" type="postal_code" id="postal_code" formControlName="postal_code" />
-        </div>
-      </div>
-      <div class="control">
-        <label for="note">{{ 'projects.note' | translate }}</label>
-        <input placeholder="Note" type="note" id="note" formControlName="note" />
-      </div>
+      <app-project-form-fields [form]="projectForm" [showStatus]="false" />
       <div class="form-actions">
         <div class="form-actions-start">
           @if (isAdmin()) {
@@ -79,19 +61,7 @@
             [title]="'common.submit' | translate"
           >
             @if (iconOnlyActions()) {
-              <svg
-                class="submit-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <app-icon [icon]="icons.check" [svgClass]="'submit-icon'" [strokeWidth]="2.5" />
             } @else {
               <span class="action-label">{{ 'common.submit' | translate }}</span>
             }

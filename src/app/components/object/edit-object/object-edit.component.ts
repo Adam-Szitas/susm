@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Object, DEFAULT_WORK_STATUS, formatWorkStatus, WORK_STATUSES } from '@models';
+import { Object, DEFAULT_WORK_STATUS } from '@models';
 import { HttpService } from '@services/http.service';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
@@ -17,18 +17,24 @@ import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
 import { UserStore } from '@store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
+
+import { ObjectFormFieldsComponent } from '../../shared/object-form-fields.component';
 
 @Component({
   selector: 'app-edit-object',
   templateUrl: './object-edit.component.html',
   styleUrl: './object-edit.component.scss',
-  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent],
+  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent, ObjectFormFieldsComponent, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 export class EditObjectComponent implements OnInit {
+  protected readonly icons = icons;
+
   @Input() objectData!: Object;
   objectUpdated = output<Object>();
   #fb = inject(FormBuilder);
@@ -42,8 +48,6 @@ export class EditObjectComponent implements OnInit {
 
   isAdmin = this.#userStore.isAdmin;
   readonly iconOnlyActions = compactFormActions();
-  public readonly statuses = WORK_STATUSES;
-  public readonly statusLabel = formatWorkStatus;
   public progressing = signal<boolean>(false);
   public deleting = signal<boolean>(false);
   public form!: FormGroup;

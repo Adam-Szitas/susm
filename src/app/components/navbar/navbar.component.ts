@@ -3,6 +3,8 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/rout
 import { filter } from 'rxjs';
 import { FacadeStore } from '../../store/facade.store';
 import { TranslateModule } from '@ngx-translate/core';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { SusmLogoComponent } from '../../icons/susm-logo.component';
 
 @Component({
@@ -11,9 +13,11 @@ import { SusmLogoComponent } from '../../icons/susm-logo.component';
   styleUrl: './navbar.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, SusmLogoComponent],
+  imports: [RouterLink, TranslateModule, SusmLogoComponent, IconComponent],
 })
 export class NavbarComponent implements OnInit {
+  protected readonly icons = icons;
+
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #facadeStore = inject(FacadeStore);

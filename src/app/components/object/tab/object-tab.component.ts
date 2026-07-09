@@ -22,7 +22,7 @@ import {
   DEFAULT_WORK_STATUS,
   fileGroupCategoryLabels,
   formatWorkStatus,
-  WORK_STATUSES,
+  formatObjectLabel,
   TodoItem,
   ObjectTodoEntry,
 } from '@models';
@@ -37,6 +37,10 @@ import { EditObjectComponent } from '../edit-object/object-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.component';
 import { UserStore } from '@store/user.store';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
+import { DetailFieldComponent } from '../../shared/detail-field.component';
+import { StatusSelectComponent } from '../../shared/status-select.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
 import { filter, map, switchMap, catchError } from 'rxjs';
@@ -52,12 +56,17 @@ import { EMPTY } from 'rxjs';
     BreadcrumbComponent,
     FormsModule,
     ObjectTodosSectionComponent,
+    DetailFieldComponent,
+    StatusSelectComponent,
+    IconComponent,
   ],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ObjectTabComponent implements OnInit {
+  protected readonly icons = icons;
+
   #projectStore = inject(ProjectStore);
   #route = inject(ActivatedRoute);
   #destroyRef = inject(DestroyRef);
@@ -94,7 +103,6 @@ export class ObjectTabComponent implements OnInit {
   objectDataExpanded = signal(false);
   readonly defaultStatus = DEFAULT_WORK_STATUS;
   readonly formatStatus = formatWorkStatus;
-  readonly statuses = WORK_STATUSES;
 
   readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     const obj = this.object();
@@ -154,10 +162,11 @@ export class ObjectTabComponent implements OnInit {
 
   /** Short display name for the object (e.g. address parts or "Object"). */
   #objectDisplayName(obj: Object | null): string {
-    if (!obj?.address) return obj ? this.#translationService.instant('objects.title') : '';
-    const a = obj.address;
-    const parts = [a.house_number, a.level, a.door_number].filter(Boolean) as string[];
-    return parts.length > 0 ? parts.join(', ') : this.#translationService.instant('objects.title');
+    if (!obj) return '';
+    const label = formatObjectLabel(obj, {
+      fallback: this.#translationService.instant('objects.title'),
+    });
+    return label || this.#translationService.instant('objects.title');
   }
 
   ngOnInit(): void {

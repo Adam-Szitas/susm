@@ -74,17 +74,21 @@ export interface ProtocolPreviewData {
   content_start_page?: number;
 }
 
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 
 @Component({
   selector: 'app-protocol-preview',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LocaleDatePipe],
+  imports: [CommonModule, TranslateModule, LocaleDatePipe, IconComponent],
   templateUrl: './protocol-preview.component.html',
   styleUrl: './protocol-preview.component.scss',
 })
 /** Renders the preview payload from `POST protocols/preview` (aligned with PDF layout in `protocols/mod.rs`). */
 export class ProtocolPreviewComponent {
+  protected readonly icons = icons;
+
   previewData = input.required<ProtocolPreviewData>();
   /** Full checklist rows for visibility toggles (unfiltered). */
   checklistSourceSections = input<ProtocolPreviewTodoSection[]>([]);

@@ -1,0 +1,62 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.page-header {
+  margin-bottom: var(--space-small);
+}
+
+.page-header-text {
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    text-align: center;
+    font-size: clamp(1.35rem, 2.5vw, 1.65rem);
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+  }
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.page-header-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0;
+  box-sizing: border-box;
+
+  &--spacer {
+    visibility: hidden;
+    pointer-events: none;
+    @include touch-target-min;
+    padding: 0.35rem !important;
+    border-radius: 8px;
+  }
+}
+
+:host ::ng-deep [pageHeaderAction] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .page-header-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: var(--font-4);
+  color: #6b7280;
+  text-align: center;
+}

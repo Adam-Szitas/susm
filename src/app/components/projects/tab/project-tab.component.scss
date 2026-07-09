@@ -167,9 +167,68 @@
   min-height: 0;
   width: 100%;
   min-width: 0;
+
+  app-object-card {
+    display: block;
+    width: 100%;
+    min-width: 0;
+
+    ::ng-deep .card {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      background: #fafafa;
+      contain: layout style paint;
+      transition:
+        box-shadow 0.2s,
+        border-color 0.2s,
+        background 0.2s;
+
+      &--todo-complete {
+        background: #e8f5e9;
+        border-color: #a5d6a7;
+      }
+
+      &--todo-attention {
+        background: #fff8e1;
+        border-color: #ffe082;
+      }
+
+      &--todo-sub-red {
+        background: #ffebee;
+        border-color: #ef9a9a;
+      }
+
+      &--todo-sub-blue {
+        background: #e3f2fd;
+        border-color: #90caf9;
+      }
+
+      &--todo-sub-green {
+        background: #e8f5e9;
+        border-color: #a5d6a7;
+      }
+
+      &--todo-sub-orange {
+        background: #fff3e0;
+        border-color: #ffcc80;
+      }
+
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-color: #d0d0d0;
+      }
+    }
+  }
 }
 
-.card--deferred {
+.card--deferred,
+.object-list-viewport app-object-card ::ng-deep .card--deferred {
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 72px;
 }
@@ -324,7 +383,8 @@
   @include reorder-position-label;
 }
 
-.protocols-section {
+.protocols-section,
+.file-list-section {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -336,7 +396,9 @@
   border: 1px solid #e5e5e5;
   overflow: hidden;
   box-sizing: border-box;
+}
 
+.protocols-section {
   .protocols-section-header {
     display: flex;
     flex-wrap: wrap;
@@ -350,56 +412,23 @@
   .protocols-section-title-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.55rem;
-    flex-wrap: wrap;
     width: 100%;
     min-width: 0;
+  }
+
+  .protocols-section-title-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem;
+    min-width: 0;
+    flex: 1;
 
     h3 {
       margin: 0;
       font-size: 1.25rem;
       min-width: 0;
     }
-  }
-
-  .protocols-section-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .protocols-upload-label {
-    margin: 0;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-
-    &.is-disabled {
-      pointer-events: none;
-      opacity: 0.65;
-    }
-
-    &--icon-only {
-      @include touch-target-min;
-      padding: 0.35rem !important;
-      border-radius: 8px;
-
-      .protocols-upload-icon {
-        width: 1rem;
-        height: 1rem;
-      }
-    }
-  }
-
-  .protocols-upload-icon {
-    width: 1.05rem;
-    height: 1.05rem;
-    flex-shrink: 0;
   }
 
   .protocols-section-content {
@@ -412,20 +441,40 @@
   }
 }
 
-.file-list-section {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-  flex: 1 1 0;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  overflow: hidden;
-  box-sizing: border-box;
+.protocols-upload-label,
+.file-list-upload-btn {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  @include touch-target-min;
+  padding: 0.35rem !important;
+  border-radius: 8px;
+}
 
+.protocols-upload-label {
+  cursor: pointer;
+
+  &.is-disabled {
+    pointer-events: none;
+    opacity: 0.65;
+  }
+}
+
+.protocols-upload-icon,
+.file-list-upload-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.file-list-section {
   .file-list-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.55rem;
     flex-shrink: 0;
     padding: 1rem 1.25rem;
     border-bottom: 1px solid #eee;
@@ -433,6 +482,7 @@
     h3 {
       margin: 0;
       font-size: 1.25rem;
+      min-width: 0;
     }
   }
 
@@ -457,9 +507,14 @@
         min-height: 0;
         overflow: hidden auto;
         overscroll-behavior: contain;
-        padding-bottom: max(var(--space, 1rem), var(--app-floating-action-clearance, 5rem));
+        padding-bottom: var(--space, 1rem);
       }
     }
+  }
+
+  > .empty-state {
+    margin: 0;
+    padding: 1rem 1.25rem;
   }
 }
 
@@ -640,10 +695,6 @@
   border: 1px solid #e5e5e5;
   margin-bottom: var(--space);
   contain: layout style;
-
-  &--expanded {
-    padding: 1rem 1.15rem 1.15rem;
-  }
 }
 
 .project-details-header {
@@ -685,9 +736,25 @@
 }
 
 .project-details-actions {
+  display: none;
+}
+
+.details-note-row {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.65rem;
+  align-items: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.details-note-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.details-edit-btn--desktop {
+  flex-shrink: 0;
+  margin: 0;
 }
 
 .project-details-footer {
@@ -696,22 +763,27 @@
 
 @include mobile {
   .project-details--expanded {
-    .project-details-actions {
-      display: none;
+    .project-details-expand-toggle--header {
+      visibility: hidden;
+      pointer-events: none;
     }
 
-    .project-details-expand-toggle--header {
+    .details-edit-btn--desktop {
       display: none;
     }
 
     .project-details-footer {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
       gap: 0.75rem;
       margin-top: 0.5rem;
       padding-top: 0.5rem;
       border-top: 1px solid #eee;
+
+      .spacer {
+        width: 40px;
+      }
     }
   }
 }
@@ -846,11 +918,20 @@
       }
     }
   }
+
+  &--note-row {
+    grid-column: 1 / -1;
+  }
 }
 
 .project-note {
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.note-empty {
+  font-style: italic;
+  color: #9ca3af;
 }
 
 .created-at {
@@ -957,8 +1038,4 @@ h2 {
   .project-details-expand-toggle .chevron {
     transition: none;
   }
-}
-
-.upload-icon {
-  z-index: var(--z-floating);
 }

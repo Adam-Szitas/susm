@@ -9,8 +9,12 @@ import { UserStore } from '@store/user.store';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
 import { compactFormActions } from '../../shared/compact-form-actions';
+
+import { ProjectFormFieldsComponent } from '../../shared/project-form-fields.component';
 
 @Component({
   selector: 'app-edit-project',
@@ -18,9 +22,11 @@ import { compactFormActions } from '../../shared/compact-form-actions';
   styleUrl: './project-edit.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent],
+  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent, ProjectFormFieldsComponent, IconComponent],
 })
 export class EditProjectComponent implements OnInit {
+  protected readonly icons = icons;
+
   @Input() projectData!: Project;
   #fb = inject(FormBuilder);
   #httpService = inject(HttpService);

@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { DEFAULT_WORK_STATUS, Filter, FilterResult, formatWorkStatus, ObjectWithProject, parseDateValue } from '@models';
+import { Filter, FilterResult, ObjectWithProject, objectAddressSearchText, parseDateValue } from '@models';
 import { ProjectStore } from '@store/project.store';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterLink } from '@angular/router';
 import { FilterComponent } from '../filter/filter.component';
-import { StatusPillComponent } from '../status-pill/app-status-pill.component';
-import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+import { PageHeaderComponent } from '../shared/page-header.component';
+import { ObjectCardComponent } from '../shared/object-card.component';
+import {
+  VirtualScrollViewportComponent,
+  VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
+} from '../shared/virtual-scroll-viewport.component';
 
 const FILTER_KEY = 'objects';
 
@@ -15,7 +18,13 @@ const FILTER_KEY = 'objects';
   templateUrl: './objects.component.html',
   styleUrl: './objects.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, FilterComponent, StatusPillComponent, LocaleDatePipe],
+  imports: [
+    TranslateModule,
+    FilterComponent,
+    PageHeaderComponent,
+    ObjectCardComponent,
+    VirtualScrollViewportComponent,
+  ],
 })
 export class ObjectComponent implements OnInit {
   #projectStore = inject(ProjectStore);
@@ -25,13 +34,13 @@ export class ObjectComponent implements OnInit {
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
   restoredFilterState = signal<PersistedFilterState | null>(null);
-  public readonly defaultStatus = DEFAULT_WORK_STATUS;
-  public readonly formatStatus = formatWorkStatus;
+  readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
+  readonly objectCardItemSize = 132;
 
   readonly allCategories = computed(() => {
     const objects = this.objects() || [];
     const categories = new Set<string>();
-    objects.forEach(item => {
+    objects.forEach((item) => {
       if (item.object?.category) {
         categories.add(item.object.category);
       }
@@ -46,6 +55,9 @@ export class ObjectComponent implements OnInit {
       this.filteredObjects.set(this.#applyFilters(objects, appliedFilter));
     });
   }
+
+  trackObjectItemById = (_index: number, item: ObjectWithProject): string =>
+    item.object?._id?.$oid ?? item.project_name;
 
   filterData(): Filter {
     return {
@@ -85,21 +97,11 @@ export class ObjectComponent implements OnInit {
 
     if (filter.searchText) {
       const searchLower = filter.searchText.toLowerCase();
-      filtered = filtered.filter(item => {
+      filtered = filtered.filter((item) => {
         const obj = item.object;
         if (!obj) return false;
 
-        const addr = obj.address;
-        // ObjectAddress only has level, door_number, and postal_code (no street/house_number)
-        const addressText = [
-          addr?.level,
-          addr?.door_number,
-          addr?.postal_code,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-
+        const addressText = objectAddressSearchText(obj.address);
         const noteText = obj.note?.toLowerCase() ?? '';
         const projectName = item.project_name?.toLowerCase() ?? '';
 
@@ -112,11 +114,11 @@ export class ObjectComponent implements OnInit {
     }
 
     if (filter.category) {
-      filtered = filtered.filter(item => item.object?.category === filter.category);
+      filtered = filtered.filter((item) => item.object?.category === filter.category);
     }
 
     if (filter.dateFrom || filter.dateTo) {
-      filtered = filtered.filter(item => {
+      filtered = filtered.filter((item) => {
         const obj = item.object;
         if (!obj) return false;
 

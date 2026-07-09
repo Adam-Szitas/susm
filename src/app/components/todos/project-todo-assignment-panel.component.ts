@@ -22,6 +22,7 @@ import {
   hasSubItems,
   ObjectTodoEntry,
   Object as ProjectObject,
+  formatObjectLabel,
   safeTodoItemId,
   serializeTodoEntries,
   sortTodoItems,
@@ -31,6 +32,8 @@ import {
 } from '@models';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { ProjectStore } from '@store/project.store';
 
 export type AssignmentMobileStep = 'objects' | 'checklist';
@@ -38,12 +41,13 @@ export type AssignmentMobileStep = 'objects' | 'checklist';
 @Component({
   selector: 'app-project-todo-assignment-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, IconComponent],
   templateUrl: './project-todo-assignment-panel.component.html',
   styleUrl: './project-todo-assignment-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTodoAssignmentPanelComponent implements OnInit {
+  protected readonly icons = icons;
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
   #projectStore = inject(ProjectStore);
@@ -103,14 +107,7 @@ export class ProjectTodoAssignmentPanelComponent implements OnInit {
   }
 
   objectLabel(object: ProjectObject): string {
-    const parts = [
-      object.address?.house_number,
-      object.address?.level,
-      object.address?.door_number,
-    ].filter((part) => !!part?.trim());
-    if (parts.length) return parts.join(', ');
-    if (object.prefix?.trim()) return object.prefix.trim();
-    return object._id?.$oid ?? '';
+    return formatObjectLabel(object);
   }
 
   assignmentSummary(object: ProjectObject): string {

@@ -4,17 +4,21 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-notification',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './notification.component.html',
   styleUrl: './notification.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationComponent {
+  protected readonly icons = icons;
+
   #notificationService = inject(NotificationService);
   
   readonly notifications = this.#notificationService.notifications;

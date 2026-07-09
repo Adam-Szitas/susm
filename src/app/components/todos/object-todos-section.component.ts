@@ -38,17 +38,20 @@ import {
 import { ProjectStore } from '@store/project.store';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { truncateSelectLabel } from '../../utils/truncate-select-label';
 
 @Component({
   selector: 'app-object-todos-section',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, IconComponent],
   templateUrl: './object-todos-section.component.html',
   styleUrl: './object-todos-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ObjectTodosSectionComponent {
+  protected readonly icons = icons;
   #projectStore = inject(ProjectStore);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);

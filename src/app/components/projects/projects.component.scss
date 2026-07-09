@@ -2,111 +2,38 @@
 
 :host {
   display: block;
-}
-
-.header-wrapper {
-  margin: var(--space) var(--space) var(--space-small);
-}
-
-.projects-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
-
-  h1 {
-    margin: 0;
-    text-align: center;
-  }
+  padding: var(--space) var(--space) 0;
 }
 
 .projects-wrapper {
-  .card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-
-.space-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.archived-pill {
-  align-self: flex-end;
-  padding: 0.15rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background-color: #f8d7da;
-  color: #383d41;
-}
-
-.card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  padding: 0 var(--space) var(--space);
 }
 
-.archive-comment-preview {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #fff3cd;
-  border-left: 3px solid #ffc107;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #856404;
-
-  strong {
-    color: #856404;
-  }
+.projects-list-viewport {
+  width: 100%;
+  min-width: 0;
 }
 
-.archive-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  margin: 0;
-  flex-shrink: 0;
-  box-sizing: border-box;
+.empty-state {
+  margin: var(--space-small) 0;
+  color: #666;
+}
+
+:host ::ng-deep [pageHeaderAction].archive-toggle {
+  @include touch-target-min;
+  padding: 0.35rem !important;
+  border-radius: 8px;
 
   &--active {
     border-color: rgba(157, 0, 0, 0.35);
     background: rgba(157, 0, 0, 0.08);
     color: var(--primary-default, #9d0000);
   }
-
-  &--icon-only {
-    @include touch-target-min;
-    padding: 0.35rem !important;
-    border-radius: 8px;
-
-    .archive-toggle-icon {
-      width: 1rem;
-      height: 1rem;
-    }
-  }
-
-  &--spacer {
-    visibility: hidden;
-    pointer-events: none;
-  }
 }
 
 .archive-toggle-icon {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 1rem;
+  height: 1rem;
   flex-shrink: 0;
-}
-
-.card-wrapper {
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, minmax(260px, 1fr));
-  }
 }

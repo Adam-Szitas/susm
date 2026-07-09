@@ -31,18 +31,6 @@
 
     @if (projectDataExpanded()) {
       <div id="projectDetailsBody" class="project-details-body">
-        <div class="project-details-actions">
-          <button
-            type="button"
-            class="group-edit-toggle button button-primary"
-            (click)="startEditingProject()"
-            [attr.aria-label]="'projects.editProject' | translate"
-            [title]="'projects.editProject' | translate"
-          >
-            ✎
-          </button>
-        </div>
-
         @if (project()?.archived_at && project()?.archive_comment) {
           <div class="archive-comment-inline">
             <span class="archive-comment-label">{{ 'projects.archiveComment' | translate }}</span>
@@ -51,21 +39,18 @@
         }
 
         <dl class="project-data-grid">
-          <div class="project-data-item">
-            <dt>{{ 'dashboard.totalObjects' | translate }}</dt>
-            <dd>{{ objects().length }}</dd>
-          </div>
+          <app-detail-field [label]="'dashboard.totalObjects' | translate">
+            {{ objects().length }}
+          </app-detail-field>
           @if (project()?.address?.street) {
-            <div class="project-data-item">
-              <dt>{{ 'projects.street' | translate }}</dt>
-              <dd>{{ project()?.address?.street }}</dd>
-            </div>
+            <app-detail-field [label]="'projects.street' | translate">
+              {{ project()?.address?.street }}
+            </app-detail-field>
           }
           @if (project()?.address?.postal_code) {
-            <div class="project-data-item">
-              <dt>{{ 'projects.postalCode' | translate }}</dt>
-              <dd>{{ project()?.address?.postal_code }}</dd>
-            </div>
+            <app-detail-field [label]="'projects.postalCode' | translate">
+              {{ project()?.address?.postal_code }}
+            </app-detail-field>
           }
           <div class="project-data-item project-data-item--category">
             <dt>
@@ -94,41 +79,40 @@
                   [attr.aria-label]="'projects.manageCategories' | translate"
                   [title]="'projects.manageCategories' | translate"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                  <app-icon [icon]="icons.plus" />
                 </button>
               </div>
             </dd>
           </div>
-          @if (project()?.note?.trim()) {
-            <div class="project-data-item project-data-item--full">
-              <dt>{{ 'projects.note' | translate }}</dt>
-              <dd class="project-note">{{ project()?.note }}</dd>
+          <div class="project-data-item project-data-item--note-row">
+            <div class="details-note-row">
+              <div class="details-note-content">
+                <app-detail-field [label]="'projects.note' | translate" [fullWidth]="true">
+                  <span class="project-note">
+                    @if (project()?.note?.trim()) {
+                      {{ project()?.note }}
+                    } @else {
+                      <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+                    }
+                  </span>
+                </app-detail-field>
+              </div>
+              <button
+                type="button"
+                class="group-edit-toggle button button-primary details-edit-btn details-edit-btn--desktop"
+                (click)="startEditingProject()"
+                [attr.aria-label]="'projects.editProject' | translate"
+                [title]="'projects.editProject' | translate"
+              >
+                ✎
+              </button>
             </div>
-          }
+          </div>
         </dl>
       </div>
 
       <div class="project-details-footer">
-        <button
-          type="button"
-          class="group-edit-toggle button button-primary"
-          (click)="startEditingProject()"
-          [attr.aria-label]="'projects.editProject' | translate"
-          [title]="'projects.editProject' | translate"
-        >
-          ✎
-        </button>
+        <div class="spacer"></div>
         <button
           type="button"
           class="project-details-expand-toggle"
@@ -147,6 +131,15 @@
           aria-controls="projectDetailsBody"
         >
           <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
+        </button>
+        <button
+          type="button"
+          class="group-edit-toggle button button-primary"
+          (click)="startEditingProject()"
+          [attr.aria-label]="'projects.editProject' | translate"
+          [title]="'projects.editProject' | translate"
+        >
+          ✎
         </button>
       </div>
     }
@@ -169,22 +162,7 @@
             <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
           }
         } @else {
-          <svg
-            class="project-toolbar-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
+          <app-icon [icon]="icons.fileTextDetailed" [svgClass]="'project-toolbar-icon'" />
           @if (!toolbarIconOnly()) {
             <span class="project-toolbar-label">{{
               'protocols.generateProtocol' | translate
@@ -200,20 +178,7 @@
         [attr.aria-label]="'projectPlan.title' | translate"
         [title]="'projectPlan.title' | translate"
       >
-        <svg
-          class="project-toolbar-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
-          <circle cx="12" cy="10" r="2.5" />
-        </svg>
+        <app-icon [icon]="icons.mapPin" [svgClass]="'project-toolbar-icon'" />
         @if (!toolbarIconOnly()) {
           <span class="project-toolbar-label">{{ 'projectPlan.title' | translate }}</span>
         }
@@ -227,20 +192,7 @@
           [attr.aria-label]="'todos.projectChecklist' | translate"
           [title]="'todos.projectChecklist' | translate"
         >
-          <svg
-            class="project-toolbar-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M9 6h11M9 12h11M9 18h11" />
-            <path d="M4 6h.01M4 12h.01M4 18h.01" />
-          </svg>
+          <app-icon [icon]="icons.list" [svgClass]="'project-toolbar-icon'" />
           @if (!toolbarIconOnly()) {
             <span class="project-toolbar-label">{{ 'todos.projectChecklist' | translate }}</span>
           }
@@ -259,34 +211,9 @@
         aria-controls="filterControls"
       >
         @if (filtersVisible()) {
-          <svg
-            class="project-toolbar-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M4 5h16l-6 7v5l-4 2v-7L4 5z" />
-            <line x1="4" y1="4" x2="20" y2="20" />
-          </svg>
+          <app-icon [icon]="icons.filterOff" [svgClass]="'project-toolbar-icon'" />
         } @else {
-          <svg
-            class="project-toolbar-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M4 5h16l-6 7v5l-4 2v-7L4 5z" />
-          </svg>
+          <app-icon [icon]="icons.filter" [svgClass]="'project-toolbar-icon'" />
         }
         @if (!toolbarIconOnly()) {
           <span class="project-toolbar-label">{{
@@ -314,35 +241,9 @@
           "
         >
           @if (objectReorderMode()) {
-            <svg
-              class="project-toolbar-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <app-icon [icon]="icons.check" [svgClass]="'project-toolbar-icon'" [strokeWidth]="2.5" />
           } @else {
-            <svg
-              class="project-toolbar-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M8 9l4-4 4 4" />
-              <path d="M8 15l4 4 4-4" />
-              <line x1="12" y1="5" x2="12" y2="19" />
-            </svg>
+            <app-icon [icon]="icons.arrowsUpDown" [svgClass]="'project-toolbar-icon'" />
           }
           @if (!toolbarIconOnly()) {
             <span class="project-toolbar-label">{{
@@ -407,6 +308,7 @@
           @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {
             <div
               class="card card--reorder card--deferred"
+              [ngClass]="objectTodoCardClasses(object)"
               [class.dragging]="draggedObjectId() === object._id?.$oid"
               [class.drag-over]="dragOverObjectId() === object._id?.$oid"
               [attr.data-reorder-id]="object._id?.$oid"
@@ -468,33 +370,14 @@
           [maxHeight]="objectListMaxHeight()"
         >
           <ng-template let-object let-index="index">
-            @if (toolbarIconOnly()) {
-              <div
-                class="card card--mobile-name card--deferred"
-                [ngClass]="objectTodoCardClasses(object)"
-                [routerLink]="['/objects/tab', object._id?.$oid]"
-                [queryParams]="objectTabLinkQueryParams()"
-              >
-                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object, true)">
-                  <span class="headline-text">{{ objectCardDisplayLabel(object, true) }}</span>
-                </h2>
-              </div>
-            } @else {
-              <div
-                class="card card--deferred"
-                [ngClass]="objectTodoCardClasses(object)"
-                [routerLink]="['/objects/tab', object._id?.$oid]"
-                [queryParams]="objectTabLinkQueryParams()"
-              >
-                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
-                  <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
-                </h2>
-                <div class="created-at">
-                  <span>{{ object.created_at | localeDate }}</span>
-                  <span>{{ object.category }}</span>
-                </div>
-              </div>
-            }
+            <app-object-card
+              [object]="object"
+              [compact]="toolbarIconOnly()"
+              [routerLink]="['/objects/tab', object._id?.$oid]"
+              [queryParams]="objectTabLinkQueryParams()"
+              [cardClasses]="objectCardSurfaceClasses(object)"
+              [fallbackLabel]="objectCardFallbackLabel"
+            />
           </ng-template>
         </app-virtual-scroll-viewport>
       } @else {
@@ -507,9 +390,9 @@
         <section class="protocols-section">
           <div class="protocols-section-header">
             <div class="protocols-section-title-row">
-              <h3>{{ 'protocols.generatedProtocols' | translate }}</h3>
-              @if (!project()?.archived_at) {
-                <div class="protocols-section-actions">
+              <div class="protocols-section-title-group">
+                <h3>{{ 'protocols.title' | translate }}</h3>
+                @if (!project()?.archived_at) {
                   <input
                     type="file"
                     id="protocol-pdf-input"
@@ -521,7 +404,6 @@
                   <label
                     for="protocol-pdf-input"
                     class="button button-secondary protocols-upload-label"
-                    [class.protocols-upload-label--icon-only]="toolbarIconOnly()"
                     [class.is-disabled]="uploadingProtocolPdf()"
                     [attr.aria-label]="
                       uploadingProtocolPdf()
@@ -536,33 +418,12 @@
                   >
                     @if (uploadingProtocolPdf()) {
                       <span class="spinner"></span>
-                      @if (!toolbarIconOnly()) {
-                        {{ 'protocols.uploadingPdf' | translate }}
-                      }
                     } @else {
-                      <svg
-                        class="protocols-upload-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <path d="M12 12v6" />
-                        <path d="M9 15l3-3 3 3" />
-                      </svg>
-                      @if (!toolbarIconOnly()) {
-                        {{ 'protocols.uploadPdf' | translate }}
-                      }
+                      <app-icon [icon]="icons.fileUpload" [svgClass]="'protocols-upload-icon'" />
                     }
                   </label>
-                </div>
-              }
+                }
+              </div>
             </div>
           </div>
           <div class="protocols-section-content">
@@ -627,11 +488,27 @@
     </app-tab-panel>
 
     <app-tab-panel id="files" class="project-tab-panel--internal-scroll">
-      @if (files()) {
-        <section class="file-list-section">
-          <div class="file-list-section-header">
-            <h3>{{ 'files.title' | translate }}</h3>
-          </div>
+      <section class="file-list-section">
+        <div class="file-list-section-header">
+          <h3>{{ 'files.title' | translate }}</h3>
+          @if (!project()?.archived_at) {
+            <button
+              type="button"
+              class="button button-secondary file-list-upload-btn"
+              (click)="openUploadModal()"
+              [disabled]="uploading()"
+              [attr.aria-label]="'objects.uploadFile' | translate"
+              [attr.title]="'objects.uploadFile' | translate"
+            >
+              @if (uploading()) {
+                <span class="spinner"></span>
+              } @else {
+                <app-icon [icon]="icons.cloudUpload" [svgClass]="'file-list-upload-icon'" />
+              }
+            </button>
+          }
+        </div>
+        @if (files().length) {
           <div class="file-list-section-content">
             <app-file-list
               [projectFiles]="files()"
@@ -640,29 +517,12 @@
               (metadataUpdated)="onFileDeleted()"
             ></app-file-list>
           </div>
-        </section>
-      } @else {
-        <p class="empty-state">{{ 'files.noFiles' | translate }}</p>
-      }
+        } @else {
+          <p class="empty-state">{{ 'files.noPictures' | translate }}</p>
+        }
+      </section>
     </app-tab-panel>
   </app-tab-group>
-
-  <!-- Floating actions -->
-  <div class="file-upload">
-    <button
-      type="button"
-      class="icon upload-icon floating-icon"
-      (click)="openUploadModal()"
-      [disabled]="uploading()"
-      [attr.aria-label]="'objects.uploadFile' | translate"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-        <path
-          d="M352 173.3L352 384C352 401.7 337.7 416 320 416C302.3 416 288 401.7 288 384L288 173.3L246.6 214.7C234.1 227.2 213.8 227.2 201.3 214.7C188.8 202.2 188.8 181.9 201.3 169.4L297.3 73.4C309.8 60.9 330.1 60.9 342.6 73.4L438.6 169.4C451.1 181.9 451.1 202.2 438.6 214.7C426.1 227.2 405.8 227.2 393.3 214.7L352 173.3zM320 464C364.2 464 400 428.2 400 384L480 384C515.3 384 544 412.7 544 448L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 448C96 412.7 124.7 384 160 384L240 384C240 428.2 275.8 464 320 464zM464 488C477.3 488 488 477.3 488 464C488 450.7 477.3 440 464 440C450.7 440 440 450.7 440 464C440 477.3 450.7 488 464 488z"
-        />
-      </svg>
-    </button>
-  </div>
 
   <app-file-upload-modal
     [isOpen]="uploadModalOpen()"
@@ -674,23 +534,8 @@
     (cancel)="onCancelUpload()"
   />
 
-  <button
-    type="button"
-    class="add-icon floating-icon"
-    (click)="addObject()"
-    [attr.aria-label]="'objects.add' | translate"
-    [attr.title]="'objects.add' | translate"
-  >
-    <span class="add" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          stroke="white"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 5v14m-7-7h14"
-        />
-      </svg>
-    </span>
-  </button>
+  <app-floating-add-button
+    [ariaLabel]="'objects.add' | translate"
+    (clicked)="addObject()"
+  />
 </div>

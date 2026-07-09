@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.archived-pill {
+  align-self: flex-end;
+  padding: 0.15rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #f8d7da;
+  color: #383d41;
+}
+
+.headline {
+  margin: 0;
+}
+
+.data-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.created-at {
+  font-size: var(--font-4);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.archive-comment-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #856404;
+
+  strong {
+    color: #856404;
+  }
+}

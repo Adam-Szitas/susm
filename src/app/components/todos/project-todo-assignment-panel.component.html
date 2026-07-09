@@ -64,10 +64,7 @@
                     [attr.title]="'todos.unsavedChanges' | translate"
                     [attr.aria-label]="'todos.unsavedChanges' | translate"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M4 22V4" />
-                      <path d="M4 4h11l-1.5 3L15 10H4" />
-                    </svg>
+                    <app-icon [icon]="icons.flag" />
                   </span>
                 }
               </span>
@@ -102,10 +99,7 @@
               [title]="'todos.assignAll' | translate"
             >
               <span class="todo-action-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 11l3 3L22 4" />
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                </svg>
+                <app-icon [icon]="icons.clipboardCheck" />
               </span>
               <span class="todo-action-label">{{ 'todos.assignAll' | translate }}</span>
             </button>
@@ -117,9 +111,7 @@
               [title]="'todos.clearAll' | translate"
             >
               <span class="todo-action-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                </svg>
+                <app-icon [icon]="icons.clipboard" />
               </span>
               <span class="todo-action-label">{{ 'todos.clearAll' | translate }}</span>
             </button>
@@ -216,9 +208,7 @@
           [title]="'todos.mobileContinueToChecklist' | translate: { count: selectedObjectIds().length }"
         >
           <span class="todo-action-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <app-icon [icon]="icons.chevronRight" [strokeWidth]="2.5" />
           </span>
           <span class="todo-action-label">{{
             'todos.mobileContinueToChecklist'
@@ -237,11 +227,7 @@
         [title]="'todos.verifyAssignments' | translate"
       >
         <span class="todo-action-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-            <rect x="9" y="3" width="6" height="4" rx="1" />
-            <path d="M9 14l2 2 4-4" />
-          </svg>
+          <app-icon [icon]="icons.clipboardWithCheck" />
         </span>
         <span class="todo-action-label">{{ 'todos.verifyAssignments' | translate }}</span>
       </button>
@@ -255,9 +241,7 @@
           [title]="'common.cancel' | translate"
         >
           <span class="todo-action-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
           </span>
           <span class="todo-action-label">{{ 'common.cancel' | translate }}</span>
         </button>
@@ -272,13 +256,9 @@
       >
         <span class="todo-action-icon" aria-hidden="true">
           @if (saving()) {
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            </svg>
+            <app-icon [icon]="icons.loader" />
           } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
           }
         </span>
         <span class="todo-action-label">

@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 28rem;
+  min-width: 0;
+}
+
+.status-select {
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #1f2937;
+  background-color: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--primary-default, #9d0000);
+    box-shadow: 0 0 0 2px rgba(157, 0, 0, 0.12);
+  }
+}

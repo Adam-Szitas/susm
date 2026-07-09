@@ -16,12 +16,14 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
 import type { Object } from '@models';
-import { sortObjectsByStoredOrder } from '@models';
+import { sortObjectsByStoredOrder, formatObjectLabel } from '@models';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ImageCompressionService } from '@services/image-compression.service';
 import { ProjectStore } from '@store/project.store';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 import { buildUploadImageUrl } from '../../../utils/upload-image-url';
 
 type PointerMode = 'pan' | 'place-pin' | 'drag-pin';
@@ -66,12 +68,13 @@ const MAX_SCALE = 4;
 @Component({
   selector: 'app-project-plan-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, IconComponent],
   templateUrl: './project-plan-modal.component.html',
   styleUrl: './project-plan-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectPlanModalComponent {
+  protected readonly icons = icons;
   #modalService = inject(ModalService);
   #router = inject(Router);
   #notificationService = inject(NotificationService);
@@ -187,11 +190,7 @@ export class ProjectPlanModalComponent {
   }
 
   objectLabel(object: Object): string {
-    const addr = object.address;
-    const parts = [addr?.house_number, addr?.level, addr?.door_number]
-      .map((p) => p?.trim())
-      .filter(Boolean);
-    return parts.join(', ') || object._id?.$oid || '';
+    return formatObjectLabel(object);
   }
 
   pinPixelPosition(object: Object): PinPixelPoint | null {

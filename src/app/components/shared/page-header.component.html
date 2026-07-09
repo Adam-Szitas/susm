@@ -1,0 +1,14 @@
+<header class="page-header">
+  <div class="page-header-text">
+    <div class="page-title-row">
+      @if (balanceActions()) {
+        <span class="page-header-action page-header-action--spacer" aria-hidden="true"></span>
+      }
+      <h1>{{ title() }}</h1>
+      <div class="page-header-action">
+        <ng-content select="[pageHeaderAction]" />
+      </div>
+    </div>
+    <ng-content select="[pageHeaderSubtitle]" />
+  </div>
+</header>
