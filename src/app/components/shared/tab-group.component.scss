@@ -108,10 +108,7 @@
   padding: 0;
   background: #fff;
   border-bottom: 1px solid #e8eaed;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  @include overflow-scroll-x;
   flex-shrink: 0;
 
   @include tablet-up {
@@ -119,10 +116,6 @@
   }
 
   &--hidden {
-    display: none;
-  }
-
-  &::-webkit-scrollbar {
     display: none;
   }
 }

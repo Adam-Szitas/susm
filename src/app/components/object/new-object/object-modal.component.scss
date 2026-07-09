@@ -123,8 +123,8 @@
     flex-direction: column;
     gap: 0.5rem;
     max-height: min(50vh, 420px);
-    overflow: auto;
     padding-right: 0.15rem;
+    @include overflow-scroll;
   }
 
   .rows-table-head,

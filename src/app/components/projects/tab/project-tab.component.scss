@@ -255,15 +255,7 @@
   &--reorder {
     flex: 1 1 0;
     min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: max(
-      var(--app-floating-action-clearance, 5rem),
-      calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
-    );
-    scroll-padding-bottom: var(--app-floating-action-clearance, 5rem);
+    @include overflow-scroll-y-with-clearance;
 
     @include tablet-up {
       display: grid;
@@ -505,9 +497,8 @@
       ::ng-deep .file-wrapper {
         flex: 1 1 0;
         min-height: 0;
-        overflow: hidden auto;
-        overscroll-behavior: contain;
         padding-bottom: var(--space, 1rem);
+        @include overflow-scroll;
       }
     }
   }
@@ -524,10 +515,7 @@
   gap: 1rem;
   flex: 1 1 0;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  @include overflow-scroll-y;
 }
 
 .protocol-item {

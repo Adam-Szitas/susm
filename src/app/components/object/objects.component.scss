@@ -15,6 +15,21 @@
   margin-top: var(--space-small);
 }
 
+:host ::ng-deep .objects-list-viewport {
+  app-object-card .card {
+    display: flex;
+    flex-direction: column;
+    max-height: none;
+    text-align: left;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  :host ::ng-deep .objects-list-viewport.virtual-scroll-host--grid .virtual-scroll-fallback {
+    grid-template-columns: 1fr;
+  }
+}
+
 .empty-state {
   margin: var(--space-small) 0;
   color: #666;

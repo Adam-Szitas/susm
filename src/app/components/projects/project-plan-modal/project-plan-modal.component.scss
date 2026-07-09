@@ -112,7 +112,7 @@
   padding: 0;
   @include flex-column(0.35rem);
   max-height: 12rem;
-  overflow-y: auto;
+  @include overflow-scroll-y;
 }
 
 .plan-pinned-row {

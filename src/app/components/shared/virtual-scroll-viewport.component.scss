@@ -17,9 +17,7 @@
 .virtual-scroll-viewport {
   width: 100%;
   min-width: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  @include overflow-scroll;
 
   &--fill {
     flex: 1 1 0;
@@ -58,7 +56,8 @@
     display: grid;
     grid-template-columns: repeat(var(--vs-columns, 1), minmax(0, 1fr));
     gap: var(--space, 16px);
-    overflow: visible;
+    align-items: start;
+    overflow: hidden;
     padding-bottom: var(--space-small, 8px);
   }
 }
@@ -66,6 +65,7 @@
 .virtual-scroll-cell {
   min-width: 0;
   overflow: hidden;
+  height: 100%;
 }
 
 .virtual-scroll-fallback {
@@ -85,15 +85,7 @@
 :host.virtual-scroll-host--fill .virtual-scroll-fallback {
   flex: 1 1 0;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: max(
-    var(--app-floating-action-clearance, 5rem),
-    calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
-  );
-  scroll-padding-bottom: var(--app-floating-action-clearance, 5rem);
+  @include overflow-scroll-y-with-clearance;
 }
 
 @media (prefers-reduced-motion: reduce) {

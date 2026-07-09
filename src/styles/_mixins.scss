@@ -123,10 +123,7 @@
 // Scrollable container (bounded region — prefer scroll-region-fill when filling flex parents)
 @mixin scrollable($max-height: clamp(12rem, 70dvh, calc(100dvh - var(--app-page-chrome)))) {
   max-height: $max-height;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  @include overflow-scroll-y;
 }
 
 /// Scroll inside a flex column parent that fills the viewport below fixed chrome.
@@ -135,10 +132,79 @@
   min-height: $min-height;
   min-width: 0;
   max-height: none;
+  @include overflow-scroll-y;
+}
+
+/// Firefox scrollbar styling (scrollbar-width / scrollbar-color).
+@mixin scrollbar-styled(
+  $thumb: rgba(0, 0, 0, 0.28),
+  $track: transparent,
+  $width: thin
+) {
+  scrollbar-width: $width;
+  scrollbar-color: $thumb $track;
+
+  @supports not (scrollbar-color: auto) {
+    &::-webkit-scrollbar {
+      width: if($width == none, 0, 8px);
+      height: if($width == none, 0, 8px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $thumb;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: $track;
+    }
+  }
+}
+
+/// Hide scrollbars while keeping scrollability (Firefox, legacy Edge, WebKit).
+@mixin scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/// Vertical scroll with iOS momentum and overscroll containment.
+@mixin overflow-scroll-y {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  @include scrollbar-styled;
+}
+
+/// Bidirectional scroll with iOS momentum and overscroll containment.
+@mixin overflow-scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  @include scrollbar-styled;
+}
+
+/// Horizontal scroll (e.g. tab strips) with hidden scrollbars.
+@mixin overflow-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  @include scrollbar-hidden;
+}
+
+/// Vertical scroll plus safe-area padding for floating action buttons.
+@mixin overflow-scroll-y-with-clearance($clearance: var(--app-floating-action-clearance, 5rem)) {
+  padding-bottom: max(
+    #{$clearance},
+    calc(#{$clearance} + env(safe-area-inset-bottom, 0px))
+  );
+  scroll-padding-bottom: $clearance;
+  @include overflow-scroll-y;
 }
 
 // Aspect ratio container

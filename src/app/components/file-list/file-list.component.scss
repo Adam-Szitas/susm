@@ -84,7 +84,7 @@
   gap: 0.28rem;
   padding: 0.32rem;
   box-sizing: border-box;
-  overflow: hidden auto;
+  @include overflow-scroll;
 }
 
 // Icon labels use global `.visually-hidden` in the template
