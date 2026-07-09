@@ -6,12 +6,30 @@
   min-width: 0;
 }
 
+:host.virtual-scroll-host--fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+}
+
 .virtual-scroll-viewport {
   width: 100%;
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+
+  &--fill {
+    flex: 1 1 0;
+    min-height: 0;
+    padding-bottom: max(
+      var(--app-floating-action-clearance, 5rem),
+      calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
+    );
+    scroll-padding-bottom: var(--app-floating-action-clearance, 5rem);
+  }
 }
 
 .virtual-scroll-spacer {
@@ -43,6 +61,20 @@
   gap: var(--space, 16px);
   width: 100%;
   min-width: 0;
+}
+
+:host.virtual-scroll-host--fill .virtual-scroll-fallback {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: max(
+    var(--app-floating-action-clearance, 5rem),
+    calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
+  );
+  scroll-padding-bottom: var(--app-floating-action-clearance, 5rem);
 }
 
 @media (prefers-reduced-motion: reduce) {

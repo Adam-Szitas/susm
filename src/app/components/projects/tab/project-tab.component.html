@@ -394,7 +394,7 @@
     (activeTabIdChange)="activeContentTab.set($event)"
     [ariaLabel]="contentTabsAriaLabel()"
   >
-    <app-tab-panel id="objects">
+    <app-tab-panel id="objects" class="project-tab-panel--internal-scroll">
       @if (objectReorderMode() && objectsInReorderMode().length > 0) {
         <div
           class="card-wrapper card-wrapper--reorder"

@@ -138,7 +138,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     () => this.toolbarIconOnly() && (this.filtersVisible() || this.projectDataExpanded()),
   );
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
-  /** Virtual scroll only on desktop columns — mobile tab panel scrolls the full list. */
+  /** Virtual scroll on desktop columns; mobile uses the same fill viewport with a plain list. */
   readonly objectVirtualScrollThreshold = computed(() =>
     this.toolbarIconOnly() ? Number.MAX_SAFE_INTEGER : VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
   );

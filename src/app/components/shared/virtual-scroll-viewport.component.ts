@@ -25,6 +25,9 @@ export const VIRTUAL_SCROLL_DEFAULT_THRESHOLD = 50;
   templateUrl: './virtual-scroll-viewport.component.html',
   styleUrl: './virtual-scroll-viewport.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.virtual-scroll-host--fill]': 'fill()',
+  },
 })
 export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   #destroyRef = inject(DestroyRef);
