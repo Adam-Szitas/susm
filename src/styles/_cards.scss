@@ -22,7 +22,7 @@
     width: 100%;
   }
 
-  .card {
+  .card-wrapper .card {
     display: flex;
     flex-direction: column;
     grid-template-columns: unset;
@@ -35,7 +35,7 @@
   }
 }
 
-.card {
+.card-wrapper .card {
   cursor: pointer;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

@@ -1,15 +1,16 @@
+@use '../../../styles/mixins' as *;
+
 :host {
   display: block;
   width: 100%;
   min-width: 0;
+  height: auto;
 }
 
 .card {
+  @include catalog-card-surface;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
+  gap: 0.35rem;
 
   &--linked {
     cursor: pointer;
@@ -52,22 +53,27 @@
 }
 
 .project-name {
-  font-size: 0.75rem;
+  width: 100%;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #6c757d;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
+  letter-spacing: 0.06em;
 }
 
 .note {
-  font-size: 0.85rem;
-  color: #4a4a4a;
+  width: 100%;
+  font-size: 0.88rem;
+  color: #4b5563;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .created-at {
+  width: 100%;
   font-size: var(--font-4);
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
@@ -75,7 +81,12 @@
 
 .headline {
   margin: 0;
+  width: 100%;
   min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1f2937;
 
   .headline-text {
     display: block;
@@ -86,10 +97,13 @@
 }
 
 .card--mobile-name {
+  align-items: stretch;
+  text-align: left;
   gap: 0.5rem;
   padding: 1rem;
   border: 1px solid #e5e5e5;
   border-radius: 10px;
+  box-shadow: none;
 
   .headline {
     font-size: 1rem;

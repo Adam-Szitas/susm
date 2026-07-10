@@ -14,15 +14,6 @@
   min-width: 0;
 }
 
-:host ::ng-deep .projects-list-viewport {
-  app-project-card .card {
-    display: flex;
-    flex-direction: column;
-    max-height: none;
-    text-align: left;
-  }
-}
-
 @media screen and (max-width: 768px) {
   :host ::ng-deep .projects-list-viewport.virtual-scroll-host--grid .virtual-scroll-fallback {
     grid-template-columns: 1fr;
