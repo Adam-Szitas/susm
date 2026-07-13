@@ -54,32 +54,30 @@
           }
           <div class="project-data-item project-data-item--category">
             <dt>
-              <label for="projectCategory">{{ 'projects.category' | translate }}</label>
+              <span id="projectCategoryLabel">{{ 'projects.category' | translate }}</span>
             </dt>
             <dd>
-              <div class="category-row">
-                <select
-                  id="projectCategory"
-                  [value]="project()?.category"
-                  [disabled]="updatingCategory()"
-                  (change)="updateCategory($any($event.target).value)"
-                  class="category-select"
+              <div class="category-field">
+                <span
+                  class="category-field__value"
+                  [class.category-field__value--empty]="!project()?.category"
+                  aria-labelledby="projectCategoryLabel"
                 >
-                  <option value="">{{ 'objects.noCategory' | translate }}</option>
-                  @for (category of project()?.categories; track category) {
-                    <option [value]="category" [selected]="category === project()?.category">
-                      {{ category }}
-                    </option>
+                  @if (project()?.category) {
+                    {{ project()?.category }}
+                  } @else {
+                    {{ 'objects.noCategory' | translate }}
                   }
-                </select>
+                </span>
                 <button
                   type="button"
-                  class="category-add-btn"
-                  (click)="manageCategories()"
-                  [attr.aria-label]="'projects.manageCategories' | translate"
-                  [title]="'projects.manageCategories' | translate"
+                  class="button button-outline category-field__action"
+                  (click)="openCategoryModal()"
+                  [attr.aria-label]="'projects.changeCategory' | translate"
+                  [title]="'projects.changeCategory' | translate"
                 >
-                  <app-icon [icon]="icons.plus" />
+                  <app-icon [icon]="icons.edit" [svgClass]="'category-field__action-icon'" />
+                  <span>{{ 'projects.changeCategory' | translate }}</span>
                 </button>
               </div>
             </dd>

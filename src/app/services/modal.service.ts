@@ -95,6 +95,7 @@ export class ModalService {
     });
 
     this.#appRef.attachView(childComponent.hostView);
+    childComponent.changeDetectorRef.detectChanges();
     return childComponent;
   }
 

@@ -1,55 +1,143 @@
-<div class="category-management-form">
-  <h2>{{ 'projects.manageCategories' | translate }}</h2>
+<div class="category-modal">
+  <p class="category-modal__intro">{{ 'projects.selectCategoryHint' | translate }}</p>
 
-  <form [formGroup]="form">
-    <div class="form-group">
-      <label for="newCategory">{{ 'projects.addCategory' | translate }}</label>
-      <div class="input-group">
-        <input
-          type="text"
-          id="newCategory"
-          formControlName="newCategory"
-          [placeholder]="'projects.categoryName' | translate"
-        />
-        <button type="button" class="btn btn-secondary" (click)="addCategory()">
-          {{ 'common.add' | translate }}
+  <section class="category-modal__section" aria-labelledby="categorySelectHeading">
+    <h3 id="categorySelectHeading" class="category-modal__heading">
+      {{ 'projects.selectCategory' | translate }}
+    </h3>
+
+    <ul class="category-select-list" role="listbox" [attr.aria-label]="'projects.selectCategory' | translate">
+      <li>
+        <button
+          type="button"
+          class="category-select-item"
+          [class.category-select-item--selected]="selectedCategory() === null"
+          role="option"
+          [attr.aria-selected]="selectedCategory() === null"
+          (click)="selectCategory(null)"
+        >
+          <span class="category-select-item__marker" aria-hidden="true"></span>
+          <span class="category-select-item__label">{{ 'objects.noCategory' | translate }}</span>
+          @if (selectedCategory() === null) {
+            <app-icon class="category-select-item__check" [icon]="icons.check" [strokeWidth]="2.5" />
+          }
         </button>
-      </div>
-    </div>
+      </li>
 
-    <div class="categories-list">
-      <h3>{{ 'projects.categories' | translate }}</h3>
-      <div formArrayName="categories" class="category-items">
-        @for (control of categoryArray.controls; track $index; let idx = $index) {
-          <div class="category-item">
-            <input type="text" [formControlName]="idx" />
-            <button
-              type="button"
-              class="btn btn-error btn-small"
-              (click)="removeCategory(idx)"
-            >
-              {{ 'common.delete' | translate }}
-            </button>
-          </div>
-        }
-        @if (categoryArray.length === 0) {
-          <p class="empty-message">{{ 'projects.noCategories' | translate }}</p>
-        }
-      </div>
-    </div>
+      @for (category of categoryNames(); track category) {
+        <li>
+          <button
+            type="button"
+            class="category-select-item"
+            [class.category-select-item--selected]="isSelected(category)"
+            role="option"
+            [attr.aria-selected]="isSelected(category)"
+            (click)="selectCategory(category)"
+          >
+            <span class="category-select-item__marker" aria-hidden="true"></span>
+            <span class="category-select-item__label">{{ category }}</span>
+            @if (isSelected(category)) {
+              <app-icon class="category-select-item__check" [icon]="icons.check" [strokeWidth]="2.5" />
+            }
+          </button>
+        </li>
+      }
 
-    <div class="form-actions">
-      <button type="button" class="btn btn-secondary" (click)="close()">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
-        @if (saving()) {
-          {{ 'common.saving' | translate }}
-        } @else {
-          {{ 'common.save' | translate }}
-        }
-      </button>
-    </div>
-  </form>
+      @if (!hasCategories()) {
+        <li class="category-select-empty">{{ 'projects.noCategoriesDefined' | translate }}</li>
+      }
+    </ul>
+  </section>
+
+  @if (isAdmin()) {
+    <section class="category-modal__section category-modal__section--admin" aria-labelledby="categoryManageHeading">
+      <h3 id="categoryManageHeading" class="category-modal__heading">
+        {{ 'projects.manageCategories' | translate }}
+      </h3>
+      <p class="category-modal__hint">{{ 'projects.manageCategoriesHint' | translate }}</p>
+
+      <form [formGroup]="form" class="category-admin-form" (ngSubmit)="addCategory()">
+        <label class="sr-only" for="newCategory">{{ 'projects.addCategory' | translate }}</label>
+        <div class="category-add-row">
+          <input
+            type="text"
+            id="newCategory"
+            formControlName="newCategory"
+            class="category-input"
+            [placeholder]="'projects.categoryName' | translate"
+            autocomplete="off"
+          />
+          <button type="submit" class="button button-secondary category-add-btn">
+            <span class="category-add-btn__icon" aria-hidden="true">+</span>
+            <span>{{ 'common.add' | translate }}</span>
+          </button>
+        </div>
+
+        <div formArrayName="categories" class="category-manage-list">
+          @for (control of categoryArray.controls; track $index; let idx = $index) {
+            <div class="category-manage-item">
+              @if (editingIndex() === idx) {
+                <input
+                  type="text"
+                  class="category-input category-manage-item__input"
+                  [formControlName]="idx"
+                  [attr.aria-label]="'projects.renameCategory' | translate"
+                  (keydown.enter)="finishEditing(idx)"
+                  (blur)="finishEditing(idx)"
+                />
+                <button
+                  type="button"
+                  class="icon-btn icon-btn--confirm"
+                  (click)="finishEditing(idx)"
+                  [attr.aria-label]="'common.save' | translate"
+                  [title]="'common.save' | translate"
+                >
+                  <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+                </button>
+              } @else {
+                <span class="category-manage-item__label">{{ control.value }}</span>
+                <div class="category-manage-item__actions">
+                  <button
+                    type="button"
+                    class="icon-btn"
+                    (click)="startEditing(idx)"
+                    [attr.aria-label]="'projects.renameCategory' | translate"
+                    [title]="'projects.renameCategory' | translate"
+                  >
+                    <app-icon [icon]="icons.edit" />
+                  </button>
+                  <button
+                    type="button"
+                    class="icon-btn icon-btn--danger"
+                    (click)="removeCategory(idx)"
+                    [attr.aria-label]="'common.delete' | translate"
+                    [title]="'common.delete' | translate"
+                  >
+                    <app-trash-icon [size]="18" />
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (categoryArray.length === 0) {
+            <p class="category-select-empty">{{ 'projects.noCategories' | translate }}</p>
+          }
+        </div>
+      </form>
+    </section>
+  }
+
+  <div class="category-modal__actions">
+    <button type="button" class="button button-secondary" (click)="close()" [disabled]="saving()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="button" class="button button-primary" (click)="save()" [disabled]="saving()">
+      @if (saving()) {
+        {{ 'common.saving' | translate }}
+      } @else {
+        {{ 'common.save' | translate }}
+      }
+    </button>
+  </div>
 </div>
-

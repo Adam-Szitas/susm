@@ -131,7 +131,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   uploading = signal(false);
   uploadModalOpen = signal(false);
   selectedFiles = signal<globalThis.File[]>([]);
-  updatingCategory = signal(false);
   downloadingProtocol = signal<string | null>(null);
   loadingTemplates = signal(false);
   uploadingProtocolPdf = signal(false);
@@ -444,17 +443,19 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     });
   }
 
-  manageCategories(): void {
+  openCategoryModal(): void {
     const project = this.project();
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!project || !projectId) return;
 
     this.#modalService.open({
-      title: 'projects.manageCategories',
+      title: 'projects.category',
       component: CategoryManagementModalComponent,
       componentInputs: {
         projectId,
         categories: project.categories || [],
+        currentCategory: project.category ?? null,
+        isAdmin: this.isAdmin(),
       },
     });
   }
@@ -1125,30 +1126,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       component: EditProjectComponent,
       componentInputs: {
         projectData: this.project(),
-      },
-    });
-  }
-
-  updateCategory(category: string | null): void {
-    const projectId = this.#route.snapshot.paramMap.get('id');
-    if (!projectId) return;
-
-    // Handle empty string as null
-    const categoryValue = category === '' ? null : category;
-
-    this.updatingCategory.set(true);
-    this.#projectStore.updateProjectCategory(projectId, categoryValue).subscribe({
-      next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('projects.categoryUpdated'),
-        );
-        this.updatingCategory.set(false);
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('projects.updateCategoryFailed'),
-        );
-        this.updatingCategory.set(false);
       },
     });
   }
