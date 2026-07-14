@@ -244,7 +244,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       .filter((o): o is Object => !!o);
   });
 
-  /** Active mobile content tab (objects | protocols | files). */
+  /** Active content tab (objects | uploaded-protocols | generated-protocols | files). */
   activeContentTab = signal('objects');
 
   readonly contentTabs = computed<TabItem[]>(() => {
@@ -259,9 +259,14 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         badge: objectCount > 0 ? objectCount : null,
       },
       {
-        id: 'protocols',
-        label: this.#translationService.instant('protocols.title'),
-        badge: this.projectProtocols().length || null,
+        id: 'uploaded-protocols',
+        label: this.#translationService.instant('protocols.uploadedProtocolsTab'),
+        badge: this.uploadedProtocols().length || null,
+      },
+      {
+        id: 'generated-protocols',
+        label: this.#translationService.instant('protocols.generatedProtocolsTab'),
+        badge: this.generatedProtocols().length || null,
       },
       {
         id: 'files',
@@ -280,19 +285,27 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (!addr) return '';
     return [addr.street, addr.postal_code].filter((p) => !!p?.trim()).join(', ');
   });
-  readonly projectProtocols = computed(() => {
-    const protocols = this.project()?.protocols ?? [];
+  readonly projectProtocols = computed(() => this.project()?.protocols ?? []);
+
+  readonly uploadedProtocols = computed(() =>
+    this.#sortProtocolsNewestFirst(
+      this.projectProtocols().filter((protocol) => isUploadedProtocol(protocol)),
+    ),
+  );
+
+  readonly generatedProtocols = computed(() =>
+    this.#sortProtocolsNewestFirst(
+      this.projectProtocols().filter((protocol) => !isUploadedProtocol(protocol)),
+    ),
+  );
+
+  #sortProtocolsNewestFirst(protocols: ProtocolRecord[]): ProtocolRecord[] {
     return [...protocols].sort((a, b) => {
-      const aUploaded = !!a.uploaded_pdf_path;
-      const bUploaded = !!b.uploaded_pdf_path;
-      if (aUploaded !== bUploaded) {
-        return aUploaded ? -1 : 1;
-      }
       const aTime = a.generated_at ? new Date(a.generated_at).getTime() : 0;
       const bTime = b.generated_at ? new Date(b.generated_at).getTime() : 0;
       return bTime - aTime;
     });
-  });
+  }
 
   readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     const p = this.project();
@@ -1066,6 +1079,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         );
         this.#projectStore.loadProject(projectId).subscribe();
         this.uploadingProtocolPdf.set(false);
+        this.activeContentTab.set('uploaded-protocols');
       },
       error: (error) => {
         this.#notificationService.showError(

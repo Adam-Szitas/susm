@@ -42,6 +42,28 @@
     }
   }
 
+  &.project-content-tabs {
+    .tab-group-list {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-group-tab {
+      flex: 0 0 auto;
+      min-width: max(5.5rem, fit-content);
+      max-width: none;
+      padding-inline: 0.85rem;
+    }
+
+    .tab-group-tab-label {
+      flex-shrink: 0;
+      overflow: visible;
+      text-overflow: clip;
+    }
+  }
+
   &.checklist-modal-tabs {
     .tab-group-list {
       justify-content: flex-start;
@@ -221,10 +243,11 @@
   gap: var(--space-small);
   align-items: stretch;
   width: 100%;
+  @include overflow-scroll-x;
 
   app-tab-panel {
     flex: 1 1 0;
-    min-width: 0;
+    min-width: min(100%, 14rem);
     min-height: 0;
   }
 

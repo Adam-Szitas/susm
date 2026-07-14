@@ -67,7 +67,7 @@
     select {
       padding: 0.5rem 0.65rem;
       border: 1px solid #e5e7eb;
-      border-radius: 8px;
+      border-radius: var(--input-border-radius, 8px);
       font-size: var(--font-4);
       background: #fff;
       min-block-size: var(--touch-target-min);

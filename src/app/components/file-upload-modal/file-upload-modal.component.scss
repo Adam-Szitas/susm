@@ -204,7 +204,7 @@
   min-width: 120px;
   padding: 0.5rem 0.75rem;
   border: 1px solid #d0d0d0;
-  border-radius: 6px;
+  border-radius: var(--input-border-radius, 8px);
   font: inherit;
 }
 

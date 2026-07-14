@@ -6,6 +6,17 @@ form {
   margin: 0 calc(100vw / 2 - 150px);
 }
 
+.control {
+  min-width: min(300px, 100%);
+
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']) {
+    width: 100%;
+    border-radius: var(--input-border-radius, 8px);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
 .button {
   margin: 0;
 }

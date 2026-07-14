@@ -10,7 +10,7 @@
   margin: 0;
   padding: 0.45rem 0.6rem;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: var(--input-border-radius, 8px);
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.4;

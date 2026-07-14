@@ -185,7 +185,7 @@ form {
 
 .filter-input {
   border: 1px solid var(--default-color);
-  border-radius: 6px;
+  border-radius: var(--input-border-radius, 8px);
   padding: 8px 12px;
   font-size: 1rem;
   transition:

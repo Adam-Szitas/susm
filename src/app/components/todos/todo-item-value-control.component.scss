@@ -68,7 +68,7 @@
   margin: 0;
   padding: 0.35rem 1.5rem 0.35rem 0.55rem;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: var(--input-border-radius, 8px);
   background: #fff;
   font-size: 0.78rem;
   font-weight: 500;

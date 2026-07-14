@@ -130,7 +130,7 @@
   min-width: 0;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border-subtle, #ddd);
-  border-radius: 8px;
+  border-radius: var(--input-border-radius, 8px);
   font-size: 0.95rem;
   background: #fff;
 

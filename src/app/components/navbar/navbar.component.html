@@ -105,10 +105,12 @@
     <a class="navbar-brand" routerLink="/login" aria-label="SUSM">
       <app-susm-logo />
     </a>
-    <ul>
-      <li>
-        <a class="nav-link" routerLink="/login">{{ 'navbar.login' | translate }}</a>
-      </li>
-    </ul>
+    @if (!isLoginPage()) {
+      <ul>
+        <li>
+          <a class="nav-link" routerLink="/login">{{ 'navbar.login' | translate }}</a>
+        </li>
+      </ul>
+    }
   </nav>
 }

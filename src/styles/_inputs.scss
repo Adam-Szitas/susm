@@ -24,9 +24,12 @@
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: var(--input-border-radius, 8px);
     font-size: 1rem;
     font-family: inherit;
+    background-color: #fff;
+    -webkit-appearance: none;
+    appearance: none;
     @include transition(border-color, box-shadow);
 
     &:focus {
@@ -104,7 +107,7 @@
 // Filter input styles
 .filter-input {
   border: 1px solid var(--default-color);
-  border-radius: 6px;
+  border-radius: var(--input-border-radius, 8px);
   padding: 8px 12px;
   font-size: 1rem;
   @include transition(border-color, box-shadow);

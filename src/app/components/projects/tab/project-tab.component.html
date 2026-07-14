@@ -383,107 +383,114 @@
       }
     </app-tab-panel>
 
-    <app-tab-panel id="protocols" class="project-tab-panel--internal-scroll">
+    <app-tab-panel id="uploaded-protocols" class="project-tab-panel--internal-scroll">
       @if (project()) {
-        <section class="protocols-section">
+        <section class="protocols-section protocols-section--uploaded">
           <div class="protocols-section-header">
-            <div class="protocols-section-title-row">
-              <div class="protocols-section-title-group">
-                <h3>{{ 'protocols.title' | translate }}</h3>
-                @if (!project()?.archived_at) {
-                  <input
-                    type="file"
-                    id="protocol-pdf-input"
-                    class="visually-hidden"
-                    accept="application/pdf,.pdf"
-                    (change)="onProtocolPdfSelected($event)"
-                    [disabled]="uploadingProtocolPdf()"
-                  />
-                  <label
-                    for="protocol-pdf-input"
-                    class="button button-secondary protocols-upload-label"
-                    [class.is-disabled]="uploadingProtocolPdf()"
-                    [attr.aria-label]="
-                      uploadingProtocolPdf()
-                        ? ('protocols.uploadingPdf' | translate)
-                        : ('protocols.uploadPdf' | translate)
-                    "
-                    [attr.title]="
-                      uploadingProtocolPdf()
-                        ? ('protocols.uploadingPdf' | translate)
-                        : ('protocols.uploadPdf' | translate)
-                    "
-                  >
-                    @if (uploadingProtocolPdf()) {
-                      <span class="spinner"></span>
-                    } @else {
-                      <app-icon [icon]="icons.fileUpload" [svgClass]="'protocols-upload-icon'" />
-                    }
-                  </label>
+            <h3>{{ 'protocols.uploadedProtocolsColumn' | translate }}</h3>
+            @if (!project()?.archived_at) {
+              <input
+                type="file"
+                id="protocol-pdf-input"
+                class="visually-hidden"
+                accept="application/pdf,.pdf"
+                (change)="onProtocolPdfSelected($event)"
+                [disabled]="uploadingProtocolPdf()"
+              />
+              <label
+                for="protocol-pdf-input"
+                class="button button-secondary protocols-upload-label"
+                [class.is-disabled]="uploadingProtocolPdf()"
+                [attr.aria-label]="
+                  uploadingProtocolPdf()
+                    ? ('protocols.uploadingPdf' | translate)
+                    : ('protocols.uploadPdf' | translate)
+                "
+                [attr.title]="
+                  uploadingProtocolPdf()
+                    ? ('protocols.uploadingPdf' | translate)
+                    : ('protocols.uploadPdf' | translate)
+                "
+              >
+                @if (uploadingProtocolPdf()) {
+                  <span class="spinner"></span>
+                } @else {
+                  <app-icon [icon]="icons.fileUpload" [svgClass]="'protocols-upload-icon'" />
                 }
-              </div>
-            </div>
+                <span class="protocols-upload-text">{{ 'protocols.uploadPdf' | translate }}</span>
+              </label>
+            }
           </div>
           <div class="protocols-section-content">
-            @if (projectProtocols().length > 0) {
-              <div class="protocol-list">
-                @for (protocol of projectProtocols(); track protocol._id.$oid) {
-                  <div
-                    class="protocol-item"
-                    [class.protocol-item--uploaded]="isUploadedProtocol(protocol)"
-                    [class.protocol-item--generated]="!isUploadedProtocol(protocol)"
-                  >
-                    <button
-                      type="button"
-                      class="delete"
-                      (click)="deleteProtocol(protocol)"
-                      [attr.aria-label]="'protocols.delete' | translate"
-                      [title]="'protocols.delete' | translate"
-                    >
-                      <app-trash-icon [size]="22" />
-                    </button>
-                    <div class="protocol-info">
-                      <div class="protocol-name-row">
-                        <p class="protocol-name" [attr.title]="protocol.template_name">
-                          {{ protocol.template_name }}
-                        </p>
-                        @if (isUploadedProtocol(protocol)) {
-                          <span class="protocol-source-badge protocol-source-badge--uploaded">{{
-                            'protocols.badgeUploaded' | translate
-                          }}</span>
-                        } @else {
-                          <span class="protocol-source-badge protocol-source-badge--generated">{{
-                            'protocols.badgeGenerated' | translate
-                          }}</span>
-                        }
-                      </div>
-                      <p class="protocol-meta">
-                        <span>{{ protocolDateLabel(protocol) }}</span>
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      class="button button-secondary"
-                      (click)="downloadProtocol(protocol)"
-                      [disabled]="downloadingProtocol() === protocol._id.$oid"
-                    >
-                      @if (downloadingProtocol() === protocol._id.$oid) {
-                        <span class="spinner"></span>
-                        {{ 'common.loading' | translate }}
-                      } @else {
-                        {{ 'protocols.download' | translate }}
-                      }
-                    </button>
-                  </div>
-                }
-              </div>
-            } @else {
-              <p class="empty-state">{{ 'protocols.noProtocolsYet' | translate }}</p>
-            }
+            <div class="protocol-list">
+              @for (protocol of uploadedProtocols(); track protocol._id.$oid) {
+                <ng-container *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }" />
+              } @empty {
+                <p class="empty-state">{{ 'protocols.noUploadedProtocols' | translate }}</p>
+              }
+            </div>
           </div>
         </section>
       }
     </app-tab-panel>
+
+    <app-tab-panel id="generated-protocols" class="project-tab-panel--internal-scroll">
+      @if (project()) {
+        <section class="protocols-section protocols-section--generated">
+          <div class="protocols-section-header">
+            <h3>{{ 'protocols.generatedProtocolsColumn' | translate }}</h3>
+          </div>
+          <div class="protocols-section-content">
+            <div class="protocol-list">
+              @for (protocol of generatedProtocols(); track protocol._id.$oid) {
+                <ng-container *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }" />
+              } @empty {
+                <p class="empty-state">{{ 'protocols.noGeneratedProtocols' | translate }}</p>
+              }
+            </div>
+          </div>
+        </section>
+      }
+    </app-tab-panel>
+
+    <ng-template #protocolItem let-protocol>
+      <div
+        class="protocol-item"
+        [class.protocol-item--uploaded]="isUploadedProtocol(protocol)"
+        [class.protocol-item--generated]="!isUploadedProtocol(protocol)"
+      >
+        <button
+          type="button"
+          class="delete"
+          (click)="deleteProtocol(protocol)"
+          [attr.aria-label]="'protocols.delete' | translate"
+          [title]="'protocols.delete' | translate"
+        >
+          <app-trash-icon [size]="22" />
+        </button>
+        <div class="protocol-info">
+          <p class="protocol-name" [attr.title]="protocol.template_name">
+            {{ protocol.template_name }}
+          </p>
+          <p class="protocol-meta">
+            <span>{{ protocolDateLabel(protocol) }}</span>
+          </p>
+        </div>
+        <button
+          type="button"
+          class="button button-secondary"
+          (click)="downloadProtocol(protocol)"
+          [disabled]="downloadingProtocol() === protocol._id.$oid"
+        >
+          @if (downloadingProtocol() === protocol._id.$oid) {
+            <span class="spinner"></span>
+            {{ 'common.loading' | translate }}
+          } @else {
+            {{ 'protocols.download' | translate }}
+          }
+        </button>
+      </div>
+    </ng-template>
 
     <app-tab-panel id="files" class="project-tab-panel--internal-scroll">
       <section class="file-list-section">

@@ -8,11 +8,18 @@
     font-weight: bold;
   }
 
-  input,
-  select {
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']),
+  select,
+  textarea {
+    width: 100%;
     padding: var(--space-small) var(--space);
     border: 1px solid var(--button);
+    border-radius: var(--input-border-radius, 8px);
     font-size: 1rem;
+    font-family: inherit;
+    background-color: #fff;
+    -webkit-appearance: none;
+    appearance: none;
   }
 }
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { FacadeStore } from '../../store/facade.store';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,29 +19,28 @@ export class NavbarComponent implements OnInit {
   protected readonly icons = icons;
 
   #router = inject(Router);
-  #route = inject(ActivatedRoute);
   #facadeStore = inject(FacadeStore);
 
   readonly isLoggedIn = this.#facadeStore.isLoggedIn;
   readonly user = this.#facadeStore.user;
 
   public toggledMenu = signal<boolean>(false);
+  readonly isLoginPage = signal(false);
 
-  public hideMenuItem = null;
   public isMobile = signal<boolean>(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
 
   ngOnInit(): void {
     this.#router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
-      this.getRouteParamsAndQueryParams();
+      this.updateRouteState();
     });
-    this.getRouteParamsAndQueryParams();
+    this.updateRouteState();
   }
 
-  getRouteParamsAndQueryParams(): void {
-    const routeParams = this.#route.snapshot.params;
-    const queryParams = this.#route.snapshot.queryParams;
+  private updateRouteState(): void {
+    const path = this.#router.url.split('?')[0].split('#')[0];
+    this.isLoginPage.set(path === '/login');
   }
 
   toggleMobileMenu(): void {
