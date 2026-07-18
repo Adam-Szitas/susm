@@ -1,132 +1,171 @@
-<div>
-  @if (inviteLoading()) {
-    <p>{{ 'register.inviteLoading' | translate }}</p>
-  } @else if (inviteError()) {
-    <p class="register-error">{{ inviteError() | translate }}</p>
-    <p>
-      <a routerLink="/login">{{ 'register.login' | translate }}</a>
-    </p>
-  } @else if (form) {
-    @if (inviterCompanyName()) {
-      <p class="register-invite-banner">
-        {{ 'register.inviteFrom' | translate: { company: inviterCompanyName() } }}
+<div class="register-page">
+  <div class="register-panel">
+    <header class="register-panel__header">
+      <p class="register-panel__brand">SUSM</p>
+      <h1 class="register-panel__title">{{ 'login.register' | translate }}</h1>
+    </header>
+
+    @if (inviteLoading()) {
+      <p class="register-panel__status" role="status" aria-live="polite">
+        {{ 'register.inviteLoading' | translate }}
       </p>
-    }
-
-    @if (submitError()) {
-      <p class="register-error">{{ submitError() | translate }}</p>
-    }
-
-    <form [formGroup]="form">
-      <div formGroupName="user" class="control">
-        <h2>{{ 'register.user' | translate }}</h2>
-        <div class="control">
-          <label for="name">{{ 'register.name' | translate }}</label>
-          <input
-            [placeholder]="'register.namePlaceholder' | translate"
-            type="name"
-            id="name"
-            formControlName="name"
-          />
-        </div>
-        <div class="control">
-          <label for="email">{{ 'register.email' | translate }}</label>
-          <input
-            [placeholder]="'register.emailPlaceholder' | translate"
-            type="email"
-            id="email"
-            formControlName="email"
-          />
-        </div>
-        <div class="control">
-          <label for="password">{{ 'register.password' | translate }}</label>
-          <input
-            [placeholder]="'register.passwordPlaceholder' | translate"
-            type="password"
-            id="password"
-            formControlName="password"
-          />
-        </div>
-        <div class="control">
-          <label for="language">{{ 'register.language' | translate }}</label>
-          <select formControlName="language" name="language" id="language">
-            <option value="en">{{ 'languages.english' | translate }}</option>
-            <option value="de">{{ 'languages.german' | translate }}</option>
-            <option value="sk">{{ 'languages.slovak' | translate }}</option>
-          </select>
-        </div>
-        <div formGroupName="addresses" class="control">
-          <h3>{{ 'register.address' | translate }}</h3>
-
-          <div class="control">
-            <label for="street">{{ 'register.street' | translate }}</label>
-            <input
-              type="text"
-              [placeholder]="'register.streetPlaceholder' | translate"
-              id="street"
-              formControlName="street"
-            />
-          </div>
-
-          <div class="control">
-            <label for="city">{{ 'register.city' | translate }}</label>
-            <input
-              type="text"
-              [placeholder]="'register.cityPlaceholder' | translate"
-              id="city"
-              formControlName="city"
-            />
-          </div>
-
-          <div class="control">
-            <label for="country">{{ 'register.country' | translate }}</label>
-            <input
-              type="text"
-              [placeholder]="'register.countryPlaceholder' | translate"
-              id="country"
-              formControlName="country"
-            />
-          </div>
-        </div>
-      </div>
-      <div formGroupName="company" class="control">
-        <h3>{{ 'register.company' | translate }}</h3>
-        <div class="control">
-          <label for="companyName">{{ 'register.companyName' | translate }}</label>
-          <input
-            type="text"
-            [placeholder]="'register.companyNamePlaceholder' | translate"
-            id="companyName"
-            formControlName="name"
-          />
-        </div>
-        <div class="control">
-          <label for="companyAddress">{{ 'register.companyAddress' | translate }}</label>
-          <input
-            type="text"
-            [placeholder]="'register.companyAddressPlaceholder' | translate"
-            id="companyAddress"
-            formControlName="address"
-          />
-        </div>
-      </div>
-      <div class="control buttons">
-        <button type="button" class="button button-secondary" [routerLink]="'/login'">
+    } @else if (inviteError()) {
+      <div class="register-panel__blocked" role="alert">
+        <p class="register-error">{{ inviteError() | translate }}</p>
+        <a routerLink="/login" class="button button-primary register-panel__cta">
           {{ 'register.login' | translate }}
-        </button>
-        <button
-          type="button"
-          class="button button-primary"
-          [disabled]="form.invalid || submitting() || !inviteValid()"
-          (click)="Submit()"
-        >
-          @if (submitting()) {
-            {{ 'register.submitting' | translate }}
-          } @else {
-            {{ 'common.submit' | translate }}
-          }
-        </button>
+        </a>
       </div>
-    </form>
-  }
+    } @else if (form) {
+      @if (inviterCompanyName()) {
+        <p class="register-invite-banner">
+          {{ 'register.inviteFrom' | translate: { company: inviterCompanyName() } }}
+        </p>
+      }
+
+      @if (submitError()) {
+        <p class="register-error register-error--inline" role="alert" aria-live="assertive">
+          {{ submitError() | translate }}
+        </p>
+      }
+
+      <form class="register-form" [formGroup]="form" novalidate>
+        <div formGroupName="user" class="register-form__section">
+          <h2 class="register-form__section-title">{{ 'register.user' | translate }}</h2>
+
+          <div class="control">
+            <label for="name">{{ 'register.name' | translate }}</label>
+            <input
+              [placeholder]="'register.namePlaceholder' | translate"
+              type="text"
+              id="name"
+              name="name"
+              autocomplete="name"
+              formControlName="name"
+            />
+          </div>
+
+          <div class="control">
+            <label for="email">{{ 'register.email' | translate }}</label>
+            <input
+              [placeholder]="'register.emailPlaceholder' | translate"
+              type="email"
+              id="email"
+              name="email"
+              autocomplete="email"
+              formControlName="email"
+            />
+          </div>
+
+          <div class="control">
+            <label for="password">{{ 'register.password' | translate }}</label>
+            <input
+              [placeholder]="'register.passwordPlaceholder' | translate"
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="new-password"
+              formControlName="password"
+            />
+          </div>
+
+          <div class="control">
+            <label for="language">{{ 'register.language' | translate }}</label>
+            <select formControlName="language" name="language" id="language">
+              <option value="en">{{ 'languages.english' | translate }}</option>
+              <option value="de">{{ 'languages.german' | translate }}</option>
+              <option value="sk">{{ 'languages.slovak' | translate }}</option>
+            </select>
+          </div>
+
+          <div formGroupName="addresses" class="register-form__subsection">
+            <h3 class="register-form__section-title register-form__section-title--sub">
+              {{ 'register.address' | translate }}
+            </h3>
+
+            <div class="control">
+              <label for="street">{{ 'register.street' | translate }}</label>
+              <input
+                type="text"
+                [placeholder]="'register.streetPlaceholder' | translate"
+                id="street"
+                name="street"
+                autocomplete="street-address"
+                formControlName="street"
+              />
+            </div>
+
+            <div class="control">
+              <label for="city">{{ 'register.city' | translate }}</label>
+              <input
+                type="text"
+                [placeholder]="'register.cityPlaceholder' | translate"
+                id="city"
+                name="city"
+                autocomplete="address-level2"
+                formControlName="city"
+              />
+            </div>
+
+            <div class="control">
+              <label for="country">{{ 'register.country' | translate }}</label>
+              <input
+                type="text"
+                [placeholder]="'register.countryPlaceholder' | translate"
+                id="country"
+                name="country"
+                autocomplete="country-name"
+                formControlName="country"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div formGroupName="company" class="register-form__section">
+          <h2 class="register-form__section-title">{{ 'register.company' | translate }}</h2>
+
+          <div class="control">
+            <label for="companyName">{{ 'register.companyName' | translate }}</label>
+            <input
+              type="text"
+              [placeholder]="'register.companyNamePlaceholder' | translate"
+              id="companyName"
+              name="companyName"
+              autocomplete="organization"
+              formControlName="name"
+            />
+          </div>
+
+          <div class="control">
+            <label for="companyAddress">{{ 'register.companyAddress' | translate }}</label>
+            <input
+              type="text"
+              [placeholder]="'register.companyAddressPlaceholder' | translate"
+              id="companyAddress"
+              name="companyAddress"
+              formControlName="address"
+            />
+          </div>
+        </div>
+
+        <div class="register-form__actions">
+          <a routerLink="/login" class="button button-secondary">
+            {{ 'register.login' | translate }}
+          </a>
+          <button
+            type="button"
+            class="button button-primary"
+            [disabled]="form.invalid || submitting() || !inviteValid()"
+            (click)="Submit()"
+          >
+            @if (submitting()) {
+              {{ 'register.submitting' | translate }}
+            } @else {
+              {{ 'common.submit' | translate }}
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
 </div>

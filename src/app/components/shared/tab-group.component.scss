@@ -172,7 +172,8 @@
   }
 
   &:focus-visible {
-    @include focus-state;
+    outline: 2px solid var(--primary-focus, #c41e3a);
+    outline-offset: -2px;
     z-index: 1;
   }
 

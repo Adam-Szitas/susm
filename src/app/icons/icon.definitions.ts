@@ -169,11 +169,19 @@ export const usersIcon = stroke24(
   { strokeWidth: 1.75 },
 );
 
-export const gripHorizontalIcon = stroke24([
-  { tag: 'rect', x: 3, y: 4, width: 18, height: 4, rx: 1 },
-  { tag: 'rect', x: 3, y: 10, width: 18, height: 4, rx: 1 },
-  { tag: 'rect', x: 3, y: 16, width: 18, height: 4, rx: 1 },
-]);
+export const gripHorizontalIcon: SvgIconDefinition = {
+  viewBox: '0 0 24 24',
+  fill: 'currentColor',
+  stroke: 'none',
+  elements: [
+    { tag: 'circle', cx: 5, cy: 9, r: 1.5 },
+    { tag: 'circle', cx: 12, cy: 9, r: 1.5 },
+    { tag: 'circle', cx: 19, cy: 9, r: 1.5 },
+    { tag: 'circle', cx: 5, cy: 15, r: 1.5 },
+    { tag: 'circle', cx: 12, cy: 15, r: 1.5 },
+    { tag: 'circle', cx: 19, cy: 15, r: 1.5 },
+  ],
+};
 
 export const uploadArrowIcon = stroke24([
   { tag: 'path', d: 'M12 3v12' },

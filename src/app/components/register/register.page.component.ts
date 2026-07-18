@@ -5,9 +5,7 @@ import { RegisterComponent } from "./register.component";
   selector: 'app-login-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div className="login-wrapper">
-    <app-register />
-  </div>`,
+  template: `<app-register />`,
   imports: [RegisterComponent]
 })
 export class LoginPageComponent {

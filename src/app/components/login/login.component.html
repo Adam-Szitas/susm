@@ -1,35 +1,61 @@
-<div>
+<div class="login-page">
   @if (form) {
-    <form [formGroup]="form" (ngSubmit)="Submit()">
-      <h2>{{ 'login.title' | translate }}</h2>
+    <form
+      class="login-form"
+      [formGroup]="form"
+      (ngSubmit)="Submit()"
+      method="post"
+      novalidate
+    >
+      <header class="login-form__header">
+        <p class="login-form__brand">SUSM</p>
+        <h1 class="login-form__title">{{ 'login.title' | translate }}</h1>
+      </header>
+
       @if (error()) {
-        <p class="login-error">{{ error() }}</p>
+        <p class="login-error" role="alert" aria-live="assertive">{{ error() }}</p>
       }
-      <div class="control">
-        <label for="email">{{ 'login.email' | translate }}</label>
-        <input
-          [placeholder]="'login.emailPlaceholder' | translate"
-          type="email"
-          id="email"
-          [formControl]="getEmailControl()"
-        />
+
+      <div class="login-form__fields">
+        <div class="control">
+          <label for="email">{{ 'login.email' | translate }}</label>
+          <input
+            [placeholder]="'login.emailPlaceholder' | translate"
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="username"
+            enterkeyhint="next"
+            required
+            [formControl]="getEmailControl()"
+          />
+        </div>
+
+        <div class="control">
+          <label for="current-password">{{ 'login.password' | translate }}</label>
+          <input
+            [placeholder]="'login.passwordPlaceholder' | translate"
+            type="password"
+            id="current-password"
+            name="password"
+            autocomplete="current-password"
+            enterkeyhint="done"
+            required
+            [formControl]="getPasswordControl()"
+          />
+        </div>
       </div>
-      <div class="control">
-        <label for="password">{{ 'login.password' | translate }}</label>
-        <input
-          [placeholder]="'login.passwordPlaceholder' | translate"
-          type="password"
-          id="password"
-          [formControl]="getPasswordControl()"
-        />
-      </div>
-      <div class="control buttons">
+
+      <div class="login-form__actions">
         <button
           type="submit"
-          class="button button-primary"
-          [disabled]="form.invalid"
+          class="button button-primary login-form__submit"
+          [disabled]="loading()"
         >
-          {{ 'common.submit' | translate }}
+          @if (loading()) {
+            <span class="spinner" aria-hidden="true"></span>
+          }
+          {{ 'login.title' | translate }}
         </button>
       </div>
     </form>

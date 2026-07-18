@@ -26,8 +26,8 @@
   @include flex-column(2rem);
 
   :host-context(.content-wrapper--file-list-fill) & {
-    @include scroll-region-fill(10rem);
     padding-bottom: max(var(--space, 1rem), var(--app-floating-action-clearance, 5rem));
+    @include scroll-region-fill(10rem);
   }
 
   @include mobile {

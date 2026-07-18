@@ -6,6 +6,36 @@
   min-width: 0;
 }
 
+:host-context(.todo-item-status) {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+
+  .status-select {
+    display: block;
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    padding-block: 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  .sub-item-select-wrap {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+
+    .status-select--sub {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: none;
+      width: auto;
+    }
+  }
+}
+
 :host-context(.object-checklist-row) {
   display: block;
   width: 100%;

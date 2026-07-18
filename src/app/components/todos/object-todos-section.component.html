@@ -4,141 +4,177 @@
     [class.object-todos-section--expanded]="expanded()"
     [class.object-todos-section--saving]="saving()"
   >
-    <button
-      type="button"
-      class="object-todos-header"
-      (click)="toggleExpanded()"
-      [attr.aria-expanded]="expanded()"
-      [attr.aria-controls]="'objectTodoList'"
-      [attr.aria-label]="
-        expanded() ? ('todos.collapseChecklist' | translate) : ('todos.expandChecklist' | translate)
-      "
-    >
-      <span class="object-todos-header-leading">
-        <app-icon [icon]="icons.clipboardCheck" [svgClass]="'object-todos-icon'" />
-        <span class="object-todos-title">{{ 'todos.objectChecklist' | translate }}</span>
-        <span class="object-todos-count">{{ assignedCount() }}/{{ sortedItems().length }}</span>
-      </span>
-      <span class="object-todos-header-end">
-        @if (saving()) {
-          <span class="saving-hint">{{ 'common.saving' | translate }}</span>
-        }
-        <span class="chevron" [class.collapsed]="expanded()"></span>
-      </span>
-    </button>
+    <header class="object-todos-toolbar">
+      <button
+        type="button"
+        class="object-todos-header"
+        (click)="toggleExpanded()"
+        [attr.aria-expanded]="expanded()"
+        [attr.aria-controls]="'objectTodoList'"
+        [attr.aria-label]="
+          expanded()
+            ? ('todos.collapseChecklist' | translate)
+            : ('todos.expandChecklist' | translate)
+        "
+      >
+        <span class="object-todos-header-leading">
+          <app-icon [icon]="icons.clipboardCheck" [svgClass]="'object-todos-icon'" />
+          <span class="object-todos-title">{{ 'todos.objectChecklist' | translate }}</span>
+          <span class="object-todos-count">{{ assignedCount() }}/{{ sortedItems().length }}</span>
+        </span>
+        <span class="object-todos-header-end">
+          @if (saving()) {
+            <span class="saving-hint">{{ 'common.saving' | translate }}</span>
+          }
+          <span class="chevron" [class.collapsed]="expanded()"></span>
+        </span>
+      </button>
+
+      @if (availableCount() > 0) {
+        <button
+          type="button"
+          class="object-todos-add-btn"
+          [class.object-todos-add-btn--active]="assigning()"
+          (click)="toggleAssigning()"
+          [attr.aria-expanded]="assigning()"
+          [attr.aria-controls]="'objectTodoAssignList'"
+          [attr.aria-label]="'todos.addChecklistItems' | translate"
+          [title]="'todos.addChecklistItems' | translate"
+        >
+          <app-icon [icon]="assigning() ? icons.close : icons.plus" />
+        </button>
+      }
+    </header>
 
     @if (expanded()) {
       <div id="objectTodoList" class="object-todos-body">
-        @if (assignedCount() === 0) {
-          <p class="object-todos-hint">{{ 'todos.noAssignedItems' | translate }}</p>
-        }
-        <ul class="todo-list">
-          @for (item of sortedItems(); track todoItemId(item)) {
-            <li
-              class="todo-list-item"
-              [class.todo-list-item--assigned]="isAssigned(item)"
-              [class.todo-list-item--unassigned]="!isAssigned(item)"
-            >
-              <div class="todo-row">
-                <div class="todo-assign-label">
-                  <label class="todo-assign-checkbox-label">
-                    <input
-                      type="checkbox"
-                      class="todo-assign-checkbox"
-                      [checked]="isAssigned(item)"
-                      [disabled]="saving()"
-                      [attr.aria-label]="
-                        isAssigned(item)
-                          ? ('todos.unassignChecklistItem' | translate: { title: item.title })
-                          : ('todos.assignChecklistItem' | translate: { title: item.title })
-                      "
-                      (change)="toggleAssignment(item, $event)"
-                    />
-                  </label>
-                  @if (isAssigned(item)) {
-                    <button
-                      type="button"
-                      class="todo-protocol-visibility-btn"
-                      [class.todo-protocol-visibility-btn--hidden]="isHiddenInProtocol(item)"
-                      [disabled]="saving()"
-                      [attr.aria-pressed]="!isHiddenInProtocol(item)"
-                      [attr.aria-label]="
-                        isHiddenInProtocol(item)
-                          ? ('todos.showInProtocol' | translate: { title: item.title })
-                          : ('todos.hideFromProtocol' | translate: { title: item.title })
-                      "
-                      [attr.title]="
-                        isHiddenInProtocol(item)
-                          ? ('todos.showInProtocol' | translate: { title: item.title })
-                          : ('todos.hideFromProtocol' | translate: { title: item.title })
-                      "
-                      (click)="toggleHiddenInProtocol(item)"
-                    >
-                      @if (isHiddenInProtocol(item)) {
-                        <app-icon [icon]="icons.eyeOff" />
-                      } @else {
-                        <app-icon [icon]="icons.eye" />
-                      }
-                    </button>
-                  }
-                  <span class="todo-label" [title]="itemDisplayLabel(item)">
+        @if (assigning() && availableCount() > 0) {
+          <section
+            id="objectTodoAssignList"
+            class="object-todos-assign"
+            [attr.aria-label]="'todos.availableChecklistItems' | translate"
+          >
+            <div class="object-todos-assign-header">
+              <h3 class="object-todos-section-title">
+                {{ 'todos.availableChecklistItems' | translate }}
+              </h3>
+              <span class="object-todos-section-meta">{{ availableCount() }}</span>
+            </div>
+            <ul class="available-list">
+              @for (item of availableItems(); track todoItemId(item)) {
+                <li class="available-item">
+                  <div class="available-item-text" [title]="itemDisplayLabel(item)">
                     <span class="todo-label-title">{{ item.title }}</span>
                     @if (item.note?.trim()) {
                       <span class="todo-label-note">{{ item.note }}</span>
                     }
-                  </span>
-                </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="available-item-add"
+                    [disabled]="saving()"
+                    (click)="assignItem(item)"
+                    [attr.aria-label]="'todos.assignChecklistItem' | translate: { title: item.title }"
+                    [title]="'todos.assignChecklistItem' | translate: { title: item.title }"
+                  >
+                    <app-icon [icon]="icons.plus" />
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
 
-                @if (isAssigned(item)) {
-                  @if (!itemHasSubItems(item)) {
-                    <select
-                      class="status-select"
-                      [class.status-select--finished]="itemStatus(item) === 'finished'"
-                      [class.status-select--under-process]="itemStatus(item) === 'under_process'"
-                      [ngModel]="itemStatus(item) ?? 'under_process'"
-                      [disabled]="saving()"
-                      [attr.aria-label]="'todos.status' | translate"
-                      [attr.title]="selectedStatusTitle(item)"
-                      (ngModelChange)="setStatus(item, $event)"
-                    >
-                      <option value="under_process">
-                        {{ truncateSelectLabel('todos.statusUnderProcess' | translate) }}
-                      </option>
-                      <option value="finished">
-                        {{ truncateSelectLabel('todos.statusFinished' | translate) }}
-                      </option>
-                    </select>
-                  } @else {
-                    <div class="sub-item-select-wrap">
-                      <span
-                        class="color-dot color-dot--{{ selectedSubColor(item) }}"
-                        aria-hidden="true"
-                      ></span>
-                      <select
-                        class="status-select status-select--sub"
-                        [class.status-select--sub-red]="selectedSubColor(item) === 'red'"
-                        [class.status-select--sub-blue]="selectedSubColor(item) === 'blue'"
-                        [class.status-select--sub-green]="selectedSubColor(item) === 'green'"
-                        [class.status-select--sub-orange]="selectedSubColor(item) === 'orange'"
-                        [ngModel]="selectedSubItemId(item) ?? ''"
-                        [disabled]="saving()"
-                        [attr.aria-label]="'todos.selectSubItem' | translate"
-                        [attr.title]="selectedSubItemTitle(item)"
-                        (ngModelChange)="setSelectedSubItem(item, $event)"
-                      >
-                        @for (sub of subItems(item); track todoSubItemId(sub)) {
-                          <option [value]="todoSubItemId(sub)" [attr.title]="sub.title">
-                            {{ truncateSelectLabel(sub.title) }}
-                          </option>
-                        }
-                      </select>
-                    </div>
-                  }
-                }
-              </div>
-            </li>
+        <section class="object-todos-assigned" [attr.aria-label]="'todos.assignedChecklistItems' | translate">
+          @if (assignedCount() > 0) {
+            <div class="object-todos-assign-header">
+              <h3 class="object-todos-section-title">
+                {{ 'todos.assignedChecklistItems' | translate }}
+              </h3>
+              <span class="object-todos-section-meta">{{ assignedCount() }}</span>
+            </div>
           }
-        </ul>
+
+          @if (assignedCount() === 0) {
+            <div class="object-todos-empty">
+              <p>{{ 'todos.noAssignedItems' | translate }}</p>
+              @if (availableCount() > 0 && !assigning()) {
+                <button
+                  type="button"
+                  class="button button-outline object-todos-empty-cta"
+                  (click)="toggleAssigning()"
+                >
+                  {{ 'todos.addChecklistItems' | translate }}
+                </button>
+              }
+            </div>
+          } @else {
+            <ul class="todo-list">
+              @for (item of assignedItems(); track todoItemId(item)) {
+                <li class="todo-list-item">
+                  <div class="todo-item-main">
+                    <span class="todo-label" [title]="itemDisplayLabel(item)">
+                      <span class="todo-label-title">{{ item.title }}</span>
+                      @if (item.note?.trim()) {
+                        <span class="todo-label-note">{{ item.note }}</span>
+                      }
+                    </span>
+
+                    <div class="todo-item-controls">
+                      <div class="todo-item-actions">
+                        <button
+                          type="button"
+                          class="todo-icon-btn"
+                          [class.todo-icon-btn--muted]="isHiddenInProtocol(item)"
+                          [disabled]="saving()"
+                          [attr.aria-pressed]="!isHiddenInProtocol(item)"
+                          [attr.aria-label]="
+                            isHiddenInProtocol(item)
+                              ? ('todos.showInProtocol' | translate: { title: item.title })
+                              : ('todos.hideFromProtocol' | translate: { title: item.title })
+                          "
+                          [attr.title]="
+                            isHiddenInProtocol(item)
+                              ? ('todos.showInProtocol' | translate: { title: item.title })
+                              : ('todos.hideFromProtocol' | translate: { title: item.title })
+                          "
+                          (click)="toggleHiddenInProtocol(item)"
+                        >
+                          @if (isHiddenInProtocol(item)) {
+                            <app-icon [icon]="icons.eyeOff" />
+                          } @else {
+                            <app-icon [icon]="icons.eye" />
+                          }
+                        </button>
+                        <button
+                          type="button"
+                          class="todo-icon-btn todo-icon-btn--danger"
+                          [disabled]="saving()"
+                          (click)="unassignItem(item)"
+                          [attr.aria-label]="
+                            'todos.unassignChecklistItem' | translate: { title: item.title }
+                          "
+                          [title]="'todos.unassignChecklistItem' | translate: { title: item.title }"
+                        >
+                          <app-icon [icon]="icons.trash" />
+                        </button>
+                      </div>
+
+                      <div class="todo-item-status">
+                        <app-todo-item-value-control
+                          [item]="item"
+                          [entries]="activeEntries()"
+                          [disabled]="saving()"
+                          (entriesChange)="onEntriesChange($event)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
       </div>
     }
   </section>

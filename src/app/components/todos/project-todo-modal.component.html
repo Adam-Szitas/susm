@@ -1,9 +1,6 @@
 <div
   class="project-todo-form"
-  [class.project-todo-form--assign]="
-    checklistTabGroup.activeTabId() === 'assign' ||
-    checklistTabGroup.activeTabId() === 'assignChecklists'
-  "
+  [class.project-todo-form--assign]="checklistTabGroup.activeTabId() === 'assignChecklists'"
 >
   <app-tab-group
     #checklistTabGroup
@@ -28,38 +25,10 @@
       }
     </app-tab-panel>
 
-    <app-tab-panel id="assign">
-      @if (checklistTabGroup.activeTabId() === 'assign') {
-        @if (!canAssign()) {
-          <p class="empty-message">{{ 'todos.saveItemsBeforeAssign' | translate }}</p>
-        } @else if (assignTabMode() === 'verify') {
-          <app-project-todo-assignment-verify-panel
-            [todoItems]="savedTodoItems()"
-            [objects]="objects()"
-            [embedded]="true"
-            (backRequested)="assignTabMode.set('assign')"
-          />
-        } @else if (assignTabMode() === 'checklistObjects' && focusChecklistItem(); as checklistItem) {
-          <app-project-todo-checklist-objects-panel
-            [todoItem]="checklistItem"
-            [objects]="objects()"
-            (backRequested)="onChecklistObjectsBack()"
-          />
-        } @else {
-          <app-project-todo-assignment-panel
-            [todoItems]="savedTodoItems()"
-            [objects]="objects()"
-            [embedded]="true"
-            (saved)="onAssignmentsSaved()"
-            (verifyRequested)="assignTabMode.set('verify')"
-            (viewObjectsRequested)="onViewObjectsForChecklist($event)"
-          />
-        }
-      }
-    </app-tab-panel>
-
     <app-tab-panel id="items">
       <form [formGroup]="form">
+        <p class="items-intro">{{ 'todos.defineItemsIntro' | translate }}</p>
+
         <div class="form-group">
           <label for="newTodoTitle">{{ 'todos.addItem' | translate }}</label>
           <div class="add-row">

@@ -1,4 +1,30 @@
 <div class="todo-checklist-first-form">
+  <nav class="assign-steps" [attr.aria-label]="'todos.mobileAssignmentSteps' | translate">
+    <button
+      type="button"
+      class="assign-step"
+      [class.assign-step--active]="mobileStep() === 'checklists'"
+      [class.assign-step--done]="mobileStep() === 'objects' && hasChecklistSelection()"
+      (click)="goToChecklistsStep()"
+    >
+      <span class="assign-step__index" aria-hidden="true">1</span>
+      <span class="assign-step__label">{{ 'todos.mobileStepChecklists' | translate }}</span>
+    </button>
+    <span class="assign-steps__divider" aria-hidden="true"></span>
+    <button
+      type="button"
+      class="assign-step"
+      [class.assign-step--active]="mobileStep() === 'objects'"
+      [disabled]="!hasChecklistSelection()"
+      (click)="goToObjectsStep()"
+    >
+      <span class="assign-step__index" aria-hidden="true">2</span>
+      <span class="assign-step__label">{{ 'todos.mobileStepResults' | translate }}</span>
+    </button>
+  </nav>
+
+  <p class="assign-intro">{{ 'todos.assignChecklistsIntro' | translate }}</p>
+
   <div
     class="assignment-layout"
     [class.assignment-layout--mobile-step-checklists]="mobileStep() === 'checklists'"
@@ -6,9 +32,16 @@
   >
     <aside class="checklist-select-panel">
       <div class="panel-toolbar">
-        <label class="search-label" for="checklistFirstSearch">{{
-          'todos.selectChecklists' | translate
-        }}</label>
+        <div class="panel-heading">
+          <label class="search-label" for="checklistFirstSearch">{{
+            'todos.selectChecklists' | translate
+          }}</label>
+          @if (hasChecklistSelection()) {
+            <span class="selection-count">{{
+              'todos.selectedChecklistCount' | translate: { count: selectedChecklistIds().length }
+            }}</span>
+          }
+        </div>
         <div class="panel-toolbar-actions">
           <button
             type="button"
@@ -65,7 +98,7 @@
             >
               <span class="checklist-select-checkbox" aria-hidden="true">
                 @if (isChecklistSelected(item)) {
-                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+                  <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
                 }
               </span>
               <span class="checklist-select-text">
@@ -86,9 +119,14 @@
     <section class="object-detail-panel">
       @if (hasChecklistSelection()) {
         <header class="object-detail-header">
-          <label class="search-label" for="checklistFirstObjectSearch">{{
-            'todos.selectObject' | translate
-          }}</label>
+          <div class="panel-heading">
+            <label class="search-label" for="checklistFirstObjectSearch">{{
+              'todos.selectObject' | translate
+            }}</label>
+            <span class="selection-count">{{
+              'todos.selectedChecklistCount' | translate: { count: selectedChecklistIds().length }
+            }}</span>
+          </div>
           <div class="panel-toolbar-actions">
             <button
               type="button"
@@ -100,7 +138,7 @@
               <span class="todo-action-icon" aria-hidden="true">
                 <app-icon [icon]="icons.clipboardCheck" />
               </span>
-              <span class="todo-action-label">{{ 'todos.assignAllToObjects' | translate }}</span>
+              <span class="todo-action-label">{{ 'todos.assignAllShort' | translate }}</span>
             </button>
             <button
               type="button"
@@ -112,10 +150,16 @@
               <span class="todo-action-icon" aria-hidden="true">
                 <app-icon [icon]="icons.clipboard" />
               </span>
-              <span class="todo-action-label">{{ 'todos.clearAllFromObjects' | translate }}</span>
+              <span class="todo-action-label">{{ 'todos.clearAllShort' | translate }}</span>
             </button>
           </div>
         </header>
+
+        <div class="selected-items-summary" aria-live="polite">
+          @for (item of selectedTodoItems(); track trackTodoItemId(item)) {
+            <span class="selected-item-chip">{{ item.title }}</span>
+          }
+        </div>
 
         <input
           id="checklistFirstObjectSearch"
@@ -207,6 +251,10 @@
           </span>
           <span class="todo-action-label">{{ 'todos.mobileBackToChecklists' | translate }}</span>
         </button>
+      } @else if (dirtyObjectCount() > 0) {
+        <span class="changes-hint">{{
+          'todos.objectsWithChanges' | translate: { count: dirtyObjectCount() }
+        }}</span>
       }
     </div>
 
@@ -217,13 +265,20 @@
           class="btn btn-primary todo-action-btn form-actions-next"
           (click)="goToObjectsStep()"
           [disabled]="!hasChecklistSelection()"
-          [attr.aria-label]="'todos.mobileContinueToObjects' | translate"
-          [title]="'todos.mobileContinueToObjects' | translate"
+          [attr.aria-label]="
+            'todos.mobileContinueToObjectsCount' | translate: { count: selectedChecklistIds().length }
+          "
+          [title]="
+            'todos.mobileContinueToObjectsCount' | translate: { count: selectedChecklistIds().length }
+          "
         >
           <span class="todo-action-icon" aria-hidden="true">
             <app-icon [icon]="icons.chevronRight" [strokeWidth]="2.5" />
           </span>
-          <span class="todo-action-label">{{ 'todos.mobileContinueToObjects' | translate }}</span>
+          <span class="todo-action-label">{{
+            'todos.mobileContinueToObjectsCount'
+              | translate: { count: selectedChecklistIds().length }
+          }}</span>
         </button>
       }
 
