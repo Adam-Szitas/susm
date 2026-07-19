@@ -65,6 +65,7 @@ export class FileListComponent implements OnDestroy {
   public objectId = input<string | undefined>(undefined);
 
   readonly groupFileInput = viewChild<ElementRef<HTMLInputElement>>('groupFileInput');
+  readonly imageLightbox = viewChild<ElementRef<HTMLDialogElement>>('imageLightbox');
 
   /** Which group the next file-picker selection applies to (single shared input). */
   private pendingGroupUpload = signal<{ groupId: string } | null>(null);
@@ -822,7 +823,9 @@ export class FileListComponent implements OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscapeCloseLightbox(): void {
-    if (this.imageLightboxUrl()) {
+    // Native <dialog> handles Escape when open via showModal(); keep as fallback
+    // for any non-dialog overlay state.
+    if (this.imageLightboxUrl() && !this.imageLightbox()?.nativeElement?.open) {
       this.closeImageLightbox();
     }
   }
@@ -845,10 +848,35 @@ export class FileListComponent implements OnDestroy {
     this.imageLightboxUrl.set(this.getImageUrl(file.path));
     this.imageLightboxAlt.set(file.filename || '');
     this.activeFileId.set(null);
+    const dialog = this.imageLightbox()?.nativeElement;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
     this.#lockBodyScroll();
   }
 
   public closeImageLightbox(): void {
+    const dialog = this.imageLightbox()?.nativeElement;
+    if (dialog?.open) {
+      dialog.close();
+      return;
+    }
+    this.#clearImageLightboxState();
+  }
+
+  public onImageLightboxDialogClose(): void {
+    this.#clearImageLightboxState();
+  }
+
+  public onImageLightboxBackdropClick(event: MouseEvent): void {
+    const dialog = event.currentTarget as HTMLDialogElement;
+    // Fallback for browsers without closedby support: click on the dialog backdrop area.
+    if (event.target === dialog) {
+      dialog.close();
+    }
+  }
+
+  #clearImageLightboxState(): void {
     this.imageLightboxUrl.set(null);
     this.imageLightboxAlt.set('');
     this.#restoreBodyScroll();

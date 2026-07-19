@@ -55,7 +55,7 @@ export class ObjectTodosSectionComponent {
   entriesChanged = output<ObjectTodoEntry[]>();
 
   saving = signal(false);
-  expanded = signal(true);
+  expanded = signal(false);
   assigning = signal(false);
   readonly #optimisticEntries = signal<ObjectTodoEntry[] | null>(null);
 

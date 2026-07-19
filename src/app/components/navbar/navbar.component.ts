@@ -27,10 +27,6 @@ export class NavbarComponent implements OnInit {
   public toggledMenu = signal<boolean>(false);
   readonly isLoginPage = signal(false);
 
-  public isMobile = signal<boolean>(
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  );
-
   ngOnInit(): void {
     this.#router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.updateRouteState();

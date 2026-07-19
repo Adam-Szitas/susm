@@ -90,19 +90,31 @@
   }
 }
 
-// Full-screen image preview (mobile-friendly)
-.image-lightbox-backdrop {
-  position: fixed;
+// Full-screen image preview (top layer via <dialog showModal()>)
+.image-lightbox-dialog {
   inset: 0;
-  z-index: var(--z-lightbox);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
     env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  border: none;
   background: rgba(0, 0, 0, 0.92);
+  color: #fff;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+
+  &[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.92);
+  }
 }
 
 .image-lightbox-close {

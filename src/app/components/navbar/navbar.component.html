@@ -1,5 +1,5 @@
 @if (isLoggedIn()) {
-  <nav [class.mobile]="isMobile()">
+  <nav class="app-nav" aria-label="Main">
     <div class="navbar-start">
       <a
         class="navbar-brand"
@@ -9,11 +9,15 @@
       >
         <app-susm-logo />
       </a>
-      <div class="mobile">
-        <i class="hamburger-menu" (click)="toggleMobileMenu()">
-          <app-icon [icon]="icons.hamburger" />
-        </i>
-      </div>
+      <button
+        type="button"
+        class="nav-toggle"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="toggledMenu()"
+        [attr.aria-label]="'navbar.menu' | translate"
+      >
+        <app-icon [icon]="icons.hamburger" />
+      </button>
     </div>
     <div class="desktop">
       <ul>
@@ -63,9 +67,9 @@
       >
         <app-susm-logo />
       </a>
-      <i class="close" (click)="hideMobileMenu()">
+      <button type="button" class="nav-close" (click)="hideMobileMenu()" [attr.aria-label]="'common.close' | translate">
         <app-icon [icon]="icons.closeFilled" />
-      </i>
+      </button>
     </div>
     <ul class="mobile-menu-items">
       <li>
@@ -101,12 +105,12 @@
     </ul>
   </div>
 } @else {
-  <nav>
+  <nav class="app-nav app-nav--guest" aria-label="Main">
     <a class="navbar-brand" routerLink="/login" aria-label="SUSM">
       <app-susm-logo />
     </a>
     @if (!isLoginPage()) {
-      <ul>
+      <ul class="guest-menu">
         <li>
           <a class="nav-link" routerLink="/login">{{ 'navbar.login' | translate }}</a>
         </li>

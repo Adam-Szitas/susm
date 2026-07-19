@@ -92,6 +92,19 @@ body {
     'Open Sans',
     'Helvetica Neue',
     sans-serif;
+  /* Stop iOS Safari rubber-band / pull-to-refresh from leaving the page visually offset. */
+  overscroll-behavior-y: none;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  /* Stable fill on iOS when the browser chrome collapses/expands. */
+  min-height: -webkit-fill-available;
 }
 
 *,

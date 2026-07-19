@@ -17,17 +17,17 @@ import { icons } from '@icons/icon.definitions';
     :host {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       flex-shrink: 0;
       color: #fff;
       line-height: 0;
     }
 
-  app-icon {
+    app-icon {
       display: block;
-      block-size: var(--susm-logo-size, 2.25rem);
-      inline-size: auto;
       --icon-size: var(--susm-logo-size, 2.25rem);
+      --icon-block-size: var(--susm-logo-size, 2.25rem);
+      --icon-inline-size: calc(var(--susm-logo-size, 2.25rem) * 512 / 305.98);
     }
   `,
 })

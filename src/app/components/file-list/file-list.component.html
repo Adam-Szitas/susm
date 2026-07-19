@@ -699,14 +699,15 @@
     </div>
   }
 
-  @if (imageLightboxUrl(); as lightboxSrc) {
-    <div
-      class="image-lightbox-backdrop"
-      role="dialog"
-      aria-modal="true"
-      [attr.aria-label]="'fileList.imagePreview' | translate"
-      (click)="closeImageLightbox()"
-    >
+  <dialog
+    #imageLightbox
+    class="image-lightbox-dialog"
+    closedby="any"
+    [attr.aria-label]="'fileList.imagePreview' | translate"
+    (close)="onImageLightboxDialogClose()"
+    (click)="onImageLightboxBackdropClick($event)"
+  >
+    @if (imageLightboxUrl(); as lightboxSrc) {
       <button
         type="button"
         class="image-lightbox-close"
@@ -726,6 +727,6 @@
         title="{{ imageLightboxAlt() }}"
         (click)="$event.stopPropagation()"
       />
-    </div>
-  }
+    }
+  </dialog>
 </div>
