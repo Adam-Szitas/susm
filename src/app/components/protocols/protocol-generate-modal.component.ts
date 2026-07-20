@@ -401,14 +401,19 @@ export class ProtocolGenerateModalComponent {
   /** Selected object IDs in protocol order (for preview/PDF APIs). */
   #orderedSelectedObjectIds(): string[] {
     const selected = new Set(this.selectedObjectIds());
+    const available = new Set(
+      this.objectsForProtocolSelection()
+        .map((o) => o._id?.$oid)
+        .filter((id): id is string => !!id),
+    );
     if (this.customObjectOrder()) {
-      return this.protocolObjectOrderIds().filter((id) => selected.has(id));
+      return this.protocolObjectOrderIds().filter((id) => selected.has(id) && available.has(id));
     }
     const ordered = sortObjectsByStoredOrder(this.objects())
       .map((o) => o._id?.$oid)
-      .filter((id): id is string => !!id && selected.has(id));
+      .filter((id): id is string => !!id && selected.has(id) && available.has(id));
     for (const id of this.selectedObjectIds()) {
-      if (!ordered.includes(id)) {
+      if (available.has(id) && !ordered.includes(id)) {
         ordered.push(id);
       }
     }
@@ -1162,8 +1167,11 @@ export class ProtocolGenerateModalComponent {
       const activeFiles = rawFiles.filter((f) => f.deleted_at == null);
       const hadAnyFileRecord = rawFiles.length > 0;
 
-      // Metadata-only groups: backend always includes (category filter does not apply).
+      // Metadata-only groups (no file records): include only when no category filter is active.
       if (!hadAnyFileRecord) {
+        if (catSet) {
+          continue;
+        }
         if (!hasDateConstraint) {
           return true;
         }

@@ -168,21 +168,31 @@
   width: 100%;
   min-width: 0;
 
+  ::ng-deep .virtual-scroll-item {
+    height: 100%;
+  }
+
   app-object-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
+    height: 100%;
 
     ::ng-deep .card {
       position: relative;
       display: flex;
+      flex: 1 1 auto;
       min-width: 0;
+      min-height: 0;
+      height: 100%;
       flex-direction: column;
       gap: 0.5rem;
       padding: 1rem;
       border: 1px solid #e5e5e5;
       border-radius: 10px;
       background: #fafafa;
+      box-sizing: border-box;
       contain: layout style paint;
       transition:
         box-shadow 0.2s,
