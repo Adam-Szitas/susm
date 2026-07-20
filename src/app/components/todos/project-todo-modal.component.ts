@@ -9,7 +9,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
@@ -132,8 +132,13 @@ export class ProjectTodoModalComponent implements OnInit {
     this.form.patchValue({ newTitle: '', newNote: '' });
   }
 
-  removeItem(index: number): void {
+  removeItem(control: AbstractControl): void {
+    const index = this.itemsArray.controls.indexOf(control);
+    if (index === -1) {
+      return;
+    }
     this.itemsArray.removeAt(index);
+    this.#cdr.markForCheck();
   }
 
   addSubItem(itemIndex: number): void {
@@ -141,8 +146,17 @@ export class ProjectTodoModalComponent implements OnInit {
     this.#cdr.markForCheck();
   }
 
-  removeSubItem(itemIndex: number, subIndex: number): void {
-    this.subItemsArray(itemIndex).removeAt(subIndex);
+  removeSubItem(itemControl: AbstractControl, subControl: AbstractControl): void {
+    const itemIndex = this.itemsArray.controls.indexOf(itemControl);
+    if (itemIndex === -1) {
+      return;
+    }
+    const subItems = this.subItemsArray(itemIndex);
+    const subIndex = subItems.controls.indexOf(subControl);
+    if (subIndex === -1) {
+      return;
+    }
+    subItems.removeAt(subIndex);
     this.#cdr.markForCheck();
   }
 

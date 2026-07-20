@@ -50,7 +50,7 @@
         </div>
 
         <div class="items-list" formArrayName="items">
-          @for (control of itemsArray.controls; track $index; let idx = $index) {
+          @for (control of itemsArray.controls; track control; let idx = $index) {
             <div class="todo-item-block" [formGroupName]="idx">
               <input type="hidden" formControlName="id" />
               <div class="todo-item-row">
@@ -61,7 +61,7 @@
                 <button
                   type="button"
                   class="delete-btn"
-                  (click)="removeItem(idx)"
+                  (click)="removeItem(control)"
                   [attr.aria-label]="'common.delete' | translate"
                   [title]="'common.delete' | translate"
                 >
@@ -73,7 +73,7 @@
                 <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
 
                 <div class="sub-items-list" formArrayName="subItems">
-                  @for (subControl of subItemsArray(idx).controls; track subIdx; let subIdx = $index) {
+                  @for (subControl of subItemsArray(idx).controls; track subControl; let subIdx = $index) {
                     <div class="sub-item-row" [formGroupName]="subIdx">
                       <input type="hidden" formControlName="id" />
                       <input
@@ -101,7 +101,7 @@
                       <button
                         type="button"
                         class="delete-btn delete-btn--compact"
-                        (click)="removeSubItem(idx, subIdx)"
+                        (click)="removeSubItem(control, subControl)"
                         [attr.aria-label]="'common.delete' | translate"
                         [title]="'common.delete' | translate"
                       >

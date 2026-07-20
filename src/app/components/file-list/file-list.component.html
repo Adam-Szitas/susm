@@ -469,13 +469,23 @@
                 <div class="file-description-actions">
                   <button
                     type="button"
-                    class="btn-small btn-primary"
+                    class="file-description-action-btn file-description-action-btn--save"
                     (click)="saveFileMetadata(file)"
+                    [attr.aria-label]="'common.save' | translate"
+                    title="{{ 'common.save' | translate }}"
                   >
-                    {{ 'common.save' | translate }}
+                    <span class="visually-hidden">{{ 'common.save' | translate }}</span>
+                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
                   </button>
-                  <button type="button" class="btn-small btn-secondary" (click)="cancelEditFile()">
-                    {{ 'common.cancel' | translate }}
+                  <button
+                    type="button"
+                    class="file-description-action-btn file-description-action-btn--cancel"
+                    (click)="cancelEditFile()"
+                    [attr.aria-label]="'common.cancel' | translate"
+                    title="{{ 'common.cancel' | translate }}"
+                  >
+                    <span class="visually-hidden">{{ 'common.cancel' | translate }}</span>
+                    <app-icon [icon]="icons.close" />
                   </button>
                 </div>
               } @else {
@@ -654,13 +664,23 @@
                 <div class="file-description-actions">
                   <button
                     type="button"
-                    class="btn-small btn-primary"
+                    class="file-description-action-btn file-description-action-btn--save"
                     (click)="saveFileMetadata(file)"
+                    [attr.aria-label]="'common.save' | translate"
+                    title="{{ 'common.save' | translate }}"
                   >
-                    {{ 'common.save' | translate }}
+                    <span class="visually-hidden">{{ 'common.save' | translate }}</span>
+                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
                   </button>
-                  <button type="button" class="btn-small btn-secondary" (click)="cancelEditFile()">
-                    {{ 'common.cancel' | translate }}
+                  <button
+                    type="button"
+                    class="file-description-action-btn file-description-action-btn--cancel"
+                    (click)="cancelEditFile()"
+                    [attr.aria-label]="'common.cancel' | translate"
+                    title="{{ 'common.cancel' | translate }}"
+                  >
+                    <span class="visually-hidden">{{ 'common.cancel' | translate }}</span>
+                    <app-icon [icon]="icons.close" />
                   </button>
                 </div>
               } @else {
