@@ -64,6 +64,13 @@ export class ProjectTodoModalComponent implements OnInit {
   saving = signal(false);
   activeTab = signal<'items' | 'assignChecklists'>('items');
 
+  /** Items are collapsed by default so long checklists stay scannable. */
+  #expandedItems = signal<ReadonlySet<AbstractControl>>(new Set());
+
+  /** Textareas grow natively where `field-sizing` is supported; JS only fills the gap. */
+  readonly #supportsFieldSizing =
+    typeof CSS !== 'undefined' && CSS.supports?.('field-sizing', 'content') === true;
+
   readonly checklistTabs = computed<TabItem[]>(() => [
     {
       id: 'assignChecklists',
@@ -100,6 +107,45 @@ export class ProjectTodoModalComponent implements OnInit {
     return this.itemsArray.at(itemIndex).get('subItems') as FormArray;
   }
 
+  isItemExpanded(control: AbstractControl): boolean {
+    return this.#expandedItems().has(control);
+  }
+
+  toggleItemExpanded(control: AbstractControl): void {
+    this.#expandedItems.update((expanded) => {
+      const next = new Set(expanded);
+      if (!next.delete(control)) {
+        next.add(control);
+      }
+      return next;
+    });
+    this.#cdr.markForCheck();
+  }
+
+  itemTitlePreview(control: AbstractControl): string {
+    return String(control.get('title')?.value ?? '').trim();
+  }
+
+  itemNotePreview(control: AbstractControl): string {
+    return String(control.get('note')?.value ?? '').trim();
+  }
+
+  subItemCount(control: AbstractControl): number {
+    return (control.get('subItems') as FormArray | null)?.length ?? 0;
+  }
+
+  autoResizeNote(event: Event): void {
+    if (this.#supportsFieldSizing) {
+      return;
+    }
+    const el = event.target as HTMLTextAreaElement | null;
+    if (!el || el.nodeName !== 'TEXTAREA') {
+      return;
+    }
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
   private createSubItemGroup(sub?: TodoSubItem): FormGroup {
     return this.#fb.group({
       id: [sub ? todoSubItemId(sub) : null],
@@ -121,14 +167,14 @@ export class ProjectTodoModalComponent implements OnInit {
     const title = this.form.get('newTitle')?.value?.trim();
     if (!title) return;
     const note = this.form.get('newNote')?.value?.trim() || '';
-    this.itemsArray.push(
-      this.#fb.group({
-        id: [null],
-        title: [title, [Validators.required]],
-        note: [note],
-        subItems: this.#fb.array([]),
-      }),
-    );
+    const group = this.#fb.group({
+      id: [null],
+      title: [title, [Validators.required]],
+      note: [note],
+      subItems: this.#fb.array([]),
+    });
+    this.itemsArray.push(group);
+    this.#expandItem(group);
     this.form.patchValue({ newTitle: '', newNote: '' });
   }
 
@@ -138,7 +184,19 @@ export class ProjectTodoModalComponent implements OnInit {
       return;
     }
     this.itemsArray.removeAt(index);
+    this.#expandedItems.update((expanded) => {
+      if (!expanded.has(control)) {
+        return expanded;
+      }
+      const next = new Set(expanded);
+      next.delete(control);
+      return next;
+    });
     this.#cdr.markForCheck();
+  }
+
+  #expandItem(control: AbstractControl): void {
+    this.#expandedItems.update((expanded) => new Set(expanded).add(control));
   }
 
   addSubItem(itemIndex: number): void {
@@ -215,11 +273,13 @@ export class ProjectTodoModalComponent implements OnInit {
     this.form.updateValueAndValidity({ emitEvent: false });
 
     const items = this.buildItemsPayload();
-    const itemMissingTitle = items.find((item) => !item.title);
-    if (itemMissingTitle) {
+    const missingTitleIndex = items.findIndex((item) => !item.title);
+    if (missingTitleIndex !== -1) {
+      this.#expandItem(this.itemsArray.at(missingTitleIndex));
       this.#notificationService.showError(
         this.#translationService.instant('todos.itemTitleRequired'),
       );
+      this.#cdr.markForCheck();
       return;
     }
 

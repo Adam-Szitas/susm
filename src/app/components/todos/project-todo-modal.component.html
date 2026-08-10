@@ -27,8 +27,6 @@
 
     <app-tab-panel id="items">
       <form [formGroup]="form">
-        <p class="items-intro">{{ 'todos.defineItemsIntro' | translate }}</p>
-
         <div class="form-group">
           <label for="newTodoTitle">{{ 'todos.addItem' | translate }}</label>
           <div class="add-row">
@@ -51,13 +49,39 @@
 
         <div class="items-list" formArrayName="items">
           @for (control of itemsArray.controls; track control; let idx = $index) {
-            <div class="todo-item-block" [formGroupName]="idx">
+            <div
+              class="todo-item-block"
+              [class.todo-item-block--expanded]="isItemExpanded(control)"
+              [formGroupName]="idx"
+            >
               <input type="hidden" formControlName="id" />
-              <div class="todo-item-row">
-                <div class="todo-item-fields">
-                  <input type="text" formControlName="title" [placeholder]="'todos.itemTitle' | translate" />
-                  <input type="text" formControlName="note" [placeholder]="'todos.itemNoteOptional' | translate" />
-                </div>
+
+              <div class="todo-item-header">
+                <button
+                  type="button"
+                  class="todo-item-summary"
+                  (click)="toggleItemExpanded(control)"
+                  [attr.aria-expanded]="isItemExpanded(control)"
+                  [attr.aria-controls]="'todoItemBody' + idx"
+                  [attr.aria-label]="
+                    (isItemExpanded(control) ? 'todos.collapseItem' : 'todos.expandItem') | translate
+                  "
+                >
+                  <span class="chevron" [class.collapsed]="isItemExpanded(control)"></span>
+                  <span class="todo-item-summary-text">
+                    <span class="todo-item-summary-title" [class.todo-item-summary-title--empty]="!itemTitlePreview(control)">
+                      {{ itemTitlePreview(control) || ('todos.untitledItem' | translate) }}
+                    </span>
+                    @if (!isItemExpanded(control) && itemNotePreview(control)) {
+                      <span class="todo-item-summary-note">{{ itemNotePreview(control) }}</span>
+                    }
+                  </span>
+                  @if (subItemCount(control) > 0) {
+                    <span class="todo-item-sub-count" [title]="'todos.subItems' | translate">
+                      {{ subItemCount(control) }}
+                    </span>
+                  }
+                </button>
                 <button
                   type="button"
                   class="delete-btn"
@@ -69,52 +93,86 @@
                 </button>
               </div>
 
-              <div class="sub-items-section">
-                <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
-
-                <div class="sub-items-list" formArrayName="subItems">
-                  @for (subControl of subItemsArray(idx).controls; track subControl; let subIdx = $index) {
-                    <div class="sub-item-row" [formGroupName]="subIdx">
-                      <input type="hidden" formControlName="id" />
+              @if (isItemExpanded(control)) {
+                <div class="todo-item-body" [id]="'todoItemBody' + idx">
+                  <div class="todo-item-fields">
+                    <label class="field">
+                      <span class="field-label">{{ 'todos.itemTitle' | translate }}</span>
                       <input
                         type="text"
                         formControlName="title"
-                        [placeholder]="'todos.subItemTitle' | translate"
+                        [placeholder]="'todos.itemTitle' | translate"
                       />
-                      <div
-                        class="color-picker"
-                        role="group"
-                        [attr.aria-label]="'todos.subItemColor' | translate"
-                      >
-                        @for (color of colorOptions; track color) {
+                    </label>
+                    <label class="field">
+                      <span class="field-label">{{ 'todos.itemNoteOptional' | translate }}</span>
+                      <textarea
+                        formControlName="note"
+                        rows="2"
+                        (input)="autoResizeNote($event)"
+                        [placeholder]="'todos.itemNoteOptional' | translate"
+                      ></textarea>
+                    </label>
+                  </div>
+
+                  <div class="sub-items-section">
+                    <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
+
+                    <div class="sub-items-list" formArrayName="subItems">
+                      @for (
+                        subControl of subItemsArray(idx).controls;
+                        track subControl;
+                        let subIdx = $index
+                      ) {
+                        <div class="sub-item-row" [formGroupName]="subIdx">
+                          <input type="hidden" formControlName="id" />
+                          <input
+                            type="text"
+                            formControlName="title"
+                            [placeholder]="'todos.subItemTitle' | translate"
+                          />
+                          <div
+                            class="color-picker"
+                            role="group"
+                            [attr.aria-label]="'todos.subItemColor' | translate"
+                          >
+                            @for (color of colorOptions; track color) {
+                              <button
+                                type="button"
+                                class="color-swatch color-swatch--{{ color }}"
+                                [class.color-swatch--selected]="
+                                  subControl.get('color')?.value === color
+                                "
+                                [attr.title]="colorLabel(color) | translate"
+                                [attr.aria-label]="colorLabel(color) | translate"
+                                [attr.aria-pressed]="subControl.get('color')?.value === color"
+                                (click)="setSubItemColor(idx, subIdx, color)"
+                              ></button>
+                            }
+                          </div>
                           <button
                             type="button"
-                            class="color-swatch color-swatch--{{ color }}"
-                            [class.color-swatch--selected]="subControl.get('color')?.value === color"
-                            [attr.title]="colorLabel(color) | translate"
-                            [attr.aria-label]="colorLabel(color) | translate"
-                            [attr.aria-pressed]="subControl.get('color')?.value === color"
-                            (click)="setSubItemColor(idx, subIdx, color)"
-                          ></button>
-                        }
-                      </div>
-                      <button
-                        type="button"
-                        class="delete-btn delete-btn--compact"
-                        (click)="removeSubItem(control, subControl)"
-                        [attr.aria-label]="'common.delete' | translate"
-                        [title]="'common.delete' | translate"
-                      >
-                        <app-trash-icon [size]="16" />
-                      </button>
+                            class="delete-btn delete-btn--compact"
+                            (click)="removeSubItem(control, subControl)"
+                            [attr.aria-label]="'common.delete' | translate"
+                            [title]="'common.delete' | translate"
+                          >
+                            <app-trash-icon [size]="16" />
+                          </button>
+                        </div>
+                      }
                     </div>
-                  }
-                </div>
 
-                <button type="button" class="btn btn-secondary add-sub-btn" (click)="addSubItem(idx)">
-                  {{ 'todos.addSubItem' | translate }}
-                </button>
-              </div>
+                    <button
+                      type="button"
+                      class="btn btn-secondary add-sub-btn"
+                      (click)="addSubItem(idx)"
+                    >
+                      {{ 'todos.addSubItem' | translate }}
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
           }
           @if (itemsArray.length === 0) {

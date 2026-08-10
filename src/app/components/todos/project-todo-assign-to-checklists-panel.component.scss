@@ -108,14 +108,6 @@
   background: #d1d5db;
 }
 
-.assign-intro {
-  display: none;
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.88rem;
-  line-height: 1.4;
-}
-
 .assignment-layout {
   display: grid;
   grid-template-columns: minmax(12rem, 34%) minmax(0, 1fr);
@@ -512,10 +504,6 @@
 @include mobile {
   .assign-steps {
     display: flex;
-  }
-
-  .assign-intro {
-    display: block;
   }
 
   .assignment-layout {
