@@ -541,6 +541,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         this.#modalService.open({
           title: 'protocols.generateProtocol',
           component: ProtocolGenerateModalComponent,
+          extraWide: true,
           componentInputs: {
             projectId,
             objects: availableObjects,

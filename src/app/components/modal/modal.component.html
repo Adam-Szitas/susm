@@ -1,7 +1,8 @@
 <div class="modal-overlay">
   <div
     class="modal-content"
-    [class.wide]="wide"
+    [class.wide]="wide || extraWide"
+    [class.wide-xl]="extraWide"
     (click)="$event.stopPropagation()"
     (touchend)="$event.stopPropagation()"
   >

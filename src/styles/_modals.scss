@@ -101,6 +101,19 @@ body.modal-open .floating-icon {
       }
     }
   }
+
+  &.wide-xl {
+    max-width: min(92vw, 72rem);
+    max-height: min(90dvh, 90vh);
+
+    @include mobile {
+      max-width: 100%;
+      max-height: min(
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        92dvh
+      );
+    }
+  }
 }
 
 @keyframes slideUp {

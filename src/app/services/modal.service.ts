@@ -21,6 +21,8 @@ export interface ModalConfig {
   component?: any;
   componentInputs?: Record<string, any>;
   wide?: boolean;
+  /** Extra-wide modal for protocol generate/preview on desktop (~72rem). */
+  extraWide?: boolean;
 }
 
 export interface ConfirmConfig {

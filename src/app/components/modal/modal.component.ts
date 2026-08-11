@@ -15,6 +15,7 @@ export class ModalComponent {
   @Input() showConfirm = false;
   @Input() confirmText = 'Confirm';
   @Input() wide = false;
+  @Input() extraWide = false;
 
   modalService!: ModalService;
 

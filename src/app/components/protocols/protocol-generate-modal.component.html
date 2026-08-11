@@ -3,6 +3,7 @@
 
   @if (showingPreview() && previewData()) {
     <div class="preview-container">
+      <div class="preview-controls">
       <div class="save-to-project-row">
         <app-toggle-switch
           [checked]="saveToProject()"
@@ -166,7 +167,7 @@
           <h3>{{ 'protocols.templateFields' | translate }}</h3>
           <p class="helper-text">{{ 'protocols.editFieldsHere' | translate }}</p>
           <form [formGroup]="form">
-            <div formArrayName="fields">
+            <div class="template-fields-grid" formArrayName="fields">
               @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
                 @let field = templateForPreview!.fields[i];
                 @if (field) {
@@ -375,6 +376,9 @@
         </div>
       }
 
+      </div>
+
+      <div class="preview-document">
       <app-protocol-preview
         [previewData]="displayPreviewData()!"
         [checklistSourceSections]="checklistControlRows()"
@@ -382,6 +386,7 @@
         [checklistVisibilityEditable]="includeChecklists()"
         (checklistVisibilityToggle)="toggleExcludedChecklistItem($event)"
       />
+      </div>
     </div>
   } @else {
     <form [formGroup]="form" (ngSubmit)="loadPreview()">
@@ -441,26 +446,28 @@
         }
       </div>
 
-      <div class="form-group">
-        <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
-        <input
-          id="from_date"
-          type="date"
-          formControlName="from_date"
-          [title]="'protocols.dateRangeHint' | translate"
-        />
-        <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
-      </div>
+      <div class="form-row form-row--dates">
+        <div class="form-group">
+          <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
+          <input
+            id="from_date"
+            type="date"
+            formControlName="from_date"
+            [title]="'protocols.dateRangeHint' | translate"
+          />
+          <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+        </div>
 
-      <div class="form-group">
-        <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
-        <input
-          id="to_date"
-          type="date"
-          formControlName="to_date"
-          [title]="'protocols.dateRangeHint' | translate"
-        />
-        <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+        <div class="form-group">
+          <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
+          <input
+            id="to_date"
+            type="date"
+            formControlName="to_date"
+            [title]="'protocols.dateRangeHint' | translate"
+          />
+          <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+        </div>
       </div>
 
       @if (projectCategories().length > 0) {
@@ -487,7 +494,7 @@
           <div class="template-fields-section">
             <h3>{{ 'protocols.templateFields' | translate }}</h3>
             <p class="helper-text">{{ 'protocols.fillFieldsBeforePreview' | translate }}</p>
-            <div formArrayName="fields">
+            <div class="template-fields-grid" formArrayName="fields">
               @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
                 @let field = selectedTemplate()!.fields[i];
                 <div [formGroup]="$any(fieldControl)" class="template-field">
@@ -557,7 +564,8 @@
       @if (objectsForProtocolSelection().length === 0) {
         <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
       } @else {
-        <div class="object-selection">
+        <div class="form-row form-row--selections">
+          <div class="object-selection">
           <div class="object-selection-header">
             <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
             <button
@@ -610,27 +618,28 @@
           @if (!hasSelection()) {
             <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
           }
-        </div>
-      }
-
-      @if (existingProtocols().length > 0) {
-        <div class="linked-protocols-selection">
-          <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
-          <p class="helper-text">
-            {{ 'protocols.includeOlderProtocolsDescription' | translate }}
-          </p>
-          <div class="protocol-list linked-list">
-            @for (protocol of existingProtocols(); track protocol._id.$oid) {
-              <label class="protocol-item linked-item">
-                <input
-                  type="checkbox"
-                  [checked]="isLinkedProtocolSelected(protocol)"
-                  (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
-                />
-                <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
-              </label>
-            }
           </div>
+
+          @if (existingProtocols().length > 0) {
+            <div class="linked-protocols-selection">
+              <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+              <p class="helper-text">
+                {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+              </p>
+              <div class="protocol-list linked-list">
+                @for (protocol of existingProtocols(); track protocol._id.$oid) {
+                  <label class="protocol-item linked-item">
+                    <input
+                      type="checkbox"
+                      [checked]="isLinkedProtocolSelected(protocol)"
+                      (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
+                    />
+                    <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
     </form>
