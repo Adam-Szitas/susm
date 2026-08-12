@@ -79,7 +79,7 @@
 .checklist-visibility-panel {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   max-height: min(45dvh, 380px);
   margin-bottom: 0;
   padding: 0.85rem 1rem;
@@ -87,6 +87,12 @@
   border: 1px solid var(--default-color, #e0e0e0);
   background: #fafafa;
   overflow: hidden;
+
+  @media screen and (min-width: 769px) {
+    flex: 1 0 auto;
+    min-height: min(36dvh, 360px);
+    max-height: min(52dvh, 520px);
+  }
 
   .section-title {
     display: block;
@@ -114,6 +120,10 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+
+  @media screen and (min-width: 769px) {
+    min-height: 12rem;
+  }
 }
 
 .checklist-visibility-item {
@@ -212,6 +222,7 @@
     min-width: 0;
 
     @media screen and (min-width: 769px) {
+      align-self: stretch;
       max-height: min(68dvh, 720px);
       overflow-y: auto;
       padding-right: 0.25rem;
