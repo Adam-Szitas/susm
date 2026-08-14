@@ -86,10 +86,7 @@
     align-items: center;
     color: #666;
 
-    svg {
-      @include icon-size(var(--icon-button-md));
-      stroke-width: 1.5;
-    }
+    @include app-icon-size(var(--icon-button-md));
 
     span {
       font-size: 0.95rem;

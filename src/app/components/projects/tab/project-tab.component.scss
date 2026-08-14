@@ -467,10 +467,9 @@
   white-space: nowrap;
 }
 
-.protocols-upload-icon,
-.file-list-upload-icon {
-  width: 1rem;
-  height: 1rem;
+.protocols-upload-label app-icon,
+.file-list-upload-btn app-icon {
+  --icon-size: var(--icon-size-compact);
   flex-shrink: 0;
 }
 

@@ -185,19 +185,28 @@
             </div>
             </div>
             <div class="group-header-row group-header-row--toolbar">
-            <div class="group-edit-actions">
+            <div class="group-header-actions">
               @if (objectId()) {
                 <button
                   type="button"
-                  class="group-upload-btn"
+                  class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
+                  (click)="openSubGroupUploadModal(group)"
+                  [disabled]="subGroupUploadUploading()"
+                  [attr.aria-label]="'subGroups.createTitle' | translate"
+                  [attr.title]="'subGroups.createTitle' | translate"
+                >
+                  <app-icon [icon]="icons.plus" />
+                </button>
+              }
+              @if (objectId()) {
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn"
                   (click)="openGroupPhotoPicker(group)"
                   [disabled]="groupPhotoUploading()"
                   [attr.aria-label]="'fileList.uploadToGroup' | translate"
                   title="{{ 'fileList.uploadToGroup' | translate }}"
                 >
-                  <span class="visually-hidden">{{
-                    'fileList.uploadToGroup' | translate
-                  }}</span>
                   <app-icon [icon]="icons.uploadArrow" />
                 </button>
               }
@@ -255,8 +264,18 @@
             @if (objectId() && !groupReorderMode()) {
               <button
                 type="button"
-                class="group-reorder-btn button button-outline"
-                [class.active]="reorderMode()"
+                class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
+                (click)="openSubGroupUploadModal(group)"
+                [disabled]="subGroupUploadUploading()"
+                [attr.aria-label]="'subGroups.createTitle' | translate"
+                [attr.title]="'subGroups.createTitle' | translate"
+              >
+                <app-icon [icon]="icons.plus" />
+              </button>
+              <button
+                type="button"
+                class="group-toolbar-icon-btn"
+                [class.group-toolbar-icon-btn--active]="reorderMode()"
                 (click)="toggleReorderMode()"
                 [disabled]="reorderSaving()"
                 [attr.aria-label]="
@@ -270,24 +289,16 @@
                     : ('fileList.reorderPictures' | translate)
                 "
               >
-                <span class="visually-hidden">{{
-                  reorderMode()
-                    ? ('fileList.doneReorderPictures' | translate)
-                    : ('fileList.reorderPictures' | translate)
-                }}</span>
                 <app-icon [icon]="icons.arrowsUpDown" />
               </button>
               <button
                 type="button"
-                class="group-upload-btn"
+                class="group-toolbar-icon-btn"
                 (click)="openGroupPhotoPicker(group)"
                 [disabled]="groupPhotoUploading()"
                 [attr.aria-label]="'fileList.uploadToGroup' | translate"
                 title="{{ 'fileList.uploadToGroup' | translate }}"
               >
-                <span class="visually-hidden">{{
-                  'fileList.uploadToGroup' | translate
-                }}</span>
                 <app-icon [icon]="icons.uploadArrow" />
               </button>
             }
@@ -304,12 +315,11 @@
             @if (objectId()) {
               <button
                 type="button"
-                class="group-delete-btn"
+                class="group-toolbar-icon-btn group-toolbar-icon-btn--danger"
                 (click)="deleteFileGroup(group)"
                 [attr.aria-label]="'fileList.deleteFileGroup' | translate"
                 title="{{ 'fileList.deleteFileGroup' | translate }}"
               >
-                <span class="visually-hidden">{{ 'fileList.deleteFileGroup' | translate }}</span>
                 <app-trash-icon [size]="18" />
               </button>
             }
@@ -393,7 +403,7 @@
                     <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
                     <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
                   </button>
-                  @if (objectId() && moveTargetsExcludingGroup(group).length > 0) {
+                  @if (objectId() && hasMoveTargetsForFile(group)) {
                     <button
                       type="button"
                       class="move-hint"
@@ -506,6 +516,57 @@
                 </button>
               }
             </div>
+          </li>
+        }
+        @for (subGroup of group.sub_groups; track subGroup._id.$oid) {
+          <li
+            class="file-item sub-group-item"
+            [class.dragging]="draggedSubGroupId() === subGroup._id.$oid"
+            [class.drag-over]="dragOverSubGroupId() === subGroup._id.$oid"
+            [attr.draggable]="group.sub_groups.length > 1 && !subGroupReorderSaving() ? 'true' : null"
+            tabindex="0"
+            [attr.aria-label]="subGroup.name"
+            (click)="onSubGroupItemClick($event, group, subGroup)"
+            (keydown.enter)="openSubGroupDetail(group, subGroup)"
+            (keydown.space)="onSubGroupItemKeyActivate($event, group, subGroup)"
+            (dragstart)="onSubGroupDragStart($event, subGroup)"
+            (dragover)="onSubGroupDragOver($event, subGroup)"
+            (dragleave)="onSubGroupDragLeave($event, subGroup)"
+            (drop)="onSubGroupDrop($event, subGroup, group)"
+            (dragend)="onSubGroupDragEnd()"
+          >
+            <div class="image-container">
+              @if (subGroup.files.length > 0) {
+                <div class="sub-group-preview-collage">
+                  @for (slot of subGroupPreviewSlots(subGroup); track slot.index) {
+                    <div
+                      class="sub-group-preview-cell"
+                      [class.sub-group-preview-cell--empty]="!slot.file"
+                    >
+                      @if (slot.file) {
+                        <img
+                          [src]="getImageUrl(slot.file.path)"
+                          [alt]="slot.file.filename || subGroup.name"
+                          loading="lazy"
+                          class="sub-group-preview-thumb"
+                        />
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <span class="sub-group-empty-cover">
+                  <app-icon [icon]="icons.fileUpload" [svgClass]="'sub-group-empty-icon'" />
+                  <span class="sub-group-empty-label">{{ 'subGroups.noPhotos' | translate }}</span>
+                </span>
+              }
+              @if (group.sub_groups.length > 1) {
+                <span class="sub-group-drag-handle" [attr.title]="'subGroups.dragToReorder' | translate">
+                  <app-icon [icon]="icons.gripHorizontal" />
+                </span>
+              }
+            </div>
+            <p class="file-name">{{ subGroup.name }}</p>
           </li>
         }
       </ul>
@@ -749,4 +810,29 @@
       />
     }
   </dialog>
+
+  <app-sub-group-upload-modal
+    [isOpen]="subGroupUploadOpen()"
+    [categories]="projectCategories()"
+    [uploading]="subGroupUploadUploading()"
+    [addMode]="subGroupUploadAddMode()"
+    [initialName]="subGroupUploadInitialName()"
+    [initialCategories]="subGroupUploadInitialCategories()"
+    [initialNote]="subGroupUploadInitialNote()"
+    (upload)="onSubGroupUpload($event)"
+    (cancel)="onSubGroupUploadCancel()"
+  />
+
+  @if (subGroupDetailLive(); as detailTarget) {
+    <app-sub-group-detail-modal
+      [isOpen]="subGroupDetailOpen()"
+      [subGroup]="detailTarget.subGroup"
+      [parentGroup]="detailTarget.group"
+      [allGroups]="filteredFileGroups()"
+      [projectCategories]="projectCategories()"
+      (closed)="onSubGroupDetailClosed()"
+      (metadataUpdated)="metadataUpdated.emit()"
+      (requestAddPhotos)="onSubGroupDetailAddPhotos()"
+    />
+  }
 </div>

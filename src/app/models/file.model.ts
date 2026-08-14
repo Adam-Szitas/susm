@@ -45,6 +45,49 @@ export interface FileGroup {
   deleted_at?: MongoDateJson;
   /** User-defined order within the object (lower = earlier). Omitted until first reorder. */
   sort_order?: number;
+  /** Named photo batches inside this file group. */
+  sub_groups?: FileSubGroup[];
+}
+
+export interface FileSubGroup {
+  _id: {
+    $oid: string;
+  };
+  name: string;
+  categories?: string[];
+  note?: string;
+  files: FileGroupItem[];
+  sort_order?: number;
+  created_at?: MongoDateJson;
+  deleted_at?: MongoDateJson;
+}
+
+/** Normalized category list for a sub-group. */
+export function fileSubGroupCategoryLabels(sg: FileSubGroup): string[] {
+  return [...new Set((sg.categories ?? []).map((s) => s?.trim() ?? '').filter(Boolean))];
+}
+
+/** True when any active sub-group has a saved `sort_order`. */
+export function hasCustomSubGroupOrder(subGroups: FileSubGroup[]): boolean {
+  return subGroups.some(
+    (sg) => parseMongoDateToMs(sg.deleted_at as unknown) == null && sg.sort_order != null,
+  );
+}
+
+/** Apply stored order when present; otherwise keep array order. */
+export function sortFileSubGroupsByStoredOrder(subGroups: FileSubGroup[]): FileSubGroup[] {
+  if (!hasCustomSubGroupOrder(subGroups)) {
+    return subGroups;
+  }
+  return subGroups
+    .map((sg, index) => ({ sg, index }))
+    .sort((a, b) => {
+      const ao = a.sg.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const bo = b.sg.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return a.index - b.index;
+    })
+    .map(({ sg }) => sg);
 }
 
 /** True when the file group is soft-deleted (`deleted_at` is a real timestamp). */

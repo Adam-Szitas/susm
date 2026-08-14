@@ -1,0 +1,196 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="onCancel()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          @if (addMode()) {
+            {{ 'subGroups.addPhotosTitle' | translate }}
+          } @else {
+            {{ 'subGroups.createTitle' | translate }}
+          }
+        </h2>
+        <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close">
+          <app-icon [icon]="icons.close" />
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (!addMode()) {
+          <div class="form-group">
+            <label for="sub-group-name">{{ 'subGroups.name' | translate }}</label>
+            <input
+              id="sub-group-name"
+              type="text"
+              [(ngModel)]="name"
+              [disabled]="uploading()"
+              [placeholder]="'subGroups.namePlaceholder' | translate"
+              required
+            />
+          </div>
+        } @else if (initialName()) {
+          <p class="add-mode-target">{{ 'subGroups.addPhotosTo' | translate }}: <strong>{{ initialName() }}</strong></p>
+        }
+
+        <div class="file-input-wrapper">
+          <label for="sub-group-file-upload" class="file-label">
+            <div class="upload-placeholder">
+              <app-icon [icon]="icons.uploadArrow" />
+              <span>{{ 'fileUpload.selectFiles' | translate }}</span>
+              <small class="hint-text">{{ 'fileUpload.multipleFilesHint' | translate }}</small>
+            </div>
+          </label>
+          <input
+            type="file"
+            id="sub-group-file-upload"
+            accept="image/*"
+            multiple
+            (change)="onFileSelected($event)"
+            [disabled]="uploading() || compressing()"
+          />
+          @if (compressing()) {
+            <div class="compressing-indicator">
+              <span>{{ 'subGroups.compressing' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        @if (filePreviews().length > 0) {
+          <div class="files-preview">
+            <div class="files-header">
+              <span>{{ 'fileUpload.selectedFiles' | translate }}: {{ filePreviews().length }}</span>
+              <button type="button" class="clear-all-btn" (click)="clearAll()">
+                {{ 'fileUpload.clearAll' | translate }}
+              </button>
+            </div>
+            <div class="files-grid">
+              @for (preview of filePreviews(); track preview.uniqueId) {
+                <div class="file-preview-item">
+                  <img [src]="preview.previewUrl" [alt]="preview.file.name" class="preview-thumbnail" />
+                  <button
+                    type="button"
+                    class="remove-file-btn"
+                    (click)="removeFile($index)"
+                    [attr.aria-label]="'fileList.delete' | translate"
+                  >
+                    <app-trash-icon [size]="14" />
+                  </button>
+                  <span class="file-name">{{ preview.file.name }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (!addMode() && categories().length > 0) {
+          <div class="form-group form-group-categories">
+            <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
+            <div class="selected-category-chips">
+              @for (c of selectedCategories(); track c) {
+                <button
+                  type="button"
+                  class="category-chip-mini"
+                  (click)="removeSelectedCategory(c)"
+                  [disabled]="uploading()"
+                  [attr.aria-label]="'fileList.removeCategory' | translate"
+                >
+                  <span>{{ c }}</span>
+                  <app-trash-icon [size]="12" />
+                </button>
+              }
+            </div>
+            <div class="category-checkbox-grid">
+              @for (cat of categories(); track cat) {
+                <label class="category-cb-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isCategorySelected(cat)"
+                    (change)="toggleCategory(cat)"
+                    [disabled]="uploading()"
+                  />
+                  <span>{{ cat }}</span>
+                </label>
+              }
+            </div>
+            <div class="category-add-inline">
+              <input
+                type="text"
+                class="category-add-input"
+                [ngModel]="categoryCustomDraft()"
+                (ngModelChange)="categoryCustomDraft.set($event)"
+                (keydown.enter)="$event.preventDefault(); addCustomCategory()"
+                [disabled]="uploading()"
+                [placeholder]="'fileList.addCategoryPlaceholder' | translate"
+              />
+              <button
+                type="button"
+                class="button button-secondary category-add-btn toolbar-btn"
+                [class.icon-only]="iconOnlyActions()"
+                (click)="addCustomCategory()"
+                [disabled]="uploading()"
+                [attr.aria-label]="'fileList.addCategory' | translate"
+                [attr.title]="'fileList.addCategory' | translate"
+              >
+                <app-icon [icon]="icons.plus" [svgClass]="'toolbar-btn-icon'" />
+                @if (!iconOnlyActions()) {
+                  <span class="toolbar-btn-label">{{ 'fileList.addCategory' | translate }}</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (!addMode()) {
+          <div class="form-group">
+            <label for="sub-group-note">{{ 'fileUpload.note' | translate }}</label>
+            <textarea
+              id="sub-group-note"
+              rows="3"
+              [(ngModel)]="note"
+              [disabled]="uploading()"
+              [placeholder]="'fileUpload.notePlaceholder' | translate"
+            ></textarea>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="button button-secondary toolbar-btn"
+          [class.icon-only]="iconOnlyActions()"
+          (click)="onCancel()"
+          [disabled]="uploading()"
+          [attr.aria-label]="'fileUpload.cancel' | translate"
+          [attr.title]="'fileUpload.cancel' | translate"
+        >
+          <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
+          @if (!iconOnlyActions()) {
+            <span class="toolbar-btn-label">{{ 'fileUpload.cancel' | translate }}</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="button button-primary toolbar-btn"
+          [class.icon-only]="iconOnlyActions()"
+          (click)="onUpload()"
+          [disabled]="!canSave()"
+          [attr.aria-label]="'fileUpload.upload' | translate"
+          [attr.title]="'fileUpload.upload' | translate"
+        >
+          <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
+          @if (!iconOnlyActions()) {
+            <span class="toolbar-btn-label">
+              @if (uploading()) {
+                {{ 'fileUpload.uploading' | translate }}
+              } @else if (filePreviews().length > 0) {
+                {{ 'fileUpload.upload' | translate }} ({{ filePreviews().length }})
+              } @else {
+                {{ 'fileUpload.upload' | translate }}
+              }
+            </span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

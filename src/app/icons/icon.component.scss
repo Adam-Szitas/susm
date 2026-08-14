@@ -1,5 +1,7 @@
 :host {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 0;
   flex-shrink: 0;
   inline-size: var(--icon-inline-size, var(--icon-size, var(--icon-size-md, 1.25rem)));

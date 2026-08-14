@@ -1,0 +1,333 @@
+@if (isOpen() && subGroup(); as sg) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-content modal-content--wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ sg.name }}</h2>
+        <button type="button" class="close-btn" (click)="onClose()" [attr.aria-label]="'common.close' | translate">
+          <app-icon [icon]="icons.close" />
+        </button>
+      </div>
+
+      <div class="modal-body sub-group-detail-body">
+        @if (editingMetadata()) {
+          <div class="sub-group-meta-edit">
+            <div class="form-group">
+              <label [attr.for]="'sg-edit-name'">{{ 'subGroups.name' | translate }}</label>
+              <input
+                id="sg-edit-name"
+                type="text"
+                [ngModel]="editName()"
+                (ngModelChange)="editName.set($event)"
+                [disabled]="savingMetadata()"
+              />
+            </div>
+            <div class="form-group">
+              <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
+              <div class="category-chips-editing">
+                @for (cat of editCategories(); track cat) {
+                  <button type="button" class="category-chip" (click)="removeEditCategory(cat)">
+                    <span>{{ cat }}</span>
+                    <app-trash-icon [size]="12" />
+                  </button>
+                }
+              </div>
+              <div class="category-checkbox-grid">
+                @for (opt of categoryOptionsForEdit(); track opt) {
+                  <label class="category-cb-label">
+                    <input
+                      type="checkbox"
+                      [checked]="isEditCategorySelected(opt)"
+                      (change)="toggleEditCategory(opt)"
+                    />
+                    <span>{{ opt }}</span>
+                  </label>
+                }
+              </div>
+              <div class="category-add-inline">
+                <input
+                  type="text"
+                  class="category-add-input"
+                  [ngModel]="categoryCustomDraft()"
+                  (ngModelChange)="categoryCustomDraft.set($event)"
+                  (keydown.enter)="$event.preventDefault(); addCustomCategoryFromDraft()"
+                  [placeholder]="'fileList.addCategoryPlaceholder' | translate"
+                />
+                <button
+                  type="button"
+                  class="button button-secondary toolbar-btn"
+                  [class.icon-only]="iconOnlyActions()"
+                  (click)="addCustomCategoryFromDraft()"
+                  [attr.aria-label]="'fileList.addCategory' | translate"
+                  [attr.title]="'fileList.addCategory' | translate"
+                >
+                  <app-icon [icon]="icons.plus" [svgClass]="'toolbar-btn-icon'" />
+                  @if (!iconOnlyActions()) {
+                    <span class="toolbar-btn-label">{{ 'fileList.addCategory' | translate }}</span>
+                  }
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label [attr.for]="'sg-edit-note'">{{ 'fileUpload.note' | translate }}</label>
+              <textarea
+                id="sg-edit-note"
+                rows="3"
+                [ngModel]="editNote()"
+                (ngModelChange)="editNote.set($event)"
+                [placeholder]="'fileUpload.notePlaceholder' | translate"
+              ></textarea>
+            </div>
+            <div class="meta-edit-actions">
+              <button
+                type="button"
+                class="button button-primary toolbar-btn"
+                [class.icon-only]="iconOnlyActions()"
+                (click)="saveMetadata()"
+                [disabled]="savingMetadata()"
+                [attr.aria-label]="'common.save' | translate"
+                [attr.title]="'common.save' | translate"
+              >
+                <app-icon [icon]="icons.check" [svgClass]="'toolbar-btn-icon'" [strokeWidth]="2.5" />
+                @if (!iconOnlyActions()) {
+                  <span class="toolbar-btn-label">{{ 'common.save' | translate }}</span>
+                }
+              </button>
+              <button
+                type="button"
+                class="button button-secondary toolbar-btn"
+                [class.icon-only]="iconOnlyActions()"
+                (click)="cancelEditMetadata()"
+                [attr.aria-label]="'common.cancel' | translate"
+                [attr.title]="'common.cancel' | translate"
+              >
+                <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
+                @if (!iconOnlyActions()) {
+                  <span class="toolbar-btn-label">{{ 'common.cancel' | translate }}</span>
+                }
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="sub-group-meta-view">
+            <div class="sub-group-meta-row">
+              <div class="sub-group-categories">
+                @for (c of subGroupCategoryLabels(sg); track c) {
+                  <span class="sub-group-category-pill">{{ c }}</span>
+                }
+              </div>
+              <button
+                type="button"
+                class="button button-outline sub-group-edit-meta-btn toolbar-btn"
+                [class.icon-only]="iconOnlyActions()"
+                (click)="startEditMetadata()"
+                [attr.aria-label]="'common.edit' | translate"
+                [attr.title]="'common.edit' | translate"
+              >
+                <app-icon [icon]="icons.edit" [svgClass]="'toolbar-btn-icon'" />
+                @if (!iconOnlyActions()) {
+                  <span class="toolbar-btn-label">{{ 'common.edit' | translate }}</span>
+                }
+              </button>
+            </div>
+            @if (sg.note?.trim()) {
+              <p class="sub-group-note">{{ sg.note }}</p>
+            }
+          </div>
+        }
+
+        <div class="sub-group-toolbar">
+          <button
+            type="button"
+            class="button button-primary toolbar-btn"
+            [class.icon-only]="iconOnlyActions()"
+            (click)="requestAddPhotos.emit()"
+            [attr.aria-label]="'subGroups.addPhotos' | translate"
+            [attr.title]="'subGroups.addPhotos' | translate"
+          >
+            <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
+            @if (!iconOnlyActions()) {
+              <span class="toolbar-btn-label">{{ 'subGroups.addPhotos' | translate }}</span>
+            }
+          </button>
+          <button
+            type="button"
+            class="button button-outline toolbar-btn"
+            [class.icon-only]="iconOnlyActions()"
+            [class.active]="reorderMode()"
+            (click)="toggleReorderMode()"
+            [disabled]="reorderSaving() || visibleFiles().length < 2"
+            [attr.aria-label]="
+              reorderMode()
+                ? ('fileList.doneReorderPictures' | translate)
+                : ('fileList.reorderPictures' | translate)
+            "
+            [attr.title]="
+              reorderMode()
+                ? ('fileList.doneReorderPictures' | translate)
+                : ('fileList.reorderPictures' | translate)
+            "
+          >
+            <app-icon [icon]="icons.arrowsUpDown" [svgClass]="'toolbar-btn-icon'" />
+            @if (!iconOnlyActions()) {
+              <span class="toolbar-btn-label">{{
+                reorderMode()
+                  ? ('fileList.doneReorderPictures' | translate)
+                  : ('fileList.reorderPictures' | translate)
+              }}</span>
+            }
+          </button>
+          <button
+            type="button"
+            class="button button-outline sub-group-delete-btn toolbar-btn"
+            [class.icon-only]="iconOnlyActions()"
+            (click)="openDeleteConfirm()"
+            [attr.aria-label]="'subGroups.deleteSubGroup' | translate"
+            [attr.title]="'subGroups.deleteSubGroup' | translate"
+          >
+            <app-trash-icon [size]="18" />
+            @if (!iconOnlyActions()) {
+              <span class="toolbar-btn-label">{{ 'subGroups.deleteSubGroup' | translate }}</span>
+            }
+          </button>
+        </div>
+
+        <ul class="sub-group-gallery">
+          @for (file of visibleFiles(); track file._id.$oid; let i = $index) {
+            <li
+              class="sub-group-file-item"
+              [class.dragging]="draggedFileId() === file._id.$oid"
+              [class.drag-over]="dragOverFileId() === file._id.$oid"
+              [class.reorder-active]="reorderMode()"
+              [attr.draggable]="reorderMode() && !reorderSaving() ? 'true' : null"
+              (dragstart)="reorderMode() ? onDragStart($event, file) : null"
+              (dragover)="reorderMode() ? onDragOver($event, file) : null"
+              (dragleave)="reorderMode() ? onDragLeave($event, file) : null"
+              (drop)="reorderMode() ? onDrop($event, file) : null"
+              (dragend)="reorderMode() ? onDragEnd() : null"
+            >
+              @if (reorderMode()) {
+                <div class="reorder-controls">
+                  <button
+                    type="button"
+                    class="reorder-btn"
+                    (click)="moveFileUp(file)"
+                    [disabled]="i === 0 || reorderSaving()"
+                  >
+                    ◀
+                  </button>
+                  <span class="reorder-position">{{ i + 1 }}</span>
+                  <button
+                    type="button"
+                    class="reorder-btn"
+                    (click)="moveFileDown(file)"
+                    [disabled]="i === visibleFiles().length - 1 || reorderSaving()"
+                  >
+                    ▶
+                  </button>
+                </div>
+              }
+              <div
+                class="image-container"
+                [class.overlay-actions-blocked]="reorderMode()"
+                (click)="onImageContainerClick($event, file)"
+              >
+                <img
+                  [src]="getImageUrl(file.path)"
+                  [alt]="file.filename || 'Preview'"
+                  loading="lazy"
+                  (error)="onImageError(file, $event)"
+                />
+                @if (!reorderMode()) {
+                  <div
+                    class="overlay"
+                    [class.visible]="activeFileId() === file._id.$oid"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <button type="button" class="zoom-hint" (click)="openImageLightbox($event, file)">
+                      <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
+                    </button>
+                    @if (buildMoveTargets().length > 0) {
+                      <button
+                        type="button"
+                        class="move-hint"
+                        (click)="openMoveFileModal($event, file)"
+                        [disabled]="moveFileInProgress()"
+                      >
+                        <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="download-hint"
+                      (click)="handleOverlayDownload($event, file.path, file.filename)"
+                    >
+                      <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
+                    </button>
+                    <button type="button" class="delete-hint" (click)="handleOverlayDelete($event, file)">
+                      <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (visibleFiles().length === 0) {
+          <p class="sub-group-empty">{{ 'subGroups.noPhotos' | translate }}</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (deleteConfirmOpen()) {
+    <div class="delete-confirm-overlay" (click)="cancelDeleteConfirm()">
+      <div class="delete-confirm-panel" (click)="$event.stopPropagation()">
+        <h3>{{ 'subGroups.deleteConfirmTitle' | translate }}</h3>
+        <p>{{ 'subGroups.deleteConfirmMessage' | translate }}</p>
+        <div class="delete-confirm-actions">
+          <button
+            type="button"
+            class="button button-danger"
+            (click)="confirmDeleteSubGroup('delete_all')"
+            [disabled]="deletingSubGroup()"
+          >
+            {{ 'subGroups.deleteAll' | translate }}
+          </button>
+          <button
+            type="button"
+            class="button button-outline"
+            (click)="confirmDeleteSubGroup('unwrap')"
+            [disabled]="deletingSubGroup()"
+          >
+            {{ 'subGroups.unwrapKeepPhotos' | translate }}
+          </button>
+          <button type="button" class="button button-secondary" (click)="cancelDeleteConfirm()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <dialog
+    #imageLightbox
+    class="image-lightbox-dialog"
+    closedby="any"
+    [attr.aria-label]="'fileList.imagePreview' | translate"
+    (close)="onImageLightboxDialogClose()"
+    (click)="onImageLightboxBackdropClick($event)"
+  >
+    @if (imageLightboxUrl(); as lightboxSrc) {
+      <button type="button" class="image-lightbox-close" (click)="closeImageLightbox(); $event.stopPropagation()">
+        ×
+      </button>
+      <img
+        class="image-lightbox-img"
+        [src]="lightboxSrc"
+        [alt]="imageLightboxAlt()"
+        (click)="$event.stopPropagation()"
+      />
+    }
+  </dialog>
+}

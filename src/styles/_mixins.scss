@@ -72,6 +72,13 @@
   @include square-size($size);
 }
 
+/// Size an `<app-icon>` host via its `--icon-size` custom property.
+@mixin app-icon-size($size: var(--icon-size-md)) {
+  app-icon {
+    --icon-size: #{$size};
+  }
+}
+
 /// SVG fills its sized parent.
 @mixin svg-fill {
   display: block;
@@ -310,9 +317,7 @@
   cursor: pointer;
   flex-shrink: 0;
 
-  svg {
-    @include icon-size(var(--icon-size-lg));
-  }
+  @include app-icon-size(var(--icon-size-lg));
 
   &:disabled {
     opacity: 0.5;

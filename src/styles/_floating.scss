@@ -19,6 +19,12 @@
     opacity 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  @include flex-center;
+
+  app-icon {
+    --icon-size: var(--icon-size-2xl);
+    color: #fff;
+  }
 }
 
 .floating-icon:focus-visible {
@@ -70,6 +76,10 @@
     padding: var(--space-small, 8px);
     bottom: var(--space-small, 8px);
     right: var(--space-small, 8px);
+
+    app-icon {
+      --icon-size: var(--icon-size-xl);
+    }
   }
 
   .upload-icon {

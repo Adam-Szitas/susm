@@ -226,11 +226,13 @@ export class FileService {
    */
   moveFileToGroup(
     fileId: string,
-    targetGroupId: string
+    targetGroupId: string,
+    targetSubGroupId?: string | null,
   ): Observable<{ message: string }> {
     const endpoint = `file/${fileId}/move`;
     return this.#httpService.post<{ message: string }>(endpoint, {
       target_group_id: targetGroupId,
+      ...(targetSubGroupId ? { target_sub_group_id: targetSubGroupId } : {}),
     });
   }
 
@@ -330,5 +332,75 @@ export class FileService {
   reorderFileGroups(objectId: string, groupIds: string[]): Observable<{ message: string }> {
     const endpoint = `file/object/${objectId}/groups/reorder`;
     return this.#httpService.put<{ message: string }>(endpoint, { group_ids: groupIds });
+  }
+
+  createSubGroupWithUpload(
+    groupId: string,
+    files: globalThis.File[],
+    metadata: { name: string; categories?: string[]; note?: string },
+  ): Observable<unknown> {
+    const form = new FormData();
+    form.append('name', metadata.name.trim());
+    if (metadata.note?.trim()) {
+      form.append('note', metadata.note.trim());
+    }
+    if (metadata.categories?.length) {
+      const unique = [...new Set(metadata.categories.map((c) => c.trim()).filter(Boolean))];
+      if (unique.length) {
+        form.append('categories', JSON.stringify(unique));
+      }
+    }
+    for (const file of files) {
+      form.append('avatar', file, file.name);
+    }
+    return this.#uploadWithRetry(() =>
+      this.#httpService.post(`file/group/${groupId}/sub-groups`, form, new HttpHeaders(), {
+        suppressErrorNotification: true,
+      }),
+    );
+  }
+
+  addFilesToSubGroup(subGroupId: string, files: globalThis.File[]): Observable<string[]> {
+    return from(files).pipe(
+      concatMap((file) => {
+        const form = new FormData();
+        form.append('avatar', file, file.name);
+        return this.#uploadWithRetry(() =>
+          this.#httpService.post<string[]>(`file/sub-group/${subGroupId}/files`, form, new HttpHeaders(), {
+            suppressErrorNotification: true,
+          }),
+        );
+      }),
+      toArray(),
+      map((batches) => batches.flat()),
+    );
+  }
+
+  updateSubGroup(
+    subGroupId: string,
+    data: { name?: string; categories?: string[]; note?: string | null },
+  ): Observable<{ message: string }> {
+    return this.#httpService.put<{ message: string }>(`file/sub-group/${subGroupId}`, data);
+  }
+
+  deleteSubGroup(
+    subGroupId: string,
+    mode: 'delete_all' | 'unwrap',
+  ): Observable<{ message: string }> {
+    return this.#httpService.delete<{ message: string }>(
+      `file/sub-group/${subGroupId}?mode=${mode}`,
+    );
+  }
+
+  reorderSubGroups(groupId: string, subGroupIds: string[]): Observable<{ message: string }> {
+    return this.#httpService.put<{ message: string }>(`file/group/${groupId}/sub-groups/reorder`, {
+      sub_group_ids: subGroupIds,
+    });
+  }
+
+  reorderSubGroupFiles(subGroupId: string, fileIds: string[]): Observable<{ message: string }> {
+    return this.#httpService.put<{ message: string }>(`file/sub-group/${subGroupId}/reorder`, {
+      file_ids: fileIds,
+    });
   }
 }

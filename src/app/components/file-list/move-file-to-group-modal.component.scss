@@ -38,6 +38,37 @@
   background: rgba(157, 0, 0, 0.04);
 }
 
+.move-file-modal-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.move-file-modal-group-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  padding: 0 0.25rem;
+}
+
+.move-file-modal-sub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left: 2px solid rgba(157, 0, 0, 0.15);
+}
+
+.move-file-modal-option--sub {
+  font-size: 0.9rem;
+}
+
+.move-file-modal-option--root {
+  font-weight: 600;
+}
+
 .move-file-modal-actions {
   display: flex;
   justify-content: flex-end;

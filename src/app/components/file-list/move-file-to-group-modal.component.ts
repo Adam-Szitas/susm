@@ -3,9 +3,22 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ModalService } from '../../services/modal.service';
 
+export interface MoveFileSubGroupTarget {
+  subGroupId: string;
+  label: string;
+}
+
 export interface MoveFileTargetRow {
   groupId: string;
   label: string;
+  /** When true, user can move to the group's root-level files. */
+  includeGroupRoot?: boolean;
+  subGroups?: MoveFileSubGroupTarget[];
+}
+
+export interface MoveFileDestination {
+  groupId: string;
+  subGroupId?: string;
 }
 
 @Component({
@@ -19,12 +32,14 @@ export interface MoveFileTargetRow {
 export class MoveFileToGroupModalComponent {
   #modalService = inject(ModalService);
 
-  /** Destination groups (excludes the file’s current group). */
   targetRows = input.required<MoveFileTargetRow[]>();
 
+  /** @deprecated Use destinationPicked */
   groupPicked = output<string>();
+  destinationPicked = output<MoveFileDestination>();
 
-  pick(groupId: string): void {
+  pick(groupId: string, subGroupId?: string): void {
+    this.destinationPicked.emit({ groupId, subGroupId });
     this.groupPicked.emit(groupId);
     this.#modalService.close();
   }

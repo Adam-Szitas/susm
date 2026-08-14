@@ -102,4 +102,6 @@ export interface ProtocolTodoSectionSnapshot {
 export interface ProtocolObjectFileLayout {
   group_ids: string[];
   file_ids_by_group?: Record<string, string[]>;
+  sub_group_ids_by_group?: Record<string, string[]>;
+  file_ids_by_sub_group?: Record<string, string[]>;
 }

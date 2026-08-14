@@ -17,10 +17,13 @@ import {
   FileGroup,
   ProjectFile,
   FileGroupItem,
+  FileSubGroup,
   fileGroupCategoryLabels,
+  fileSubGroupCategoryLabels,
   parseMongoDateToMs,
   sortFileGroupItemsByStoredOrder,
   sortFileGroupsByStoredOrder,
+  sortFileSubGroupsByStoredOrder,
   mergeVisibleReorderIntoFullOrder,
 } from '@models';
 import { environment } from '../../environment';
@@ -34,7 +37,16 @@ import { TranslationService } from '../../services/translation.service';
 import { DateFormatService } from '../../services/date-format.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { MoveFileToGroupModalComponent } from './move-file-to-group-modal.component';
+import {
+  MoveFileDestination,
+  MoveFileTargetRow,
+  MoveFileToGroupModalComponent,
+} from './move-file-to-group-modal.component';
+import {
+  SubGroupUploadModalComponent,
+  SubGroupUploadPayload,
+} from '../sub-group-upload-modal/sub-group-upload-modal.component';
+import { SubGroupDetailModalComponent } from '../sub-group-detail-modal/sub-group-detail-modal.component';
 import {
   ProjectObjectOption,
   SendProjectFileModalComponent,
@@ -49,7 +61,15 @@ import { TrashIconComponent } from '../shared/trash-icon.component';
   styleUrl: './file-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule, TrashIconComponent, IconComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    TrashIconComponent,
+    IconComponent,
+    SubGroupUploadModalComponent,
+    SubGroupDetailModalComponent,
+  ],
   preserveWhitespaces: false,
 })
 export class FileListComponent implements OnDestroy {
@@ -70,6 +90,29 @@ export class FileListComponent implements OnDestroy {
   /** Which group the next file-picker selection applies to (single shared input). */
   private pendingGroupUpload = signal<{ groupId: string } | null>(null);
   public groupPhotoUploading = signal(false);
+  public subGroupUploadOpen = signal(false);
+  public subGroupUploadUploading = signal(false);
+  public subGroupUploadAddMode = signal(false);
+  private subGroupUploadTarget = signal<{ groupId: string; subGroupId?: string } | null>(null);
+  public subGroupDetailOpen = signal(false);
+  public subGroupDetailTarget = signal<{ group: FileGroup; subGroup: FileSubGroup } | null>(null);
+
+  /** Live sub-group from refreshed file groups while detail modal is open. */
+  readonly subGroupDetailLive = computed(() => {
+    const target = this.subGroupDetailTarget();
+    if (!target) return null;
+    const groupId = target.group._id?.$oid;
+    const subGroupId = target.subGroup._id?.$oid;
+    if (!groupId || !subGroupId) return target;
+
+    const group = this.filteredFileGroups().find((g) => g._id?.$oid === groupId);
+    const subGroup = group?.sub_groups?.find((sg) => sg._id?.$oid === subGroupId);
+    if (!group || !subGroup) return target;
+    return { group, subGroup };
+  });
+  public subGroupReorderSaving = signal(false);
+  public draggedSubGroupId = signal<string | null>(null);
+  public dragOverSubGroupId = signal<string | null>(null);
 
   // For object files: receives FileGroup[]
   public fileGroups = input<FileGroup[]>([]);
@@ -94,6 +137,12 @@ export class FileListComponent implements OnDestroy {
         group.files.forEach((file) => {
           const id = file._id?.$oid;
           if (id) currentFileIds.add(id);
+        });
+        (group.sub_groups ?? []).forEach((sg) => {
+          sg.files.forEach((file) => {
+            const id = file._id?.$oid;
+            if (id) currentFileIds.add(id);
+          });
         });
       });
       projectFiles.forEach((file) => {
@@ -126,6 +175,10 @@ export class FileListComponent implements OnDestroy {
     return parseMongoDateToMs(group.deleted_at) != null;
   }
 
+  private isSubGroupRemoved(subGroup: FileSubGroup): boolean {
+    return parseMongoDateToMs(subGroup.deleted_at as unknown) != null;
+  }
+
   // Filter failed loads & soft-deleted items; sort groups/files; optional category filter
   public filteredFileGroups = computed(() => {
     const activeGroups = sortFileGroupsByStoredOrder(
@@ -146,6 +199,16 @@ export class FileListComponent implements OnDestroy {
           (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
         ),
       ),
+      sub_groups: sortFileSubGroupsByStoredOrder(
+        (group.sub_groups ?? []).filter((sg) => !this.isSubGroupRemoved(sg)),
+      ).map((sg) => ({
+        ...sg,
+        files: sortFileGroupItemsByStoredOrder(
+          sg.files.filter(
+            (file) => !this.failedFileIds.has(file._id?.$oid || '') && !this.hasDeletedAt(file),
+          ),
+        ),
+      })),
     }));
   });
 
@@ -340,6 +403,80 @@ export class FileListComponent implements OnDestroy {
   }
 
   public groupCategoryLabels = fileGroupCategoryLabels;
+  public subGroupCategoryLabels = fileSubGroupCategoryLabels;
+
+  /** Four fixed slots for the sub-group tile collage (2×2). */
+  public subGroupPreviewSlots(
+    subGroup: FileSubGroup,
+  ): Array<{ index: number; file?: FileGroupItem }> {
+    const files = subGroup.files.slice(0, 4);
+    return Array.from({ length: 4 }, (_, index) => ({
+      index,
+      file: files[index],
+    }));
+  }
+
+  /** Build move destinations for a file (root or inside a sub-group). */
+  public buildMoveTargetsForFile(
+    currentGroup: FileGroup,
+    sourceSubGroupId?: string,
+  ): MoveFileTargetRow[] {
+    const currentGroupId = currentGroup._id?.$oid;
+    if (!currentGroupId) return [];
+
+    const rows: MoveFileTargetRow[] = [];
+
+    for (const g of this.filteredFileGroups()) {
+      const groupId = g._id?.$oid;
+      if (!groupId) continue;
+
+      const activeSubGroups = (g.sub_groups ?? [])
+        .filter((sg) => !this.isSubGroupRemoved(sg))
+        .map((sg) => {
+          const sid = sg._id?.$oid;
+          if (!sid) return null;
+          if (groupId === currentGroupId && sid === sourceSubGroupId) return null;
+          return {
+            subGroupId: sid,
+            label: sg.name?.trim() || sid.slice(-6),
+          };
+        })
+        .filter((s): s is { subGroupId: string; label: string } => s !== null);
+
+      const isCurrentGroup = groupId === currentGroupId;
+      const groupLabel = this.getGroupDisplayName(g);
+
+      if (isCurrentGroup) {
+        if (sourceSubGroupId) {
+          rows.push({
+            groupId,
+            label: `${groupLabel} (${this.#translationService.instant('subGroups.groupRoot')})`,
+            includeGroupRoot: true,
+          });
+        }
+        if (activeSubGroups.length > 0) {
+          rows.push({
+            groupId,
+            label: groupLabel,
+            subGroups: activeSubGroups,
+          });
+        }
+      } else {
+        rows.push({
+          groupId,
+          label: groupLabel,
+          includeGroupRoot: true,
+          subGroups: activeSubGroups.length ? activeSubGroups : undefined,
+        });
+      }
+    }
+
+    return rows;
+  }
+
+  public hasMoveTargetsForFile(currentGroup: FileGroup, sourceSubGroupId?: string): boolean {
+    return this.buildMoveTargetsForFile(currentGroup, sourceSubGroupId).length > 0;
+  }
 
   public toggleFileSelection(file: FileGroupItem | ProjectFile, event?: Event): void {
     event?.stopPropagation();
@@ -374,24 +511,21 @@ export class FileListComponent implements OnDestroy {
     return this.filteredFileGroups().filter((g) => g._id?.$oid && g._id.$oid !== id);
   }
 
-  /** Open modal to pick another group; then move this file. */
-  public openMoveFileModal(event: Event, file: FileGroupItem, currentGroup: FileGroup): void {
+  /** Open modal to pick destination; then move this file. */
+  public openMoveFileModal(
+    event: Event,
+    file: FileGroupItem,
+    currentGroup: FileGroup,
+    sourceSubGroupId?: string,
+  ): void {
     event.stopPropagation();
     event.preventDefault();
     if (this.moveFileInProgress()) return;
 
-    const targets = this.moveTargetsExcludingGroup(currentGroup);
-    if (targets.length === 0) return;
+    const targetRows = this.buildMoveTargetsForFile(currentGroup, sourceSubGroupId);
+    if (targetRows.length === 0) return;
 
     this.activeFileId.set(null);
-
-    const targetRows = targets
-      .map((g) => {
-        const oid = g._id?.$oid;
-        if (!oid) return null;
-        return { groupId: oid, label: this.getGroupDisplayName(g) };
-      })
-      .filter((r): r is { groupId: string; label: string } => r !== null);
 
     const { childRef } = this.#modalService.open({
       title: 'fileList.movePickDestination',
@@ -402,20 +536,20 @@ export class FileListComponent implements OnDestroy {
 
     if (childRef) {
       const inst = childRef.instance as MoveFileToGroupModalComponent;
-      const sub = inst.groupPicked.subscribe((targetGroupId: string) => {
+      const sub = inst.destinationPicked.subscribe((dest: MoveFileDestination) => {
         sub.unsubscribe();
-        this.#moveFileToGroup(file, targetGroupId);
+        this.#moveFileToGroup(file, dest.groupId, dest.subGroupId);
       });
     }
   }
 
-  #moveFileToGroup(file: FileGroupItem, targetGroupId: string): void {
+  #moveFileToGroup(file: FileGroupItem, targetGroupId: string, targetSubGroupId?: string): void {
     const fileId = file._id?.$oid;
     if (!fileId || this.moveFileInProgress()) return;
 
     this.moveFileInProgress.set(true);
     this.#fileService
-      .moveFileToGroup(fileId, targetGroupId)
+      .moveFileToGroup(fileId, targetGroupId, targetSubGroupId ?? null)
       .pipe(finalize(() => this.moveFileInProgress.set(false)))
       .subscribe({
         next: () => {
@@ -637,6 +771,272 @@ export class FileListComponent implements OnDestroy {
             error.message ||
               this.#translationService.instant('errors.uploadFailed') ||
               'Upload failed',
+          );
+        },
+      });
+  }
+
+  public openSubGroupUploadModal(group: FileGroup): void {
+    const groupId = group._id?.$oid;
+    if (!groupId || !this.objectId() || this.subGroupUploadUploading()) {
+      return;
+    }
+    this.subGroupUploadAddMode.set(false);
+    this.subGroupUploadTarget.set({ groupId });
+    this.subGroupUploadOpen.set(true);
+  }
+
+  public openSubGroupAddPhotosModal(group: FileGroup, subGroup: FileSubGroup): void {
+    const groupId = group._id?.$oid;
+    const subGroupId = subGroup._id?.$oid;
+    if (!groupId || !subGroupId || !this.objectId() || this.subGroupUploadUploading()) {
+      return;
+    }
+    this.subGroupUploadAddMode.set(true);
+    this.subGroupUploadTarget.set({ groupId, subGroupId });
+    this.subGroupUploadOpen.set(true);
+  }
+
+  public onSubGroupUploadCancel(): void {
+    this.subGroupUploadOpen.set(false);
+    this.subGroupUploadTarget.set(null);
+    this.subGroupUploadAddMode.set(false);
+  }
+
+  public onSubGroupUpload(payload: SubGroupUploadPayload): void {
+    const target = this.subGroupUploadTarget();
+    if (!target || this.subGroupUploadUploading()) {
+      return;
+    }
+
+    if (this.subGroupUploadAddMode() && target.subGroupId) {
+      this.subGroupUploadUploading.set(true);
+      this.#fileService
+        .addFilesToSubGroup(target.subGroupId, payload.files)
+        .pipe(finalize(() => this.subGroupUploadUploading.set(false)))
+        .subscribe({
+          next: () => {
+            this.#notificationService.showSuccess(
+              this.#translationService.instant('subGroups.addPhotosSuccess'),
+            );
+            this.onSubGroupUploadCancel();
+            this.metadataUpdated.emit();
+          },
+          error: (error: Error) => {
+            this.#notificationService.showError(
+              error.message || this.#translationService.instant('subGroups.uploadFailed'),
+            );
+          },
+        });
+      return;
+    }
+
+    if (!payload.name.trim()) {
+      this.#notificationService.showError(
+        this.#translationService.instant('subGroups.nameRequired'),
+      );
+      return;
+    }
+
+    this.subGroupUploadUploading.set(true);
+    this.#fileService
+      .createSubGroupWithUpload(target.groupId, payload.files, {
+        name: payload.name,
+        categories: payload.categories,
+        note: payload.note,
+      })
+      .pipe(finalize(() => this.subGroupUploadUploading.set(false)))
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('subGroups.createSuccess'),
+          );
+          this.onSubGroupUploadCancel();
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('subGroups.uploadFailed'),
+          );
+        },
+      });
+  }
+
+  public openSubGroupDetail(group: FileGroup, subGroup: FileSubGroup): void {
+    if (this.groupReorderMode() || this.reorderMode()) {
+      return;
+    }
+    this.subGroupDetailTarget.set({ group, subGroup });
+    this.subGroupDetailOpen.set(true);
+  }
+
+  /** Opens detail when the user clicks anywhere on the sub-group tile (not after drag). */
+  public onSubGroupItemClick(
+    _event: MouseEvent,
+    group: FileGroup,
+    subGroup: FileSubGroup,
+  ): void {
+    if (this.subGroupDidDrag) {
+      this.subGroupDidDrag = false;
+      return;
+    }
+    this.openSubGroupDetail(group, subGroup);
+  }
+
+  public onSubGroupItemKeyActivate(
+    event: Event,
+    group: FileGroup,
+    subGroup: FileSubGroup,
+  ): void {
+    event.preventDefault();
+    this.openSubGroupDetail(group, subGroup);
+  }
+
+  private subGroupDidDrag = false;
+
+  public onSubGroupDetailClosed(): void {
+    this.subGroupDetailOpen.set(false);
+    this.subGroupDetailTarget.set(null);
+  }
+
+  public onSubGroupDetailAddPhotos(): void {
+    const target = this.subGroupDetailTarget();
+    if (!target) return;
+    this.openSubGroupAddPhotosModal(target.group, target.subGroup);
+  }
+
+  public subGroupUploadInitialName(): string {
+    const target = this.subGroupUploadTarget();
+    if (!target?.subGroupId) return '';
+    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
+    return sg?.name ?? '';
+  }
+
+  public subGroupUploadInitialCategories(): string[] {
+    const target = this.subGroupUploadTarget();
+    if (!target?.subGroupId) return [];
+    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
+    return sg ? fileSubGroupCategoryLabels(sg) : [];
+  }
+
+  public subGroupUploadInitialNote(): string {
+    const target = this.subGroupUploadTarget();
+    if (!target?.subGroupId) return '';
+    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
+    return sg?.note ?? '';
+  }
+
+  #subGroupOrderIds(group: FileGroup): string[] {
+    const raw = this.fileGroups().find((g) => g._id.$oid === group._id.$oid);
+    if (!raw) return [];
+    return sortFileSubGroupsByStoredOrder((raw.sub_groups ?? []).filter((sg) => !this.isSubGroupRemoved(sg)))
+      .map((sg) => sg._id?.$oid)
+      .filter((id): id is string => !!id);
+  }
+
+  public onSubGroupDragStart(event: DragEvent, subGroup: FileSubGroup): void {
+    this.subGroupDidDrag = false;
+    if (this.subGroupReorderSaving()) {
+      event.preventDefault();
+      return;
+    }
+    const id = subGroup._id?.$oid;
+    if (!id) return;
+    this.draggedSubGroupId.set(id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', id);
+    }
+  }
+
+  public onSubGroupDragOver(event: DragEvent, subGroup: FileSubGroup): void {
+    event.preventDefault();
+    if (this.draggedSubGroupId()) {
+      this.subGroupDidDrag = true;
+    }
+    const id = subGroup._id?.$oid;
+    if (id && id !== this.draggedSubGroupId()) {
+      this.dragOverSubGroupId.set(id);
+    }
+  }
+
+  public onSubGroupDragLeave(_event: DragEvent, subGroup: FileSubGroup): void {
+    const id = subGroup._id?.$oid;
+    if (id && this.dragOverSubGroupId() === id) {
+      this.dragOverSubGroupId.set(null);
+    }
+  }
+
+  public onSubGroupDrop(event: DragEvent, targetSubGroup: FileSubGroup, group: FileGroup): void {
+    event.preventDefault();
+    if (this.subGroupReorderSaving()) return;
+
+    const draggedId = this.draggedSubGroupId();
+    const targetId = targetSubGroup._id?.$oid;
+    const groupId = group._id?.$oid;
+    if (!draggedId || !targetId || !groupId || draggedId === targetId) {
+      this.draggedSubGroupId.set(null);
+      this.dragOverSubGroupId.set(null);
+      return;
+    }
+
+    const order = this.#subGroupOrderIds(group);
+    const fromIndex = order.indexOf(draggedId);
+    const toIndex = order.indexOf(targetId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const after = [...order];
+    after.splice(fromIndex, 1);
+    after.splice(toIndex, 0, draggedId);
+
+    this.draggedSubGroupId.set(null);
+    this.dragOverSubGroupId.set(null);
+    this.#saveSubGroupOrder(groupId, after);
+  }
+
+  public onSubGroupDragEnd(): void {
+    this.draggedSubGroupId.set(null);
+    this.dragOverSubGroupId.set(null);
+  }
+
+  public moveSubGroupUp(subGroup: FileSubGroup, group: FileGroup): void {
+    if (this.subGroupReorderSaving()) return;
+    const groupId = group._id?.$oid;
+    if (!groupId) return;
+    const order = [...this.#subGroupOrderIds(group)];
+    const id = subGroup._id?.$oid;
+    const index = id ? order.indexOf(id) : -1;
+    if (index <= 0) return;
+    [order[index - 1], order[index]] = [order[index], order[index - 1]];
+    this.#saveSubGroupOrder(groupId, order);
+  }
+
+  public moveSubGroupDown(subGroup: FileSubGroup, group: FileGroup): void {
+    if (this.subGroupReorderSaving()) return;
+    const groupId = group._id?.$oid;
+    if (!groupId) return;
+    const order = [...this.#subGroupOrderIds(group)];
+    const id = subGroup._id?.$oid;
+    const index = id ? order.indexOf(id) : -1;
+    if (index === -1 || index >= order.length - 1) return;
+    [order[index], order[index + 1]] = [order[index + 1], order[index]];
+    this.#saveSubGroupOrder(groupId, order);
+  }
+
+  #saveSubGroupOrder(groupId: string, subGroupIds: string[]): void {
+    if (this.subGroupReorderSaving()) return;
+    this.subGroupReorderSaving.set(true);
+    this.#fileService
+      .reorderSubGroups(groupId, subGroupIds)
+      .pipe(finalize(() => this.subGroupReorderSaving.set(false)))
+      .subscribe({
+        next: () => this.metadataUpdated.emit(),
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('subGroups.reorderFailed'),
           );
         },
       });

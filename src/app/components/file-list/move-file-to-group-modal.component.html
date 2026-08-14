@@ -1,11 +1,41 @@
 <div class="move-file-modal">
   <ul class="move-file-modal-list">
-    @for (row of targetRows(); track row.groupId) {
-      <li>
-        <button type="button" class="move-file-modal-option" (click)="pick(row.groupId)">
-          {{ row.label }}
-        </button>
-      </li>
+    @for (row of targetRows(); track row.groupId + (row.includeGroupRoot ? '-root' : '')) {
+      @if (row.includeGroupRoot && (!row.subGroups || row.subGroups.length === 0)) {
+        <li>
+          <button type="button" class="move-file-modal-option" (click)="pick(row.groupId)">
+            {{ row.label }}
+          </button>
+        </li>
+      } @else {
+        @if (row.includeGroupRoot) {
+          <li>
+            <button type="button" class="move-file-modal-option move-file-modal-option--root" (click)="pick(row.groupId)">
+              {{ row.label }}
+            </button>
+          </li>
+        }
+        @if (row.subGroups?.length) {
+          <li class="move-file-modal-group">
+            @if (!row.includeGroupRoot) {
+              <span class="move-file-modal-group-label">{{ row.label }}</span>
+            }
+            <ul class="move-file-modal-sub-list">
+              @for (sg of row.subGroups; track sg.subGroupId) {
+                <li>
+                  <button
+                    type="button"
+                    class="move-file-modal-option move-file-modal-option--sub"
+                    (click)="pick(row.groupId, sg.subGroupId)"
+                  >
+                    {{ sg.label }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </li>
+        }
+      }
     }
   </ul>
   <div class="move-file-modal-actions">
