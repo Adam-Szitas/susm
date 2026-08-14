@@ -811,18 +811,6 @@
     }
   </dialog>
 
-  <app-sub-group-upload-modal
-    [isOpen]="subGroupUploadOpen()"
-    [categories]="projectCategories()"
-    [uploading]="subGroupUploadUploading()"
-    [addMode]="subGroupUploadAddMode()"
-    [initialName]="subGroupUploadInitialName()"
-    [initialCategories]="subGroupUploadInitialCategories()"
-    [initialNote]="subGroupUploadInitialNote()"
-    (upload)="onSubGroupUpload($event)"
-    (cancel)="onSubGroupUploadCancel()"
-  />
-
   @if (subGroupDetailLive(); as detailTarget) {
     <app-sub-group-detail-modal
       [isOpen]="subGroupDetailOpen()"
@@ -835,4 +823,16 @@
       (requestAddPhotos)="onSubGroupDetailAddPhotos()"
     />
   }
+
+  <app-sub-group-upload-modal
+    [isOpen]="subGroupUploadOpen()"
+    [categories]="projectCategories()"
+    [uploading]="subGroupUploadUploading()"
+    [addMode]="subGroupUploadAddMode()"
+    [initialName]="subGroupUploadInitialName()"
+    [initialCategories]="subGroupUploadInitialCategories()"
+    [initialNote]="subGroupUploadInitialNote()"
+    (upload)="onSubGroupUpload($event)"
+    (cancel)="onSubGroupUploadCancel()"
+  />
 </div>

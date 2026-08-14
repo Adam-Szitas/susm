@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  output,
+  signal,
+} from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { ImageCompressionService } from '@services/image-compression.service';
@@ -31,21 +42,29 @@ export interface SubGroupUploadPayload {
   styleUrl: './sub-group-upload-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubGroupUploadModalComponent {
+export class SubGroupUploadModalComponent implements OnDestroy {
   protected readonly icons = icons;
   readonly iconOnlyActions = compactFormActions();
 
+  #document = inject(DOCUMENT);
+  #hostRef = inject(ElementRef<HTMLElement>);
   #imageCompressionService = inject(ImageCompressionService);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #bodyPortalPlaceholder: Comment | null = null;
 
   constructor() {
     effect((onCleanup) => {
       if (!this.isOpen()) {
+        this.#restoreFromBodyPortal();
         return;
       }
+      this.#attachToBodyPortal();
       lockDocumentScroll();
-      onCleanup(() => unlockDocumentScroll());
+      onCleanup(() => {
+        this.#restoreFromBodyPortal();
+        unlockDocumentScroll();
+      });
     });
 
     effect(() => {
@@ -58,6 +77,36 @@ export class SubGroupUploadModalComponent {
         this.note.set(this.initialNote().trim());
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.#restoreFromBodyPortal();
+  }
+
+  /** Render above nested modals (e.g. sub-group detail) by escaping scroll/stacking contexts. */
+  #attachToBodyPortal(): void {
+    const host = this.#hostRef.nativeElement;
+    if (host.parentElement === this.#document.body) {
+      return;
+    }
+    const parent = host.parentNode;
+    if (!parent) {
+      return;
+    }
+    this.#bodyPortalPlaceholder = this.#document.createComment('sub-group-upload-modal');
+    parent.insertBefore(this.#bodyPortalPlaceholder, host);
+    this.#document.body.appendChild(host);
+  }
+
+  #restoreFromBodyPortal(): void {
+    const host = this.#hostRef.nativeElement;
+    const placeholder = this.#bodyPortalPlaceholder;
+    if (!placeholder?.parentNode || host.parentElement !== this.#document.body) {
+      return;
+    }
+    placeholder.parentNode.insertBefore(host, placeholder);
+    placeholder.remove();
+    this.#bodyPortalPlaceholder = null;
   }
 
   isOpen = input<boolean>(false);

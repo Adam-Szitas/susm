@@ -900,7 +900,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public onSubGroupDetailAddPhotos(): void {
-    const target = this.subGroupDetailTarget();
+    const target = this.subGroupDetailLive() ?? this.subGroupDetailTarget();
     if (!target) return;
     this.openSubGroupAddPhotosModal(target.group, target.subGroup);
   }
