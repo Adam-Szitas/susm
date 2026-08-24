@@ -315,10 +315,27 @@ export class ObjectTabComponent implements OnInit {
   }
 
   clearUrlCategoryFilter(): void {
+    this.setFileGroupCategoryFilters([]);
+  }
+
+  isFileGroupCategoryFilterActive(category: string): boolean {
+    return this.urlFileGroupCategories().includes(category);
+  }
+
+  toggleFileGroupCategoryFilter(category: string): void {
+    const current = this.urlFileGroupCategories();
+    const next = current.includes(category)
+      ? current.filter((c) => c !== category)
+      : [...current, category];
+    this.setFileGroupCategoryFilters(next);
+  }
+
+  private setFileGroupCategoryFilters(categories: string[]): void {
     const objectId = this.#route.snapshot.paramMap.get('id');
     if (!objectId) return;
+    const unique = [...new Set(categories.map((c) => c.trim()).filter(Boolean))];
     void this.#router.navigate(['/objects/tab', objectId], {
-      queryParams: {},
+      queryParams: unique.length ? { categories: unique } : {},
       replaceUrl: true,
     });
   }

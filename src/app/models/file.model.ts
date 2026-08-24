@@ -105,8 +105,8 @@ export function fileGroupMatchesCategoryFilter(g: FileGroup, filterLabels: strin
 
 /**
  * Apply category filter to a file group (mirrors file-group rules for sub-groups).
- * When the group matches, root files and all sub-groups stay visible.
- * When only sub-groups match, only those sub-groups are returned (root files hidden).
+ * Root files stay visible only when the group itself matches; sub-groups are always
+ * narrowed to those whose categories match (even when the parent group also matches).
  */
 export function applyCategoryFilterToFileGroup(
   g: FileGroup,
@@ -121,11 +121,15 @@ export function applyCategoryFilterToFileGroup(
     fileSubGroupCategoryLabels(sg).some((l) => selected.has(l)),
   );
   if (!groupMatches && matchingSubs.length === 0) return null;
-  return {
+  const filtered: FileGroup = {
     ...g,
     files: groupMatches ? g.files : [],
-    sub_groups: groupMatches ? activeSubs : matchingSubs,
+    sub_groups: matchingSubs,
   };
+  if (activeFileGroupItems(filtered.files).length === 0 && matchingSubs.length === 0) {
+    return null;
+  }
+  return filtered;
 }
 
 /** True when any active sub-group has a saved `sort_order`. */

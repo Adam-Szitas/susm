@@ -53,6 +53,65 @@
   line-height: 1.4;
 }
 
+.object-file-group-category-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.object-file-group-category-filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.object-file-group-category-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.object-file-group-category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    border-color: #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+  }
+
+  &:focus-visible {
+    @include focus-state;
+    z-index: 1;
+  }
+
+  &--selected {
+    @include primary-active-toggle;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(157, 0, 0, 0.1);
+
+    &:hover:not(:disabled) {
+      @include primary-active-toggle;
+      filter: brightness(0.97);
+    }
+  }
+}
+
 .filter-empty {
   margin: 0 0 0.75rem;
   color: #6b7280;

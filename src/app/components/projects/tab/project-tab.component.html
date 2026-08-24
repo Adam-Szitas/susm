@@ -369,6 +369,7 @@
         >
           <ng-template let-object let-index="index">
             <app-object-card
+              layout="list"
               [object]="object"
               [compact]="toolbarIconOnly()"
               [routerLink]="['/objects/tab', object._id?.$oid]"

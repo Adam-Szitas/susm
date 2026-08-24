@@ -186,9 +186,33 @@
     }
 
     @if (fileGroups().length > 0) {
+      @if (projectCategories().length > 0) {
+        <div class="object-file-group-category-filter">
+          <span class="object-file-group-category-filter-label" id="objectFileGroupCategoryFilterLabel">
+            {{ 'filter.category' | translate }}
+          </span>
+          <div
+            class="object-file-group-category-filter-chips"
+            role="group"
+            [attr.aria-labelledby]="'objectFileGroupCategoryFilterLabel'"
+          >
+            @for (category of projectCategories(); track category) {
+              <button
+                type="button"
+                class="object-file-group-category-chip"
+                [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)"
+                [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)"
+                (click)="toggleFileGroupCategoryFilter(category)"
+              >
+                {{ category }}
+              </button>
+            }
+          </div>
+        </div>
+      }
       @if (hasUrlFileGroupCategoryFilter()) {
         <p class="url-file-group-filter-hint">
-          {{ 'objects.fileGroupsFilteredByLinkCategories' | translate }}
+          {{ 'objects.fileGroupsFilteredByCategories' | translate }}
         </p>
       }
       @if (displayedFileGroups().length > 0) {

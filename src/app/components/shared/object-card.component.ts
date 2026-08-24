@@ -12,10 +12,15 @@ import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
   templateUrl: './object-card.component.html',
   styleUrl: './object-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.object-card-host--list]': 'layout() === "list"',
+  },
 })
 export class ObjectCardComponent {
   readonly object = input.required<Object>();
   readonly projectName = input<string | null>(null);
+  /** `list` = full-width project object rows; `catalog` = centered grid cards. */
+  readonly layout = input<'catalog' | 'list'>('catalog');
   readonly compact = input(false);
   readonly showStatus = input(false);
   readonly routerLink = input<string | string[] | null>(null);
