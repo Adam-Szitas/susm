@@ -1,5 +1,37 @@
 @use '../../../styles/mixins' as *;
 
+@mixin object-card-todo-surfaces {
+  &--todo-complete {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &--todo-attention {
+    background: #fff8e1;
+    border-color: #ffe082;
+  }
+
+  &--todo-sub-red {
+    background: #ffebee;
+    border-color: #ef9a9a;
+  }
+
+  &--todo-sub-blue {
+    background: #e3f2fd;
+    border-color: #90caf9;
+  }
+
+  &--todo-sub-green {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+  }
+
+  &--todo-sub-orange {
+    background: #fff3e0;
+    border-color: #ffcc80;
+  }
+}
+
 :host {
   display: block;
   width: 100%;
@@ -37,6 +69,8 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       border-color: #d0d0d0;
     }
+
+    @include object-card-todo-surfaces;
   }
 }
 
@@ -61,35 +95,7 @@
     cursor: pointer;
   }
 
-  &--todo-complete {
-    background: #e8f5e9;
-    border-color: #a5d6a7;
-  }
-
-  &--todo-attention {
-    background: #fff8e1;
-    border-color: #ffe082;
-  }
-
-  &--todo-sub-red {
-    background: #ffebee;
-    border-color: #ef9a9a;
-  }
-
-  &--todo-sub-blue {
-    background: #e3f2fd;
-    border-color: #90caf9;
-  }
-
-  &--todo-sub-green {
-    background: #e8f5e9;
-    border-color: #a5d6a7;
-  }
-
-  &--todo-sub-orange {
-    background: #fff3e0;
-    border-color: #ffcc80;
-  }
+  @include object-card-todo-surfaces;
 
   &--deferred {
     content-visibility: auto;
