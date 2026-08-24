@@ -336,6 +336,23 @@ export class ProjectStore {
     );
   }
 
+  /** Sync in-memory project categories after they were extended from object file-group edits. */
+  applyProjectCategories(projectId: string, categories: string[]): void {
+    const next = [...categories];
+    const project = this._project();
+    if (project?._id?.$oid === projectId) {
+      this._project.set({ ...project, categories: next });
+    }
+    const projects = this._projects();
+    const index = projects.findIndex((p) => p._id?.$oid === projectId);
+    if (index !== -1) {
+      const updated = { ...projects[index], categories: next };
+      const copy = [...projects];
+      copy[index] = updated;
+      this._projects.set(copy);
+    }
+  }
+
   updateProjectCategory(projectId: string, category: string | null): Observable<Project> {
     return this.#httpService.put<Project>(`project/${projectId}/category`, { category }).pipe(
       tap((updatedProject) => {

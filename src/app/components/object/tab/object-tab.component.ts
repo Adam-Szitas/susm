@@ -223,7 +223,11 @@ export class ObjectTabComponent implements OnInit {
           if (projectId && projectName) {
             this.objectProjectContext.set({ id: projectId, name: projectName });
           }
-          this.projectCategories.set(result.categories || []);
+          const categories = result.categories || [];
+          this.projectCategories.set(categories);
+          if (projectId) {
+            this.#projectStore.applyProjectCategories(projectId, categories);
+          }
           this.projectTodoItems.set(result.todo_items || []);
         },
         error: () => {
@@ -468,6 +472,7 @@ export class ObjectTabComponent implements OnInit {
           next: (object) => {
             this.object.set(object);
             this.loadFiles(objectId);
+            this.loadProjectCategories(objectId);
           },
         });
       },
@@ -484,6 +489,7 @@ export class ObjectTabComponent implements OnInit {
     const objectId = this.object()?._id?.$oid;
     if (objectId) {
       this.loadFiles(objectId);
+      this.loadProjectCategories(objectId);
     }
   }
 
