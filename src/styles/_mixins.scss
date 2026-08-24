@@ -164,9 +164,12 @@
 }
 
 /// Scroll inside a flex column parent that fills the viewport below fixed chrome.
-@mixin scroll-region-fill($min-height: 8rem) {
+/// `min-height: 0` is required so the flex item can shrink; otherwise content height wins and
+/// `overflow-y: auto` never activates (wheel events die on `overscroll-behavior: contain`).
+@mixin scroll-region-fill($min-block-size: 8rem) {
   flex: 1 1 auto;
-  min-height: $min-height;
+  min-height: 0;
+  min-block-size: $min-block-size;
   min-width: 0;
   max-height: none;
   @include overflow-scroll-y;
