@@ -2,19 +2,12 @@
 
 :host {
   display: block;
-  min-height: calc(100dvh - var(--app-navbar-block, 3.5rem));
 }
 
 .wrapper {
-  padding: 0 var(--space);
+  padding: 0 var(--space)
+    max(var(--space), var(--app-floating-action-clearance, 5rem));
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: inherit;
-}
-
-.object-tab-chrome {
-  flex-shrink: 0;
 }
 
 .content-wrapper {
@@ -22,36 +15,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  flex: 1 1 auto;
-  min-height: 0;
   max-height: none;
   align-items: stretch;
 
-  // Override global `.content-wrapper > * { flex: 1 1 0 }` — only the file list fills height.
+  // Override global `.content-wrapper > * { flex: 1 1 0; width: 0 }` — natural page scroll.
   > * {
     flex: 0 0 auto;
     width: 100%;
     min-width: 0;
   }
 
-  &--file-list-fill {
-    flex: 1 1 auto;
-    min-height: 0;
-
-    > app-file-list {
-      flex: 1 1 auto;
-      min-height: 0;
-    }
-  }
-
-  app-file-list {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-
-    ::ng-deep .file-wrapper {
-      padding: var(--space-small) 0;
-    }
+  app-file-list ::ng-deep .file-wrapper {
+    padding: var(--space-small) 0;
   }
 }
 

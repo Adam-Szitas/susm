@@ -172,7 +172,7 @@
     />
   }
 
-  <div class="content-wrapper" [class.content-wrapper--file-list-fill]="displayedFileGroups().length > 0">
+  <div class="content-wrapper">
     @if (shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>
     }

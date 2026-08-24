@@ -10,15 +10,6 @@
   min-width: 0;
 }
 
-// Object tab: parent `.content-wrapper--file-list-fill` — fill remaining viewport, scroll inside
-:host-context(.content-wrapper--file-list-fill) {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .file-wrapper {
   position: relative;
   width: 100%;
@@ -26,18 +17,9 @@
   padding: var(--space, 1rem);
   @include flex-column(2rem);
 
-  :host-context(.content-wrapper--file-list-fill) & {
-    padding-bottom: max(var(--space, 1rem), var(--app-floating-action-clearance, 5rem));
-    @include scroll-region-fill(10rem);
-  }
-
   @include mobile {
     gap: 1.5rem;
     padding: 0.75rem;
-
-    :host-context(.content-wrapper--file-list-fill) & {
-      padding-bottom: max(0.75rem, var(--app-floating-action-clearance, 4.5rem));
-    }
   }
 }
 
