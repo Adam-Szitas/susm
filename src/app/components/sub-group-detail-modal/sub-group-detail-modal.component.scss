@@ -136,6 +136,32 @@
   }
 }
 
+.sub-group-modal-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+
+  .button {
+    margin: 0;
+    flex: 1 1 calc(50% - 0.25rem);
+    min-height: var(--touch-target-min, 44px);
+  }
+
+  @include tablet-up {
+    justify-content: flex-end;
+
+    .button {
+      flex: 0 0 auto;
+      min-width: 6.5rem;
+    }
+  }
+}
+
 .sub-group-delete-btn {
   margin-left: auto;
   border-color: #b22222;
@@ -246,6 +272,26 @@
     outline-offset: 1px;
     border-color: var(--primary-default, #9d0000);
   }
+}
+
+.sub-group-file-note-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  min-height: var(--touch-target-min, 44px);
+  margin-top: 0.35rem;
+}
+
+.sub-group-file-note-save {
+  min-height: var(--touch-target-min, 44px);
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.875rem;
+}
+
+.sub-group-file-note-status {
+  font-size: 0.85rem;
+  color: #666;
 }
 
 .sub-group-empty {

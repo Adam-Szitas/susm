@@ -132,9 +132,29 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     effect(() => {
       if (!this.isOpen()) {
         this.resetState();
-      } else {
-        this.fileNoteDrafts.set({});
+        return;
       }
+      this.fileNoteDrafts.set({});
+    });
+
+    effect(() => {
+      const sg = this.subGroup();
+      if (!sg) return;
+      this.fileNoteDrafts.update((drafts) => {
+        if (!Object.keys(drafts).length) return drafts;
+        const next = { ...drafts };
+        let changed = false;
+        for (const file of sg.files) {
+          const id = file._id?.$oid;
+          if (!id || !Object.prototype.hasOwnProperty.call(next, id)) continue;
+          const persisted = file.note?.trim() ?? '';
+          if (next[id].trim() === persisted) {
+            delete next[id];
+            changed = true;
+          }
+        }
+        return changed ? next : drafts;
+      });
     });
   }
 
@@ -360,6 +380,12 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: value }));
   }
 
+  isFileNoteDirty(file: FileGroupItem): boolean {
+    const id = file._id?.$oid;
+    if (!id) return false;
+    return this.fileNoteDraft(file).trim() !== (file.note?.trim() ?? '');
+  }
+
   saveFileNote(file: FileGroupItem): void {
     const id = file._id?.$oid;
     if (!id || this.savingFileNoteId() === id) return;
@@ -373,11 +399,10 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       .pipe(finalize(() => this.savingFileNoteId.set(null)))
       .subscribe({
         next: () => {
-          this.fileNoteDrafts.update((drafts) => {
-            const next = { ...drafts };
-            delete next[id];
-            return next;
-          });
+          this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: draft }));
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('fileList.updateMetadataSuccess'),
+          );
           this.metadataUpdated.emit();
         },
         error: (error: Error) => {
@@ -708,5 +733,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.reorderMode.set(false);
     this.deleteConfirmOpen.set(false);
     this.imageLightboxUrl.set(null);
+    this.fileNoteDrafts.set({});
+    this.savingFileNoteId.set(null);
   }
 }

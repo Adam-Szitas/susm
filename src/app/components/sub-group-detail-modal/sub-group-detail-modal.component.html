@@ -75,36 +75,8 @@
                 [ngModel]="editNote()"
                 (ngModelChange)="editNote.set($event)"
                 [placeholder]="'fileUpload.notePlaceholder' | translate"
-              ></textarea>
-            </div>
-            <div class="meta-edit-actions">
-              <button
-                type="button"
-                class="button button-primary toolbar-btn"
-                [class.icon-only]="iconOnlyActions()"
-                (click)="saveMetadata()"
                 [disabled]="savingMetadata()"
-                [attr.aria-label]="'common.save' | translate"
-                [attr.title]="'common.save' | translate"
-              >
-                <app-icon [icon]="icons.check" [svgClass]="'toolbar-btn-icon'" [strokeWidth]="2.5" />
-                @if (!iconOnlyActions()) {
-                  <span class="toolbar-btn-label">{{ 'common.save' | translate }}</span>
-                }
-              </button>
-              <button
-                type="button"
-                class="button button-secondary toolbar-btn"
-                [class.icon-only]="iconOnlyActions()"
-                (click)="cancelEditMetadata()"
-                [attr.aria-label]="'common.cancel' | translate"
-                [attr.title]="'common.cancel' | translate"
-              >
-                <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
-                @if (!iconOnlyActions()) {
-                  <span class="toolbar-btn-label">{{ 'common.cancel' | translate }}</span>
-                }
-              </button>
+              ></textarea>
             </div>
           </div>
         } @else {
@@ -278,12 +250,25 @@
                   class="sub-group-file-note-input"
                   rows="2"
                   [disabled]="isSavingFileNote(file) || reorderMode()"
-                  [value]="fileNoteDraft(file)"
-                  (input)="onFileNoteInput(file, $any($event.target).value)"
-                  (blur)="saveFileNote(file)"
+                  [ngModel]="fileNoteDraft(file)"
+                  (ngModelChange)="onFileNoteInput(file, $event)"
                   [placeholder]="'fileUpload.notePlaceholder' | translate"
                   [attr.aria-busy]="isSavingFileNote(file)"
+                  enterkeyhint="done"
                 ></textarea>
+                <div class="sub-group-file-note-actions">
+                  @if (isSavingFileNote(file)) {
+                    <span class="sub-group-file-note-status">{{ 'common.saving' | translate }}</span>
+                  } @else if (isFileNoteDirty(file)) {
+                    <button
+                      type="button"
+                      class="button button-primary sub-group-file-note-save"
+                      (click)="saveFileNote(file)"
+                    >
+                      {{ 'common.save' | translate }}
+                    </button>
+                  }
+                </div>
               </div>
             </li>
           }
@@ -293,6 +278,31 @@
           <p class="sub-group-empty">{{ 'subGroups.noPhotos' | translate }}</p>
         }
       </div>
+
+      @if (editingMetadata()) {
+        <div class="modal-footer sub-group-modal-footer">
+          <button
+            type="button"
+            class="button button-secondary"
+            (click)="cancelEditMetadata()"
+            [disabled]="savingMetadata()"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="button"
+            class="button button-primary"
+            (click)="saveMetadata()"
+            [disabled]="savingMetadata()"
+          >
+            @if (savingMetadata()) {
+              {{ 'common.saving' | translate }}
+            } @else {
+              {{ 'common.save' | translate }}
+            }
+          </button>
+        </div>
+      }
     </div>
   </div>
 
