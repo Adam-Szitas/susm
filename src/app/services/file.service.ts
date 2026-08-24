@@ -270,7 +270,7 @@ export class FileService {
    */
   updateFileMetadata(
     fileId: string,
-    data: { description?: string; filename?: string; created_at?: string }
+    data: { description?: string; note?: string | null; filename?: string; created_at?: string }
   ): Observable<{ message: string }> {
     const endpoint = `file/${fileId}`;
     return this.#httpService.put<{ message: string }>(endpoint, data);

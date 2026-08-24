@@ -20,7 +20,7 @@ import {
   Object,
   FileGroup,
   DEFAULT_WORK_STATUS,
-  fileGroupCategoryLabels,
+  fileGroupMatchesCategoryFilter,
   formatWorkStatus,
   formatObjectLabel,
   TodoItem,
@@ -146,10 +146,7 @@ export class ObjectTabComponent implements OnInit {
     const all = this.fileGroups().filter((g) => !g.deleted_at);
     const labels = this.urlFileGroupCategories();
     if (labels.length === 0) return all;
-    const selected = new Set(labels);
-    return all.filter((g) =>
-      fileGroupCategoryLabels(g).some((l) => selected.has(l)),
-    );
+    return all.filter((g) => fileGroupMatchesCategoryFilter(g, labels));
   });
 
   constructor() {

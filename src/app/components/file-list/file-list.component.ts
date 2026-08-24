@@ -20,6 +20,7 @@ import {
   FileSubGroup,
   fileGroupCategoryLabels,
   fileSubGroupCategoryLabels,
+  applyCategoryFilterToFileGroup,
   parseMongoDateToMs,
   sortFileGroupItemsByStoredOrder,
   sortFileGroupsByStoredOrder,
@@ -188,9 +189,9 @@ export class FileListComponent implements OnDestroy {
     const groups =
       filterLabels.length === 0
         ? activeGroups
-        : activeGroups.filter((g) =>
-            fileGroupCategoryLabels(g).some((l) => filterLabels.includes(l)),
-          );
+        : activeGroups
+            .map((g) => applyCategoryFilterToFileGroup(g, filterLabels))
+            .filter((g): g is FileGroup => g != null);
 
     return groups.map((group) => ({
       ...group,

@@ -25,6 +25,7 @@ import {
   Filter,
   FilterResult,
   fileGroupCategoryLabels,
+  fileGroupMatchesCategoryFilter,
   fileGroupIsSoftDeleted,
   formatWorkStatus,
   formatObjectDisplayLabel,
@@ -944,13 +945,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     const selectedGroupCategories = filter.selectedCategories?.filter((c) => c?.trim()) ?? [];
     if (selectedGroupCategories.length > 0) {
-      const selectedSet = new Set(selectedGroupCategories);
       filtered = filtered.filter((obj) => {
         const groups = obj.file_groups ?? [];
         return groups.some(
-          (g) =>
-            !fileGroupIsSoftDeleted(g) &&
-            fileGroupCategoryLabels(g).some((label) => selectedSet.has(label)),
+          (g) => !fileGroupIsSoftDeleted(g) && fileGroupMatchesCategoryFilter(g, selectedGroupCategories),
         );
       });
     }

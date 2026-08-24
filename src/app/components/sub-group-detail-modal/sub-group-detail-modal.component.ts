@@ -87,6 +87,8 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   dragOverFileId = signal<string | null>(null);
   deleteConfirmOpen = signal(false);
   deletingSubGroup = signal(false);
+  savingFileNoteId = signal<string | null>(null);
+  private fileNoteDrafts = signal<Record<string, string>>({});
 
   private failedFileIds = new Set<string>();
 
@@ -130,6 +132,8 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     effect(() => {
       if (!this.isOpen()) {
         this.resetState();
+      } else {
+        this.fileNoteDrafts.set({});
       }
     });
   }
@@ -338,6 +342,55 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     this.deleteFile(file);
+  }
+
+  fileNoteDraft(file: FileGroupItem): string {
+    const id = file._id?.$oid;
+    if (!id) return '';
+    const drafts = this.fileNoteDrafts();
+    if (Object.prototype.hasOwnProperty.call(drafts, id)) {
+      return drafts[id];
+    }
+    return file.note?.trim() ?? '';
+  }
+
+  onFileNoteInput(file: FileGroupItem, value: string): void {
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: value }));
+  }
+
+  saveFileNote(file: FileGroupItem): void {
+    const id = file._id?.$oid;
+    if (!id || this.savingFileNoteId() === id) return;
+    const draft = this.fileNoteDraft(file).trim();
+    const current = file.note?.trim() ?? '';
+    if (draft === current) return;
+
+    this.savingFileNoteId.set(id);
+    this.#fileService
+      .updateFileMetadata(id, { note: draft })
+      .pipe(finalize(() => this.savingFileNoteId.set(null)))
+      .subscribe({
+        next: () => {
+          this.fileNoteDrafts.update((drafts) => {
+            const next = { ...drafts };
+            delete next[id];
+            return next;
+          });
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('subGroups.updateFailed'),
+          );
+        },
+      });
+  }
+
+  isSavingFileNote(file: FileGroupItem): boolean {
+    const id = file._id?.$oid;
+    return !!id && this.savingFileNoteId() === id;
   }
 
   downloadFile(path: string, filename?: string): void {

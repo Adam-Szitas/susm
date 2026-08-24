@@ -9,7 +9,9 @@ import { DateFormatService } from '@services/date-format.service';
 import {
   GenerateProtocolRequest,
   FileGroup,
-  fileGroupCategoryLabels,
+  fileGroupMatchesCategoryFilter,
+  filesAfterCategoryFilter,
+  activeFileSubGroups,
   fileGroupIsSoftDeleted,
   parseMongoDateToMs,
   ProtocolRecord,
@@ -1156,7 +1158,6 @@ export class ProtocolGenerateModalComponent {
     const fromMs = fromIso ? Date.parse(fromIso) : null;
     const toMs = toIso ? Date.parse(toIso) : null;
     const hasDateConstraint = fromMs !== null || toMs !== null;
-    const catSet = categoryLabels.length > 0 ? new Set(categoryLabels) : null;
 
     for (const g of groups as FileGroup[]) {
       if (fileGroupIsSoftDeleted(g)) {
@@ -1164,12 +1165,12 @@ export class ProtocolGenerateModalComponent {
       }
 
       const rawFiles = g.files ?? [];
-      const activeFiles = rawFiles.filter((f) => f.deleted_at == null);
-      const hadAnyFileRecord = rawFiles.length > 0;
+      const activeSubGroups = activeFileSubGroups(g.sub_groups);
+      const hadAnyFileRecord =
+        rawFiles.length > 0 || activeSubGroups.some((sg) => (sg.files ?? []).length > 0);
 
-      // Metadata-only groups (no file records): include only when no category filter is active.
       if (!hadAnyFileRecord) {
-        if (catSet) {
+        if (categoryLabels.length > 0 && !fileGroupMatchesCategoryFilter(g, categoryLabels)) {
           continue;
         }
         if (!hasDateConstraint) {
@@ -1178,12 +1179,8 @@ export class ProtocolGenerateModalComponent {
         continue;
       }
 
-      const labels = fileGroupCategoryLabels(g);
-      if (catSet && !labels.some((l) => catSet.has(l))) {
-        continue;
-      }
-
-      if (activeFiles.length === 0) {
+      const visibleFiles = filesAfterCategoryFilter(g, categoryLabels);
+      if (visibleFiles.length === 0) {
         continue;
       }
 
@@ -1191,7 +1188,7 @@ export class ProtocolGenerateModalComponent {
         return true;
       }
 
-      for (const f of activeFiles) {
+      for (const f of visibleFiles) {
         const t = parseMongoDateToMs(f.created_at);
         if (t === null) {
           continue;

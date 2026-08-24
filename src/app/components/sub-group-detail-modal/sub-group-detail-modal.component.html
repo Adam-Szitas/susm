@@ -269,6 +269,22 @@
                   </div>
                 }
               </div>
+              <div class="sub-group-file-note" (click)="$event.stopPropagation()">
+                <label class="sub-group-file-note-label" [attr.for]="'sg-file-note-' + file._id.$oid">
+                  {{ 'fileUpload.note' | translate }}
+                </label>
+                <textarea
+                  [id]="'sg-file-note-' + file._id.$oid"
+                  class="sub-group-file-note-input"
+                  rows="2"
+                  [disabled]="isSavingFileNote(file) || reorderMode()"
+                  [value]="fileNoteDraft(file)"
+                  (input)="onFileNoteInput(file, $any($event.target).value)"
+                  (blur)="saveFileNote(file)"
+                  [placeholder]="'fileUpload.notePlaceholder' | translate"
+                  [attr.aria-busy]="isSavingFileNote(file)"
+                ></textarea>
+              </div>
             </li>
           }
         </ul>

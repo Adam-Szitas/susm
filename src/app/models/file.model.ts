@@ -67,6 +67,67 @@ export function fileSubGroupCategoryLabels(sg: FileSubGroup): string[] {
   return [...new Set((sg.categories ?? []).map((s) => s?.trim() ?? '').filter(Boolean))];
 }
 
+/** Active (non-deleted) files in a group or sub-group list. */
+export function activeFileGroupItems(files: FileGroupItem[] | undefined): FileGroupItem[] {
+  return (files ?? []).filter((f) => parseMongoDateToMs(f.deleted_at as unknown) == null);
+}
+
+/** Files visible after category filter (root + sub-group photos). */
+export function filesAfterCategoryFilter(g: FileGroup, filterLabels: string[]): FileGroupItem[] {
+  const filtered =
+    filterLabels.length > 0 ? applyCategoryFilterToFileGroup(g, filterLabels) : g;
+  if (!filtered) return [];
+  const root = activeFileGroupItems(filtered.files);
+  const sub = (filtered.sub_groups ?? []).flatMap((sg) => activeFileGroupItems(sg.files));
+  return [...root, ...sub];
+}
+
+/** True when the sub-group is soft-deleted. */
+export function fileSubGroupIsSoftDeleted(sg: Pick<FileSubGroup, 'deleted_at'>): boolean {
+  return parseMongoDateToMs(sg.deleted_at as unknown) != null;
+}
+
+/** Active (non-deleted) sub-groups. */
+export function activeFileSubGroups(subGroups: FileSubGroup[] | undefined): FileSubGroup[] {
+  return (subGroups ?? []).filter((sg) => !fileSubGroupIsSoftDeleted(sg));
+}
+
+/** Object/group list filter: group or any sub-group matches selected categories. */
+export function fileGroupMatchesCategoryFilter(g: FileGroup, filterLabels: string[]): boolean {
+  const labels = filterLabels.map((c) => c.trim()).filter(Boolean);
+  if (labels.length === 0) return true;
+  const selected = new Set(labels);
+  if (fileGroupCategoryLabels(g).some((l) => selected.has(l))) return true;
+  return activeFileSubGroups(g.sub_groups).some((sg) =>
+    fileSubGroupCategoryLabels(sg).some((l) => selected.has(l)),
+  );
+}
+
+/**
+ * Apply category filter to a file group (mirrors file-group rules for sub-groups).
+ * When the group matches, root files and all sub-groups stay visible.
+ * When only sub-groups match, only those sub-groups are returned (root files hidden).
+ */
+export function applyCategoryFilterToFileGroup(
+  g: FileGroup,
+  filterLabels: string[],
+): FileGroup | null {
+  const labels = filterLabels.map((c) => c.trim()).filter(Boolean);
+  if (labels.length === 0) return g;
+  const selected = new Set(labels);
+  const groupMatches = fileGroupCategoryLabels(g).some((l) => selected.has(l));
+  const activeSubs = activeFileSubGroups(g.sub_groups);
+  const matchingSubs = activeSubs.filter((sg) =>
+    fileSubGroupCategoryLabels(sg).some((l) => selected.has(l)),
+  );
+  if (!groupMatches && matchingSubs.length === 0) return null;
+  return {
+    ...g,
+    files: groupMatches ? g.files : [],
+    sub_groups: groupMatches ? activeSubs : matchingSubs,
+  };
+}
+
 /** True when any active sub-group has a saved `sort_order`. */
 export function hasCustomSubGroupOrder(subGroups: FileSubGroup[]): boolean {
   return subGroups.some(
@@ -113,6 +174,8 @@ export interface FileGroupItem {
   path: string;
   filename: string;
   description?: string;
+  /** Optional per-picture note (shown in sub-groups and protocol captions). */
+  note?: string;
   sort_order?: number;
   created_at?: MongoDateJson;
   deleted_at?: MongoDateJson;
