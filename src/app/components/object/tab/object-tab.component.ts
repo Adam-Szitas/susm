@@ -295,18 +295,22 @@ export class ObjectTabComponent implements OnInit {
     this.#fileService.getFilesForObject(objectId).subscribe({
       next: (fileGroups) => {
         const refactoredFileGroups = fileGroups.map((fileGroup) => {
+          const normalizeFile = (file: (typeof fileGroup.files)[number]) => {
+            const rawName =
+              file.filename || (file.path ? file.path.split(/[\\/]/).pop() || '' : '');
+            const normalizedFilename = rawName.split('\\').pop() || rawName;
+            return {
+              ...file,
+              filename: normalizedFilename,
+            };
+          };
           return {
             ...fileGroup,
-            files: (fileGroup.files ?? []).map((file) => {
-              // Ensure we always have a safe, normalized filename
-              const rawName =
-                file.filename || (file.path ? file.path.split(/[\\/]/).pop() || '' : '');
-              const normalizedFilename = rawName.split('\\').pop() || rawName;
-              return {
-                ...file,
-                filename: normalizedFilename,
-              };
-            }),
+            files: (fileGroup.files ?? []).map(normalizeFile),
+            sub_groups: (fileGroup.sub_groups ?? []).map((sg) => ({
+              ...sg,
+              files: (sg.files ?? []).map(normalizeFile),
+            })),
           };
         });
         this.fileGroups.set(refactoredFileGroups);

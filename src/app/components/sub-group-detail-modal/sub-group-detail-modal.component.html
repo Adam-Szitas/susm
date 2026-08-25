@@ -252,6 +252,7 @@
                   [disabled]="isSavingFileNote(file) || reorderMode()"
                   [ngModel]="fileNoteDraft(file)"
                   (ngModelChange)="onFileNoteInput(file, $event)"
+                  (blur)="onFileNoteBlur(file)"
                   [placeholder]="'fileUpload.notePlaceholder' | translate"
                   [attr.aria-busy]="isSavingFileNote(file)"
                   enterkeyhint="done"
@@ -262,10 +263,16 @@
                   } @else if (isFileNoteDirty(file)) {
                     <button
                       type="button"
-                      class="button button-primary sub-group-file-note-save"
+                      class="button button-primary sub-group-file-note-save toolbar-btn"
+                      [class.icon-only]="iconOnlyActions()"
                       (click)="saveFileNote(file)"
+                      [attr.aria-label]="'common.save' | translate"
+                      [attr.title]="'common.save' | translate"
                     >
-                      {{ 'common.save' | translate }}
+                      <app-icon [icon]="icons.check" [svgClass]="'toolbar-btn-icon'" [strokeWidth]="2.5" />
+                      @if (!iconOnlyActions()) {
+                        <span class="toolbar-btn-label">{{ 'common.save' | translate }}</span>
+                      }
                     </button>
                   }
                 </div>

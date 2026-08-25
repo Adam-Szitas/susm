@@ -284,9 +284,24 @@
 }
 
 .sub-group-file-note-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   min-height: var(--touch-target-min, 44px);
   padding: 0.4rem 0.85rem !important;
   font-size: 0.875rem;
+  margin: 0;
+
+  &.icon-only {
+    @include touch-target-min;
+    padding: 0.5rem !important;
+    justify-content: center;
+  }
+
+  .toolbar-btn-icon {
+    @include icon-size(var(--icon-size-md));
+    display: block;
+  }
 }
 
 .sub-group-file-note-status {

@@ -89,7 +89,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   deletingSubGroup = signal(false);
   savingFileNoteId = signal<string | null>(null);
   private fileNoteDrafts = signal<Record<string, string>>({});
-
+  private wasOpen = false;
   private failedFileIds = new Set<string>();
 
   readonly visibleFiles = computed(() => {
@@ -130,11 +130,17 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     });
 
     effect(() => {
-      if (!this.isOpen()) {
+      const open = this.isOpen();
+      if (!open) {
         this.resetState();
+        this.wasOpen = false;
         return;
       }
-      this.fileNoteDrafts.set({});
+      // Clear drafts only on open transition — not on every effect re-run while open.
+      if (!this.wasOpen) {
+        this.fileNoteDrafts.set({});
+        this.wasOpen = true;
+      }
     });
 
     effect(() => {
@@ -165,6 +171,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   subGroupCategoryLabels = fileSubGroupCategoryLabels;
 
   onClose(): void {
+    this.flushDirtyFileNotes();
     this.closed.emit();
   }
 
@@ -386,7 +393,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     return this.fileNoteDraft(file).trim() !== (file.note?.trim() ?? '');
   }
 
-  saveFileNote(file: FileGroupItem): void {
+  saveFileNote(file: FileGroupItem, options?: { silent?: boolean }): void {
     const id = file._id?.$oid;
     if (!id || this.savingFileNoteId() === id) return;
     const draft = this.fileNoteDraft(file).trim();
@@ -399,10 +406,13 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       .pipe(finalize(() => this.savingFileNoteId.set(null)))
       .subscribe({
         next: () => {
+          // Keep draft until parent reload confirms the same persisted value.
           this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: draft }));
-          this.#notificationService.showSuccess(
-            this.#translationService.instant('fileList.updateMetadataSuccess'),
-          );
+          if (!options?.silent) {
+            this.#notificationService.showSuccess(
+              this.#translationService.instant('fileList.updateMetadataSuccess'),
+            );
+          }
           this.metadataUpdated.emit();
         },
         error: (error: Error) => {
@@ -411,6 +421,25 @@ export class SubGroupDetailModalComponent implements OnDestroy {
           );
         },
       });
+  }
+
+  /** Persist dirty notes when leaving a field (mobile soft-keyboard dismiss). */
+  onFileNoteBlur(file: FileGroupItem): void {
+    if (!this.isFileNoteDirty(file) || this.isSavingFileNote(file) || this.reorderMode()) {
+      return;
+    }
+    this.saveFileNote(file, { silent: true });
+  }
+
+  /** Fire-and-forget save for any dirty notes when closing the modal. */
+  private flushDirtyFileNotes(): void {
+    const sg = this.subGroup();
+    if (!sg) return;
+    for (const file of sg.files) {
+      if (this.isFileNoteDirty(file)) {
+        this.saveFileNote(file, { silent: true });
+      }
+    }
   }
 
   isSavingFileNote(file: FileGroupItem): boolean {
