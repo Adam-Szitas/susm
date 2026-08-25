@@ -1,7 +1,15 @@
 <div class="wrapper">
   <header class="dashboard-header">
     <div class="dashboard-header-text">
-      <h1>{{ 'dashboard.title' | translate }}</h1>
+      <div class="dashboard-title-row">
+        <h1>{{ 'dashboard.title' | translate }}</h1>
+        @if (isCompanyOwner()) {
+          <span class="superuser-flag" role="status">
+            <app-icon [icon]="icons.check" [strokeWidth]="2" />
+            <span>{{ 'dashboard.superuser' | translate }}</span>
+          </span>
+        }
+      </div>
       @if (stats(); as data) {
         <p class="dashboard-subtitle">
           {{

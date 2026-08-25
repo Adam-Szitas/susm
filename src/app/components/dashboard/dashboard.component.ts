@@ -77,6 +77,7 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.#userStore.refreshProfile();
     this.loadDashboardStats();
     const userLanguage =
       this.#userStore.user()?.language || this.#translationService.getCurrentLang() || 'en';

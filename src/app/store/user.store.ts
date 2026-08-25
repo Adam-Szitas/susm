@@ -191,6 +191,16 @@ export class UserStore {
     });
   }
 
+  refreshProfile(): void {
+    if (!this._token()) {
+      return;
+    }
+    this.#httpService.get<User>('profile').subscribe({
+      next: (user) => this.#persistUser(user),
+      error: (error) => console.error('Failed to refresh profile:', error),
+    });
+  }
+
   #applyToken(token: string): void {
     this._token.set(token);
     this.#writeTokenToStorage(token);

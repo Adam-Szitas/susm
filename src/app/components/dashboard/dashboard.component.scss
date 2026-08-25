@@ -29,6 +29,33 @@
   }
 }
 
+.dashboard-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+}
+
+.superuser-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(157, 0, 0, 0.22);
+  border-radius: 999px;
+  background: rgba(157, 0, 0, 0.08);
+  color: var(--primary-default, #9d0000);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  app-icon {
+    flex-shrink: 0;
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}
+
 .dashboard-subtitle {
   margin: 0.35rem 0 0;
   color: #6b7280;
