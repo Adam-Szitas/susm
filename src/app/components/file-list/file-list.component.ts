@@ -1132,11 +1132,11 @@ export class FileListComponent implements OnDestroy {
       }
     }
 
-    // Always send description (even when empty) so the backend persists removals
+    // Always send description and filename (even when empty) so the backend persists removals
     this.#fileService
       .updateFileMetadata(id, {
         description,
-        filename: filename || undefined,
+        filename,
         created_at: createdAt,
       })
       .subscribe({

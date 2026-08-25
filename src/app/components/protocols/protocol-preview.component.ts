@@ -12,6 +12,7 @@ export interface ProtocolPreviewFieldValue {
 export interface ProtocolPreviewImage {
   path: string;
   description?: string;
+  note?: string;
   filename?: string;
   picture_date?: string;
   /** Multi-line caption matching PDF (`build_protocol_file_caption`). */
@@ -23,8 +24,15 @@ export interface ProtocolPreviewFileGroup {
   note?: string;
   categories?: string[];
   images: ProtocolPreviewImage[];
+  sub_groups?: ProtocolPreviewSubGroup[];
   /** When true, this group starts on a new PDF page (preview styling). */
   page_break_before?: boolean;
+}
+
+export interface ProtocolPreviewSubGroup {
+  name?: string;
+  note?: string;
+  images: ProtocolPreviewImage[];
 }
 
 export interface ProtocolPreviewTodoLine {
@@ -120,19 +128,24 @@ export class ProtocolPreviewComponent {
     return (section.object_headline || section.headline || '').trim();
   }
 
-  imageCaption(image: ProtocolPreviewImage): string {
+    imageCaption(image: ProtocolPreviewImage): string {
     if (image.caption?.trim()) {
       return image.caption.trim();
     }
     const parts: string[] = [];
-    if (image.filename?.trim()) {
-      parts.push(image.filename.trim());
+    const filename = image.filename?.trim();
+    if (filename && filename !== '—') {
+      parts.push(filename);
     }
     const desc = image.description?.trim();
-    if (desc && desc !== image.filename?.trim()) {
+    if (desc && desc !== filename) {
       parts.push(desc);
     }
-    if (image.picture_date?.trim()) {
+    const note = image.note?.trim();
+    if (note && note !== desc && note !== filename) {
+      parts.push(note);
+    }
+    if (image.picture_date?.trim() && image.picture_date.trim() !== '—') {
       parts.push(image.picture_date.trim());
     }
     return parts.join('\n');

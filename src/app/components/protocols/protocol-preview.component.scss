@@ -143,7 +143,8 @@
         gap: 1rem;
 
         .group-description,
-        .group-note {
+        .group-note,
+        .sub-group-section {
           grid-column: 1 / -1;
         }
       }
@@ -164,6 +165,24 @@
       }
 
       .group-note {
+        font-size: 13px;
+        color: #555;
+        margin: 0 0 12px 0;
+        white-space: pre-wrap;
+      }
+
+      .sub-group-section {
+        margin-top: 1rem;
+      }
+
+      .sub-group-name {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 0.35rem;
+        color: #444;
+      }
+
+      .sub-group-note {
         font-size: 13px;
         color: #555;
         margin: 0 0 12px 0;

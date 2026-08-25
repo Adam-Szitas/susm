@@ -76,6 +76,28 @@
               }
             </div>
           }
+
+          @for (subGroup of group.sub_groups ?? []; track $index) {
+            <div class="sub-group-section">
+              @if (subGroup.name?.trim()) {
+                <h5 class="sub-group-name">{{ subGroup.name }}</h5>
+              }
+              @if (subGroup.note?.trim()) {
+                <p class="sub-group-note">{{ subGroup.note }}</p>
+              }
+              @for (image of subGroup.images; track $index) {
+                <div class="image-item">
+                  <img
+                    [src]="getImageUrl(image.path)"
+                    [alt]="image.filename || subGroup.name || group.description || ''"
+                  />
+                  @if (imageCaption(image)) {
+                    <pre class="image-caption">{{ imageCaption(image) }}</pre>
+                  }
+                </div>
+              }
+            </div>
+          }
         </div>
       }
 
@@ -236,6 +258,28 @@
                       />
                       @if (imageCaption(image)) {
                         <pre class="image-caption">{{ imageCaption(image) }}</pre>
+                      }
+                    </div>
+                  }
+
+                  @for (subGroup of group.sub_groups ?? []; track $index) {
+                    <div class="sub-group-section">
+                      @if (subGroup.name?.trim()) {
+                        <h5 class="sub-group-name">{{ subGroup.name }}</h5>
+                      }
+                      @if (subGroup.note?.trim()) {
+                        <p class="sub-group-note">{{ subGroup.note }}</p>
+                      }
+                      @for (image of subGroup.images; track $index) {
+                        <div class="image-item">
+                          <img
+                            [src]="getImageUrl(image.path)"
+                            [alt]="image.filename || subGroup.name || group.description || ''"
+                          />
+                          @if (imageCaption(image)) {
+                            <pre class="image-caption">{{ imageCaption(image) }}</pre>
+                          }
+                        </div>
                       }
                     </div>
                   }
