@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit {
 
   /** TEMPORARY — remove with BE claim-superuser once ownership is fixed. */
   claimSuperuser(): void {
-    if (this.claimingSuperuser() || this.isCompanyOwner()) {
+    if (this.claimingSuperuser()) {
       return;
     }
     this.claimingSuperuser.set(true);
@@ -127,7 +127,7 @@ export class DashboardComponent implements OnInit {
         this.loadDashboardStats();
       },
       error: (error) => {
-        console.error('Failed to claim superuser:', error);
+        console.error('Failed to claim company ownership:', error);
         this.claimingSuperuser.set(false);
         this.claimSuperuserError.set('dashboard.claimSuperuserFailed');
       },

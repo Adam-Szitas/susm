@@ -36,26 +36,29 @@
     </div>
 
     <div class="dashboard-header-actions">
-      <!-- TEMPORARY: claim-superuser — remove after ownership is fixed. -->
-      @if (!isCompanyOwner()) {
-        <div class="claim-superuser">
-          <button
-            type="button"
-            class="btn btn-primary"
-            [disabled]="claimingSuperuser()"
-            (click)="claimSuperuser()"
-          >
-            @if (claimingSuperuser()) {
-              {{ 'dashboard.claimingSuperuser' | translate }}
-            } @else {
-              {{ 'dashboard.claimSuperuser' | translate }}
-            }
-          </button>
-          @if (claimSuperuserError(); as errKey) {
-            <p class="claim-superuser-error">{{ errKey | translate }}</p>
+      <!-- TEMPORARY: force-claim company ownership (sudo) — remove after ownership is fixed. -->
+      <div class="claim-superuser">
+        @if (stats(); as data) {
+          <p class="claim-superuser-current">
+            {{ 'dashboard.currentOwner' | translate }}: {{ data.superuser_name || '—' }}
+          </p>
+        }
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="claimingSuperuser()"
+          (click)="claimSuperuser()"
+        >
+          @if (claimingSuperuser()) {
+            {{ 'dashboard.claimingSuperuser' | translate }}
+          } @else {
+            {{ 'dashboard.claimSuperuser' | translate }}
           }
-        </div>
-      }
+        </button>
+        @if (claimSuperuserError(); as errKey) {
+          <p class="claim-superuser-error">{{ errKey | translate }}</p>
+        }
+      </div>
 
       <div class="language-selector">
         <label class="visually-hidden" for="language-select">{{ 'dashboard.language' | translate }}</label>
