@@ -191,13 +191,6 @@ export class UserStore {
     });
   }
 
-  /** TEMPORARY — remove with dashboard claim button once ownership is fixed. */
-  claimCompanySuperuser() {
-    return this.#httpService.post<User>('company/claim-superuser', {}).pipe(
-      tap((user) => this.#persistUser(user)),
-    );
-  }
-
   #applyToken(token: string): void {
     this._token.set(token);
     this.#writeTokenToStorage(token);
