@@ -201,6 +201,13 @@ export class UserStore {
     });
   }
 
+  /** TEMPORARY — remove after platform superuser is set. */
+  claimCompanySuperuser() {
+    return this.#httpService.post<User>('company/claim-superuser', {}).pipe(
+      tap((user) => this.#persistUser(user)),
+    );
+  }
+
   #applyToken(token: string): void {
     this._token.set(token);
     this.#writeTokenToStorage(token);

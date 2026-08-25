@@ -39,6 +39,9 @@ export class DashboardComponent implements OnInit {
   readonly isCompanyOwner = this.#userStore.isCompanyOwner;
   readonly stats = signal<DashboardStats | null>(null);
   readonly loading = signal(true);
+  /** TEMPORARY — remove after User 1 claims platform superuser. */
+  readonly claimingSuperuser = signal(false);
+  readonly claimSuperuserError = signal<string | null>(null);
   readonly currentLanguage = signal<string>('en');
   readonly availableLanguages = [
     { code: 'en', label: 'English' },
@@ -107,6 +110,26 @@ export class DashboardComponent implements OnInit {
       error: (error) => {
         console.error('Failed to load dashboard stats:', error);
         this.loading.set(false);
+      },
+    });
+  }
+
+  /** TEMPORARY — remove after platform superuser is set. */
+  claimSuperuser(): void {
+    if (this.claimingSuperuser()) {
+      return;
+    }
+    this.claimingSuperuser.set(true);
+    this.claimSuperuserError.set(null);
+    this.#userStore.claimCompanySuperuser().subscribe({
+      next: () => {
+        this.claimingSuperuser.set(false);
+        this.loadDashboardStats();
+      },
+      error: (error) => {
+        console.error('Failed to claim platform superuser:', error);
+        this.claimingSuperuser.set(false);
+        this.claimSuperuserError.set('dashboard.claimSuperuserFailed');
       },
     });
   }
