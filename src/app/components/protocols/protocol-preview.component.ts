@@ -133,16 +133,20 @@ export class ProtocolPreviewComponent {
       return image.caption.trim();
     }
     const parts: string[] = [];
-    const filename = image.filename?.trim();
-    if (filename && filename !== '—') {
+    const filename = image.filename?.trim() ?? '';
+    const desc = image.description?.trim() ?? '';
+    const note = image.note?.trim() ?? '';
+    const hasUserText = !!desc || !!note;
+    const looksStored =
+      !!filename &&
+      /\.(jpe?g|png|webp|gif|heic|bmp|tiff?)$/i.test(filename);
+    if (filename && filename !== '—' && (!hasUserText || !looksStored)) {
       parts.push(filename);
     }
-    const desc = image.description?.trim();
-    if (desc && desc !== filename) {
+    if (desc && !parts.includes(desc)) {
       parts.push(desc);
     }
-    const note = image.note?.trim();
-    if (note && note !== desc && note !== filename) {
+    if (note && !parts.includes(note)) {
       parts.push(note);
     }
     if (image.picture_date?.trim() && image.picture_date.trim() !== '—') {

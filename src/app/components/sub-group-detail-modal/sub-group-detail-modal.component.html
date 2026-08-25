@@ -248,7 +248,7 @@
                 <textarea
                   [id]="'sg-file-note-' + file._id.$oid"
                   class="sub-group-file-note-input"
-                  rows="2"
+                  rows="4"
                   [disabled]="isSavingFileNote(file) || reorderMode()"
                   [ngModel]="fileNoteDraft(file)"
                   (ngModelChange)="onFileNoteInput(file, $event)"
