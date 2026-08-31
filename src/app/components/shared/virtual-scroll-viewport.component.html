@@ -11,6 +11,7 @@
   >
     <div class="virtual-scroll-spacer" [style.height.px]="totalHeight()">
       <div
+        #content
         class="virtual-scroll-content"
         [style.transform]="transform()"
         [style.--vs-columns]="columnCount()"
@@ -19,7 +20,6 @@
           <div
             class="virtual-scroll-item"
             [class.virtual-scroll-item--grid]="gridLayout()"
-            [style.height.px]="itemSize()"
             [attr.role]="gridLayout() ? null : 'listitem'"
           >
             @for (cell of row.cells; track trackItem(cell.index, cell.item)) {

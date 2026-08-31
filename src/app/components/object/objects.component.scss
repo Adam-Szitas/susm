@@ -1,17 +1,31 @@
 @use '../../../styles/mixins' as *;
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: calc(100dvh - var(--app-navbar-block, 3.5rem));
+  min-height: 0;
   padding: var(--space) var(--space) 0;
 }
 
 .objects-wrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+
+  > app-filter {
+    flex: 0 0 auto;
+  }
 }
 
 .objects-list-viewport {
   width: 100%;
   min-width: 0;
+  flex: 1 1 0;
+  min-height: 0;
   margin-top: var(--space-small);
 }
 

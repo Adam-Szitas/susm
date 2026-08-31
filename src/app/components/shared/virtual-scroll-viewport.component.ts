@@ -5,18 +5,28 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  NgZone,
   TemplateRef,
+  afterRenderEffect,
   computed,
   contentChild,
   effect,
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
+import {
+  rowOffsetPrefix,
+  visibleRowRange,
+} from './virtual-scroll-layout';
 
 /** Below this count, render all items (no virtual scroll overhead). */
 export const VIRTUAL_SCROLL_DEFAULT_THRESHOLD = 50;
+
+/** Horizontal gap between grid cells — keep in sync with `.virtual-scroll-item--grid`. */
+const GRID_GAP_PX = 8;
 
 @Component({
   selector: 'app-virtual-scroll-viewport',
@@ -33,14 +43,16 @@ export const VIRTUAL_SCROLL_DEFAULT_THRESHOLD = 50;
 export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   #destroyRef = inject(DestroyRef);
   #host = inject(ElementRef<HTMLElement>);
+  #ngZone = inject(NgZone);
 
   readonly itemTemplate = contentChild(TemplateRef);
 
   readonly viewportRef = viewChild<ElementRef<HTMLElement>>('viewport');
+  readonly contentRef = viewChild<ElementRef<HTMLElement>>('content');
 
   /** Full data set (virtual scroll slices this). */
   items = input.required<T[]>();
-  /** Fixed row height in px, including gap between rows. */
+  /** Estimated row height in px until a row is measured. */
   itemSize = input(72);
   /** Enable virtual scroll only when length exceeds this. */
   threshold = input(VIRTUAL_SCROLL_DEFAULT_THRESHOLD);
@@ -63,9 +75,15 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   readonly #scrollTop = signal(0);
   readonly #viewportHeight = signal(480);
   readonly #viewportWidth = signal(800);
+  readonly #metricsVersion = signal(0);
+
+  /** Measured pixel height per row index. Missing entries use {@link itemSize}. */
+  #rowHeights: Array<number | undefined> = [];
+  #prefix: number[] = [0];
 
   readonly useVirtualScroll = computed(
-    () => !this.gridLayout() && this.items().length > this.threshold(),
+    () =>
+      this.items().length > this.threshold() && (!this.gridLayout() || this.fill()),
   );
 
   readonly columnCount = computed(() => {
@@ -73,10 +91,9 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
       return 1;
     }
 
-    const gap = 16;
     const minWidth = this.gridMinColumnWidth();
     const width = this.#viewportWidth();
-    return Math.max(1, Math.floor((width + gap) / (minWidth + gap)));
+    return Math.max(1, Math.floor((width + GRID_GAP_PX) / (minWidth + GRID_GAP_PX)));
   });
 
   readonly rowCount = computed(() => {
@@ -87,9 +104,18 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
     return Math.ceil(total / this.columnCount());
   });
 
-  readonly totalHeight = computed(() => this.rowCount() * this.itemSize());
+  readonly totalHeight = computed(() => {
+    this.#metricsVersion();
+    const n = this.rowCount();
+    return this.#prefix[n] ?? n * this.itemSize();
+  });
 
-  readonly transform = computed(() => `translate3d(0, ${this.rangeStart() * this.itemSize()}px, 0)`);
+  readonly transform = computed(() => {
+    this.#metricsVersion();
+    const start = this.rangeStart();
+    const y = this.#prefix[start] ?? start * this.itemSize();
+    return `translate3d(0, ${y}px, 0)`;
+  });
 
   readonly visibleRows = computed(() => {
     const items = this.items();
@@ -121,10 +147,18 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
 
   constructor() {
     effect(() => {
+      this.items();
+      this.columnCount();
+      this.gridLayout();
+      this.itemSize();
+      untracked(() => this.#resetRowMetrics());
+    });
+
+    effect(() => {
+      this.#metricsVersion();
       const total = this.rowCount();
-      const itemSize = this.itemSize();
       const viewportHeight = this.#viewportHeight();
-      this.#updateRange(this.#scrollTop(), viewportHeight, total, itemSize);
+      this.#updateRange(this.#scrollTop(), viewportHeight, total);
     });
 
     effect(() => {
@@ -135,10 +169,31 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
       this.columnCount();
       queueMicrotask(() => this.#measureViewport());
     });
+
+    afterRenderEffect(() => {
+      if (!this.useVirtualScroll()) {
+        return;
+      }
+      this.visibleRows();
+      untracked(() => {
+        this.#observeRowNodes();
+        this.#measureVisibleRows();
+      });
+    });
   }
 
   ngAfterViewInit(): void {
     this.#measureViewport();
+  }
+
+  #resetRowMetrics(): void {
+    this.#rowHeights = [];
+    this.#rebuildPrefix();
+  }
+
+  #rebuildPrefix(): void {
+    this.#prefix = rowOffsetPrefix(this.rowCount(), this.itemSize(), this.#rowHeights);
+    this.#metricsVersion.update((version) => version + 1);
   }
 
   #measureViewport(): void {
@@ -155,7 +210,7 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
       }
       this.#viewportHeight.set(height);
       this.#viewportWidth.set(el.clientWidth);
-      this.#updateRange(el.scrollTop, height, this.rowCount(), this.itemSize());
+      this.#updateRange(el.scrollTop, height, this.rowCount());
     };
 
     sync();
@@ -167,11 +222,57 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
       this.#destroyRef.onDestroy(() => {
         this.#resizeObserver?.disconnect();
         this.#resizeObserver = undefined;
+        this.#rowResizeObserver?.disconnect();
+        this.#rowResizeObserver = undefined;
       });
     }
   }
 
   #resizeObserver?: ResizeObserver;
+  #rowResizeObserver?: ResizeObserver;
+
+  #observeRowNodes(): void {
+    const root = this.contentRef()?.nativeElement;
+    if (!root || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    if (!this.#rowResizeObserver) {
+      this.#rowResizeObserver = new ResizeObserver(() => {
+        this.#ngZone.run(() => this.#measureVisibleRows());
+      });
+    }
+
+    this.#rowResizeObserver.disconnect();
+    for (const node of root.querySelectorAll(':scope > .virtual-scroll-item')) {
+      this.#rowResizeObserver.observe(node);
+    }
+  }
+
+  #measureVisibleRows(): void {
+    const root = this.contentRef()?.nativeElement;
+    if (!root) {
+      return;
+    }
+
+    const start = this.rangeStart();
+    const nodes = root.querySelectorAll(':scope > .virtual-scroll-item');
+    let changed = false;
+
+    nodes.forEach((node, index) => {
+      const row = start + index;
+      const height = Math.round((node as HTMLElement).getBoundingClientRect().height);
+      if (height < 1 || this.#rowHeights[row] === height) {
+        return;
+      }
+      this.#rowHeights[row] = height;
+      changed = true;
+    });
+
+    if (changed) {
+      this.#rebuildPrefix();
+    }
+  }
 
   onScroll(): void {
     const el = this.viewportRef()?.nativeElement;
@@ -179,7 +280,7 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
     this.#scrollTop.set(el.scrollTop);
     this.#viewportHeight.set(el.clientHeight);
     this.#viewportWidth.set(el.clientWidth);
-    this.#updateRange(el.scrollTop, el.clientHeight, this.rowCount(), this.itemSize());
+    this.#updateRange(el.scrollTop, el.clientHeight, this.rowCount());
   }
 
   trackRow(_index: number, row: { cells: { item: T; index: number }[] }): unknown {
@@ -190,17 +291,20 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
     return this.trackBy()(index, item);
   }
 
-  #updateRange(scrollTop: number, viewportHeight: number, totalRows: number, itemSize: number): void {
+  #updateRange(scrollTop: number, viewportHeight: number, totalRows: number): void {
     if (this.items().length <= this.threshold()) {
       this.rangeStart.set(0);
       this.rangeEnd.set(totalRows);
       return;
     }
 
-    const buffer = this.bufferPx();
-    const start = Math.max(0, Math.floor((scrollTop - buffer) / itemSize));
-    const count = Math.ceil((viewportHeight + buffer * 2) / itemSize);
-    const end = Math.min(totalRows, start + count);
+    const { start, end } = visibleRowRange(
+      scrollTop,
+      viewportHeight,
+      this.bufferPx(),
+      totalRows,
+      this.#prefix,
+    );
     this.rangeStart.set(start);
     this.rangeEnd.set(end);
   }
