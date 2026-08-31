@@ -792,9 +792,14 @@ export class ProtocolGenerateModalComponent {
       },
       error: (error) => {
         this.generating.set(false);
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('protocols.generateFailed'),
-        );
+        const raw = typeof error?.message === 'string' ? error.message : '';
+        let message = raw || this.#translationService.instant('protocols.generateFailed');
+        if (raw.includes('too long')) {
+          message = this.#translationService.instant('protocols.generateTimedOut');
+        } else if (raw.includes('already generating')) {
+          message = this.#translationService.instant('protocols.generateBusy');
+        }
+        this.#notificationService.showError(message);
       },
     });
   }

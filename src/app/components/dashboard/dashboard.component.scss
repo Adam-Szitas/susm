@@ -63,30 +63,6 @@
   line-height: 1.45;
 }
 
-.dashboard-header-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: var(--space);
-  flex-shrink: 0;
-}
-
-.claim-superuser {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-}
-
-.claim-superuser-error {
-  margin: 0;
-  color: var(--primary-default, #9d0000);
-  font-size: 0.8rem;
-  line-height: 1.3;
-  text-align: right;
-}
-
 .language-selector {
   flex-shrink: 0;
 }

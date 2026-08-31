@@ -23,8 +23,8 @@ export interface User {
   language?: string;
   /** admin = full company admin; member = standard team user */
   role?: UserRole;
-  /** true when this user is the company owner (super_user) */
-  is_company_owner?: boolean;
+  /** True only for the single platform-wide superuser. */
+  is_superuser?: boolean;
 }
 
 export interface TeamUser {

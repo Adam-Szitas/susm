@@ -3,7 +3,7 @@
     <div class="dashboard-header-text">
       <div class="dashboard-title-row">
         <h1>{{ 'dashboard.title' | translate }}</h1>
-        @if (isCompanyOwner()) {
+        @if (isSuperuser()) {
           <span class="superuser-flag" role="status">
             <app-icon [icon]="icons.check" [strokeWidth]="2" />
             <span>{{ 'dashboard.superuser' | translate }}</span>
@@ -25,39 +25,18 @@
       }
     </div>
 
-    <div class="dashboard-header-actions">
-      <!-- TEMPORARY: sets the ONE platform-wide superuser. Click with User 1, then remove. -->
-      <div class="claim-superuser">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="claimingSuperuser()"
-          (click)="claimSuperuser()"
-        >
-          @if (claimingSuperuser()) {
-            {{ 'dashboard.claimingSuperuser' | translate }}
-          } @else {
-            {{ 'dashboard.claimSuperuser' | translate }}
-          }
-        </button>
-        @if (claimSuperuserError(); as errKey) {
-          <p class="claim-superuser-error">{{ errKey | translate }}</p>
+    <div class="language-selector">
+      <label class="visually-hidden" for="language-select">{{ 'dashboard.language' | translate }}</label>
+      <select
+        id="language-select"
+        class="language-select"
+        [ngModel]="currentLanguage()"
+        (ngModelChange)="onLanguageChange($event)"
+      >
+        @for (lang of availableLanguages; track lang.code) {
+          <option [value]="lang.code">{{ lang.label }}</option>
         }
-      </div>
-
-      <div class="language-selector">
-        <label class="visually-hidden" for="language-select">{{ 'dashboard.language' | translate }}</label>
-        <select
-          id="language-select"
-          class="language-select"
-          [ngModel]="currentLanguage()"
-          (ngModelChange)="onLanguageChange($event)"
-        >
-          @for (lang of availableLanguages; track lang.code) {
-            <option [value]="lang.code">{{ lang.label }}</option>
-          }
-        </select>
-      </div>
+      </select>
     </div>
   </header>
 
@@ -138,12 +117,15 @@
     }
   }
 
-  @if (isAdmin() || isCompanyOwner()) {
+  @if (isAdmin() || isSuperuser()) {
     <div class="dashboard-admin">
+      @if (isSuperuser()) {
+        <app-superuser-operations-panel />
+      }
       @if (isAdmin()) {
         <app-team-users-panel />
       }
-      @if (isCompanyOwner()) {
+      @if (isSuperuser()) {
         <app-registration-invite-panel />
       }
     </div>

@@ -11,6 +11,7 @@ import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TeamUsersPanelComponent } from './team-users-panel.component';
 import { RegistrationInvitePanelComponent } from './registration-invite-panel.component';
+import { SuperuserOperationsPanelComponent } from './superuser-operations-panel.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,7 @@ import { RegistrationInvitePanelComponent } from './registration-invite-panel.co
     RouterLink,
     TeamUsersPanelComponent,
     RegistrationInvitePanelComponent,
+    SuperuserOperationsPanelComponent,
     IconComponent,
   ],
 })
@@ -36,12 +38,9 @@ export class DashboardComponent implements OnInit {
   #translationService = inject(TranslationService);
 
   readonly isAdmin = this.#userStore.isAdmin;
-  readonly isCompanyOwner = this.#userStore.isCompanyOwner;
+  readonly isSuperuser = this.#userStore.isSuperuser;
   readonly stats = signal<DashboardStats | null>(null);
   readonly loading = signal(true);
-  /** TEMPORARY — remove after User 1 claims platform superuser. */
-  readonly claimingSuperuser = signal(false);
-  readonly claimSuperuserError = signal<string | null>(null);
   readonly currentLanguage = signal<string>('en');
   readonly availableLanguages = [
     { code: 'en', label: 'English' },
@@ -110,26 +109,6 @@ export class DashboardComponent implements OnInit {
       error: (error) => {
         console.error('Failed to load dashboard stats:', error);
         this.loading.set(false);
-      },
-    });
-  }
-
-  /** TEMPORARY — remove after platform superuser is set. */
-  claimSuperuser(): void {
-    if (this.claimingSuperuser()) {
-      return;
-    }
-    this.claimingSuperuser.set(true);
-    this.claimSuperuserError.set(null);
-    this.#userStore.claimCompanySuperuser().subscribe({
-      next: () => {
-        this.claimingSuperuser.set(false);
-        this.loadDashboardStats();
-      },
-      error: (error) => {
-        console.error('Failed to claim platform superuser:', error);
-        this.claimingSuperuser.set(false);
-        this.claimSuperuserError.set('dashboard.claimSuperuserFailed');
       },
     });
   }

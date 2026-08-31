@@ -25,7 +25,7 @@ export class UserStore {
   readonly token = computed(() => this._token());
   readonly isAuthenticated = computed(() => !!this._token());
   readonly isAdmin = computed(() => this._user()?.role === 'admin');
-  readonly isCompanyOwner = computed(() => !!this._user()?.is_company_owner);
+  readonly isSuperuser = computed(() => !!this._user()?.is_superuser);
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
   readonly initialized = computed(() => this._initialized());
@@ -199,13 +199,6 @@ export class UserStore {
       next: (user) => this.#persistUser(user),
       error: (error) => console.error('Failed to refresh profile:', error),
     });
-  }
-
-  /** TEMPORARY — remove after platform superuser is set. */
-  claimCompanySuperuser() {
-    return this.#httpService.post<User>('company/claim-superuser', {}).pipe(
-      tap((user) => this.#persistUser(user)),
-    );
   }
 
   #applyToken(token: string): void {

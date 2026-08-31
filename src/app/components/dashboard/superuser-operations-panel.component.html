@@ -1,0 +1,157 @@
+<section class="superuser-panel" aria-labelledby="superuser-operations-title">
+  <header class="panel-header">
+    <div>
+      <div class="eyebrow">
+        <app-icon [icon]="icons.flag" />
+        {{ 'superuser.badge' | translate }}
+      </div>
+      <h2 id="superuser-operations-title">{{ 'superuser.title' | translate }}</h2>
+      <p>{{ 'superuser.intro' | translate }}</p>
+    </div>
+    <button type="button" class="button button-secondary" [disabled]="loading()" (click)="refresh()">
+      <app-icon [icon]="icons.refresh" />
+      {{ (loading() ? 'superuser.scanning' : 'superuser.rescan') | translate }}
+    </button>
+  </header>
+
+  @if (error()) {
+    <div class="panel-error" role="alert">
+      <p>{{ 'superuser.loadFailed' | translate }}</p>
+      <button type="button" class="button button-secondary" (click)="refresh()">
+        {{ 'superuser.retry' | translate }}
+      </button>
+    </div>
+  } @else if (loading() && !overview()) {
+    <div class="panel-loading" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      {{ 'superuser.scanning' | translate }}
+    </div>
+  } @else if (overview(); as data) {
+    <div class="health-strip" [class.health-strip--attention]="data.issues.length > 0">
+      <div>
+        <strong>
+          {{
+            (data.issues.length === 0 ? 'superuser.healthy' : 'superuser.attentionNeeded')
+              | translate
+          }}
+        </strong>
+        <span>
+          {{
+            'superuser.scanSummary'
+              | translate
+                : {
+                    critical: criticalCount(),
+                    warnings: warningCount(),
+                  }
+          }}
+        </span>
+      </div>
+      <time [attr.datetime]="data.generated_at">
+        {{ 'superuser.lastScan' | translate }}:
+        {{ data.generated_at | date: 'medium' }}
+      </time>
+    </div>
+
+    <div class="metric-grid" [attr.aria-label]="'superuser.platformTotals' | translate">
+      <article class="metric"><strong>{{ data.metrics.companies }}</strong><span>{{ 'superuser.companies' | translate }}</span></article>
+      <article class="metric"><strong>{{ data.metrics.active_users }}</strong><span>{{ 'superuser.users' | translate }}</span></article>
+      <article class="metric"><strong>{{ data.metrics.active_projects }}</strong><span>{{ 'superuser.projects' | translate }}</span></article>
+      <article class="metric"><strong>{{ data.metrics.active_objects }}</strong><span>{{ 'superuser.objects' | translate }}</span></article>
+      <article class="metric"><strong>{{ data.metrics.active_files }}</strong><span>{{ 'superuser.files' | translate }}</span></article>
+      <article class="metric"><strong>{{ data.metrics.generated_protocols }}</strong><span>{{ 'superuser.protocols' | translate }}</span></article>
+      <article class="metric metric--muted"><strong>{{ data.metrics.archived_projects }}</strong><span>{{ 'superuser.archivedProjects' | translate }}</span></article>
+      <article class="metric metric--muted"><strong>{{ data.metrics.unused_registration_invites }}</strong><span>{{ 'superuser.openInvites' | translate }}</span></article>
+    </div>
+
+    <div class="operations-grid">
+      <section class="operation-card" aria-labelledby="data-health-title">
+        <div class="section-heading">
+          <div>
+            <h3 id="data-health-title">{{ 'superuser.dataHealth' | translate }}</h3>
+            <p>{{ 'superuser.dataHealthIntro' | translate }}</p>
+          </div>
+          @if (repairableCount() > 0) {
+            <button
+              type="button"
+              class="button button-primary"
+              [disabled]="repairing()"
+              (click)="normalizeUserRoles()"
+            >
+              {{ (repairing() ? 'superuser.repairing' : 'superuser.repairRoles') | translate }}
+            </button>
+          }
+        </div>
+
+        @if (data.issues.length === 0) {
+          <div class="empty-state">
+            <app-icon [icon]="icons.clipboardCheck" />
+            <span>{{ 'superuser.noIssues' | translate }}</span>
+          </div>
+        } @else {
+          <ul class="issue-list">
+            @for (issue of data.issues; track issue.code + issue.company_name + issue.detail) {
+              <li class="issue" [class.issue--critical]="issue.severity === 'critical'">
+                <span class="severity-dot" aria-hidden="true"></span>
+                <div>
+                  <strong>{{ issueLabel(issue) | translate }}</strong>
+                  <span>{{ issue.company_name }} · {{ issue.detail }}</span>
+                </div>
+                @if (issue.repairable) {
+                  <span class="repairable-badge">{{ 'superuser.autoRepairable' | translate }}</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="operation-card" aria-labelledby="company-overview-title">
+        <div class="section-heading">
+          <div>
+            <h3 id="company-overview-title">{{ 'superuser.companyOverview' | translate }}</h3>
+            <p>{{ 'superuser.companyOverviewIntro' | translate }}</p>
+          </div>
+          <button type="button" class="button button-secondary" (click)="showCompanies.set(!showCompanies())">
+            {{ (showCompanies() ? 'superuser.hideCompanies' : 'superuser.showCompanies') | translate }}
+          </button>
+        </div>
+
+        @if (showCompanies()) {
+          <div class="company-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'superuser.company' | translate }}</th>
+                  <th scope="col">{{ 'superuser.users' | translate }}</th>
+                  <th scope="col">{{ 'superuser.projects' | translate }}</th>
+                  <th scope="col">{{ 'superuser.objects' | translate }}</th>
+                  <th scope="col">{{ 'superuser.files' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (company of data.companies; track company.id || company.name) {
+                  <tr>
+                    <th scope="row">{{ company.name }}</th>
+                    <td>{{ company.active_users }}</td>
+                    <td>{{ company.active_projects }}</td>
+                    <td>{{ company.active_objects }}</td>
+                    <td>{{ company.active_files }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="company-preview">
+            @for (company of data.companies.slice(0, 4); track company.id || company.name) {
+              <span>{{ company.name }}</span>
+            }
+            @if (data.companies.length > 4) {
+              <span>+{{ data.companies.length - 4 }}</span>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  }
+</section>
