@@ -269,6 +269,35 @@
   font-weight: 600;
   color: #666;
   margin-bottom: 0.35rem;
+
+  &:not(:first-child) {
+    margin-top: 0.7rem;
+  }
+}
+
+.sub-group-file-name-input {
+  width: 100%;
+  min-height: var(--touch-target-min, 44px);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #d0d0d0;
+  border-radius: var(--input-border-radius, 8px);
+  font: inherit;
+  font-size: max(16px, 0.95rem);
+  line-height: 1.4;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:disabled {
+    opacity: 0.65;
+    background: #f0f0f0;
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-default, #9d0000);
+    outline-offset: 1px;
+    border-color: var(--primary-default, #9d0000);
+  }
 }
 
 .sub-group-file-note-input {

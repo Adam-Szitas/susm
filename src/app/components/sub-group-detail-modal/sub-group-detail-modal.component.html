@@ -242,6 +242,22 @@
                 }
               </div>
               <div class="sub-group-file-note" (click)="$event.stopPropagation()">
+                <label class="sub-group-file-note-label" [attr.for]="'sg-file-name-' + file._id.$oid">
+                  {{ 'fileList.pictureName' | translate }}
+                </label>
+                <input
+                  [id]="'sg-file-name-' + file._id.$oid"
+                  type="text"
+                  class="sub-group-file-name-input"
+                  [disabled]="isSavingFileNote(file) || reorderMode()"
+                  [ngModel]="fileNameDraft(file)"
+                  (ngModelChange)="onFileNameInput(file, $event)"
+                  (blur)="onFileMetaBlur(file)"
+                  [placeholder]="'fileList.pictureNamePlaceholder' | translate"
+                  [attr.aria-busy]="isSavingFileNote(file)"
+                  autocomplete="off"
+                  enterkeyhint="done"
+                />
                 <label class="sub-group-file-note-label" [attr.for]="'sg-file-note-' + file._id.$oid">
                   {{ 'fileUpload.note' | translate }}
                 </label>
@@ -252,7 +268,7 @@
                   [disabled]="isSavingFileNote(file) || reorderMode()"
                   [ngModel]="fileNoteDraft(file)"
                   (ngModelChange)="onFileNoteInput(file, $event)"
-                  (blur)="onFileNoteBlur(file)"
+                  (blur)="onFileMetaBlur(file)"
                   [placeholder]="'fileUpload.notePlaceholder' | translate"
                   [attr.aria-busy]="isSavingFileNote(file)"
                   enterkeyhint="done"
@@ -260,12 +276,12 @@
                 <div class="sub-group-file-note-actions">
                   @if (isSavingFileNote(file)) {
                     <span class="sub-group-file-note-status">{{ 'common.saving' | translate }}</span>
-                  } @else if (isFileNoteDirty(file)) {
+                  } @else if (isFileMetaDirty(file)) {
                     <button
                       type="button"
                       class="button button-primary sub-group-file-note-save toolbar-btn"
                       [class.icon-only]="iconOnlyActions()"
-                      (click)="saveFileNote(file)"
+                      (click)="saveFileMeta(file)"
                       [attr.aria-label]="'common.save' | translate"
                       [attr.title]="'common.save' | translate"
                     >

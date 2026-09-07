@@ -89,6 +89,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   deletingSubGroup = signal(false);
   savingFileNoteId = signal<string | null>(null);
   private fileNoteDrafts = signal<Record<string, string>>({});
+  private fileNameDrafts = signal<Record<string, string>>({});
   private wasOpen = false;
   private failedFileIds = new Set<string>();
 
@@ -139,6 +140,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       // Clear drafts only on open transition — not on every effect re-run while open.
       if (!this.wasOpen) {
         this.fileNoteDrafts.set({});
+        this.fileNameDrafts.set({});
         this.wasOpen = true;
       }
     });
@@ -154,6 +156,21 @@ export class SubGroupDetailModalComponent implements OnDestroy {
           const id = file._id?.$oid;
           if (!id || !Object.prototype.hasOwnProperty.call(next, id)) continue;
           const persisted = file.note?.trim() ?? '';
+          if (next[id].trim() === persisted) {
+            delete next[id];
+            changed = true;
+          }
+        }
+        return changed ? next : drafts;
+      });
+      this.fileNameDrafts.update((drafts) => {
+        if (!Object.keys(drafts).length) return drafts;
+        const next = { ...drafts };
+        let changed = false;
+        for (const file of sg.files) {
+          const id = file._id?.$oid;
+          if (!id || !Object.prototype.hasOwnProperty.call(next, id)) continue;
+          const persisted = file.filename?.trim() ?? '';
           if (next[id].trim() === persisted) {
             delete next[id];
             changed = true;
@@ -371,6 +388,28 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.deleteFile(file);
   }
 
+  fileNameDraft(file: FileGroupItem): string {
+    const id = file._id?.$oid;
+    if (!id) return '';
+    const drafts = this.fileNameDrafts();
+    if (Object.prototype.hasOwnProperty.call(drafts, id)) {
+      return drafts[id];
+    }
+    return file.filename ?? '';
+  }
+
+  onFileNameInput(file: FileGroupItem, value: string): void {
+    const id = file._id?.$oid;
+    if (!id) return;
+    this.fileNameDrafts.update((drafts) => ({ ...drafts, [id]: value }));
+  }
+
+  isFileNameDirty(file: FileGroupItem): boolean {
+    const id = file._id?.$oid;
+    if (!id) return false;
+    return this.fileNameDraft(file).trim() !== (file.filename?.trim() ?? '');
+  }
+
   fileNoteDraft(file: FileGroupItem): string {
     const id = file._id?.$oid;
     if (!id) return '';
@@ -393,21 +432,36 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     return this.fileNoteDraft(file).trim() !== (file.note?.trim() ?? '');
   }
 
-  saveFileNote(file: FileGroupItem, options?: { silent?: boolean }): void {
+  isFileMetaDirty(file: FileGroupItem): boolean {
+    return this.isFileNameDirty(file) || this.isFileNoteDirty(file);
+  }
+
+  saveFileMeta(file: FileGroupItem, options?: { silent?: boolean }): void {
     const id = file._id?.$oid;
     if (!id || this.savingFileNoteId() === id) return;
-    const draft = this.fileNoteDraft(file).trim();
-    const current = file.note?.trim() ?? '';
-    if (draft === current) return;
+
+    const nameDirty = this.isFileNameDirty(file);
+    const noteDirty = this.isFileNoteDirty(file);
+    if (!nameDirty && !noteDirty) return;
+
+    const draftName = this.fileNameDraft(file).trim();
+    const draftNote = this.fileNoteDraft(file).trim();
 
     this.savingFileNoteId.set(id);
     this.#fileService
-      .updateFileMetadata(id, { note: draft })
+      .updateFileMetadata(id, {
+        ...(nameDirty ? { filename: draftName } : {}),
+        ...(noteDirty ? { note: draftNote } : {}),
+      })
       .pipe(finalize(() => this.savingFileNoteId.set(null)))
       .subscribe({
         next: () => {
-          // Keep draft until parent reload confirms the same persisted value.
-          this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: draft }));
+          if (nameDirty) {
+            this.fileNameDrafts.update((drafts) => ({ ...drafts, [id]: draftName }));
+          }
+          if (noteDirty) {
+            this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: draftNote }));
+          }
           if (!options?.silent) {
             this.#notificationService.showSuccess(
               this.#translationService.instant('fileList.updateMetadataSuccess'),
@@ -423,21 +477,21 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       });
   }
 
-  /** Persist dirty notes when leaving a field (mobile soft-keyboard dismiss). */
-  onFileNoteBlur(file: FileGroupItem): void {
-    if (!this.isFileNoteDirty(file) || this.isSavingFileNote(file) || this.reorderMode()) {
+  /** Persist dirty name/note when leaving a field (mobile soft-keyboard dismiss). */
+  onFileMetaBlur(file: FileGroupItem): void {
+    if (!this.isFileMetaDirty(file) || this.isSavingFileNote(file) || this.reorderMode()) {
       return;
     }
-    this.saveFileNote(file, { silent: true });
+    this.saveFileMeta(file, { silent: true });
   }
 
-  /** Fire-and-forget save for any dirty notes when closing the modal. */
+  /** Fire-and-forget save for dirty picture fields when closing the modal. */
   private flushDirtyFileNotes(): void {
     const sg = this.subGroup();
     if (!sg) return;
     for (const file of sg.files) {
-      if (this.isFileNoteDirty(file)) {
-        this.saveFileNote(file, { silent: true });
+      if (this.isFileMetaDirty(file)) {
+        this.saveFileMeta(file, { silent: true });
       }
     }
   }
@@ -763,6 +817,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.deleteConfirmOpen.set(false);
     this.imageLightboxUrl.set(null);
     this.fileNoteDrafts.set({});
+    this.fileNameDrafts.set({});
     this.savingFileNoteId.set(null);
   }
 }

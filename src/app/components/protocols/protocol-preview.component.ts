@@ -136,11 +136,10 @@ export class ProtocolPreviewComponent {
     const filename = image.filename?.trim() ?? '';
     const desc = image.description?.trim() ?? '';
     const note = image.note?.trim() ?? '';
-    const hasUserText = !!desc || !!note;
     const looksStored =
       !!filename &&
       /\.(jpe?g|png|webp|gif|heic|bmp|tiff?)$/i.test(filename);
-    if (filename && filename !== '—' && (!hasUserText || !looksStored)) {
+    if (filename && filename !== '—' && !looksStored) {
       parts.push(filename);
     }
     if (desc && !parts.includes(desc)) {
