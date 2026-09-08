@@ -66,6 +66,7 @@ export interface ProtocolPreviewData {
   template_name?: string;
   subtitle?: string;
   header_template?: string;
+  footer_template?: string;
   description?: string;
   field_values?: ProtocolPreviewFieldValue[];
   project_name?: string;
@@ -76,6 +77,7 @@ export interface ProtocolPreviewData {
   linked_previews?: (ProtocolPreviewData & { protocol_id?: string })[];
   generated_at?: string;
   file_group_on_new_page?: boolean;
+  include_header_footer?: boolean;
   /** Cover + TOC pages before object content (matches PDF). */
   front_matter_pages?: number;
   /** First object/content page number in the PDF. */
@@ -102,6 +104,8 @@ export class ProtocolPreviewComponent {
   checklistSourceSections = input<ProtocolPreviewTodoSection[]>([]);
   excludedChecklistIds = input<string[]>([]);
   checklistVisibilityEditable = input(false);
+  /** When false, hide the repeating page header and footer date (page numbers stay). */
+  showHeaderFooter = input(true);
 
   checklistVisibilityToggle = output<string>();
 

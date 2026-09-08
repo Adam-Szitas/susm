@@ -230,6 +230,8 @@ export class ProtocolGenerateModalComponent {
   saveToProject = signal(true);
   /** When on, project checklist sections appear in preview, TOC, and PDF. */
   includeChecklists = signal(true);
+  /** When on, repeating page header and footer date appear in preview and PDF. */
+  includeHeaderFooter = signal<boolean>(features.protocolHeaderFooter);
   /** Checklist item ids excluded from this protocol (eye toggles in preview). */
   excludedChecklistItemIds = signal<string[]>([]);
 
@@ -492,6 +494,7 @@ export class ProtocolGenerateModalComponent {
       custom_object_order: this.customObjectOrder(),
       include_checklists: this.includeChecklists(),
       file_group_on_new_page: features.protocolFileGroupOnNewPage,
+      include_header_footer: this.includeHeaderFooter(),
       ...(this.includeChecklists() && this.excludedChecklistItemIds().length > 0
         ? { excluded_checklist_item_ids: this.excludedChecklistItemIds() }
         : {}),

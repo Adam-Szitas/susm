@@ -5,4 +5,6 @@
 export const localFeatures = {
   /** Each object and file group starts on a new page in protocol preview and PDF (with TOC page links). */
   protocolFileGroupOnNewPage: false,
+  /** Protocol preview and PDF include the repeating page header and footer date (page numbers always stay). */
+  protocolHeaderFooter: true,
 } as const;

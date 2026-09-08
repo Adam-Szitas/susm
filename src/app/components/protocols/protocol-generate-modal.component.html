@@ -17,6 +17,12 @@
           [disabled]="generating() || loadingPreview()"
           (checkedChange)="includeChecklists.set($event)"
         />
+        <app-toggle-switch
+          [checked]="includeHeaderFooter()"
+          [label]="'protocols.includeHeaderFooter' | translate"
+          [disabled]="generating()"
+          (checkedChange)="includeHeaderFooter.set($event)"
+        />
       </div>
 
       @if (includeChecklists() && checklistControlRows().length > 0) {
@@ -384,6 +390,7 @@
         [checklistSourceSections]="checklistControlRows()"
         [excludedChecklistIds]="excludedChecklistItemIds()"
         [checklistVisibilityEditable]="includeChecklists()"
+        [showHeaderFooter]="includeHeaderFooter()"
         (checklistVisibilityToggle)="toggleExcludedChecklistItem($event)"
       />
       </div>

@@ -49,6 +49,8 @@ export interface ProtocolRecord {
   include_checklists?: boolean;
   /** When true, each file group started on a new page in this protocol PDF. */
   file_group_on_new_page?: boolean;
+  /** When false, page header and footer date were omitted from this protocol PDF. */
+  include_header_footer?: boolean;
   /** Checklist item ids excluded from this protocol PDF. */
   excluded_checklist_item_ids?: string[];
   /** Checklist sections captured when this protocol was saved. */
@@ -83,6 +85,8 @@ export interface GenerateProtocolRequest {
   include_checklists?: boolean;
   /** When true, each file group begins on a new protocol page. */
   file_group_on_new_page?: boolean;
+  /** When false, page header and footer date are omitted from preview and PDF. */
+  include_header_footer?: boolean;
   /** Checklist item ids to omit from preview/PDF. */
   excluded_checklist_item_ids?: string[];
 }

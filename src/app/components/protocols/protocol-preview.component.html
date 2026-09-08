@@ -1,10 +1,10 @@
 @let data = previewData();
 
 <div class="protocol-preview">
+  @if (showHeaderFooter() && data.header_template) {
+    <div class="preview-page-header">{{ data.header_template }}</div>
+  }
   <div class="preview-header">
-    @if (data.header_template) {
-      <div class="header-template">{{ data.header_template }}</div>
-    }
     <h1 class="template-name">{{ data.template_name || data.project_name }}</h1>
     @if (data.subtitle) {
       <p class="template-subtitle">{{ data.subtitle }}</p>
@@ -187,6 +187,9 @@
     </div>
     @for (linked of data.linked_previews; track $index) {
       <div class="protocol-preview linked-protocol-block">
+        @if (showHeaderFooter() && linked.header_template) {
+          <div class="preview-page-header">{{ linked.header_template }}</div>
+        }
         <div class="preview-header linked-header">
           <h3 class="template-name">{{ linked.template_name || linked.project_name }}</h3>
           @if (linked.generated_at) {
@@ -288,7 +291,30 @@
             </div>
           }
         }
+        <div class="preview-page-footer">
+          @if (showHeaderFooter() && linked.footer_template?.trim()) {
+            <p class="footer-template">{{ linked.footer_template }}</p>
+          }
+          <div class="preview-page-footer-meta">
+            <span>{{ 'protocol.pdf.page' | translate }}</span>
+            @if (showHeaderFooter() && linked.generated_at) {
+              <span>{{ linked.generated_at | localeDate:'datetime' }}</span>
+            }
+          </div>
+        </div>
       </div>
     }
   }
+
+  <div class="preview-page-footer">
+    @if (showHeaderFooter() && data.footer_template?.trim()) {
+      <p class="footer-template">{{ data.footer_template }}</p>
+    }
+    <div class="preview-page-footer-meta">
+      <span>{{ 'protocol.pdf.page' | translate }}</span>
+      @if (showHeaderFooter() && data.generated_at) {
+        <span>{{ data.generated_at | localeDate:'datetime' }}</span>
+      }
+    </div>
+  </div>
 </div>
