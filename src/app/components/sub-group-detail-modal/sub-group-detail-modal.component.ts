@@ -88,8 +88,10 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   deleteConfirmOpen = signal(false);
   deletingSubGroup = signal(false);
   savingFileNoteId = signal<string | null>(null);
+  savedFileMetaIds = signal<ReadonlySet<string>>(new Set());
   private fileNoteDrafts = signal<Record<string, string>>({});
   private fileNameDrafts = signal<Record<string, string>>({});
+  #savedMetaTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
   private wasOpen = false;
   private failedFileIds = new Set<string>();
 
@@ -182,13 +184,13 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.#clearSavedMetaTimeouts();
     unlockDocumentScroll();
   }
 
   subGroupCategoryLabels = fileSubGroupCategoryLabels;
 
   onClose(): void {
-    this.flushDirtyFileNotes();
     this.closed.emit();
   }
 
@@ -436,7 +438,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     return this.isFileNameDirty(file) || this.isFileNoteDirty(file);
   }
 
-  saveFileMeta(file: FileGroupItem, options?: { silent?: boolean }): void {
+  saveFileMeta(file: FileGroupItem): void {
     const id = file._id?.$oid;
     if (!id || this.savingFileNoteId() === id) return;
 
@@ -462,11 +464,10 @@ export class SubGroupDetailModalComponent implements OnDestroy {
           if (noteDirty) {
             this.fileNoteDrafts.update((drafts) => ({ ...drafts, [id]: draftNote }));
           }
-          if (!options?.silent) {
-            this.#notificationService.showSuccess(
-              this.#translationService.instant('fileList.updateMetadataSuccess'),
-            );
-          }
+          this.#markFileMetaSaved(id);
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('fileList.pictureMetaUpdated'),
+          );
           this.metadataUpdated.emit();
         },
         error: (error: Error) => {
@@ -477,23 +478,44 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       });
   }
 
-  /** Persist dirty name/note when leaving a field (mobile soft-keyboard dismiss). */
-  onFileMetaBlur(file: FileGroupItem): void {
-    if (!this.isFileMetaDirty(file) || this.isSavingFileNote(file) || this.reorderMode()) {
-      return;
-    }
-    this.saveFileMeta(file, { silent: true });
+  /** Mouse/touch save before the input blurs, so the button click is not lost. */
+  onSaveFileMetaPointerDown(event: PointerEvent, file: FileGroupItem): void {
+    event.preventDefault();
+    this.saveFileMeta(file);
   }
 
-  /** Fire-and-forget save for dirty picture fields when closing the modal. */
-  private flushDirtyFileNotes(): void {
-    const sg = this.subGroup();
-    if (!sg) return;
-    for (const file of sg.files) {
-      if (this.isFileMetaDirty(file)) {
-        this.saveFileMeta(file, { silent: true });
-      }
+  isFileMetaSaved(file: FileGroupItem): boolean {
+    const id = file._id?.$oid;
+    return !!id && this.savedFileMetaIds().has(id);
+  }
+
+  #markFileMetaSaved(id: string): void {
+    const previous = this.#savedMetaTimeouts.get(id);
+    if (previous) {
+      clearTimeout(previous);
     }
+    this.savedFileMetaIds.update((ids) => {
+      const next = new Set(ids);
+      next.add(id);
+      return next;
+    });
+    const timeout = setTimeout(() => {
+      this.savedFileMetaIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(id);
+        return next;
+      });
+      this.#savedMetaTimeouts.delete(id);
+    }, 2200);
+    this.#savedMetaTimeouts.set(id, timeout);
+  }
+
+  #clearSavedMetaTimeouts(): void {
+    for (const timeout of this.#savedMetaTimeouts.values()) {
+      clearTimeout(timeout);
+    }
+    this.#savedMetaTimeouts.clear();
+    this.savedFileMetaIds.set(new Set());
   }
 
   isSavingFileNote(file: FileGroupItem): boolean {
@@ -819,5 +841,6 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.fileNoteDrafts.set({});
     this.fileNameDrafts.set({});
     this.savingFileNoteId.set(null);
+    this.#clearSavedMetaTimeouts();
   }
 }

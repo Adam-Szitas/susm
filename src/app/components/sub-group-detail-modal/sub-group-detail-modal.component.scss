@@ -173,6 +173,7 @@
   margin: 0;
   padding: 0;
   display: grid;
+  justify-items: stretch;
   // Prefer fewer, larger tiles so photos and note fields are easy to use.
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   gap: 1rem;
@@ -196,6 +197,10 @@
   background: #fff;
   display: flex;
   flex-direction: column;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 
   &.reorder-active {
     cursor: grab;
@@ -259,16 +264,22 @@
   background: #fafafa;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
   flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .sub-group-file-note-label {
   display: block;
+  width: 100%;
   font-size: 0.8rem;
   font-weight: 600;
   color: #666;
   margin-bottom: 0.35rem;
+  box-sizing: border-box;
 
   &:not(:first-child) {
     margin-top: 0.7rem;
@@ -276,7 +287,12 @@
 }
 
 .sub-group-file-name-input {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: none;
+  align-self: stretch;
   min-height: var(--touch-target-min, 44px);
   padding: 0.55rem 0.65rem;
   border: 1px solid #d0d0d0;
@@ -287,6 +303,7 @@
   box-sizing: border-box;
   -webkit-appearance: none;
   appearance: none;
+  field-sizing: fixed;
 
   &:disabled {
     opacity: 0.65;
@@ -301,8 +318,14 @@
 }
 
 .sub-group-file-note-input {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: none;
+  align-self: stretch;
   min-height: 5.5rem;
+  height: 5.5rem;
   padding: 0.55rem 0.65rem;
   border: 1px solid #d0d0d0;
   border-radius: var(--input-border-radius, 8px);
@@ -313,11 +336,12 @@
   box-sizing: border-box;
   -webkit-appearance: none;
   appearance: none;
-  field-sizing: content;
+  field-sizing: fixed;
   max-height: 12rem;
 
   @include tablet-up {
     min-height: 6.5rem;
+    height: 6.5rem;
   }
 
   &:disabled {
@@ -337,23 +361,35 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.35rem;
-  min-height: var(--touch-target-min, 44px);
+  width: 100%;
+  min-height: 2rem;
   margin-top: 0.35rem;
+  box-sizing: border-box;
 }
 
 .sub-group-file-note-save {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-height: var(--touch-target-min, 44px);
-  padding: 0.4rem 0.85rem !important;
-  font-size: 0.875rem;
+  gap: 0.3rem;
+  box-sizing: border-box;
+  min-height: 2rem;
+  height: 2rem;
+  padding: 0 0.7rem !important;
+  font-size: 0.8125rem;
+  line-height: 1;
   margin: 0;
 
   &.icon-only {
-    @include touch-target-min;
-    padding: 0.5rem !important;
+    min-inline-size: 2rem;
+    min-block-size: 2rem;
+    width: 2rem;
+    padding: 0 !important;
     justify-content: center;
+  }
+
+  &:disabled {
+    opacity: 0.8;
+    cursor: wait;
   }
 
   .toolbar-btn-icon {
@@ -365,6 +401,11 @@
 .sub-group-file-note-status {
   font-size: 0.85rem;
   color: #666;
+
+  &--saved {
+    font-weight: 600;
+    color: #2e7d32;
+  }
 }
 
 .sub-group-empty {
