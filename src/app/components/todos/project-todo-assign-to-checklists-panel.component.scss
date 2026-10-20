@@ -240,10 +240,11 @@
 
 .checklist-select-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 0.35rem;
   margin: 0 0 0.4rem;
   min-width: 0;
+  white-space: normal;
 }
 
 .checklist-edit-btn {
@@ -301,7 +302,7 @@
 
 .checklist-select-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.65rem;
   flex: 1 1 auto;
   width: auto;
@@ -340,7 +341,7 @@
   flex-shrink: 0;
   width: 1.25rem;
   height: 1.25rem;
-  margin-top: 0.1rem;
+  margin-top: 0;
   border: 1px solid #bbb;
   border-radius: 4px;
   background: #fff;
@@ -358,9 +359,12 @@
 
 .checklist-select-text {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  justify-content: center;
   gap: 0.15rem;
   min-width: 0;
+  overflow: hidden;
 }
 
 .checklist-select-title {
@@ -370,10 +374,17 @@
   color: #1f2937;
 }
 
-.checklist-select-note {
+.checklist-select-item .checklist-select-note {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
   font-size: 0.8rem;
   color: #6b7280;
   line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .object-detail-empty {

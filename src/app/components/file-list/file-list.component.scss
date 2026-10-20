@@ -23,7 +23,8 @@
   }
 }
 
-// Overlay actions only after explicit open (.visible); hover must not arm buttons on touch
+// Touch: first tap opens the overlay, second tap hits a button.
+// Mouse: once the hover fade is underway the buttons accept clicks directly.
 .file-item .image-container,
 .file-group.ungrouped .image-container {
   .overlay {
@@ -34,6 +35,12 @@
 
   .overlay.visible {
     pointer-events: auto;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover .overlay {
+      pointer-events: auto;
+    }
   }
 
   @media (hover: none), (pointer: coarse) {
