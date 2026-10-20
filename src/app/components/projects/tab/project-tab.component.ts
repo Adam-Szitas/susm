@@ -487,7 +487,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         todoItems: project.todo_items || [],
         objects: this.sortedObjects(),
       },
-      wide: true,
+      extraWide: true,
     });
   }
 

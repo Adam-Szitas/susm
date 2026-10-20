@@ -102,12 +102,37 @@ body.modal-open .floating-icon {
     }
   }
 
+  // Checklist modal — force 1600px even if shell only has `.wide`
+  &:has(.project-todo-form) {
+    max-width: min(100%, 1600px);
+  }
+
+  // Protocol generate / other extraWide modals
   &.wide-xl {
-    max-width: min(92vw, 72rem);
+    max-width: min(100%, 1600px);
     max-height: min(90dvh, 90vh);
 
     @include mobile {
       max-width: 100%;
+      max-height: min(
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        92dvh
+      );
+    }
+  }
+
+  // Assign-tab height (both wide sizes)
+  &.wide:has(.project-todo-form--assign),
+  &.wide-xl:has(.project-todo-form--assign),
+  &:has(.project-todo-form--assign) {
+    height: min(88dvh, 88vh);
+    max-height: min(88dvh, 88vh);
+
+    @include mobile {
+      height: min(
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        92dvh
+      );
       max-height: min(
         calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
         92dvh
@@ -196,28 +221,30 @@ body.modal-open .floating-icon {
     }
   }
 
-  // Assign tab manages its own scroll regions (object list, checklist list)
+  // Assign tab manages its own scroll regions (object list, checklist list).
+  // Do not flex-basis: 0 the child — that collapses the checklist to an empty strip
+  // whenever the shell height isn't a definite flex parent.
   &:has(.project-todo-form--assign) {
     overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 0;
+    min-height: min(70dvh, 720px);
 
     @include mobile {
       padding-bottom: 0;
     }
 
     > * {
-      min-height: 0;
       min-width: 0;
-      flex: 1 1 0;
+      flex: 1 1 auto;
+      min-height: min(70dvh, 720px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
     .project-todo-form {
-      min-height: 0;
       gap: 0;
     }
   }

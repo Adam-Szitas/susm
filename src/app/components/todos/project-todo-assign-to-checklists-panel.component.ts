@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   inject,
+  Input,
   input,
   OnInit,
   output,
@@ -15,8 +16,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import {
+  assignmentNoteFor,
   entriesForAssignedParent,
   entriesForUnassignedParent,
+  updateTodoEntryAssignmentNote,
   isParentTodoAssigned,
   ObjectTodoEntry,
   objectTodoCardClassNames,
@@ -31,9 +34,11 @@ import {
   todoEntryItemId,
   todoItemId,
 } from '@models';
+import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
+import { ProjectTodoItemEditorModalComponent } from './project-todo-item-editor-modal.component';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TodoItemValueControlComponent } from './todo-item-value-control.component';
@@ -53,8 +58,10 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
   #projectStore = inject(ProjectStore);
+  #modalService = inject(ModalService);
   #cdr = inject(ChangeDetectorRef);
 
+  @Input({ required: true }) projectId = '';
   todoItems = input<TodoItem[]>([]);
   objects = input<ProjectObject[]>([]);
   embedded = input(false);
@@ -158,6 +165,29 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
     this.selectedChecklistIds.set([...current, id]);
   }
 
+  addChecklist(): void {
+    this.#openChecklistEditor(null);
+  }
+
+  editChecklist(item: TodoItem, event: Event): void {
+    event.stopPropagation();
+    this.#openChecklistEditor(item);
+  }
+
+  #openChecklistEditor(item: TodoItem | null): void {
+    this.#modalService.open({
+      title: item ? 'todos.editChecklist' : 'todos.addChecklist',
+      stack: true,
+      wide: true,
+      component: ProjectTodoItemEditorModalComponent,
+      componentInputs: {
+        projectId: this.projectId,
+        todoItem: item,
+        existingItems: this.sortedTodoItems(),
+      },
+    });
+  }
+
   selectAllChecklists(): void {
     this.selectedChecklistIds.set(this.sortedTodoItems().map((item) => todoItemId(item)));
   }
@@ -214,30 +244,19 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
     this.#setEntries(objectId, entries);
   }
 
-  assignAllSelectedChecklistsToAllObjects(): void {
-    for (const object of this.sortedDisplayObjects()) {
-      const objectId = object._id?.$oid;
-      if (!objectId) continue;
-      let entries = this.entriesForObject(objectId);
-      for (const item of this.selectedTodoItems()) {
-        if (!this.isTodoAssigned(objectId, item)) {
-          entries = entriesForAssignedParent(item, entries);
-        }
-      }
-      this.#setEntries(objectId, entries);
-    }
+  assignmentNote(object: ProjectObject, item: TodoItem): string {
+    const objectId = object._id?.$oid;
+    if (!objectId) return '';
+    return assignmentNoteFor(this.entriesForObject(objectId), todoItemId(item));
   }
 
-  clearSelectedChecklistsFromAllObjects(): void {
-    for (const object of this.sortedDisplayObjects()) {
-      const objectId = object._id?.$oid;
-      if (!objectId) continue;
-      let entries = this.entriesForObject(objectId);
-      for (const item of this.selectedTodoItems()) {
-        entries = entriesForUnassignedParent(todoItemId(item), entries);
-      }
-      this.#setEntries(objectId, entries);
-    }
+  onAssignmentNoteChange(object: ProjectObject, item: TodoItem, note: string): void {
+    const objectId = object._id?.$oid;
+    if (!objectId || !this.isTodoAssigned(objectId, item)) return;
+    this.#setEntries(
+      objectId,
+      updateTodoEntryAssignmentNote(this.entriesForObject(objectId), todoItemId(item), note),
+    );
   }
 
   save(): void {
@@ -299,6 +318,7 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
         serializeTodoEntries(this.entriesForObject(objectId)),
       );
     }
+    this.#workingEntries.set(new Map(this.#workingEntries()));
   }
 
   #setEntries(objectId: string, entries: ObjectTodoEntry[]): void {

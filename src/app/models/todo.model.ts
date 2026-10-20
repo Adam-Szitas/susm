@@ -32,6 +32,8 @@ export interface ObjectTodoEntry {
   status: TodoItemStatus | string;
   /** When true, object stays assigned but is omitted from protocol PDF checklist lines. */
   hidden_from_protocol?: boolean;
+  /** UI-only note for this object assignment. Never included in protocol output. */
+  assignment_note?: string;
 }
 
 export function safeTodoItemId(item: Pick<TodoItem, '_id'> | null | undefined): string {
@@ -244,6 +246,7 @@ export function entriesForAssignedParent(
         todo_item_id: parentId,
         status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
         hidden_from_protocol: previous?.hidden_from_protocol,
+        assignment_note: carriedAssignmentNote(existing, parentId),
       },
     ];
   }
@@ -262,6 +265,7 @@ export function entriesForAssignedParent(
       todo_sub_item_id: validSubId,
       status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
       hidden_from_protocol: previous?.hidden_from_protocol,
+      assignment_note: carriedAssignmentNote(existing, parentId),
     },
   ];
 }
@@ -298,6 +302,7 @@ export function updateTodoEntryStatus(
     {
       todo_item_id: parentId,
       status: normalizedStatus,
+      assignment_note: carriedAssignmentNote(entries, parentId),
     },
   ];
 }
@@ -333,8 +338,43 @@ export function updateSelectedSubItem(
       todo_sub_item_id: subItemId,
       status: previous ? normalizeTodoItemStatus(previous.status) : 'under_process',
       hidden_from_protocol: previous?.hidden_from_protocol,
+      assignment_note: carriedAssignmentNote(entries, parentId),
     },
   ];
+}
+
+const ASSIGNMENT_NOTE_MAX = 500;
+
+export function assignmentNoteFor(
+  entries: ObjectTodoEntry[] | undefined,
+  parentId: string,
+): string {
+  const entry = entries?.find((candidate) => todoEntryItemId(candidate) === parentId);
+  return entry?.assignment_note ?? '';
+}
+
+export function updateTodoEntryAssignmentNote(
+  entries: ObjectTodoEntry[],
+  parentId: string,
+  note: string,
+): ObjectTodoEntry[] {
+  const value = note.slice(0, ASSIGNMENT_NOTE_MAX);
+  return entries.map((entry) => {
+    if (todoEntryItemId(entry) !== parentId) {
+      return entry;
+    }
+    return { ...entry, assignment_note: value || undefined };
+  });
+}
+
+function carriedAssignmentNote(
+  entries: ObjectTodoEntry[],
+  parentId: string,
+): string | undefined {
+  const note = entries
+    .find((entry) => todoEntryItemId(entry) === parentId)
+    ?.assignment_note?.trim();
+  return note || undefined;
 }
 
 export function isHiddenFromProtocol(

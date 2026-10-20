@@ -1,0 +1,76 @@
+<form class="checklist-editor" [formGroup]="form" (submit)="$event.preventDefault(); save()">
+  <div class="todo-item-fields">
+    <label class="field">
+      <span class="field-label">{{ 'todos.itemTitle' | translate }}</span>
+      <input
+        #titleInput
+        type="text"
+        formControlName="title"
+        autocomplete="off"
+        [placeholder]="'todos.itemTitle' | translate"
+      />
+    </label>
+    <label class="field">
+      <span class="field-label">{{ 'todos.itemNoteOptional' | translate }}</span>
+      <textarea
+        formControlName="note"
+        rows="2"
+        [placeholder]="'todos.itemNoteOptional' | translate"
+      ></textarea>
+    </label>
+  </div>
+
+  <div class="sub-items-section">
+    <div class="sub-items-header">{{ 'todos.subItems' | translate }}</div>
+    <div class="sub-items-list" formArrayName="subItems">
+      @for (subControl of subItems.controls; track subControl; let subIdx = $index) {
+        <div class="sub-item-row" [formGroupName]="subIdx">
+          <input type="hidden" formControlName="id" />
+          <input
+            type="text"
+            formControlName="title"
+            [placeholder]="'todos.subItemTitle' | translate"
+          />
+          <div class="color-picker" role="group" [attr.aria-label]="'todos.subItemColor' | translate">
+            @for (color of colorOptions; track color) {
+              <button
+                type="button"
+                class="color-swatch color-swatch--{{ color }}"
+                [class.color-swatch--selected]="subControl.get('color')?.value === color"
+                [attr.title]="colorLabel(color) | translate"
+                [attr.aria-label]="colorLabel(color) | translate"
+                [attr.aria-pressed]="subControl.get('color')?.value === color"
+                (click)="setSubItemColor(subIdx, color)"
+              ></button>
+            }
+          </div>
+          <button
+            type="button"
+            class="delete-btn delete-btn--compact"
+            (click)="removeSubItem(subIdx)"
+            [attr.aria-label]="'common.delete' | translate"
+            [title]="'common.delete' | translate"
+          >
+            <app-trash-icon [size]="16" />
+          </button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn btn-secondary add-sub-btn" (click)="addSubItem()">
+      {{ 'todos.addSubItem' | translate }}
+    </button>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-secondary" (click)="close()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="saving">
+      @if (saving) {
+        {{ 'common.saving' | translate }}
+      } @else {
+        {{ 'common.save' | translate }}
+      }
+    </button>
+  </div>
+</form>

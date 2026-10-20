@@ -1,0 +1,199 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.checklist-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+input[type='hidden'] {
+  display: none;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.field-label {
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.todo-item-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+
+  input[type='text'],
+  textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: var(--input-border-radius, 8px);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  textarea {
+    field-sizing: content;
+    min-height: 4.5rem;
+    max-height: 14rem;
+    overflow-y: auto;
+    resize: vertical;
+    line-height: 1.45;
+  }
+}
+
+.sub-items-section {
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #ddd;
+}
+
+.sub-items-header {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.sub-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sub-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.5rem;
+  align-items: center;
+
+  @include mobile {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'title'
+      'colors'
+      'delete';
+  }
+
+  input[type='text'] {
+    width: 100%;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: var(--input-border-radius, 8px);
+    font-size: 0.95rem;
+
+    @include mobile {
+      grid-area: title;
+    }
+  }
+
+  .color-picker {
+    @include mobile {
+      grid-area: colors;
+    }
+  }
+
+  .delete-btn {
+    @include mobile {
+      grid-area: delete;
+      justify-self: start;
+    }
+  }
+}
+
+.color-picker {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.color-swatch {
+  display: block;
+  @include square-size(var(--icon-size-md));
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+
+  &--selected {
+    outline: 2px solid #333;
+    outline-offset: 2px;
+  }
+
+  &--red {
+    background: #e53935;
+  }
+
+  &--blue {
+    background: #1e88e5;
+  }
+
+  &--green {
+    background: #43a047;
+  }
+
+  &--orange {
+    background: #fb8c00;
+  }
+}
+
+.add-sub-btn {
+  margin: 0.65rem 0 0;
+  white-space: nowrap;
+}
+
+.delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0.35rem;
+  border: 1px solid #dc3545;
+  border-radius: 6px;
+  background: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #c82333;
+    border-color: #c82333;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #c82333;
+    outline-offset: 2px;
+  }
+
+  &--compact {
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+
+  .btn {
+    margin: 0;
+  }
+}

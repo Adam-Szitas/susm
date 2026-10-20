@@ -118,6 +118,9 @@
                       @if (item.note?.trim()) {
                         <span class="todo-label-note">{{ item.note }}</span>
                       }
+                      @if (assignmentNote(item)) {
+                        <span class="todo-label-assignment-note">{{ assignmentNote(item) }}</span>
+                      }
                     </span>
 
                     <div class="todo-item-controls">

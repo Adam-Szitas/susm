@@ -1,4 +1,4 @@
-const CACHE_NAME = 'susm-cache-v5'; // Increment version to clear old cache
+const CACHE_NAME = 'susm-cache-v6'; // Increment version to clear old cache
 const urlsToCache = [
   '/',
   '/index.csr.html',
@@ -45,6 +45,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const request = event.request;
+
+  // Dev server: never serve a cached stylesheet/script over a live edit.
+  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
+    event.respondWith(fetch(request));
+    return;
+  }
   
   // Only handle GET requests
   if (request.method !== 'GET') {

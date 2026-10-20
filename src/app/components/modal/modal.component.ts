@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, ViewChild, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../services/modal.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,6 +16,10 @@ export class ModalComponent {
   @Input() confirmText = 'Confirm';
   @Input() wide = false;
   @Input() extraWide = false;
+
+  /** Anchor for ModalService.createComponent — must stay in the template. */
+  @ViewChild('dynamicContent', { read: ViewContainerRef, static: true })
+  dynamicContent!: ViewContainerRef;
 
   modalService!: ModalService;
 

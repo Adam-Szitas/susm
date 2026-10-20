@@ -13,6 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   ObjectTodoEntry,
   TodoItem,
+  assignmentNoteFor,
   entriesForAssignedParent,
   entriesForUnassignedParent,
   isHiddenFromProtocol,
@@ -93,6 +94,10 @@ export class ObjectTodosSectionComponent {
 
   isHiddenInProtocol(item: TodoItem): boolean {
     return isHiddenFromProtocol(this.#activeEntries(), todoItemId(item));
+  }
+
+  assignmentNote(item: TodoItem): string {
+    return assignmentNoteFor(this.activeEntries(), todoItemId(item)).trim();
   }
 
   itemDisplayLabel(item: TodoItem): string {

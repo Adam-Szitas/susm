@@ -37,7 +37,9 @@
 }
 
 :host-context(.object-checklist-row) {
-  display: block;
+  display: flex;
+  align-items: center;
+  align-self: center;
   width: 100%;
   max-width: 9.5rem;
 
@@ -46,6 +48,10 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    block-size: 2.5rem;
+    min-block-size: 2.5rem;
+    padding-block: 0;
+    line-height: 1.2;
   }
 
   .sub-item-select-wrap {

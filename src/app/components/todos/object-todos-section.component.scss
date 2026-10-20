@@ -328,7 +328,8 @@
   white-space: nowrap;
 }
 
-.todo-label-note {
+.todo-label-note,
+.todo-label-assignment-note {
   font-size: 0.78rem;
   font-weight: 400;
   color: #6b7280;
@@ -336,6 +337,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.todo-label-assignment-note {
+  color: var(--primary-default, #9d0000);
 }
 
 .todo-item-controls {

@@ -6,7 +6,6 @@ import {
   createComponent,
   inject,
   EnvironmentInjector,
-  inputBinding,
 } from '@angular/core';
 import { ModalComponent } from '../components/modal/modal.component';
 import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
@@ -21,8 +20,10 @@ export interface ModalConfig {
   component?: any;
   componentInputs?: Record<string, any>;
   wide?: boolean;
-  /** Extra-wide modal for protocol generate/preview on desktop (~72rem). */
+  /** Extra-wide modal (max 1600px) — project checklist, protocol generate. */
   extraWide?: boolean;
+  /** Keep the current modal open and show this one above it. */
+  stack?: boolean;
 }
 
 export interface ConfirmConfig {
@@ -34,11 +35,19 @@ export interface ConfirmConfig {
   confirmKind?: 'danger' | 'primary';
 }
 
+interface ModalLayer {
+  componentRef: ComponentRef<ModalComponent>;
+  childRef: ComponentRef<unknown> | null;
+  container: HTMLElement;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ModalService {
   private componentRef: ComponentRef<ModalComponent> | null = null;
+  private childRef: ComponentRef<unknown> | null = null;
   private container: HTMLElement | null = null;
   private pendingConfirmResolve: ((value: boolean) => void) | null = null;
+  #layers: ModalLayer[] = [];
 
   #injector = inject(Injector);
   #appRef = inject(ApplicationRef);
@@ -53,77 +62,153 @@ export class ModalService {
   }
 
   open(config?: ModalConfig): { modalRef: ComponentRef<ModalComponent>; childRef?: ComponentRef<any> } {
-    // Close any existing modal first
-    this.close();
-
-    // Create a fresh container each time
-    this.container = this.createContainer();
-
-    this.componentRef = createComponent(ModalComponent, {
-      environmentInjector: this.#injector as EnvironmentInjector,
-      hostElement: this.container,
-    });
-
-    this.#appRef.attachView(this.componentRef.hostView);
-
-    Object.assign(this.componentRef.instance, config || {});
-    this.componentRef.instance.modalService = this;
-
-    let childRef: ComponentRef<any> | undefined;
-    if (config?.component) {
-      childRef = this.injectComponentIntoModal(config.component, config.componentInputs) || undefined;
+    if (!config?.stack) {
+      this.closeAll();
     }
 
-    return { modalRef: this.componentRef, childRef };
-  }
+    const container = this.createContainer();
+    container.style.zIndex = String(10500 + this.#layers.length * 20);
 
-  private injectComponentIntoModal(componentType: any, inputs?: Record<string, any>): ComponentRef<any> | null {
-    if (!this.componentRef) return null;
-    
-    const modalBody = this.componentRef.location.nativeElement.querySelector('.modal-body');
-    if (!modalBody) return null;
-
-    // Clear ng-content
-    modalBody.innerHTML = '';
-
-    const bindings = inputs
-      ? Object.keys(inputs).map((key) => inputBinding(key, () => inputs[key]))
-      : [];
-
-    const childComponent = createComponent(componentType, {
+    const componentRef = createComponent(ModalComponent, {
       environmentInjector: this.#injector as EnvironmentInjector,
-      hostElement: modalBody,
-      bindings,
+      hostElement: container,
     });
 
-    this.#appRef.attachView(childComponent.hostView);
+    this.#appRef.attachView(componentRef.hostView);
+
+    const instance = componentRef.instance;
+    instance.title = config?.title ?? instance.title;
+    instance.showConfirm = config?.showConfirm ?? instance.showConfirm;
+    instance.confirmText = config?.confirmText ?? instance.confirmText;
+    // Mutually exclusive — both true left `.wide` (800px) winning over `.wide-xl`.
+    instance.wide = !!config?.wide && !config?.extraWide;
+    instance.extraWide = !!config?.extraWide;
+    instance.modalService = this;
+
+    const layer: ModalLayer = { componentRef, childRef: null, container };
+    this.#layers.push(layer);
+    this.#syncTop();
+
+    // Paint the shell (title, size classes, #dynamicContent) before inserting the body.
+    componentRef.changeDetectorRef.detectChanges();
+    this.#applySize(layer, !!config?.extraWide, !!config?.wide);
+
+    if (config?.component) {
+      layer.childRef = this.#inject(layer, config.component, config.componentInputs);
+      this.#syncTop();
+
+      // Zoneless change detection can recreate the modal view and drop the body.
+      const component = config.component;
+      const inputs = config.componentInputs;
+      const remountIfEmpty = () => {
+        if (!this.#layers.includes(layer)) return;
+        if (this.#bodyHasContent(layer)) return;
+        layer.childRef = this.#inject(layer, component, inputs);
+        this.#syncTop();
+      };
+      queueMicrotask(remountIfEmpty);
+      setTimeout(remountIfEmpty, 0);
+    }
+
+    return { modalRef: componentRef, childRef: layer.childRef ?? undefined };
+  }
+
+  #syncTop(): void {
+    const top = this.#layers.at(-1);
+    this.componentRef = top?.componentRef ?? null;
+    this.childRef = top?.childRef ?? null;
+    this.container = top?.container ?? null;
+  }
+
+  #applySize(layer: ModalLayer, extraWide: boolean, wide: boolean): void {
+    const content = layer.componentRef.location.nativeElement.querySelector(
+      '.modal-content',
+    ) as HTMLElement | null;
+    if (!content) return;
+    content.classList.toggle('wide', wide && !extraWide);
+    content.classList.toggle('wide-xl', extraWide);
+    if (extraWide) {
+      content.style.maxWidth = 'min(100%, 1600px)';
+      content.style.minHeight = 'min(70dvh, 720px)';
+    } else {
+      content.style.maxWidth = '';
+      content.style.minHeight = '';
+    }
+  }
+
+  #bodyHasContent(layer: ModalLayer): boolean {
+    const body = layer.componentRef.location.nativeElement.querySelector('.modal-body');
+    return !!body?.firstElementChild;
+  }
+
+  #inject(layer: ModalLayer, componentType: any, inputs?: Record<string, any>): ComponentRef<any> | null {
+    if (layer.childRef) {
+      layer.childRef.destroy();
+      layer.childRef = null;
+    }
+
+    const vcr = layer.componentRef.instance.dynamicContent;
+    let childComponent: ComponentRef<any>;
+
+    if (vcr) {
+      vcr.clear();
+      childComponent = vcr.createComponent(componentType);
+    } else {
+      const modalBody = layer.componentRef.location.nativeElement.querySelector(
+        '.modal-body',
+      ) as HTMLElement | null;
+      if (!modalBody) return null;
+      const outlet = document.createElement('div');
+      outlet.className = 'modal-outlet';
+      modalBody.replaceChildren(outlet);
+      childComponent = createComponent(componentType, {
+        environmentInjector: this.#injector as EnvironmentInjector,
+        hostElement: outlet,
+      });
+      this.#appRef.attachView(childComponent.hostView);
+    }
+
+    if (inputs) {
+      for (const [key, value] of Object.entries(inputs)) {
+        childComponent.setInput(key, value);
+      }
+    }
+
     childComponent.changeDetectorRef.detectChanges();
     return childComponent;
   }
 
+  /** Close every open modal, topmost first. */
+  closeAll(): void {
+    while (this.#layers.length) {
+      this.close();
+    }
+  }
+
+  /** Close the topmost modal. A stacked editor closes without dismissing the one under it. */
   close() {
-    if (this.pendingConfirmResolve) {
+    const layer = this.#layers.pop();
+    if (!layer) return;
+
+    if (this.pendingConfirmResolve && this.#layers.length === 0) {
       this.pendingConfirmResolve(false);
       this.pendingConfirmResolve = null;
     }
-    if (this.componentRef) {
-      this.#appRef.detachView(this.componentRef.hostView);
-      this.componentRef.destroy();
-      this.componentRef = null;
+    if (layer.childRef) {
+      layer.childRef.destroy();
     }
-
-    // Remove container from DOM
-    if (this.container && this.container.parentNode) {
-      this.container.parentNode.removeChild(this.container);
-      this.container = null;
+    this.#appRef.detachView(layer.componentRef.hostView);
+    layer.componentRef.destroy();
+    if (layer.container.parentNode) {
+      layer.container.parentNode.removeChild(layer.container);
     }
+    this.#syncTop();
 
     if (!document.querySelector('.modal-host')) {
       unlockDocumentScroll();
     }
   }
 
-  /** Resolve the pending confirm promise without closing. Used by confirm dialog so the result is fixed before any deferred close(). */
   resolveConfirm(value: boolean): void {
     if (this.pendingConfirmResolve) {
       this.pendingConfirmResolve(value);
@@ -131,10 +216,8 @@ export class ModalService {
     }
   }
 
-  /** Opens a confirm modal. Returns a promise that resolves to true if user confirmed, false if cancelled or closed. */
   openConfirm(config: ConfirmConfig): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-      // Resolve translations so they display correctly in the dynamically created confirm dialog
       const title = this.#translationService.instant(config.title);
       const message = this.#translationService.instant(config.message);
       const confirmText = this.#translationService.instant(config.confirmText ?? 'common.delete');
@@ -150,7 +233,6 @@ export class ModalService {
           modalService: this,
         },
       });
-      // Set after open() so the close() inside open() (which clears any previous modal) doesn't resolve this promise
       this.pendingConfirmResolve = resolve;
     });
   }

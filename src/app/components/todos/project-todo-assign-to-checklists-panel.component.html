@@ -43,6 +43,18 @@
         <div class="panel-toolbar-actions">
           <button
             type="button"
+            class="btn btn-primary btn-small todo-action-btn checklist-add-btn"
+            (click)="addChecklist()"
+            [attr.aria-label]="'todos.addChecklist' | translate"
+            [title]="'todos.addChecklist' | translate"
+          >
+            <span class="todo-action-icon" aria-hidden="true">
+              <app-icon [icon]="icons.plus" />
+            </span>
+            <span class="checklist-add-label">{{ 'todos.addChecklist' | translate }}</span>
+          </button>
+          <button
+            type="button"
             class="btn btn-secondary btn-small todo-action-btn"
             (click)="selectAllChecklists()"
             [attr.aria-label]="'todos.selectAllChecklists' | translate"
@@ -85,7 +97,7 @@
         [attr.aria-label]="'todos.selectChecklists' | translate"
       >
         @for (item of filteredChecklists(); track trackTodoItemId(item)) {
-          <li>
+          <li class="checklist-select-row">
             <button
               type="button"
               class="checklist-select-item"
@@ -106,10 +118,25 @@
                 }
               </span>
             </button>
+            <button
+              type="button"
+              class="checklist-edit-btn"
+              (click)="editChecklist(item, $event)"
+              [attr.aria-label]="'todos.editChecklist' | translate"
+              [title]="'todos.editChecklist' | translate"
+            >
+              <app-icon [icon]="icons.edit" />
+              <span class="checklist-edit-label">{{ 'common.edit' | translate }}</span>
+            </button>
           </li>
         }
         @if (filteredChecklists().length === 0) {
-          <li class="panel-empty">{{ 'todos.noChecklistsMatchSearch' | translate }}</li>
+          <li class="panel-empty">
+            {{
+              (sortedTodoItems().length === 0 ? 'todos.noItems' : 'todos.noChecklistsMatchSearch')
+                | translate
+            }}
+          </li>
         }
       </ul>
     </aside>
@@ -124,32 +151,6 @@
             <span class="selection-count">{{
               'todos.selectedChecklistCount' | translate: { count: selectedChecklistIds().length }
             }}</span>
-          </div>
-          <div class="panel-toolbar-actions">
-            <button
-              type="button"
-              class="btn btn-secondary btn-small todo-action-btn"
-              (click)="assignAllSelectedChecklistsToAllObjects()"
-              [attr.aria-label]="'todos.assignAllToObjects' | translate"
-              [title]="'todos.assignAllToObjects' | translate"
-            >
-              <span class="todo-action-icon" aria-hidden="true">
-                <app-icon [icon]="icons.clipboardCheck" />
-              </span>
-              <span class="todo-action-label">{{ 'todos.assignAllShort' | translate }}</span>
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary btn-small todo-action-btn"
-              (click)="clearSelectedChecklistsFromAllObjects()"
-              [attr.aria-label]="'todos.clearAllFromObjects' | translate"
-              [title]="'todos.clearAllFromObjects' | translate"
-            >
-              <span class="todo-action-icon" aria-hidden="true">
-                <app-icon [icon]="icons.clipboard" />
-              </span>
-              <span class="todo-action-label">{{ 'todos.clearAllShort' | translate }}</span>
-            </button>
           </div>
         </header>
 
@@ -190,7 +191,10 @@
 
               <ul class="object-checklist-rows">
                 @for (item of selectedTodoItems(); track trackTodoItemId(item)) {
-                  <li class="object-checklist-row">
+                  <li
+                    class="object-checklist-row"
+                    [class.object-checklist-row--assigned]="isTodoAssigned(object._id!.$oid!, item)"
+                  >
                     <label class="object-checklist-assign">
                       <input
                         type="checkbox"
@@ -212,6 +216,22 @@
                         [disabled]="saving()"
                         (entriesChange)="onObjectEntriesChange(object, $event)"
                       />
+                      <label class="assignment-note">
+                        <span class="assignment-note-label">{{ 'todos.assignmentNote' | translate }}</span>
+                        <input
+                          type="text"
+                          class="assignment-note-input"
+                          maxlength="500"
+                          [ngModel]="assignmentNote(object, item)"
+                          (ngModelChange)="onAssignmentNoteChange(object, item, $event)"
+                          [disabled]="saving()"
+                          [attr.placeholder]="'todos.assignmentNotePlaceholder' | translate"
+                          [attr.aria-label]="
+                            'todos.assignmentNoteFor'
+                              | translate: { title: item.title, object: objectLabel(object) }
+                          "
+                        />
+                      </label>
                     }
                   </li>
                 }
