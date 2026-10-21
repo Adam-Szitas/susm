@@ -178,15 +178,6 @@
             >
               <div class="object-detail-card-header">
                 <span class="object-detail-card-label">{{ objectLabel(object) }}</span>
-                @if (isObjectDirty(object._id!.$oid!)) {
-                  <span
-                    class="unsaved-flag"
-                    [attr.title]="'todos.unsavedChanges' | translate"
-                    [attr.aria-label]="'todos.unsavedChanges' | translate"
-                  >
-                    <app-icon [icon]="icons.flag" />
-                  </span>
-                }
               </div>
 
               <ul class="object-checklist-rows">
@@ -218,9 +209,9 @@
                       />
                       <label class="assignment-note">
                         <span class="assignment-note-label">{{ 'todos.assignmentNote' | translate }}</span>
-                        <input
-                          type="text"
+                        <textarea
                           class="assignment-note-input"
+                          rows="5"
                           maxlength="500"
                           [ngModel]="assignmentNote(object, item)"
                           (ngModelChange)="onAssignmentNoteChange(object, item, $event)"
@@ -230,7 +221,7 @@
                             'todos.assignmentNoteFor'
                               | translate: { title: item.title, object: objectLabel(object) }
                           "
-                        />
+                        ></textarea>
                       </label>
                     }
                   </li>

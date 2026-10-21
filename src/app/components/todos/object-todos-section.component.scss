@@ -341,6 +341,9 @@
 
 .todo-label-assignment-note {
   color: var(--primary-default, #9d0000);
+  white-space: pre-wrap;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .todo-item-controls {

@@ -1,10 +1,14 @@
+import { isDevMode } from '@angular/core';
+
 // Determine backend URL based on environment
 // This function is safe for SSR - it checks for window before accessing it
 function getBackendUrl(): string {
-  // Check if we're in a browser environment (not SSR)
-  // During SSR, window is undefined, so we default to production URL
+  // During SSR, window is undefined. `ng serve` still runs that path, and
+  // local development must talk to the local API rather than the hosted one.
   if (typeof window === 'undefined') {
-    // return 'https://susm-be-7c4h.shuttle.app';
+    if (isDevMode()) {
+      return 'http://localhost:8080';
+    }
     return 'https://susm-be.fly.dev';
   }
   

@@ -59,13 +59,7 @@
               <span class="object-list-item-meta">
                 <span class="assignment-badge">{{ assignmentSummary(object) }}</span>
                 @if (isObjectDirtyState(object)) {
-                  <span
-                    class="unsaved-flag"
-                    [attr.title]="'todos.unsavedChanges' | translate"
-                    [attr.aria-label]="'todos.unsavedChanges' | translate"
-                  >
-                    <app-icon [icon]="icons.flag" />
-                  </span>
+                  <span class="unsaved-label">{{ 'todos.unsavedChanges' | translate }}</span>
                 }
               </span>
             </button>

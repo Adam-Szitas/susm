@@ -171,8 +171,14 @@
   flex-shrink: 0;
 }
 
-.unsaved-flag {
+.unsaved-label {
   flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--primary-default, #9d0000);
 }
 
 .object-list-empty {

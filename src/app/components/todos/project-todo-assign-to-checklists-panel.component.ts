@@ -7,6 +7,7 @@ import {
   inject,
   Input,
   input,
+  OnDestroy,
   OnInit,
   output,
   signal,
@@ -53,13 +54,14 @@ export type ChecklistFirstMobileStep = 'checklists' | 'objects';
   styleUrl: './project-todo-assign-to-checklists-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
+export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDestroy {
   protected readonly icons = icons;
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
   #cdr = inject(ChangeDetectorRef);
+  #closeGuard = (): boolean | Promise<boolean> => this.#confirmDiscardOnClose();
 
   @Input({ required: true }) projectId = '';
   todoItems = input<TodoItem[]>([]);
@@ -135,6 +137,23 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit {
 
   ngOnInit(): void {
     this.#resetWorkingState();
+    this.#modalService.setCloseGuard(this.#closeGuard);
+  }
+
+  ngOnDestroy(): void {
+    this.#modalService.clearCloseGuard(this.#closeGuard);
+  }
+
+  #confirmDiscardOnClose(): boolean | Promise<boolean> {
+    if (this.dirtyObjectCount() === 0) return true;
+    return this.#modalService.openConfirm({
+      title: 'todos.unsavedChanges',
+      message: 'todos.confirmCloseWithUnsaved',
+      confirmText: 'common.close',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+      stack: true,
+    });
   }
 
   checklistLabel(item: TodoItem): string {

@@ -33,12 +33,17 @@ export interface ConfirmConfig {
   cancelText?: string;
   /** 'danger' for delete actions, 'primary' for normal confirm */
   confirmKind?: 'danger' | 'primary';
+  /** Keep the current modal open and show the confirm above it. */
+  stack?: boolean;
 }
+
+type ModalCloseGuard = () => boolean | Promise<boolean>;
 
 interface ModalLayer {
   componentRef: ComponentRef<ModalComponent>;
   childRef: ComponentRef<unknown> | null;
   container: HTMLElement;
+  beforeClose?: ModalCloseGuard;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,6 +53,7 @@ export class ModalService {
   private container: HTMLElement | null = null;
   private pendingConfirmResolve: ((value: boolean) => void) | null = null;
   #layers: ModalLayer[] = [];
+  #closeGuardPending = false;
 
   #injector = inject(Injector);
   #appRef = inject(ApplicationRef);
@@ -178,19 +184,58 @@ export class ModalService {
     return childComponent;
   }
 
-  /** Close every open modal, topmost first. */
+  /** Ask before the top modal closes. Used by the checklist modal when edits are unsaved. */
+  setCloseGuard(guard: ModalCloseGuard): void {
+    const layer = this.#layers.at(-1);
+    if (layer) layer.beforeClose = guard;
+  }
+
+  clearCloseGuard(guard: ModalCloseGuard): void {
+    for (const layer of this.#layers) {
+      if (layer.beforeClose === guard) layer.beforeClose = undefined;
+    }
+  }
+
+  /** Close every open modal, topmost first. Skips close guards. */
   closeAll(): void {
     while (this.#layers.length) {
-      this.close();
+      const before = this.#layers.length;
+      this.#closeTop(true);
+      if (this.#layers.length >= before) break;
     }
   }
 
   /** Close the topmost modal. A stacked editor closes without dismissing the one under it. */
   close() {
-    const layer = this.#layers.pop();
+    this.#closeTop(false);
+  }
+
+  #closeTop(force: boolean): void {
+    const layer = this.#layers.at(-1);
     if (!layer) return;
 
-    if (this.pendingConfirmResolve && this.#layers.length === 0) {
+    if (!force && layer.beforeClose && !this.#closeGuardPending) {
+      const result = layer.beforeClose();
+      if (result instanceof Promise) {
+        this.#closeGuardPending = true;
+        void result.then((ok) => {
+          setTimeout(() => {
+            this.#closeGuardPending = false;
+            if (!ok || !this.#layers.includes(layer)) return;
+            while (this.#layers.length && this.#layers.at(-1) !== layer) {
+              this.#closeTop(true);
+            }
+            if (this.#layers.at(-1) === layer) this.#closeTop(true);
+          }, 0);
+        });
+        return;
+      }
+      if (!result) return;
+    }
+
+    this.#layers.pop();
+
+    if (this.pendingConfirmResolve) {
       this.pendingConfirmResolve(false);
       this.pendingConfirmResolve = null;
     }
@@ -224,6 +269,7 @@ export class ModalService {
       const cancelText = this.#translationService.instant(config.cancelText ?? 'common.cancel');
       this.open({
         title,
+        stack: config.stack,
         component: ConfirmDialogComponent,
         componentInputs: {
           message,

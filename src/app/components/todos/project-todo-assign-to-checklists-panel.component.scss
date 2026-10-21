@@ -42,17 +42,15 @@
   }
 
   .checklist-add-label {
-    @include mobile {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
 
@@ -254,7 +252,6 @@
   gap: 0.35rem;
   flex: 0 0 auto;
   margin: 0;
-  padding: 0.45rem 0.65rem;
   border: 1px solid var(--primary-default, #9d0000);
   border-radius: 8px;
   background: #fff1f2;
@@ -265,6 +262,7 @@
   cursor: pointer;
   min-block-size: var(--touch-target-min);
   min-inline-size: var(--touch-target-min);
+  padding: 0.45rem;
 
   svg {
     @include icon-size(var(--icon-size-compact));
@@ -280,24 +278,18 @@
     outline: 2px solid var(--primary-focus, #c41e3a);
     outline-offset: 2px;
   }
-
-  @include mobile {
-    padding: 0.45rem;
-  }
 }
 
 .checklist-edit-label {
-  @include mobile {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .checklist-select-item {
@@ -407,7 +399,7 @@
 .object-detail-card {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 0.75rem;
   box-sizing: border-box;
@@ -419,8 +411,7 @@
   background: #fff;
 
   &--dirty {
-    border-color: rgba(157, 0, 0, 0.4);
-    box-shadow: inset 0 0 0 1px rgba(157, 0, 0, 0.12);
+    box-shadow: inset 3px 0 0 var(--primary-default, #9d0000);
   }
 
   &.card--todo-complete {
@@ -484,7 +475,7 @@
   flex: 1 1 0;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   inline-size: auto;
   min-inline-size: 0;
   max-inline-size: 100%;
@@ -511,7 +502,7 @@
   }
 
   &--assigned {
-    grid-template-columns: max-content max-content minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 9.5rem;
   }
 
   .object-checklist-assign {
@@ -527,15 +518,14 @@
   }
 
   .assignment-note {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-column: 3;
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
     justify-self: stretch;
-    align-self: center;
-    align-items: center;
+    align-items: stretch;
     inline-size: 100%;
     min-inline-size: 0;
-    gap: 0.45rem;
+    gap: 0.35rem;
   }
 }
 
@@ -559,13 +549,16 @@
 
 .assignment-note-input {
   box-sizing: border-box;
-  flex: 1 1 0;
+  display: block;
   width: 100%;
   min-inline-size: 0;
-  block-size: 2.5rem;
-  min-block-size: 2.5rem;
-  padding: 0 0.65rem;
-  line-height: 1.2;
+  height: auto;
+  field-sizing: content;
+  min-block-size: 7.5rem;
+  max-block-size: 14lh;
+  padding: 0.6rem 0.7rem;
+  line-height: 1.45;
+  resize: vertical;
   border: 1px solid #e7c5cb;
   border-radius: var(--input-border-radius, 8px);
   background: #fff8f8;
@@ -656,19 +649,6 @@
 
 .form-actions-save {
   margin-inline-start: auto;
-}
-
-.unsaved-flag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--primary-default, #9d0000);
-  line-height: 0;
-
-  svg {
-    @include icon-size(var(--icon-size-compact));
-  }
 }
 
 .changes-hint {
