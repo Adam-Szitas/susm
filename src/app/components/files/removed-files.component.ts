@@ -1,15 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
-import { FileService } from '../../services/file.service';
+import { FileService, type RemovedFileItem } from '../../services/file.service';
 import { buildUploadImageUrl } from '../../utils/upload-image-url';
-
-export interface RemovedFileItem {
-  object_name: string;
-  filename: string;
-  path?: string;
-}
+import { NotificationService } from '../../services/notification.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-removed-files',
@@ -21,12 +17,15 @@ export interface RemovedFileItem {
 })
 export class RemovedFilesComponent implements OnInit {
   #fileService = inject(FileService);
+  #notificationService = inject(NotificationService);
+  #translate = inject(TranslateService);
   #failedImageKeys = new Set<string>();
   #failedImageKeysVersion = signal(0);
 
   removed = signal<RemovedFileItem[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+  restoringIds = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     this.loadRemoved();
@@ -52,12 +51,40 @@ export class RemovedFilesComponent implements OnInit {
   }
 
   onImageError(item: RemovedFileItem): void {
-    this.#failedImageKeys.add(item.filename + item.object_name);
+    this.#failedImageKeys.add(`${item.kind}:${item.id}`);
     this.#failedImageKeysVersion.update((v) => v + 1);
   }
 
   showImage(item: RemovedFileItem): boolean {
     this.#failedImageKeysVersion(); // depend on signal so view updates when image errors
-    return !!item.path && !this.#failedImageKeys.has(item.filename + item.object_name);
+    return !!item.path && !this.#failedImageKeys.has(`${item.kind}:${item.id}`);
+  }
+
+  restore(item: RemovedFileItem): void {
+    const key = `${item.kind}:${item.id}`;
+    if (!item.id || this.restoringIds().has(key)) return;
+    this.restoringIds.update((ids) => new Set(ids).add(key));
+    this.#fileService
+      .restoreRemovedItem(item)
+      .pipe(
+        finalize(() => {
+          this.restoringIds.update((ids) => {
+            const next = new Set(ids);
+            next.delete(key);
+            return next;
+          });
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(this.#translate.instant('files.restoreSuccess'));
+          this.loadRemoved();
+        },
+        error: (err) => {
+          this.#notificationService.showError(
+            err?.message || this.#translate.instant('files.restoreFailed'),
+          );
+        },
+      });
   }
 }

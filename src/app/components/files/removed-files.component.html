@@ -10,7 +10,7 @@
     <p class="error">{{ error() }}</p>
   } @else {
     <div class="removed-grid">
-      @for (item of removed(); track item.filename + item.object_name) {
+      @for (item of removed(); track item.kind + ':' + item.id) {
         <div class="removed-card">
           @if (showImage(item)) {
             <div class="removed-thumb">
@@ -24,6 +24,14 @@
           }
           <span class="removed-object">{{ item.object_name }}</span>
           <span class="removed-filename">{{ item.filename }}</span>
+          <button
+            type="button"
+            class="restore-button"
+            (click)="restore(item)"
+            [disabled]="restoringIds().has(item.kind + ':' + item.id)"
+          >
+            {{ 'files.restore' | translate }}
+          </button>
         </div>
       } @empty {
         <p class="empty-state">{{ 'files.noRemovedFiles' | translate }}</p>

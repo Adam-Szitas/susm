@@ -44,6 +44,14 @@ export interface PaginatedPicturesResponse {
   categories: string[];
 }
 
+export interface RemovedFileItem {
+  kind: 'file' | 'group' | 'sub_group';
+  id: string;
+  object_name: string;
+  filename: string;
+  path?: string;
+}
+
 export interface FileUploadMetadata {
   description?: string;
   note?: string;
@@ -307,11 +315,22 @@ export class FileService {
   }
 
   /**
-   * Gets removed (soft-deleted) files – object name, filename, and optional path for thumbnails.
+   * Gets removed files and containers with the IDs needed to restore them from the bin.
    */
-  getRemovedFiles(): Observable<{ object_name: string; filename: string; path?: string }[]> {
+  getRemovedFiles(): Observable<RemovedFileItem[]> {
     const endpoint = 'files/removed';
-    return this.#httpService.get<{ object_name: string; filename: string; path?: string }[]>(endpoint);
+    return this.#httpService.get<RemovedFileItem[]>(endpoint);
+  }
+
+  restoreRemovedItem(item: RemovedFileItem): Observable<{ message: string }> {
+    const endpoint = item.kind === 'group'
+      ? `file/group/${item.id}/restore`
+      : item.kind === 'sub_group'
+        ? `file/sub-group/${item.id}/restore`
+        : `file/${item.id}/restore`;
+    return this.#httpService.post<{ message: string }>(endpoint, {}, undefined, {
+      suppressErrorNotification: true,
+    });
   }
 
   /**
