@@ -14,6 +14,10 @@ export interface ObjectAddress {
 
 export type UserRole = 'admin' | 'member';
 
+export interface FeatureFlags {
+  protocols: { enabled: boolean };
+}
+
 export interface User {
   id?: string;
   uuid?: string;
@@ -25,6 +29,7 @@ export interface User {
   role?: UserRole;
   /** True only for the single platform-wide superuser. */
   is_superuser?: boolean;
+  feature_flags?: FeatureFlags;
 }
 
 export interface TeamUser {

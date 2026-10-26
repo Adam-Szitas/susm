@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './guards/user.guard';
+import { authGuard, guestGuard, protocolsFeatureGuard } from './guards/user.guard';
 
 export const routes: Routes = [
   {
@@ -26,6 +26,10 @@ export const routes: Routes = [
       import('./components/dashboard/dashboard.routes').then((router) => router.DashboardRoutes),
   },
   {
+    path: 'admin',
+    loadChildren: () => import('./components/admin/admin.routes').then((router) => router.AdminRoutes),
+  },
+  {
     path: 'projects',
     canActivate: [authGuard],
     loadChildren: () =>
@@ -39,7 +43,7 @@ export const routes: Routes = [
   },
   {
     path: 'protocols',
-    canActivate: [authGuard],
+    canActivate: [authGuard, protocolsFeatureGuard],
     loadChildren: () =>
       import('./components/protocols/protocols.routes').then((router) => router.ProtocolsRoutes),
   },

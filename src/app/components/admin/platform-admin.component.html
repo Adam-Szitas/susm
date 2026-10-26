@@ -1,0 +1,232 @@
+<main class="admin-page" id="admin-content" tabindex="-1">
+  <header class="admin-header">
+    <div>
+      <p class="admin-eyebrow">{{ 'admin.eyebrow' | translate }}</p>
+      <h1>{{ 'admin.title' | translate }}</h1>
+      <p class="admin-intro">{{ 'admin.intro' | translate }}</p>
+    </div>
+    <div class="admin-header-actions">
+      <button type="button" class="button button-secondary" (click)="refresh()" [disabled]="loading()">
+        {{ (loading() ? 'admin.refreshing' : 'admin.refresh') | translate }}
+      </button>
+      <button type="button" class="button button-outline" (click)="logout()">
+        {{ 'navbar.logout' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <section class="admin-message admin-message--error" role="alert">
+      <p>{{ 'admin.loadFailed' | translate }}</p>
+      <button type="button" class="button button-secondary" (click)="refresh()">
+        {{ 'admin.retry' | translate }}
+      </button>
+    </section>
+  } @else if (loading() && !overview()) {
+    <p class="admin-loading" aria-live="polite">{{ 'admin.loading' | translate }}</p>
+  } @else if (overview(); as data) {
+    <section class="metrics-grid" [attr.aria-label]="'admin.platformMetrics' | translate">
+      <article class="metric-card"><strong>{{ data.metrics.companies }}</strong><span>{{ 'admin.companies' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.active_users }}</strong><span>{{ 'admin.activeUsers' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.active_projects }}</strong><span>{{ 'admin.activeProjects' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.archived_projects }}</strong><span>{{ 'admin.archivedProjects' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.active_objects }}</strong><span>{{ 'admin.activeObjects' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.active_files }}</strong><span>{{ 'admin.activeFiles' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.generated_protocols }}</strong><span>{{ 'admin.generatedProtocols' | translate }}</span></article>
+      <article class="metric-card"><strong>{{ data.metrics.unused_registration_invites }}</strong><span>{{ 'admin.openInvites' | translate }}</span></article>
+    </section>
+
+    <section class="charts-grid" aria-label="{{ 'admin.charts' | translate }}">
+      <figure class="chart-card">
+        <figcaption>
+          <h2>{{ 'admin.protocolAvailability' | translate }}</h2>
+          <p>{{ 'admin.currentSnapshot' | translate }} · {{ data.generated_at | date: 'medium' }}</p>
+        </figcaption>
+        <p class="chart-summary" role="img" [attr.aria-label]="'admin.protocolAvailabilitySummary' | translate: { enabled: data.metrics.protocols_enabled_companies, disabled: data.metrics.protocols_disabled_companies, percent: protocolEnabledPercent() }">
+          {{ 'admin.enabled' | translate }}: {{ data.metrics.protocols_enabled_companies }}
+          <span aria-hidden="true">·</span>
+          {{ 'admin.disabled' | translate }}: {{ data.metrics.protocols_disabled_companies }}
+          <span aria-hidden="true">·</span>
+          {{ protocolEnabledPercent() }}%
+        </p>
+        <div class="split-bar" aria-hidden="true">
+          <span class="split-bar-enabled" [style.width.%]="protocolEnabledPercent()"></span>
+          <span class="split-bar-disabled" [style.width.%]="100 - protocolEnabledPercent()"></span>
+        </div>
+        <ul class="chart-legend">
+          <li><span class="legend-swatch legend-swatch--enabled"></span>{{ 'admin.enabled' | translate }} <strong>{{ data.metrics.protocols_enabled_companies }}</strong></li>
+          <li><span class="legend-swatch legend-swatch--disabled"></span>{{ 'admin.disabled' | translate }} <strong>{{ data.metrics.protocols_disabled_companies }}</strong></li>
+        </ul>
+      </figure>
+
+      <figure class="chart-card">
+        <figcaption>
+          <h2>{{ 'admin.companyUsage' | translate }}</h2>
+          <p>{{ 'admin.topCompaniesCurrent' | translate }}</p>
+        </figcaption>
+        <label class="field-label" for="usage-metric">{{ 'admin.compareBy' | translate }}</label>
+        <select id="usage-metric" [ngModel]="usageMetric()" (ngModelChange)="usageMetric.set($event)">
+          <option value="projects">{{ 'admin.metricProjects' | translate }}</option>
+          <option value="files">{{ 'admin.metricFiles' | translate }}</option>
+          <option value="protocols">{{ 'admin.metricProtocols' | translate }}</option>
+        </select>
+        @if (usageCompanies().length > 0) {
+          <ul class="usage-chart" [attr.aria-label]="'admin.companyUsage' | translate">
+            @for (company of usageCompanies(); track company.id || company.name) {
+              <li>
+                <span class="usage-company" [title]="company.name">{{ company.name }}</span>
+                <span class="usage-bar-track" aria-hidden="true"><span class="usage-bar" [style.width.%]="usageWidth(company)"></span></span>
+                <strong>{{ metricValue(company, usageMetric()) }}</strong>
+              </li>
+            }
+          </ul>
+          <table class="chart-data-table">
+            <caption>{{ 'admin.chartData' | translate }}</caption>
+            <thead><tr><th scope="col">{{ 'admin.company' | translate }}</th><th scope="col">{{ metricLabel(usageMetric()) | translate }}</th></tr></thead>
+            <tbody>
+              @for (company of usageCompanies(); track company.id || company.name) {
+                <tr><th scope="row">{{ company.name }}</th><td>{{ metricValue(company, usageMetric()) }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-state">{{ 'admin.noCompanies' | translate }}</p>
+        }
+      </figure>
+    </section>
+
+    <section class="companies-section" aria-labelledby="companies-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="companies-heading">{{ 'admin.companyFeatures' | translate }}</h2>
+          <p>{{ 'admin.companyFeaturesIntro' | translate }}</p>
+        </div>
+        <span class="snapshot-time">{{ 'admin.updatedAt' | translate }} {{ data.generated_at | date: 'short' }}</span>
+      </div>
+
+      <div class="table-tools">
+        <label for="company-search">{{ 'admin.searchCompanies' | translate }}</label>
+        <input id="company-search" type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        <label for="company-sort">{{ 'admin.sortBy' | translate }}</label>
+        <select id="company-sort" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+          <option value="name">{{ 'admin.sortName' | translate }}</option>
+          <option value="projects">{{ 'admin.sortProjects' | translate }}</option>
+          <option value="files">{{ 'admin.sortFiles' | translate }}</option>
+          <option value="protocols">{{ 'admin.sortProtocols' | translate }}</option>
+          <option value="protocols_enabled">{{ 'admin.sortFeatureState' | translate }}</option>
+        </select>
+      </div>
+
+      @if (visibleCompanies().length > 0) {
+        <div class="company-table-scroll" tabindex="0" role="region" aria-labelledby="company-table-caption">
+          <table class="company-table">
+            <caption id="company-table-caption">{{ 'admin.companyFeatureTableCaption' | translate }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'admin.company' | translate }}</th>
+                <th scope="col">{{ 'admin.activeUsers' | translate }}</th>
+                <th scope="col">{{ 'admin.activeProjects' | translate }}</th>
+                <th scope="col">{{ 'admin.activeObjects' | translate }}</th>
+                <th scope="col">{{ 'admin.activeFiles' | translate }}</th>
+                <th scope="col">{{ 'admin.generatedProtocols' | translate }}</th>
+                <th scope="col">{{ 'admin.protocolsFeature' | translate }}</th>
+                <th scope="col">{{ 'admin.actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (company of visibleCompanies(); track company.id || company.name) {
+                <tr>
+                  <th scope="row" class="company-name-cell">
+                    <span>{{ company.name }}</span>
+                    @if (company.id) { <small>{{ company.id }}</small> }
+                  </th>
+                  <td>{{ company.active_users }}</td>
+                  <td>{{ company.active_projects }}</td>
+                  <td>{{ company.active_objects }}</td>
+                  <td>{{ company.active_files }}</td>
+                  <td>{{ company.generated_protocols }}</td>
+                  <td>
+                    <span class="state-badge" [class.state-badge--enabled]="company.protocols_enabled" [class.state-badge--disabled]="!company.protocols_enabled">
+                      {{ (company.protocols_enabled ? 'admin.enabled' : 'admin.disabled') | translate }}
+                    </span>
+                    @if (company.protocols_updated_at) {
+                      <small class="state-meta">{{ company.protocols_updated_at | date: 'short' }}</small>
+                    }
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      type="button"
+                      class="feature-switch"
+                      role="switch"
+                      [attr.aria-checked]="company.protocols_enabled"
+                      [attr.aria-label]="(company.protocols_enabled ? 'admin.disableProtocolsFor' : 'admin.enableProtocolsFor') | translate: { company: company.name }"
+                      [disabled]="!company.id || savingCompanyId() === company.id"
+                      (click)="openToggle(company)"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="text-button" (click)="toggleAudit(company)">
+                      {{ (auditCompanyId() === company.id ? 'admin.hideHistory' : 'admin.showHistory') | translate }}
+                    </button>
+                  </td>
+                </tr>
+                @if (editingCompanyId() === company.id) {
+                  <tr class="editor-row">
+                    <td colspan="8">
+                      <form (ngSubmit)="saveToggle(company)">
+                        <h3>{{ (company.protocols_enabled ? 'admin.confirmDisable' : 'admin.confirmEnable') | translate: { company: company.name } }}</h3>
+                        <label [for]="'toggle-reason-' + company.id">{{ 'admin.changeReason' | translate }}</label>
+                        <textarea [id]="'toggle-reason-' + company.id" name="reason" required maxlength="500" [ngModel]="reason()" (ngModelChange)="reason.set($event)" [attr.aria-describedby]="'toggle-reason-help-' + company.id"></textarea>
+                        <small [id]="'toggle-reason-help-' + company.id">{{ 'admin.reasonHelp' | translate }}</small>
+                        @if (toggleError()) { <p class="inline-error" role="alert">{{ toggleError() }}</p> }
+                        <div class="editor-actions">
+                          <button type="submit" class="button button-primary" [disabled]="!reason().trim() || reason().length > 500 || savingCompanyId() === company.id">
+                            {{ (savingCompanyId() === company.id ? 'admin.saving' : 'admin.confirmChange') | translate }}
+                          </button>
+                          <button type="button" class="button button-outline" (click)="cancelToggle()" [disabled]="savingCompanyId() === company.id">{{ 'common.cancel' | translate }}</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
+                @if (auditCompanyId() === company.id) {
+                  <tr class="audit-row">
+                    <td colspan="8">
+                      <h3>{{ 'admin.featureHistory' | translate }}</h3>
+                      @if (auditLoading()) {
+                        <p>{{ 'admin.loadingHistory' | translate }}</p>
+                      } @else if (auditError()) {
+                        <p class="inline-error">{{ 'admin.auditLoadFailed' | translate }}</p>
+                      } @else if (auditEntries().length > 0) {
+                        <ol class="audit-list">
+                          @for (entry of auditEntries(); track entry.id) {
+                            <li>
+                              <strong>{{ (entry.enabled ? 'admin.enabled' : 'admin.disabled') | translate }}</strong>
+                              <span>{{ entry.changed_at | date: 'medium' }} · {{ entry.changed_by }}</span>
+                              <p>{{ entry.reason }}</p>
+                            </li>
+                          }
+                        </ol>
+                      } @else {
+                        <p>{{ 'admin.noHistory' | translate }}</p>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-state">{{ (search() ? 'admin.noSearchMatches' : 'admin.noCompanies') | translate }}</p>
+      }
+    </section>
+
+    @if (data.issues.length > 0) {
+      <section class="health-callout" aria-labelledby="health-title">
+        <h2 id="health-title">{{ 'admin.dataHealth' | translate }}</h2>
+        <p>{{ 'admin.dataHealthCount' | translate: { count: data.issues.length } }}</p>
+      </section>
+    }
+  }
+</main>

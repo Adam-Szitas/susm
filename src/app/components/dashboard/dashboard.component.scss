@@ -299,6 +299,25 @@
   border-top: 1px solid #e8eaed;
 }
 
+.local-admin-setup {
+  margin-block-start: var(--space-large);
+  padding: var(--space-large);
+  border: 1px solid #d7a54b;
+  border-radius: 0.75rem;
+  background: #fffaf0;
+
+  h2,
+  p {
+    margin-block: 0 0.75rem;
+  }
+}
+
+.local-admin-setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space);
+}
+
 @include mobile {
   .wrapper {
     padding: var(--space) var(--space);

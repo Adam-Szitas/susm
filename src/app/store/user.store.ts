@@ -9,7 +9,7 @@ import { UrlPersistenceService } from '../services/url-persistence.service';
 import { ProjectStore } from './project.store';
 import { TranslationStore } from './translation.store';
 import { safeInternalReturnUrl } from '../utils/platform';
-import { catchError, EMPTY, finalize, map, of, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, finalize, map, Observable, of, switchMap, tap } from 'rxjs';
 import { SessionRenewalService } from '../services/session-renewal.service';
 import { shouldRenewTokenNow } from '../utils/jwt';
 
@@ -20,15 +20,24 @@ export class UserStore {
   private _loading = signal(false);
   private _error = signal<string | null>(null);
   private _initialized = signal(false);
+  private _profileReady = signal(false);
+  private _profileVerified = signal(false);
 
   readonly user = computed(() => this._user());
   readonly token = computed(() => this._token());
   readonly isAuthenticated = computed(() => !!this._token());
   readonly isAdmin = computed(() => this._user()?.role === 'admin');
-  readonly isSuperuser = computed(() => !!this._user()?.is_superuser);
+  readonly isSuperuser = computed(
+    () => this._profileVerified() && !!this._user()?.is_superuser,
+  );
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
   readonly initialized = computed(() => this._initialized());
+  readonly profileReady = computed(() => this._profileReady());
+  readonly profileVerified = computed(() => this._profileVerified());
+  readonly protocolsEnabled = computed(
+    () => this._profileReady() && this._user()?.feature_flags?.protocols?.enabled === true,
+  );
 
   #httpService = inject(HttpService);
   #router = inject(Router);
@@ -75,7 +84,10 @@ export class UserStore {
           .get<User>('profile')
           .pipe(
             tap((profile) => this.#persistUser(profile)),
-            catchError(() => of(null)),
+            catchError(() => {
+              this._profileReady.set(true);
+              return of(null);
+            }),
           )
           .subscribe();
         return Promise.resolve();
@@ -88,6 +100,7 @@ export class UserStore {
             tap((profile) => this.#persistUser(profile)),
             catchError(() => {
               this.#clearSessionState();
+              this._profileReady.set(true);
               return of(null);
             }),
             finalize(() => {
@@ -110,6 +123,8 @@ export class UserStore {
   login(email: string, password: string, returnUrl = '/projects') {
     this._loading.set(true);
     this._error.set(null);
+    this._profileReady.set(false);
+    this._profileVerified.set(false);
 
     this.#authService
       .login(email, password)
@@ -192,13 +207,14 @@ export class UserStore {
   }
 
   refreshProfile(): void {
-    if (!this._token()) {
-      return;
-    }
-    this.#httpService.get<User>('profile').subscribe({
-      next: (user) => this.#persistUser(user),
+    this.refreshProfileAndWait().subscribe({
       error: (error) => console.error('Failed to refresh profile:', error),
     });
+  }
+
+  refreshProfileAndWait(): Observable<User> {
+    if (!this._token()) return EMPTY;
+    return this.#httpService.get<User>('profile').pipe(tap((user) => this.#persistUser(user)));
   }
 
   #applyToken(token: string): void {
@@ -260,6 +276,8 @@ export class UserStore {
 
   #persistUser(user: User): void {
     this._user.set(user);
+    this._profileReady.set(true);
+    this._profileVerified.set(true);
     if (isPlatformBrowser(this.#platformId)) {
       localStorage.setItem('user', JSON.stringify(user));
     }
@@ -309,6 +327,8 @@ export class UserStore {
     this._user.set(null);
     this._token.set(null);
     this._error.set(null);
+    this._profileReady.set(false);
+    this._profileVerified.set(false);
     if (isPlatformBrowser(this.#platformId)) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

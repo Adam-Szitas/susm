@@ -48,11 +48,11 @@ import { FileListComponent } from '../../file-list/file-list.component';
 import { ProjectObjectOption } from '../../file-list/send-project-file-modal.component';
 import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
 import { ProtocolService } from '@services/protocol.service';
+import { UserStore } from '@store/user.store';
 import { ProtocolGenerateModalComponent } from '../../protocols/protocol-generate-modal.component';
 import { CategoryManagementModalComponent } from '../category-management-modal.component';
 import { ProjectTodoModalComponent } from '../../todos/project-todo-modal.component';
 import { ProjectPlanModalComponent } from '../project-plan-modal/project-plan-modal.component';
-import { UserStore } from '@store/user.store';
 import { EditProjectComponent } from '../edit-project/project-edit.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../breadcrumb/breadcrumb.component';
 import {
@@ -116,8 +116,8 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #dateFormat = inject(DateFormatService);
   #fileService = inject(FileService);
   #protocolService = inject(ProtocolService);
-  #filterPersistence = inject(FilterPersistenceService);
   #userStore = inject(UserStore);
+  #filterPersistence = inject(FilterPersistenceService);
   #platformId = inject(PLATFORM_ID);
   #destroyRef = inject(DestroyRef);
   #host = inject(ElementRef<HTMLElement>);
@@ -247,34 +247,42 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   /** Active content tab (objects | uploaded-protocols | generated-protocols | files). */
   activeContentTab = signal('objects');
+  readonly protocolsEnabled = this.#userStore.protocolsEnabled;
 
   readonly contentTabs = computed<TabItem[]>(() => {
     const objectCount = this.objectReorderMode()
       ? this.objectsInReorderMode().length
       : this.filteredObjects().length;
 
-    return [
+    const tabs: TabItem[] = [
       {
         id: 'objects',
         label: this.#translationService.instant('navbar.objects'),
         badge: objectCount > 0 ? objectCount : null,
       },
-      {
-        id: 'uploaded-protocols',
-        label: this.#translationService.instant('protocols.uploadedProtocolsTab'),
-        badge: this.uploadedProtocols().length || null,
-      },
-      {
-        id: 'generated-protocols',
-        label: this.#translationService.instant('protocols.generatedProtocolsTab'),
-        badge: this.generatedProtocols().length || null,
-      },
+    ];
+    if (this.protocolsEnabled()) {
+      tabs.push(
+        {
+          id: 'uploaded-protocols',
+          label: this.#translationService.instant('protocols.uploadedProtocolsTab'),
+          badge: this.uploadedProtocols().length || null,
+        },
+        {
+          id: 'generated-protocols',
+          label: this.#translationService.instant('protocols.generatedProtocolsTab'),
+          badge: this.generatedProtocols().length || null,
+        },
+      );
+    }
+    tabs.push(
       {
         id: 'files',
         label: this.#translationService.instant('files.title'),
         badge: this.files()?.length ? this.files()!.length : null,
       },
-    ];
+    );
+    return tabs;
   });
 
   readonly contentTabsAriaLabel = computed(() =>

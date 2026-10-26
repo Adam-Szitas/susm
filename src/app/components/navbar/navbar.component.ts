@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { SusmLogoComponent } from '../../icons/susm-logo.component';
+import { UserStore } from '../../store/user.store';
 
 @Component({
   selector: 'app-navbar',
@@ -20,9 +21,12 @@ export class NavbarComponent implements OnInit {
 
   #router = inject(Router);
   #facadeStore = inject(FacadeStore);
+  #userStore = inject(UserStore);
 
   readonly isLoggedIn = this.#facadeStore.isLoggedIn;
   readonly user = this.#facadeStore.user;
+  readonly isSuperuser = this.#userStore.isSuperuser;
+  readonly protocolsEnabled = this.#userStore.protocolsEnabled;
 
   public toggledMenu = signal<boolean>(false);
   readonly isLoginPage = signal(false);

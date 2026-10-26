@@ -9,7 +9,12 @@
     >
       <header class="login-form__header">
         <p class="login-form__brand">SUSM</p>
-        <h1 class="login-form__title">{{ 'login.title' | translate }}</h1>
+        <h1 class="login-form__title">
+          {{ (platformAdmin() ? 'admin.loginTitle' : 'login.title') | translate }}
+        </h1>
+        @if (platformAdmin()) {
+          <p class="login-form__description">{{ 'admin.loginIntro' | translate }}</p>
+        }
       </header>
 
       @if (error()) {
@@ -55,7 +60,7 @@
           @if (loading()) {
             <span class="spinner" aria-hidden="true"></span>
           }
-          {{ 'login.title' | translate }}
+          {{ (platformAdmin() ? 'admin.loginAction' : 'login.title') | translate }}
         </button>
       </div>
     </form>

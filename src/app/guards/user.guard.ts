@@ -9,6 +9,12 @@ async function waitUntilInitialized(userStore: UserStore): Promise<void> {
   }
 }
 
+async function waitForProfile(userStore: UserStore): Promise<void> {
+  for (let attempt = 0; attempt < 200 && !userStore.profileReady(); attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
 /**
  * Auth guard that protects routes requiring authentication.
  * On SSR, defers the check to the browser so deep links survive refresh.
@@ -57,4 +63,52 @@ export const guestGuard: CanActivateFn = async (route) => {
   }
 
   return router.createUrlTree(['/projects']);
+};
+
+/** Platform-only gate for the admin console. The backend repeats this check. */
+export const platformAdminGuard: CanActivateFn = async (_route, state) => {
+  const platformId = inject(PLATFORM_ID);
+  const userStore = inject(UserStore);
+  const router = inject(Router);
+  if (!isBrowserPlatform(platformId)) return true;
+
+  await waitUntilInitialized(userStore);
+  if (!userStore.isAuthenticated()) {
+    return router.createUrlTree(['/admin/login'], {
+      queryParams: { returnUrl: state.url },
+    });
+  }
+  await waitForProfile(userStore);
+  if (!userStore.isSuperuser()) {
+    return router.createUrlTree(['/admin/login'], {
+      queryParams: { returnUrl: state.url },
+    });
+  }
+  return true;
+};
+
+/** Sends signed-in platform admins from the dedicated admin login to their console. */
+export const platformAdminLoginGuard: CanActivateFn = async () => {
+  const platformId = inject(PLATFORM_ID);
+  const userStore = inject(UserStore);
+  const router = inject(Router);
+  if (!isBrowserPlatform(platformId)) return true;
+  await waitUntilInitialized(userStore);
+  if (!userStore.isAuthenticated()) return true;
+  await waitForProfile(userStore);
+  return userStore.isSuperuser() ? router.createUrlTree(['/admin']) : true;
+};
+
+/** Hides and blocks protocol pages until the authenticated company's flag is loaded. */
+export const protocolsFeatureGuard: CanActivateFn = async (_route, state) => {
+  const platformId = inject(PLATFORM_ID);
+  const userStore = inject(UserStore);
+  const router = inject(Router);
+  if (!isBrowserPlatform(platformId)) return true;
+  await waitUntilInitialized(userStore);
+  if (!userStore.isAuthenticated()) {
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  }
+  await waitForProfile(userStore);
+  return userStore.protocolsEnabled() ? true : router.createUrlTree(['/dashboard']);
 };

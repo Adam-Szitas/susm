@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { UserStore } from '../../store/user.store';
@@ -17,6 +17,8 @@ export class LoginComponent {
   #userStore = inject(UserStore);
   #route = inject(ActivatedRoute);
 
+  readonly platformAdmin = input(false);
+
   readonly loading = this.#userStore.loading;
   readonly error = this.#userStore.error;
 
@@ -30,7 +32,10 @@ export class LoginComponent {
       return;
     }
     const credentials = this.form.getRawValue();
-    const returnUrl = safeInternalReturnUrl(this.#route.snapshot.queryParams['returnUrl']);
+    const returnUrl = safeInternalReturnUrl(
+      this.#route.snapshot.queryParams['returnUrl'] ||
+        (this.platformAdmin() ? '/admin' : '/projects'),
+    );
     this.#userStore.login(
       credentials.email.trim().toLowerCase(),
       credentials.password,

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpService } from '../../services/http.service';
 import { DashboardStats, ProjectStats } from '../../models';
 import { TranslateModule } from '@ngx-translate/core';
@@ -34,11 +34,16 @@ export class DashboardComponent implements OnInit {
   protected readonly icons = icons;
 
   #httpService = inject(HttpService);
+  #router = inject(Router);
   #userStore = inject(UserStore);
   #translationService = inject(TranslationService);
 
   readonly isAdmin = this.#userStore.isAdmin;
   readonly isSuperuser = this.#userStore.isSuperuser;
+  readonly localBootstrapAvailable = signal(false);
+  readonly localBootstrapConfirming = signal(false);
+  readonly localBootstrapBusy = signal(false);
+  readonly localBootstrapError = signal(false);
   readonly stats = signal<DashboardStats | null>(null);
   readonly loading = signal(true);
   readonly currentLanguage = signal<string>('en');
@@ -81,9 +86,47 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.#userStore.refreshProfile();
     this.loadDashboardStats();
+    this.loadLocalBootstrapStatus();
     const userLanguage =
       this.#userStore.user()?.language || this.#translationService.getCurrentLang() || 'en';
     this.currentLanguage.set(userLanguage);
+  }
+
+  loadLocalBootstrapStatus(): void {
+    this.#httpService.get<{ available: boolean }>('local/platform-superuser-bootstrap').subscribe({
+      next: (status) => this.localBootstrapAvailable.set(status.available),
+      error: () => this.localBootstrapAvailable.set(false),
+    });
+  }
+
+  bootstrapLocalPlatformSuperuser(): void {
+    if (this.localBootstrapBusy()) return;
+    this.localBootstrapBusy.set(true);
+    this.localBootstrapError.set(false);
+    this.#httpService.post<{ initialized: boolean }>('local/platform-superuser-bootstrap', {}).subscribe({
+      next: () => {
+        this.#userStore.refreshProfileAndWait().subscribe({
+          next: (user) => {
+            this.localBootstrapBusy.set(false);
+            this.localBootstrapAvailable.set(false);
+            this.localBootstrapConfirming.set(false);
+            if (user.is_superuser) {
+              void this.#router.navigateByUrl('/admin');
+            } else {
+              this.localBootstrapError.set(true);
+            }
+          },
+          error: () => {
+            this.localBootstrapBusy.set(false);
+            this.localBootstrapError.set(true);
+          },
+        });
+      },
+      error: () => {
+        this.localBootstrapBusy.set(false);
+        this.localBootstrapError.set(true);
+      },
+    });
   }
 
   onLanguageChange(language: string): void {

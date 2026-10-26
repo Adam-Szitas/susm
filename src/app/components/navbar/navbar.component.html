@@ -41,11 +41,20 @@
             {{ 'navbar.files' | translate }}
           </a>
         </li>
-        <li>
+        @if (protocolsEnabled()) {
+          <li>
           <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
             {{ 'navbar.protocols' | translate }}
           </a>
-        </li>
+          </li>
+        }
+        @if (isSuperuser()) {
+          <li>
+            <a class="nav-link" routerLink="/admin" (click)="hideMobileMenu()">
+              {{ 'admin.title' | translate }}
+            </a>
+          </li>
+        }
       </ul>
     </div>
     <ul class="logout-menu">
@@ -92,11 +101,20 @@
           {{ 'navbar.files' | translate }}
         </a>
       </li>
-      <li>
+      @if (protocolsEnabled()) {
+        <li>
         <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
           {{ 'navbar.protocols' | translate }}
         </a>
-      </li>
+        </li>
+      }
+      @if (isSuperuser()) {
+        <li>
+          <a class="nav-link" routerLink="/admin" (click)="hideMobileMenu()">
+            {{ 'admin.title' | translate }}
+          </a>
+        </li>
+      }
       <li class="logout-item">
         <button type="button" class="nav-link nav-link--button" (click)="hideMobileMenu(); logout()">
           {{ 'navbar.logout' | translate }}

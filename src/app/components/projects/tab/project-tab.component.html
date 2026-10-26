@@ -145,6 +145,7 @@
 
   @if (!project()?.archived_at) {
     <div class="project-toolbar">
+      @if (protocolsEnabled()) {
       <button
         type="button"
         class="button button-primary project-toolbar-btn"
@@ -168,6 +169,7 @@
           }
         }
       </button>
+      }
       <button
         type="button"
         class="button button-outline project-toolbar-btn"
@@ -384,6 +386,7 @@
       }
     </app-tab-panel>
 
+    @if (protocolsEnabled()) {
     <app-tab-panel id="uploaded-protocols" class="project-tab-panel--internal-scroll">
       @if (project()) {
         <section class="protocols-section protocols-section--uploaded">
@@ -453,6 +456,7 @@
         </section>
       }
     </app-tab-panel>
+    }
 
     <ng-template #protocolItem let-protocol>
       <div
