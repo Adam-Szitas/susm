@@ -95,6 +95,7 @@ export class PlatformAdminComponent {
   }
 
   openToggle(company: CompanySummary): void {
+    if (this.savingCompanyId()) return;
     this.editingCompanyId.set(company.id);
     this.reason.set('');
     this.toggleError.set(null);
@@ -163,14 +164,21 @@ export class PlatformAdminComponent {
   }
 
   loadAudit(companyId: string): void {
+    this.auditEntries.set([]);
     this.auditLoading.set(true);
     this.auditError.set(false);
     this.#adminService
       .getFeatureAudit(companyId)
-      .pipe(finalize(() => this.auditLoading.set(false)))
+      .pipe(finalize(() => {
+        if (this.auditCompanyId() === companyId) this.auditLoading.set(false);
+      }))
       .subscribe({
-        next: (entries) => this.auditEntries.set(entries),
-        error: () => this.auditError.set(true),
+        next: (entries) => {
+          if (this.auditCompanyId() === companyId) this.auditEntries.set(entries);
+        },
+        error: () => {
+          if (this.auditCompanyId() === companyId) this.auditError.set(true);
+        },
       });
   }
 

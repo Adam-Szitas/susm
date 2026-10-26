@@ -36,7 +36,7 @@ export class UserStore {
   readonly profileReady = computed(() => this._profileReady());
   readonly profileVerified = computed(() => this._profileVerified());
   readonly protocolsEnabled = computed(
-    () => this._profileReady() && this._user()?.feature_flags?.protocols?.enabled === true,
+    () => this._profileVerified() && this._user()?.feature_flags?.protocols?.enabled === true,
   );
 
   #httpService = inject(HttpService);
