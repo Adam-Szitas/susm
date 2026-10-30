@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { KeyValuePipe, TitleCasePipe } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,6 +9,7 @@ import {
   CompanySummary,
   FeatureAuditEntry,
   PlatformAdminService,
+  OperationsSnapshot,
   SuperuserOverview,
 } from '../../services/platform-admin.service';
 import { TranslationService } from '../../services/translation.service';
@@ -19,7 +21,7 @@ type UsageMetric = 'projects' | 'files' | 'protocols';
 @Component({
   selector: 'app-platform-admin',
   standalone: true,
-  imports: [DatePipe, FormsModule, TranslateModule],
+  imports: [DatePipe, KeyValuePipe, TitleCasePipe, FormsModule, TranslateModule],
   templateUrl: './platform-admin.component.html',
   styleUrl: './platform-admin.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +46,12 @@ export class PlatformAdminComponent {
   readonly auditEntries = signal<FeatureAuditEntry[]>([]);
   readonly auditLoading = signal(false);
   readonly auditError = signal(false);
+  readonly operations = signal<OperationsSnapshot | null>(null);
+  readonly operationsLoading = signal(false);
+  readonly operationsError = signal(false);
+  readonly operationsDays = signal(7);
+  readonly eventCategory = signal('all');
+  #operationsRequest = 0;
 
   readonly visibleCompanies = computed(() => {
     const query = this.search().trim().toLocaleLowerCase();
@@ -77,21 +85,93 @@ export class PlatformAdminComponent {
     Math.max(1, ...this.usageCompanies().map((company) => this.metricValue(company, this.usageMetric()))),
   );
 
+  readonly visibleEvents = computed(() => {
+    const events = this.operations()?.events ?? [];
+    const category = this.eventCategory();
+    return category === 'all' ? events : events.filter((event) => event.category === category);
+  });
+
   constructor() {
     this.refresh();
   }
 
   refresh(): void {
-    if (this.loading()) return;
-    this.loading.set(true);
-    this.error.set(false);
+    if (!this.loading()) {
+      this.loading.set(true);
+      this.error.set(false);
+      this.#adminService
+        .getOverview()
+        .pipe(finalize(() => this.loading.set(false)))
+        .subscribe({
+          next: (overview) => this.overview.set(overview),
+          error: () => this.error.set(true),
+        });
+    }
+    this.loadOperations();
+  }
+
+  loadOperations(): void {
+    const requestId = ++this.#operationsRequest;
+    this.operationsLoading.set(true);
+    this.operationsError.set(false);
     this.#adminService
-      .getOverview()
-      .pipe(finalize(() => this.loading.set(false)))
+      .getOperations(this.operationsDays())
+      .pipe(finalize(() => {
+        if (requestId === this.#operationsRequest) this.operationsLoading.set(false);
+      }))
       .subscribe({
-        next: (overview) => this.overview.set(overview),
-        error: () => this.error.set(true),
+        next: (snapshot) => {
+          if (requestId === this.#operationsRequest) this.operations.set(snapshot);
+        },
+        error: () => {
+          if (requestId === this.#operationsRequest) this.operationsError.set(true);
+        },
       });
+  }
+
+  setOperationsDays(days: number): void {
+    this.operationsDays.set(days);
+    this.loadOperations();
+  }
+
+  uptimeLabel(seconds: number): string {
+    if (seconds < 60) return `${seconds}s`;
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  }
+
+  activityWidth(events: number, snapshot: OperationsSnapshot): number {
+    const max = Math.max(1, ...snapshot.daily.map((day) => day.events));
+    return Math.round((events / max) * 100);
+  }
+
+  eventCategoryLabel(category: string): string {
+    const keys: Record<string, string> = {
+      authentication: 'admin.eventAuthentication',
+      feature_management: 'admin.eventFeatureManagement',
+      protocols: 'admin.eventProtocols',
+      projects: 'admin.eventProjects',
+      files: 'admin.eventFiles',
+      http_errors: 'admin.eventHttpErrors',
+      client_tracking: 'admin.eventClientTracking',
+    };
+    return keys[category] ?? 'admin.eventOther';
+  }
+
+  eventActionLabel(action: string): string {
+    if (action === 'page_view') return 'admin.actionPageView';
+    return this.eventCategoryLabel(action);
+  }
+
+  formatEventExtra(extra: Record<string, unknown>): string {
+    const parts: string[] = [];
+    if (typeof extra['route'] === 'string') parts.push(extra['route']);
+    if (typeof extra['method'] === 'string') parts.push(extra['method']);
+    if (typeof extra['status'] === 'number') parts.push(`${extra['status']}`);
+    if (typeof extra['duration_ms'] === 'number') parts.push(`${extra['duration_ms']} ms`);
+    return parts.join(' · ') || '—';
   }
 
   openToggle(company: CompanySummary): void {

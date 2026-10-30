@@ -15,6 +15,7 @@ describe('Platform admin company selection', () => {
       provideZonelessChangeDetection(),
       { provide: PlatformAdminService, useValue: {
         getOverview: () => EMPTY,
+        getOperations: () => EMPTY,
         getFeatureAudit: (id: string) => id === 'a' ? a : b,
       } },
       { provide: NotificationService, useValue: {} },

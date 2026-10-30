@@ -20,10 +20,10 @@
     <div
       id="filterControls"
       class="filter-controls"
-      [class.collapsed]="!areFiltersVisible"
+      [class.collapsed]="!(alwaysExpanded() || areFiltersVisible)"
       [class.filter-controls-animate]="filterControlsAnimate()"
-      [attr.aria-hidden]="!areFiltersVisible"
-      [attr.inert]="!areFiltersVisible ? '' : null"
+      [attr.aria-hidden]="!(alwaysExpanded() || areFiltersVisible)"
+      [attr.inert]="!(alwaysExpanded() || areFiltersVisible) ? '' : null"
     >
       <div class="filter-controls-inner">
         <div class="control">

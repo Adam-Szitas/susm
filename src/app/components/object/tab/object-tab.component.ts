@@ -39,7 +39,6 @@ import { ObjectTodosSectionComponent } from '../../todos/object-todos-section.co
 import { UserStore } from '@store/user.store';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
-import { DetailFieldComponent } from '../../shared/detail-field.component';
 import { StatusSelectComponent } from '../../shared/status-select.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
@@ -56,7 +55,6 @@ import { EMPTY } from 'rxjs';
     BreadcrumbComponent,
     FormsModule,
     ObjectTodosSectionComponent,
-    DetailFieldComponent,
     StatusSelectComponent,
     IconComponent,
   ],
@@ -150,11 +148,9 @@ export class ObjectTabComponent implements OnInit {
   });
 
   constructor() {
-    this.#route.queryParamMap
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((params) => {
-        this.urlFileGroupCategories.set(parseCategoriesFromQueryParams(params));
-      });
+    this.#route.queryParamMap.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe((params) => {
+      this.urlFileGroupCategories.set(parseCategoriesFromQueryParams(params));
+    });
   }
 
   /** Short display name for the object (e.g. address parts or "Object"). */
@@ -176,6 +172,7 @@ export class ObjectTabComponent implements OnInit {
         map((params) => params.get('id')),
         filter((id): id is string => !!id),
         switchMap((objectId) => {
+          this.objectDataExpanded.set(false);
           this.objectProjectContext.set(null);
           this.loadProjectCategories(objectId);
           return this.#projectStore.loadObject(objectId).pipe(
@@ -463,30 +460,30 @@ export class ObjectTabComponent implements OnInit {
         metadata: { description, note, categories },
       })
       .subscribe({
-      next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.uploadSuccess'),
-        );
-        this.uploading.set(false);
-        this.uploadModalOpen.set(false);
-        this.selectedFiles.set([]);
-        this.imagePreviewUrl.set(null);
-        // Reload the object and files to get updated file list
-        this.#projectStore.loadObject(objectId).subscribe({
-          next: (object) => {
-            this.object.set(object);
-            this.loadFiles(objectId);
-            this.loadProjectCategories(objectId);
-          },
-        });
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('errors.uploadFailed'),
-        );
-        this.uploading.set(false);
-      },
-    });
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('objects.uploadSuccess'),
+          );
+          this.uploading.set(false);
+          this.uploadModalOpen.set(false);
+          this.selectedFiles.set([]);
+          this.imagePreviewUrl.set(null);
+          // Reload the object and files to get updated file list
+          this.#projectStore.loadObject(objectId).subscribe({
+            next: (object) => {
+              this.object.set(object);
+              this.loadFiles(objectId);
+              this.loadProjectCategories(objectId);
+            },
+          });
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('errors.uploadFailed'),
+          );
+          this.uploading.set(false);
+        },
+      });
   }
 
   onFileDeleted(): void {

@@ -62,6 +62,40 @@ export interface FeatureToggleResponse {
   audit_recorded: boolean;
 }
 
+export interface OperationalEvent {
+  date: string;
+  category: string;
+  company_name: string;
+  user_name: string;
+  action: string;
+  extra: Record<string, unknown>;
+  outcome: 'success' | 'error';
+}
+
+export interface OperationsSnapshot {
+  range_days: number;
+  generated_at: string;
+  sample_limited: boolean;
+  tracked_events: number;
+  successful_sign_ins: number;
+  page_views: number;
+  request_errors: number;
+  by_category: Record<string, number>;
+  daily: Array<{ date: string; events: number; errors: number }>;
+  events: OperationalEvent[];
+  health: {
+    backend: string;
+    backend_version: string;
+    uptime_seconds: number;
+    database: string;
+    database_latency_ms: number | null;
+    telemetry: string;
+    dropped_events: number;
+    checked_at: string;
+  };
+  partial: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PlatformAdminService {
   #http = inject(HttpService);
@@ -84,6 +118,12 @@ export class PlatformAdminService {
   getFeatureAudit(companyId: string): Observable<FeatureAuditEntry[]> {
     return this.#http.get<FeatureAuditEntry[]>(
       `superuser/companies/${companyId}/feature-audit`,
+    );
+  }
+
+  getOperations(days: number, limit = 100): Observable<OperationsSnapshot> {
+    return this.#http.get<OperationsSnapshot>(
+      `superuser/operations?days=${days}&limit=${limit}`,
     );
   }
 }

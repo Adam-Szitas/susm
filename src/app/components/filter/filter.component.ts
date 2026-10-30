@@ -26,6 +26,8 @@ export class FilterComponent implements OnInit {
   public initialState = input<PersistedFilterState | null>();
   /** When true, the show/hide toggle is rendered by the parent (e.g. project toolbar). */
   public hideToggleButton = input(false);
+  /** Render controls directly when embedded in a modal. */
+  public alwaysExpanded = input(false);
 
   @Output()
   public filterChange = new EventEmitter<FilterResult>();

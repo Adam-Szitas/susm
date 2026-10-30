@@ -1,6 +1,9 @@
 import type { SvgIconDefinition, SvgIconElement } from './icon.model';
 
-function stroke24(elements: SvgIconElement[], overrides: Partial<SvgIconDefinition> = {}): SvgIconDefinition {
+function stroke24(
+  elements: SvgIconElement[],
+  overrides: Partial<SvgIconDefinition> = {},
+): SvgIconDefinition {
   return {
     viewBox: '0 0 24 24',
     fill: 'none',
@@ -50,10 +53,9 @@ export const filterOffIcon = stroke24([
   { tag: 'line', x1: 4, y1: 4, x2: 20, y2: 20 },
 ]);
 
-export const checkIcon = stroke24(
-  [{ tag: 'polyline', points: '20 6 9 17 4 12' }],
-  { strokeWidth: 2 },
-);
+export const checkIcon = stroke24([{ tag: 'polyline', points: '20 6 9 17 4 12' }], {
+  strokeWidth: 2,
+});
 
 export const arrowsUpDownIcon = stroke24([
   { tag: 'path', d: 'M8 9l4-4 4 4' },
@@ -221,7 +223,10 @@ export const uploadCombinedIcon = stroke24(
 );
 
 export const eyeOffIcon = stroke24([
-  { tag: 'path', d: 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94' },
+  {
+    tag: 'path',
+    d: 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94',
+  },
   { tag: 'path', d: 'M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19' },
   { tag: 'path', d: 'M1 1l22 22' },
   { tag: 'path', d: 'M14.12 14.12a3 3 0 1 1-4.24-4.24' },
@@ -232,13 +237,15 @@ export const eyeIcon = stroke24([
   { tag: 'circle', cx: 12, cy: 12, r: 3 },
 ]);
 
-export const chevronLeftIcon = stroke24(
-  [{ tag: 'path', d: 'M19 12H5M11 18l-6-6 6-6' }],
-  { strokeWidth: 2.5 },
-);
+export const chevronLeftIcon = stroke24([{ tag: 'path', d: 'M19 12H5M11 18l-6-6 6-6' }], {
+  strokeWidth: 2.5,
+});
 
 export const loaderIcon = stroke24([
-  { tag: 'path', d: 'M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83' },
+  {
+    tag: 'path',
+    d: 'M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83',
+  },
 ]);
 
 export const refreshIcon = stroke24(
@@ -303,7 +310,13 @@ export const susmLogoIcon: SvgIconDefinition = {
 };
 
 /** Registry of all icons — import from `@icons`. */
+export const tagIcon = stroke24([
+  { tag: 'path', d: 'M20 13l-7 7a2 2 0 0 1-2.83 0L3 12.83V3h9.83L20 10.17a2 2 0 0 1 0 2.83Z' },
+  { tag: 'circle', cx: 7.5, cy: 7.5, r: 1 },
+]);
+
 export const icons = {
+  tag: tagIcon,
   archive: archiveIcon,
   plus: plusIcon,
   edit: editIcon,

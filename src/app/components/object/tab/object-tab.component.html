@@ -6,161 +6,144 @@
       <section
         class="object-details"
         [class.object-details--expanded]="objectDataExpanded()"
+        aria-labelledby="objectTitle"
       >
         <header class="object-details-header">
-          <div class="object-details-title-row">
-            <div class="object-details-title-group">
-              <h2 class="object-title">{{ objectDisplayTitle() }}</h2>
-              <button
-                type="button"
-                class="object-details-expand-toggle object-details-expand-toggle--header"
-                (click)="toggleObjectData()"
-                [attr.aria-expanded]="objectDataExpanded()"
-                [attr.aria-label]="
-                  objectDataExpanded()
-                    ? ('objects.hideObjectData' | translate)
-                    : ('objects.showObjectData' | translate)
-                "
-                [attr.title]="
-                  objectDataExpanded()
-                    ? ('objects.hideObjectData' | translate)
-                    : ('objects.showObjectData' | translate)
-                "
-                aria-controls="objectDetailsBody"
-              >
-                <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
-              </button>
+          <div class="object-details-heading">
+            <span class="object-details-eyebrow">{{ 'navbar.objects' | translate }}</span>
+            <h2 id="objectTitle">{{ objectDisplayTitle() }}</h2>
+            <div class="object-summary-meta">
+              <span class="object-summary-count">
+                <app-icon [icon]="icons.clipboardCheck" />
+                <span>{{ formatStatus(object()?.status || defaultStatus) | translate }}</span>
+              </span>
+              @if (object()?.category) {
+                <span class="object-summary-category">
+                  <app-icon [icon]="icons.tag" />
+                  <span>{{ object()?.category }}</span>
+                </span>
+              }
+              @if (isPinnedOnPlan()) {
+                <span class="object-summary-count">
+                  <app-icon [icon]="icons.pinFilled" />
+                  <span>{{ 'objects.pinnedOnPlan' | translate }}</span>
+                </span>
+              }
             </div>
           </div>
+          <div class="object-details-actions">
+            <button
+              type="button"
+              class="button button-outline object-details-action"
+              (click)="editObjectDetails()"
+              [attr.aria-label]="'objects.editObject' | translate"
+              [title]="'objects.editObject' | translate"
+            >
+              <app-icon [icon]="icons.edit" />
+            </button>
+            <button
+              type="button"
+              class="button button-outline object-details-action object-details-expand-toggle"
+              (click)="toggleObjectData()"
+              [attr.aria-expanded]="objectDataExpanded()"
+              [attr.aria-label]="
+                (objectDataExpanded() ? 'objects.hideObjectData' : 'objects.showObjectData')
+                  | translate
+              "
+              [title]="
+                (objectDataExpanded() ? 'objects.hideObjectData' : 'objects.showObjectData')
+                  | translate
+              "
+              aria-controls="objectDetailsBody"
+            >
+              <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
+            </button>
+          </div>
         </header>
-
-        @if (objectDataExpanded()) {
-          <div id="objectDetailsBody" class="object-details-body">
-            @if (isPinnedOnPlan()) {
-              <p class="object-plan-pin-flag" role="status">
-                <span class="summary-chip summary-chip--plan-pin">
-                  <app-icon [icon]="icons.pinFilled" [svgClass]="'object-plan-pin-icon'" />
-                  <span class="summary-chip-label">{{ 'objects.pinnedOnPlan' | translate }}</span>
-                </span>
-              </p>
-            }
-
-            <dl class="object-data-grid">
-            @if (object()?.address?.house_number) {
-              <app-detail-field [label]="'common.houseNumber' | translate">
-                {{ object()?.address?.house_number }}
-              </app-detail-field>
-            }
-            @if (object()?.address?.level) {
-              <app-detail-field [label]="'common.level' | translate">
-                {{ object()?.address?.level }}
-              </app-detail-field>
-            }
-            @if (object()?.address?.door_number) {
-              <app-detail-field [label]="'common.doorNumber' | translate">
-                {{ object()?.address?.door_number }}
-              </app-detail-field>
-            }
-            @if (object()?.prefix?.trim()) {
-              <app-detail-field [label]="'objects.prefix' | translate">
-                {{ object()?.prefix }}
-              </app-detail-field>
-            }
-            <div class="object-data-item object-data-item--category">
-              <dt>
-                <label for="objectCategory">{{ 'objects.category' | translate }}</label>
-              </dt>
-              <dd>
-                <select
-                  id="objectCategory"
-                  [value]="object()?.category"
-                  [disabled]="updatingCategory()"
-                  (change)="updateCategory($any($event.target).value)"
-                  class="category-select"
-                >
-                  <option value="">{{ 'objects.noCategory' | translate }}</option>
-                  @for (category of projectCategories(); track category) {
-                    <option [value]="category" [selected]="category === object()?.category">
-                      {{ category }}
-                    </option>
-                  }
-                </select>
-              </dd>
-            </div>
-            <div class="object-data-item object-data-item--status">
-              <dt>
-                <label for="objectStatus">{{ 'objects.status' | translate }}</label>
-              </dt>
-              <dd>
-                <app-status-select
-                  id="objectStatus"
-                  [ngModel]="object()?.status || defaultStatus"
-                  (ngModelChange)="updateStatus($event)"
-                  [disabled]="updatingStatus()"
-                />
-              </dd>
-            </div>
-            <div class="object-data-item object-data-item--note-row">
-              <div class="details-note-row">
-                <div class="details-note-content">
-                  <app-detail-field [label]="'common.note' | translate" [fullWidth]="true">
-                    <span class="object-note">
-                      @if (object()?.note?.trim()) {
-                        {{ object()?.note }}
-                      } @else {
-                        <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
-                      }
-                    </span>
-                  </app-detail-field>
+        <div id="objectDetailsBody" class="object-details-body" [hidden]="!objectDataExpanded()">
+          <div class="object-data-grid">
+            <dl class="object-data-panel object-data-panel--facts">
+              @if (object()?.address?.house_number) {
+                <div class="object-data-field">
+                  <dt>{{ 'common.houseNumber' | translate }}</dt>
+                  <dd>
+                    {{ object()?.address?.house_number }}
+                  </dd>
                 </div>
-                <button
-                  type="button"
-                  class="group-edit-toggle button button-primary details-edit-btn details-edit-btn--desktop"
-                  (click)="editObjectDetails()"
-                  [attr.aria-label]="'objects.editObject' | translate"
-                  [title]="'objects.editObject' | translate"
-                >
-                  ✎
-                </button>
+              }
+              @if (object()?.address?.level) {
+                <div class="object-data-field">
+                  <dt>{{ 'common.level' | translate }}</dt>
+                  <dd>
+                    {{ object()?.address?.level }}
+                  </dd>
+                </div>
+              }
+              @if (object()?.address?.door_number) {
+                <div class="object-data-field">
+                  <dt>{{ 'common.doorNumber' | translate }}</dt>
+                  <dd>
+                    {{ object()?.address?.door_number }}
+                  </dd>
+                </div>
+              }
+              @if (object()?.prefix?.trim()) {
+                <div class="object-data-field">
+                  <dt>{{ 'objects.prefix' | translate }}</dt>
+                  <dd>
+                    {{ object()?.prefix }}
+                  </dd>
+                </div>
+              }
+              <div class="object-data-field">
+                <dt>
+                  <label for="objectCategory">{{ 'objects.category' | translate }}</label>
+                </dt>
+                <dd>
+                  <select
+                    id="objectCategory"
+                    [value]="object()?.category"
+                    [disabled]="updatingCategory()"
+                    (change)="updateCategory($any($event.target).value)"
+                    class="category-select"
+                  >
+                    <option value="">{{ 'objects.noCategory' | translate }}</option>
+                    @for (category of projectCategories(); track category) {
+                      <option [value]="category" [selected]="category === object()?.category">
+                        {{ category }}
+                      </option>
+                    }
+                  </select>
+                </dd>
               </div>
-            </div>
-          </dl>
+              <div class="object-data-field">
+                <dt>
+                  <label for="objectStatus">{{ 'objects.status' | translate }}</label>
+                </dt>
+                <dd>
+                  <app-status-select
+                    id="objectStatus"
+                    [ngModel]="object()?.status || defaultStatus"
+                    (ngModelChange)="updateStatus($event)"
+                    [disabled]="updatingStatus()"
+                  />
+                </dd>
+              </div>
+            </dl>
+            <dl class="object-data-panel object-data-panel--note">
+              <dt>{{ 'common.note' | translate }}</dt>
+              <dd class="object-note">
+                @if (object()?.note?.trim()) {
+                  {{ object()?.note }}
+                } @else {
+                  <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+                }
+              </dd>
+            </dl>
+          </div>
         </div>
-
-        <div class="object-details-footer">
-          <div class="spacer"></div>
-          <button
-            type="button"
-            class="object-details-expand-toggle"
-            (click)="toggleObjectData()"
-            [attr.aria-expanded]="objectDataExpanded()"
-            [attr.aria-label]="
-              objectDataExpanded()
-                ? ('objects.hideObjectData' | translate)
-                : ('objects.showObjectData' | translate)
-            "
-            [attr.title]="
-              objectDataExpanded()
-                ? ('objects.hideObjectData' | translate)
-                : ('objects.showObjectData' | translate)
-            "
-            aria-controls="objectDetailsBody"
-          >
-            <span class="chevron" [class.collapsed]="objectDataExpanded()"></span>
-          </button>
-          <button
-            type="button"
-            class="group-edit-toggle button button-primary"
-            (click)="editObjectDetails()"
-            [attr.aria-label]="'objects.editObject' | translate"
-            [title]="'objects.editObject' | translate"
-          >
-            ✎
-          </button>
-        </div>
-      }
       </section>
-  }
+    }
   </div>
 
   @if (object() && projectTodoItems().length > 0) {
@@ -188,7 +171,10 @@
     @if (fileGroups().length > 0) {
       @if (projectCategories().length > 0) {
         <div class="object-file-group-category-filter">
-          <span class="object-file-group-category-filter-label" id="objectFileGroupCategoryFilterLabel">
+          <span
+            class="object-file-group-category-filter-label"
+            id="objectFileGroupCategoryFilterLabel"
+          >
             {{ 'filter.category' | translate }}
           </span>
           <div
@@ -200,7 +186,9 @@
               <button
                 type="button"
                 class="object-file-group-category-chip"
-                [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)"
+                [class.object-file-group-category-chip--selected]="
+                  isFileGroupCategoryFilterActive(category)
+                "
                 [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)"
                 (click)="toggleFileGroupCategoryFilter(category)"
               >

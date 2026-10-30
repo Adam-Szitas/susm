@@ -24,7 +24,6 @@ import { FilterComponent } from '../../filter/filter.component';
 import {
   Filter,
   FilterResult,
-  fileGroupCategoryLabels,
   fileGroupMatchesCategoryFilter,
   fileGroupIsSoftDeleted,
   formatWorkStatus,
@@ -72,8 +71,6 @@ import { compactFormActions } from '../../shared/compact-form-actions';
 import { DragReorderAutoScroll } from '../../../utils/drag-reorder-auto-scroll';
 import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import { ObjectCardComponent } from '../../shared/object-card.component';
-import { FloatingAddButtonComponent } from '../../shared/floating-add-button.component';
-import { DetailFieldComponent } from '../../shared/detail-field.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
 
@@ -98,8 +95,6 @@ import { isMissingResource404 } from '../../../utils/auth-http-error';
     TabPanelComponent,
     VirtualScrollViewportComponent,
     ObjectCardComponent,
-    FloatingAddButtonComponent,
-    DetailFieldComponent,
     IconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -137,15 +132,23 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
-  #filtersVisible = false;
-  filtersVisible = signal(false);
+  readonly hasActiveFilter = computed(() => {
+    const filter = this.#currentFilter();
+    return !!(
+      filter.searchText ||
+      filter.dateFrom ||
+      filter.dateTo ||
+      filter.sortDirection ||
+      filter.selectedCategories?.length
+    );
+  });
   readonly projectFilter = viewChild(FilterComponent);
   readonly contentTabsHost = viewChild<ElementRef<HTMLElement>>('contentTabsHost');
   /** Icon-only toolbar buttons on viewports ≤768px. */
   readonly toolbarIconOnly = compactFormActions();
-  /** On mobile, filter or expanded project details stack above tabs without shrinking them. */
+  /** Expanded project details stack above tabs without shrinking them on mobile. */
   readonly mobileChromeExpanded = computed(
-    () => this.toolbarIconOnly() && (this.filtersVisible() || this.projectDataExpanded()),
+    () => this.toolbarIconOnly() && this.projectDataExpanded(),
   );
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
   /** Virtual scroll on desktop columns; mobile uses the same fill viewport with a plain list. */
@@ -275,13 +278,11 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         },
       );
     }
-    tabs.push(
-      {
-        id: 'files',
-        label: this.#translationService.instant('files.title'),
-        badge: this.files()?.length ? this.files()!.length : null,
-      },
-    );
+    tabs.push({
+      id: 'files',
+      label: this.#translationService.instant('files.title'),
+      badge: this.files()?.length ? this.files()!.length : null,
+    });
     return tabs;
   });
 
@@ -346,10 +347,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     effect(() => {
       this.mobileChromeExpanded();
       this.projectDataExpanded();
-      this.filtersVisible();
       this.activeContentTab();
-      this.objects().length;
-      this.files().length;
+      void this.objects().length;
+      void this.files().length;
       if (!this.mobileChromeExpanded()) {
         queueMicrotask(() => this.#capturePreservedTabHeight());
       }
@@ -367,13 +367,14 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         filter((id): id is string => id !== null),
         distinctUntilChanged(),
         switchMap((projectId) => {
+          if (this.toolbarIconOnly()) {
+            this.projectDataExpanded.set(false);
+          }
           this.#projectFilterKey = `project_${projectId}`;
           const restored = this.#filterPersistence.restore(this.#projectFilterKey);
           if (restored) {
             this.restoredFilterState.set(restored);
             this.#currentFilter.set(restored.filter);
-            this.#filtersVisible = restored.filtersVisible;
-            this.filtersVisible.set(restored.filtersVisible);
           } else {
             this.restoredFilterState.set(null);
             this.#currentFilter.set({});
@@ -437,22 +438,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (this.#projectFilterKey) {
       this.#filterPersistence.save(this.#projectFilterKey, {
         filter: result,
-        filtersVisible: this.#filtersVisible,
-      });
-    }
-  }
-
-  toggleFiltersFromToolbar(): void {
-    this.projectFilter()?.toggleFilters();
-  }
-
-  onFiltersVisibleChange(visible: boolean): void {
-    this.#filtersVisible = visible;
-    this.filtersVisible.set(visible);
-    if (this.#projectFilterKey) {
-      this.#filterPersistence.save(this.#projectFilterKey, {
-        filter: this.#currentFilter(),
-        filtersVisible: visible,
+        filtersVisible: false,
       });
     }
   }
@@ -699,22 +685,22 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.#fileService
       .uploadFileForProject(form, projectId, files, { description, note })
       .subscribe({
-      next: () => {
-        this.#notificationService.showSuccess(
-          this.#translationService.instant('objects.uploadSuccess'),
-        );
-        this.#projectStore.loadProject(projectId).subscribe();
-        this.uploading.set(false);
-        this.uploadModalOpen.set(false);
-        this.selectedFiles.set([]);
-      },
-      error: (error) => {
-        this.#notificationService.showError(
-          error.message || this.#translationService.instant('errors.uploadFailed'),
-        );
-        this.uploading.set(false);
-      },
-    });
+        next: () => {
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('objects.uploadSuccess'),
+          );
+          this.#projectStore.loadProject(projectId).subscribe();
+          this.uploading.set(false);
+          this.uploadModalOpen.set(false);
+          this.selectedFiles.set([]);
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('errors.uploadFailed'),
+          );
+          this.uploading.set(false);
+        },
+      });
   }
 
   toggleObjectReorderMode(): void {
@@ -760,10 +746,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     this.#saveObjectOrder(newOrder, { clearSortAfter: true });
   }
 
-  #saveObjectOrder(
-    objectIds: string[],
-    options?: { clearSortAfter?: boolean },
-  ): void {
+  #saveObjectOrder(objectIds: string[], options?: { clearSortAfter?: boolean }): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId || this.objectReorderSaving()) return;
 
@@ -956,7 +939,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       filtered = filtered.filter((obj) => {
         const groups = obj.file_groups ?? [];
         return groups.some(
-          (g) => !fileGroupIsSoftDeleted(g) && fileGroupMatchesCategoryFilter(g, selectedGroupCategories),
+          (g) =>
+            !fileGroupIsSoftDeleted(g) &&
+            fileGroupMatchesCategoryFilter(g, selectedGroupCategories),
         );
       });
     }

@@ -117,36 +117,6 @@
     }
   }
 
-  @if (localBootstrapAvailable()) {
-    <section class="local-admin-setup" aria-labelledby="local-admin-setup-title">
-      <h2 id="local-admin-setup-title">{{ 'dashboard.localSuperuserSetupTitle' | translate }}</h2>
-      <p>{{ 'dashboard.localSuperuserSetupIntro' | translate }}</p>
-      @if (localBootstrapError()) {
-        <p role="alert">{{ 'dashboard.localSuperuserSetupFailed' | translate }}</p>
-      }
-      @if (localBootstrapConfirming()) {
-        <p>{{ 'dashboard.localSuperuserSetupConfirm' | translate }}</p>
-        <div class="local-admin-setup-actions">
-          <button
-            type="button"
-            class="button button-primary"
-            [disabled]="localBootstrapBusy()"
-            (click)="bootstrapLocalPlatformSuperuser()"
-          >
-            {{ (localBootstrapBusy() ? 'dashboard.localSuperuserSettingUp' : 'dashboard.localSuperuserConfirm') | translate }}
-          </button>
-          <button type="button" class="button button-outline" (click)="localBootstrapConfirming.set(false)" [disabled]="localBootstrapBusy()">
-            {{ 'common.cancel' | translate }}
-          </button>
-        </div>
-      } @else {
-        <button type="button" class="button button-outline" (click)="localBootstrapConfirming.set(true)">
-          {{ 'dashboard.localSuperuserSetupAction' | translate }}
-        </button>
-      }
-    </section>
-  }
-
   @if (isAdmin() || isSuperuser()) {
     <div class="dashboard-admin">
       @if (isSuperuser()) {

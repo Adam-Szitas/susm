@@ -1,290 +1,182 @@
 <div class="wrapper">
   <div #projectTabChrome class="project-tab-chrome">
-  <app-breadcrumb [items]="breadcrumbItems()" />
-  <section class="project-details" [class.project-details--expanded]="projectDataExpanded()">
-    <header class="project-details-header">
-      <div class="project-details-title-row">
-        <div class="project-details-title-group">
-          <h2>{{ projectDisplayName() }}</h2>
+    <app-breadcrumb [items]="breadcrumbItems()" />
+    <section
+      class="project-details"
+      [class.project-details--expanded]="projectDataExpanded()"
+      aria-labelledby="projectTitle"
+    >
+      <header class="project-details-header">
+        <div class="project-details-heading">
+          <span class="project-details-eyebrow">{{ 'navbar.projects' | translate }}</span>
+          <h2 id="projectTitle">{{ projectDisplayName() }}</h2>
+          <div class="project-summary-meta">
+            <span class="project-summary-count">
+              <app-icon [icon]="icons.cube" />
+              <span
+                >{{ 'dashboard.totalObjects' | translate }}
+                <strong>{{ objects().length }}</strong></span
+              >
+            </span>
+            @if (project()?.category) {
+              <span class="project-summary-category">
+                <app-icon [icon]="icons.tag" />
+                <span>{{ project()?.category }}</span>
+              </span>
+            }
+          </div>
+        </div>
+        <div class="project-details-actions">
           <button
             type="button"
-            class="project-details-expand-toggle project-details-expand-toggle--header"
+            class="button button-outline project-details-action"
+            (click)="startEditingProject()"
+            [attr.aria-label]="'projects.editProject' | translate"
+            [title]="'projects.editProject' | translate"
+          >
+            <app-icon [icon]="icons.edit" />
+          </button>
+          <button
+            type="button"
+            class="button button-outline project-details-action project-details-expand-toggle"
             (click)="toggleProjectData()"
             [attr.aria-expanded]="projectDataExpanded()"
             [attr.aria-label]="
-              projectDataExpanded()
-                ? ('projects.hideProjectData' | translate)
-                : ('projects.showProjectData' | translate)
+              (projectDataExpanded() ? 'projects.hideProjectData' : 'projects.showProjectData')
+                | translate
             "
-            [attr.title]="
-              projectDataExpanded()
-                ? ('projects.hideProjectData' | translate)
-                : ('projects.showProjectData' | translate)
+            [title]="
+              (projectDataExpanded() ? 'projects.hideProjectData' : 'projects.showProjectData')
+                | translate
             "
             aria-controls="projectDetailsBody"
           >
             <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
           </button>
         </div>
-      </div>
-    </header>
-
-    @if (projectDataExpanded()) {
-      <div id="projectDetailsBody" class="project-details-body">
+      </header>
+      <div id="projectDetailsBody" class="project-details-body" [hidden]="!projectDataExpanded()">
         @if (project()?.archived_at && project()?.archive_comment) {
           <div class="archive-comment-inline">
             <span class="archive-comment-label">{{ 'projects.archiveComment' | translate }}</span>
             <p class="archive-comment">{{ project()?.archive_comment }}</p>
           </div>
         }
-
-        <dl class="project-data-grid">
-          <app-detail-field [label]="'dashboard.totalObjects' | translate">
-            {{ objects().length }}
-          </app-detail-field>
-          @if (project()?.address?.street) {
-            <app-detail-field [label]="'projects.street' | translate">
-              {{ project()?.address?.street }}
-            </app-detail-field>
-          }
-          @if (project()?.address?.postal_code) {
-            <app-detail-field [label]="'projects.postalCode' | translate">
-              {{ project()?.address?.postal_code }}
-            </app-detail-field>
-          }
-          <div class="project-data-item project-data-item--category">
-            <dt>
-              <span id="projectCategoryLabel">{{ 'projects.category' | translate }}</span>
-            </dt>
-            <dd>
-              <div class="category-field">
-                <span
-                  class="category-field__value"
-                  [class.category-field__value--empty]="!project()?.category"
-                  aria-labelledby="projectCategoryLabel"
-                >
-                  @if (project()?.category) {
-                    {{ project()?.category }}
-                  } @else {
-                    {{ 'objects.noCategory' | translate }}
-                  }
-                </span>
-                <button
-                  type="button"
-                  class="button button-outline category-field__action"
-                  (click)="openCategoryModal()"
-                  [attr.aria-label]="'projects.changeCategory' | translate"
-                  [title]="'projects.changeCategory' | translate"
-                >
-                  <app-icon [icon]="icons.edit" [svgClass]="'category-field__action-icon'" />
-                  <span>{{ 'projects.changeCategory' | translate }}</span>
-                </button>
+        <div class="project-data-grid">
+          <dl class="project-data-panel project-data-panel--facts">
+            @if (project()?.address?.street) {
+              <div class="project-data-field">
+                <dt>{{ 'projects.street' | translate }}</dt>
+                <dd>{{ project()?.address?.street }}</dd>
               </div>
-            </dd>
-          </div>
-          <div class="project-data-item project-data-item--note-row">
-            <div class="details-note-row">
-              <div class="details-note-content">
-                <app-detail-field [label]="'projects.note' | translate" [fullWidth]="true">
-                  <span class="project-note">
-                    @if (project()?.note?.trim()) {
-                      {{ project()?.note }}
-                    } @else {
-                      <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
-                    }
-                  </span>
-                </app-detail-field>
+            }
+            @if (project()?.address?.postal_code) {
+              <div class="project-data-field">
+                <dt>{{ 'projects.postalCode' | translate }}</dt>
+                <dd>{{ project()?.address?.postal_code }}</dd>
               </div>
-              <button
-                type="button"
-                class="group-edit-toggle button button-primary details-edit-btn details-edit-btn--desktop"
-                (click)="startEditingProject()"
-                [attr.aria-label]="'projects.editProject' | translate"
-                [title]="'projects.editProject' | translate"
-              >
-                ✎
-              </button>
+            }
+            <div class="project-data-field">
+              <dt>{{ 'projects.category' | translate }}</dt>
+              <dd>
+                @if (project()?.category) {
+                  {{ project()?.category }}
+                } @else {
+                  <span class="note-empty">{{ 'objects.noCategory' | translate }}</span>
+                }
+              </dd>
             </div>
-          </div>
-        </dl>
+          </dl>
+          <dl class="project-data-panel project-data-panel--note">
+            <dt>{{ 'projects.note' | translate }}</dt>
+            <dd class="project-note">
+              @if (project()?.note?.trim()) {
+                {{ project()?.note }}
+              } @else {
+                <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+              }
+            </dd>
+          </dl>
+        </div>
       </div>
+    </section>
 
-      <div class="project-details-footer">
-        <div class="spacer"></div>
-        <button
-          type="button"
-          class="project-details-expand-toggle"
-          (click)="toggleProjectData()"
-          [attr.aria-expanded]="projectDataExpanded()"
-          [attr.aria-label]="
-            projectDataExpanded()
-              ? ('projects.hideProjectData' | translate)
-              : ('projects.showProjectData' | translate)
-          "
-          [attr.title]="
-            projectDataExpanded()
-              ? ('projects.hideProjectData' | translate)
-              : ('projects.showProjectData' | translate)
-          "
-          aria-controls="projectDetailsBody"
-        >
-          <span class="chevron" [class.collapsed]="projectDataExpanded()"></span>
-        </button>
-        <button
-          type="button"
-          class="group-edit-toggle button button-primary"
-          (click)="startEditingProject()"
-          [attr.aria-label]="'projects.editProject' | translate"
-          [title]="'projects.editProject' | translate"
-        >
-          ✎
-        </button>
-      </div>
-    }
-  </section>
-
-  @if (!project()?.archived_at) {
-    <div class="project-toolbar">
-      @if (protocolsEnabled()) {
-      <button
-        type="button"
-        class="button button-primary project-toolbar-btn"
-        [class.icon-only]="toolbarIconOnly()"
-        (click)="generateProtocol()"
-        [disabled]="loadingTemplates()"
-        [attr.aria-label]="'protocols.generateProtocol' | translate"
-        [title]="'protocols.generateProtocol' | translate"
-      >
-        @if (loadingTemplates()) {
-          <span class="spinner"></span>
-          @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
-          }
-        } @else {
-          <app-icon [icon]="icons.fileTextDetailed" [svgClass]="'project-toolbar-icon'" />
-          @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{
-              'protocols.generateProtocol' | translate
-            }}</span>
-          }
-        }
-      </button>
-      }
-      <button
-        type="button"
-        class="button button-outline project-toolbar-btn"
-        [class.icon-only]="toolbarIconOnly()"
-        (click)="openStreetPlan()"
-        [attr.aria-label]="'projectPlan.title' | translate"
-        [title]="'projectPlan.title' | translate"
-      >
-        <app-icon [icon]="icons.mapPin" [svgClass]="'project-toolbar-icon'" />
-        @if (!toolbarIconOnly()) {
-          <span class="project-toolbar-label">{{ 'projectPlan.title' | translate }}</span>
-        }
-      </button>
-      @if (isAdmin()) {
+    @if (!project()?.archived_at) {
+      <div class="project-toolbar">
         <button
           type="button"
           class="button button-outline project-toolbar-btn"
           [class.icon-only]="toolbarIconOnly()"
-          (click)="openProjectChecklist()"
-          [attr.aria-label]="'todos.projectChecklist' | translate"
-          [title]="'todos.projectChecklist' | translate"
-        >
-          <app-icon [icon]="icons.list" [svgClass]="'project-toolbar-icon'" />
-          @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{ 'todos.projectChecklist' | translate }}</span>
-          }
-        </button>
-      }
-      <button
-        type="button"
-        class="button button-outline project-toolbar-btn project-toolbar-filters"
-        [class.icon-only]="toolbarIconOnly()"
-        (click)="toggleFiltersFromToolbar()"
-        [attr.aria-expanded]="filtersVisible()"
-        [attr.aria-label]="
-          filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)
-        "
-        [title]="filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)"
-        aria-controls="filterControls"
-      >
-        @if (filtersVisible()) {
-          <app-icon [icon]="icons.filterOff" [svgClass]="'project-toolbar-icon'" />
-        } @else {
-          <app-icon [icon]="icons.filter" [svgClass]="'project-toolbar-icon'" />
-        }
-        @if (!toolbarIconOnly()) {
-          <span class="project-toolbar-label">{{
-            filtersVisible() ? ('filter.hide' | translate) : ('filter.show' | translate)
-          }}</span>
-        }
-      </button>
-      @if (objects().length > 0) {
-        <button
-          type="button"
-          class="button button-outline project-toolbar-btn object-reorder-toggle"
-          [class.icon-only]="toolbarIconOnly()"
-          [class.active]="objectReorderMode()"
-          (click)="toggleObjectReorderMode()"
-          [disabled]="objectReorderSaving()"
+          (click)="openCategoryModal()"
           [attr.aria-label]="
-            objectReorderMode()
-              ? ('projects.doneReorderObjects' | translate)
-              : ('projects.reorderObjects' | translate)
+            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
           "
           [title]="
-            objectReorderMode()
-              ? ('projects.doneReorderObjects' | translate)
-              : ('projects.reorderObjects' | translate)
+            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
           "
         >
-          @if (objectReorderMode()) {
-            <app-icon [icon]="icons.check" [svgClass]="'project-toolbar-icon'" [strokeWidth]="2.5" />
-          } @else {
-            <app-icon [icon]="icons.arrowsUpDown" [svgClass]="'project-toolbar-icon'" />
-          }
+          <app-icon [icon]="icons.tag" [svgClass]="'project-toolbar-icon'" />
           @if (!toolbarIconOnly()) {
             <span class="project-toolbar-label">{{
-              objectReorderMode()
-                ? ('projects.doneReorderObjects' | translate)
-                : ('projects.reorderObjects' | translate)
+              (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
             }}</span>
           }
         </button>
-      }
-      @if (objectReorderSaving()) {
-        <span class="project-toolbar-hint">{{ 'common.loading' | translate }}</span>
-      }
-    </div>
-  }
-
-  <app-filter
-    [filter]="filterData()"
-    [initialState]="restoredFilterState()"
-    [hideToggleButton]="!project()?.archived_at"
-    (filterChange)="filterChanged($event)"
-    (filtersVisibleChange)="onFiltersVisibleChange($event)"
-  ></app-filter>
-
-  @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
-    <div class="apply-sort-order-toolbar">
-      <p class="apply-sort-order-hint">{{ 'projects.applySortOrderHint' | translate }}</p>
-      <button
-        type="button"
-        class="button button-primary apply-sort-order-btn"
-        (click)="applySortOrder()"
-        [disabled]="objectReorderSaving() || filteredObjects().length === 0"
-      >
-        @if (objectReorderSaving()) {
-          {{ 'common.loading' | translate }}
-        } @else {
-          {{ 'projects.applySortOrder' | translate }}
+        @if (protocolsEnabled()) {
+          <button
+            type="button"
+            class="button button-primary project-toolbar-btn"
+            [class.icon-only]="toolbarIconOnly()"
+            (click)="generateProtocol()"
+            [disabled]="loadingTemplates()"
+            [attr.aria-label]="'protocols.generateProtocol' | translate"
+            [title]="'protocols.generateProtocol' | translate"
+          >
+            @if (loadingTemplates()) {
+              <span class="spinner"></span>
+              @if (!toolbarIconOnly()) {
+                <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
+              }
+            } @else {
+              <app-icon [icon]="icons.fileTextDetailed" [svgClass]="'project-toolbar-icon'" />
+              @if (!toolbarIconOnly()) {
+                <span class="project-toolbar-label">{{
+                  'protocols.generateProtocol' | translate
+                }}</span>
+              }
+            }
+          </button>
         }
-      </button>
-    </div>
-  }
+        <button
+          type="button"
+          class="button button-outline project-toolbar-btn"
+          [class.icon-only]="toolbarIconOnly()"
+          (click)="openStreetPlan()"
+          [attr.aria-label]="'projectPlan.title' | translate"
+          [title]="'projectPlan.title' | translate"
+        >
+          <app-icon [icon]="icons.mapPin" [svgClass]="'project-toolbar-icon'" />
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{ 'projectPlan.title' | translate }}</span>
+          }
+        </button>
+        @if (isAdmin()) {
+          <button
+            type="button"
+            class="button button-outline project-toolbar-btn"
+            [class.icon-only]="toolbarIconOnly()"
+            (click)="openProjectChecklist()"
+            [attr.aria-label]="'todos.projectChecklist' | translate"
+            [title]="'todos.projectChecklist' | translate"
+          >
+            <app-icon [icon]="icons.list" [svgClass]="'project-toolbar-icon'" />
+            @if (!toolbarIconOnly()) {
+              <span class="project-toolbar-label">{{ 'todos.projectChecklist' | translate }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
   </div>
 
   <app-tab-group
@@ -296,166 +188,257 @@
     [ariaLabel]="contentTabsAriaLabel()"
   >
     <app-tab-panel id="objects" class="project-tab-panel--internal-scroll">
-      @if (objectReorderMode() && objectsInReorderMode().length > 0) {
-        <div
-          class="card-wrapper card-wrapper--reorder"
-          [class.card-wrapper--defer]="objectsInReorderMode().length > virtualScrollThreshold"
-          (dragover)="onObjectListDragOver($event)"
-          (touchmove)="onObjectTouchMove($event)"
-          (touchend)="onObjectTouchEnd($event)"
-          (touchcancel)="onObjectTouchCancel()"
-        >
-          @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {
-            <div
-              class="card card--reorder card--deferred"
-              [ngClass]="objectTodoCardClasses(object)"
-              [class.dragging]="draggedObjectId() === object._id?.$oid"
-              [class.drag-over]="dragOverObjectId() === object._id?.$oid"
-              [attr.data-reorder-id]="object._id?.$oid"
-              (dragover)="onObjectDragOver($event, object)"
-              (dragleave)="onObjectDragLeave(object)"
-              (drop)="onObjectDrop($event, object)"
-            >
-              <div class="reorder-row">
-                <span
-                  class="drag-handle"
-                  draggable="true"
-                  role="button"
-                  [attr.aria-label]="'projects.reorderObjects' | translate"
-                  [attr.title]="'projects.reorderObjects' | translate"
-                  (dragstart)="onObjectDragStart($event, object)"
-                  (dragend)="onObjectDragEnd()"
-                  (touchstart)="onObjectTouchStart($event, object)"
-                  >⋮⋮</span
+      <section class="objects-section">
+        <header class="column-header">
+          <h3>{{ 'navbar.objects' | translate }}</h3>
+          <div class="column-header-actions">
+            @if (!project()?.archived_at) {
+              <button
+                type="button"
+                class="button button-primary object-header-action"
+                (click)="addObject()"
+                [attr.aria-label]="'objects.add' | translate"
+                [title]="'objects.add' | translate"
+              >
+                <app-icon [icon]="icons.plus" />
+              </button>
+              @if (objects().length > 0) {
+                <button
+                  type="button"
+                  class="button button-outline object-header-action"
+                  [class.active]="objectReorderMode()"
+                  [attr.aria-pressed]="objectReorderMode()"
+                  (click)="toggleObjectReorderMode()"
+                  [disabled]="objectReorderSaving()"
+                  [attr.aria-label]="
+                    (objectReorderMode()
+                      ? 'projects.doneReorderObjects'
+                      : 'projects.reorderObjects'
+                    ) | translate
+                  "
+                  [title]="
+                    (objectReorderMode()
+                      ? 'projects.doneReorderObjects'
+                      : 'projects.reorderObjects'
+                    ) | translate
+                  "
                 >
-                <span class="reorder-position">{{ i + 1 }}</span>
-                <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
-                  <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
-                </h2>
-                <div class="reorder-arrows">
-                  <button
-                    type="button"
-                    class="reorder-btn"
-                    (click)="moveObjectUp(object)"
-                    [disabled]="i === 0 || objectReorderSaving()"
-                    [attr.aria-label]="'projects.moveObjectLeft' | translate"
-                    [attr.title]="'projects.moveObjectLeft' | translate"
-                  >
-                    ◀
-                  </button>
-                  <button
-                    type="button"
-                    class="reorder-btn"
-                    (click)="moveObjectDown(object)"
-                    [disabled]="i === objectsInReorderMode().length - 1 || objectReorderSaving()"
-                    [attr.aria-label]="'projects.moveObjectRight' | translate"
-                    [attr.title]="'projects.moveObjectRight' | translate"
-                  >
-                    ▶
-                  </button>
-                </div>
-              </div>
+                  <app-icon [icon]="objectReorderMode() ? icons.check : icons.arrowsUpDown" />
+                </button>
+              }
+            }
+            <button
+              type="button"
+              class="button button-outline object-header-action"
+              [class.active]="hasActiveFilter()"
+              (click)="objectFilterDialog.showModal()"
+              aria-haspopup="dialog"
+              aria-controls="objectFilterDialog"
+              [attr.aria-label]="'filter.show' | translate"
+              [title]="'filter.show' | translate"
+            >
+              <app-icon [icon]="icons.filter" />
+            </button>
+            @if (hasActiveFilter()) {
+              <button
+                type="button"
+                class="button button-outline object-header-action"
+                (click)="projectFilter()?.clearFilters()"
+                [attr.aria-label]="'filter.clear' | translate"
+                [title]="'filter.clear' | translate"
+              >
+                <app-icon [icon]="icons.filterOff" />
+              </button>
+            }
+          </div>
+        </header>
+        <div class="column-content objects-section-content">
+          @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
+            <div class="apply-sort-order-toolbar">
+              <p class="apply-sort-order-hint">{{ 'projects.applySortOrderHint' | translate }}</p>
+              <button
+                type="button"
+                class="button button-primary apply-sort-order-btn"
+                (click)="applySortOrder()"
+                [disabled]="objectReorderSaving() || filteredObjects().length === 0"
+              >
+                @if (objectReorderSaving()) {
+                  {{ 'common.loading' | translate }}
+                } @else {
+                  {{ 'projects.applySortOrder' | translate }}
+                }
+              </button>
             </div>
           }
+          @if (objectReorderMode() && objectsInReorderMode().length > 0) {
+            <div
+              class="card-wrapper card-wrapper--reorder"
+              [class.card-wrapper--defer]="objectsInReorderMode().length > virtualScrollThreshold"
+              (dragover)="onObjectListDragOver($event)"
+              (touchmove)="onObjectTouchMove($event)"
+              (touchend)="onObjectTouchEnd($event)"
+              (touchcancel)="onObjectTouchCancel()"
+            >
+              @for (object of objectsInReorderMode(); track object._id?.$oid; let i = $index) {
+                <div
+                  class="card card--reorder card--deferred"
+                  [ngClass]="objectTodoCardClasses(object)"
+                  [class.dragging]="draggedObjectId() === object._id?.$oid"
+                  [class.drag-over]="dragOverObjectId() === object._id?.$oid"
+                  [attr.data-reorder-id]="object._id?.$oid"
+                  (dragover)="onObjectDragOver($event, object)"
+                  (dragleave)="onObjectDragLeave(object)"
+                  (drop)="onObjectDrop($event, object)"
+                >
+                  <div class="reorder-row">
+                    <span
+                      class="drag-handle"
+                      draggable="true"
+                      role="button"
+                      [attr.aria-label]="'projects.reorderObjects' | translate"
+                      [attr.title]="'projects.reorderObjects' | translate"
+                      (dragstart)="onObjectDragStart($event, object)"
+                      (dragend)="onObjectDragEnd()"
+                      (touchstart)="onObjectTouchStart($event, object)"
+                      >⋮⋮</span
+                    >
+                    <span class="reorder-position">{{ i + 1 }}</span>
+                    <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
+                      <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
+                    </h2>
+                    <div class="reorder-arrows">
+                      <button
+                        type="button"
+                        class="reorder-btn"
+                        (click)="moveObjectUp(object)"
+                        [disabled]="i === 0 || objectReorderSaving()"
+                        [attr.aria-label]="'projects.moveObjectLeft' | translate"
+                        [attr.title]="'projects.moveObjectLeft' | translate"
+                      >
+                        ◀
+                      </button>
+                      <button
+                        type="button"
+                        class="reorder-btn"
+                        (click)="moveObjectDown(object)"
+                        [disabled]="
+                          i === objectsInReorderMode().length - 1 || objectReorderSaving()
+                        "
+                        [attr.aria-label]="'projects.moveObjectRight' | translate"
+                        [attr.title]="'projects.moveObjectRight' | translate"
+                      >
+                        ▶
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (filteredObjects().length > 0) {
+            <app-virtual-scroll-viewport
+              class="object-list-viewport"
+              [items]="filteredObjects()"
+              [itemSize]="objectCardItemSize()"
+              [threshold]="objectVirtualScrollThreshold()"
+              [trackBy]="trackObjectById"
+              [fill]="objectListFillHeight()"
+              [ariaLabel]="'navbar.objects' | translate"
+              [maxHeight]="objectListMaxHeight()"
+            >
+              <ng-template let-object let-index="index">
+                <app-object-card
+                  layout="list"
+                  [object]="object"
+                  [compact]="toolbarIconOnly()"
+                  [routerLink]="['/objects/tab', object._id?.$oid]"
+                  [queryParams]="objectTabLinkQueryParams()"
+                  [cardClasses]="objectCardSurfaceClasses(object)"
+                  [fallbackLabel]="objectCardFallbackLabel"
+                />
+              </ng-template>
+            </app-virtual-scroll-viewport>
+          } @else {
+            <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+          }
         </div>
-      } @else if (filteredObjects().length > 0) {
-        <app-virtual-scroll-viewport
-          class="object-list-viewport"
-          [items]="filteredObjects()"
-          [itemSize]="objectCardItemSize()"
-          [threshold]="objectVirtualScrollThreshold()"
-          [trackBy]="trackObjectById"
-          [fill]="objectListFillHeight()"
-          [ariaLabel]="'navbar.objects' | translate"
-          [maxHeight]="objectListMaxHeight()"
-        >
-          <ng-template let-object let-index="index">
-            <app-object-card
-              layout="list"
-              [object]="object"
-              [compact]="toolbarIconOnly()"
-              [routerLink]="['/objects/tab', object._id?.$oid]"
-              [queryParams]="objectTabLinkQueryParams()"
-              [cardClasses]="objectCardSurfaceClasses(object)"
-              [fallbackLabel]="objectCardFallbackLabel"
-            />
-          </ng-template>
-        </app-virtual-scroll-viewport>
-      } @else {
-        <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
-      }
+      </section>
     </app-tab-panel>
 
     @if (protocolsEnabled()) {
-    <app-tab-panel id="uploaded-protocols" class="project-tab-panel--internal-scroll">
-      @if (project()) {
-        <section class="protocols-section protocols-section--uploaded">
-          <div class="protocols-section-header">
-            <h3>{{ 'protocols.uploadedProtocolsColumn' | translate }}</h3>
-            @if (!project()?.archived_at) {
-              <input
-                type="file"
-                id="protocol-pdf-input"
-                class="visually-hidden"
-                accept="application/pdf,.pdf"
-                (change)="onProtocolPdfSelected($event)"
-                [disabled]="uploadingProtocolPdf()"
-              />
-              <label
-                for="protocol-pdf-input"
-                class="button button-secondary protocols-upload-label"
-                [class.is-disabled]="uploadingProtocolPdf()"
-                [attr.aria-label]="
-                  uploadingProtocolPdf()
-                    ? ('protocols.uploadingPdf' | translate)
-                    : ('protocols.uploadPdf' | translate)
-                "
-                [attr.title]="
-                  uploadingProtocolPdf()
-                    ? ('protocols.uploadingPdf' | translate)
-                    : ('protocols.uploadPdf' | translate)
-                "
-              >
-                @if (uploadingProtocolPdf()) {
-                  <span class="spinner"></span>
-                } @else {
-                  <app-icon [icon]="icons.fileUpload" [svgClass]="'protocols-upload-icon'" />
+      <app-tab-panel id="uploaded-protocols" class="project-tab-panel--internal-scroll">
+        @if (project()) {
+          <section class="protocols-section protocols-section--uploaded">
+            <header class="column-header">
+              <h3>{{ 'protocols.uploadedProtocolsColumn' | translate }}</h3>
+              <div class="column-header-actions">
+                @if (!project()?.archived_at) {
+                  <input
+                    type="file"
+                    id="protocol-pdf-input"
+                    class="visually-hidden"
+                    accept="application/pdf,.pdf"
+                    (change)="onProtocolPdfSelected($event)"
+                    [disabled]="uploadingProtocolPdf()"
+                  />
+                  <label
+                    for="protocol-pdf-input"
+                    class="button button-secondary protocols-upload-label"
+                    [class.is-disabled]="uploadingProtocolPdf()"
+                    [attr.aria-label]="
+                      uploadingProtocolPdf()
+                        ? ('protocols.uploadingPdf' | translate)
+                        : ('protocols.uploadPdf' | translate)
+                    "
+                    [attr.title]="
+                      uploadingProtocolPdf()
+                        ? ('protocols.uploadingPdf' | translate)
+                        : ('protocols.uploadPdf' | translate)
+                    "
+                  >
+                    @if (uploadingProtocolPdf()) {
+                      <span class="spinner"></span>
+                    } @else {
+                      <app-icon [icon]="icons.fileUpload" [svgClass]="'protocols-upload-icon'" />
+                    }
+                  </label>
                 }
-                <span class="protocols-upload-text">{{ 'protocols.uploadPdf' | translate }}</span>
-              </label>
-            }
-          </div>
-          <div class="protocols-section-content">
-            <div class="protocol-list">
-              @for (protocol of uploadedProtocols(); track protocol._id.$oid) {
-                <ng-container *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }" />
-              } @empty {
-                <p class="empty-state">{{ 'protocols.noUploadedProtocols' | translate }}</p>
-              }
+              </div>
+            </header>
+            <div class="column-content protocols-section-content">
+              <div class="protocol-list">
+                @for (protocol of uploadedProtocols(); track protocol._id.$oid) {
+                  <ng-container
+                    *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }"
+                  />
+                } @empty {
+                  <p class="empty-state">{{ 'protocols.noUploadedProtocols' | translate }}</p>
+                }
+              </div>
             </div>
-          </div>
-        </section>
-      }
-    </app-tab-panel>
+          </section>
+        }
+      </app-tab-panel>
 
-    <app-tab-panel id="generated-protocols" class="project-tab-panel--internal-scroll">
-      @if (project()) {
-        <section class="protocols-section protocols-section--generated">
-          <div class="protocols-section-header">
-            <h3>{{ 'protocols.generatedProtocolsColumn' | translate }}</h3>
-          </div>
-          <div class="protocols-section-content">
-            <div class="protocol-list">
-              @for (protocol of generatedProtocols(); track protocol._id.$oid) {
-                <ng-container *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }" />
-              } @empty {
-                <p class="empty-state">{{ 'protocols.noGeneratedProtocols' | translate }}</p>
-              }
+      <app-tab-panel id="generated-protocols" class="project-tab-panel--internal-scroll">
+        @if (project()) {
+          <section class="protocols-section protocols-section--generated">
+            <header class="column-header">
+              <h3>{{ 'protocols.generatedProtocolsColumn' | translate }}</h3>
+            </header>
+            <div class="column-content protocols-section-content">
+              <div class="protocol-list">
+                @for (protocol of generatedProtocols(); track protocol._id.$oid) {
+                  <ng-container
+                    *ngTemplateOutlet="protocolItem; context: { $implicit: protocol }"
+                  />
+                } @empty {
+                  <p class="empty-state">{{ 'protocols.noGeneratedProtocols' | translate }}</p>
+                }
+              </div>
             </div>
-          </div>
-        </section>
-      }
-    </app-tab-panel>
+          </section>
+        }
+      </app-tab-panel>
     }
 
     <ng-template #protocolItem let-protocol>
@@ -499,37 +482,39 @@
 
     <app-tab-panel id="files" class="project-tab-panel--internal-scroll">
       <section class="file-list-section">
-        <div class="file-list-section-header">
+        <header class="column-header">
           <h3>{{ 'files.title' | translate }}</h3>
-          @if (!project()?.archived_at) {
-            <button
-              type="button"
-              class="button button-secondary file-list-upload-btn"
-              (click)="openUploadModal()"
-              [disabled]="uploading()"
-              [attr.aria-label]="'objects.uploadFile' | translate"
-              [attr.title]="'objects.uploadFile' | translate"
-            >
-              @if (uploading()) {
-                <span class="spinner"></span>
-              } @else {
-                <app-icon [icon]="icons.cloudUpload" [svgClass]="'file-list-upload-icon'" />
-              }
-            </button>
-          }
-        </div>
-        @if (files().length) {
-          <div class="file-list-section-content">
+          <div class="column-header-actions">
+            @if (!project()?.archived_at) {
+              <button
+                type="button"
+                class="button button-secondary file-list-upload-btn"
+                (click)="openUploadModal()"
+                [disabled]="uploading()"
+                [attr.aria-label]="'objects.uploadFile' | translate"
+                [attr.title]="'objects.uploadFile' | translate"
+              >
+                @if (uploading()) {
+                  <span class="spinner"></span>
+                } @else {
+                  <app-icon [icon]="icons.cloudUpload" [svgClass]="'file-list-upload-icon'" />
+                }
+              </button>
+            }
+          </div>
+        </header>
+        <div class="column-content file-list-section-content">
+          @if (files().length) {
             <app-file-list
               [projectFiles]="files()"
               [projectObjectOptions]="projectObjectOptions()"
               (fileDeleted)="onFileDeleted()"
               (metadataUpdated)="onFileDeleted()"
             ></app-file-list>
-          </div>
-        } @else {
-          <p class="empty-state">{{ 'files.noPictures' | translate }}</p>
-        }
+          } @else {
+            <p class="empty-state">{{ 'files.noPictures' | translate }}</p>
+          }
+        </div>
       </section>
     </app-tab-panel>
   </app-tab-group>
@@ -544,8 +529,30 @@
     (cancel)="onCancelUpload()"
   />
 
-  <app-floating-add-button
-    [ariaLabel]="'objects.add' | translate"
-    (clicked)="addObject()"
-  />
+  <dialog
+    #objectFilterDialog
+    id="objectFilterDialog"
+    class="object-filter-dialog"
+    aria-labelledby="objectFilterTitle"
+  >
+    <header class="object-filter-dialog-header">
+      <h2 id="objectFilterTitle">{{ 'filter.show' | translate }}</h2>
+      <button
+        type="button"
+        class="button button-outline object-header-action"
+        (click)="objectFilterDialog.close()"
+        [attr.aria-label]="'common.close' | translate"
+        [title]="'common.close' | translate"
+      >
+        <app-icon [icon]="icons.close" />
+      </button>
+    </header>
+    <app-filter
+      [filter]="filterData()"
+      [initialState]="restoredFilterState()"
+      [hideToggleButton]="true"
+      [alwaysExpanded]="true"
+      (filterChange)="filterChanged($event)"
+    />
+  </dialog>
 </div>

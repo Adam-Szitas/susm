@@ -8,6 +8,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ApiTranslateLoader } from './loaders/api-translate-loader';
 import { UserStore } from './store/user.store';
+import { TrackingQueueService } from './services/tracking-queue.service';
 
 /**
  * Initialize user store before app starts
@@ -15,6 +16,10 @@ import { UserStore } from './store/user.store';
  */
 function initializeUserStore(userStore: UserStore) {
   return () => userStore.initialize();
+}
+
+function initializeTrackingQueue(trackingQueue: TrackingQueueService) {
+  return () => trackingQueue.start();
 }
 
 export const appConfig: ApplicationConfig = {
@@ -37,6 +42,12 @@ export const appConfig: ApplicationConfig = {
       useFactory: initializeUserStore,
       deps: [UserStore],
       multi: true
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeTrackingQueue,
+      deps: [TrackingQueueService],
+      multi: true,
     },
     importProvidersFrom(
       TranslateModule.forRoot({

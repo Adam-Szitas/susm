@@ -95,6 +95,82 @@
       </figure>
     </section>
 
+    <section class="operations-section" aria-labelledby="operations-heading">
+      <div class="operations-heading">
+        <div>
+          <h2 id="operations-heading">{{ 'admin.operations' | translate }}</h2>
+          <p>{{ 'admin.operationsIntro' | translate }}</p>
+        </div>
+        <div class="operations-range">
+          <label for="operations-range">{{ 'admin.timeRange' | translate }}</label>
+          <select id="operations-range" [ngModel]="operationsDays()" (ngModelChange)="setOperationsDays(+$event)">
+            <option [ngValue]="7">{{ 'admin.last7Days' | translate }}</option>
+            <option [ngValue]="30">{{ 'admin.last30Days' | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      @if (operationsError()) {
+        <div class="operations-error" role="alert">
+          <p>{{ 'admin.operationsFailed' | translate }}</p>
+          <button type="button" class="button button-outline" (click)="loadOperations()">{{ 'admin.retry' | translate }}</button>
+        </div>
+      } @else if (operationsLoading() && !operations()) {
+        <p aria-live="polite">{{ 'admin.operationsLoading' | translate }}</p>
+      } @else if (operations(); as ops) {
+        <p class="operations-updated"><span>{{ 'admin.observedAt' | translate }}</span><time [attr.datetime]="ops.generated_at">{{ ops.generated_at | date: 'medium' }}</time></p>
+        @if (ops.partial || ops.sample_limited) {
+          <p class="operations-notice" role="status">{{ 'admin.operationsPartial' | translate }}</p>
+        }
+        <div class="system-health-grid" aria-label="{{ 'admin.systemHealth' | translate }}">
+          <article><span>{{ 'admin.backendHealth' | translate }}</span><strong [class.health-degraded]="ops.health.backend !== 'healthy'">{{ ('admin.health' + (ops.health.backend === 'healthy' ? 'Healthy' : 'Degraded')) | translate }}</strong><small>{{ ops.health.backend_version }} · {{ uptimeLabel(ops.health.uptime_seconds) }}</small></article>
+          <article><span>{{ 'admin.databaseHealth' | translate }}</span><strong [class.health-degraded]="ops.health.database !== 'healthy'">{{ ('admin.health' + (ops.health.database === 'healthy' ? 'Healthy' : 'Degraded')) | translate }}</strong><small>{{ ops.health.database_latency_ms === null ? ('admin.unavailable' | translate) : (ops.health.database_latency_ms.toFixed(1) + ' ms') }}</small></article>
+          <article><span>{{ 'admin.telemetryHealth' | translate }}</span><strong [class.health-degraded]="ops.health.telemetry !== 'healthy'">{{ ('admin.health' + (ops.health.telemetry === 'healthy' ? 'Healthy' : 'Degraded')) | translate }}</strong><small>{{ 'admin.eventRetention' | translate }} · {{ ops.health.dropped_events }} {{ 'admin.eventsDropped' | translate }}</small></article>
+        </div>
+
+        <div class="operations-metrics">
+          <article><strong>{{ ops.tracked_events }}</strong><span>{{ 'admin.observedEvents' | translate }}</span></article>
+          <article><strong>{{ ops.successful_sign_ins }}</strong><span>{{ 'admin.successfulSignIns' | translate }}</span></article>
+          <article><strong>{{ ops.page_views }}</strong><span>{{ 'admin.pageViews' | translate }}</span></article>
+          <article><strong>{{ ops.request_errors }}</strong><span>{{ 'admin.requestErrors' | translate }}</span></article>
+        </div>
+
+        <div class="operations-columns">
+          <section class="operations-card" aria-labelledby="activity-heading">
+            <h3 id="activity-heading">{{ 'admin.activityByDay' | translate }}</h3>
+            @if (ops.daily.length) {
+              <ul class="activity-chart" aria-label="{{ 'admin.activityByDay' | translate }}">
+                @for (day of ops.daily; track day.date) {
+                  <li><time [attr.datetime]="day.date">{{ day.date | date: 'MMM d' }}</time><span class="activity-track" aria-hidden="true"><span [style.width.%]="activityWidth(day.events, ops)"></span></span><strong>{{ day.events }}</strong><small>{{ day.errors }} {{ 'admin.errorsShort' | translate }}</small></li>
+                }
+              </ul>
+              <table class="operations-data-table"><caption>{{ 'admin.activityData' | translate }}</caption><thead><tr><th>{{ 'admin.date' | translate }}</th><th>{{ 'admin.events' | translate }}</th><th>{{ 'admin.errors' | translate }}</th></tr></thead><tbody>@for (day of ops.daily; track day.date) { <tr><th>{{ day.date }}</th><td>{{ day.events }}</td><td>{{ day.errors }}</td></tr> }</tbody></table>
+            } @else { <p>{{ 'admin.noActivity' | translate }}</p> }
+          </section>
+          <section class="operations-card" aria-labelledby="recent-events-heading">
+            <div class="events-heading">
+              <h3 id="recent-events-heading">{{ 'admin.recentEvents' | translate }}</h3>
+              <div class="event-filter">
+                <label for="event-category">{{ 'admin.filterCategory' | translate }}</label>
+                <select id="event-category" [ngModel]="eventCategory()" (ngModelChange)="eventCategory.set($event)">
+                  <option value="all">{{ 'admin.allCategories' | translate }}</option>
+                  @for (category of ops.by_category | keyvalue; track category.key) { <option [value]="category.key">{{ eventCategoryLabel(category.key) | translate }}</option> }
+                </select>
+              </div>
+            </div>
+            @if (visibleEvents().length) {
+              <div class="events-table-scroll" tabindex="0" role="region" aria-label="{{ 'admin.recentEvents' | translate }}">
+                <table class="events-table"><thead><tr><th>{{ 'admin.date' | translate }}</th><th>{{ 'admin.company' | translate }}</th><th>{{ 'admin.user' | translate }}</th><th>{{ 'admin.action' | translate }}</th><th>{{ 'admin.extra' | translate }}</th></tr></thead><tbody>
+                  @for (event of visibleEvents(); track $index) { <tr><td><time [attr.datetime]="event.date">{{ event.date | date: 'short' }}</time></td><td>{{ event.company_name }}</td><td>{{ event.user_name }}</td><td><span class="action-chip">{{ eventActionLabel(event.action) | translate }}</span></td><td>{{ formatEventExtra(event.extra) }}</td></tr> }
+                </tbody></table>
+              </div>
+            } @else { <p>{{ 'admin.noActivity' | translate }}</p> }
+          </section>
+        </div>
+        <p class="operations-disclaimer">{{ 'admin.observabilityDisclaimer' | translate }}</p>
+      }
+    </section>
+
     <section class="companies-section" aria-labelledby="companies-heading">
       <div class="section-heading">
         <div>
@@ -226,6 +302,7 @@
       <section class="health-callout" aria-labelledby="health-title">
         <h2 id="health-title">{{ 'admin.dataHealth' | translate }}</h2>
         <p>{{ 'admin.dataHealthCount' | translate: { count: data.issues.length } }}</p>
+        <ul class="admin-issue-list">@for (issue of data.issues; track issue.code + issue.company_name + issue.detail) { <li><strong>{{ issue.severity | titlecase }}: {{ issue.code }}</strong><span>{{ issue.company_name }} · {{ issue.detail }}</span></li> }</ul>
       </section>
     }
   }
