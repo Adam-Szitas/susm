@@ -1,424 +1,462 @@
 <div class="protocol-generate-form">
-  <h2>{{ 'protocols.generateProtocol' | translate }}</h2>
+  <ol class="protocol-steps" [attr.aria-label]="'protocols.generateProtocol' | translate">
+    <li
+      [class.is-current]="!showingPreview()"
+      [class.is-complete]="showingPreview()"
+      [attr.aria-current]="!showingPreview() ? 'step' : null"
+    >
+      <span class="protocol-step-number" aria-hidden="true">1</span>
+      <span>{{ 'protocols.selectTemplate' | translate }}</span>
+    </li>
+    <li
+      [class.is-current]="showingPreview()"
+      [attr.aria-current]="showingPreview() ? 'step' : null"
+    >
+      <span class="protocol-step-number" aria-hidden="true">2</span>
+      <span>{{ 'protocols.preview' | translate }}</span>
+    </li>
+  </ol>
 
   @if (showingPreview() && previewData()) {
     <div class="preview-container">
       <div class="preview-controls">
-      <div class="save-to-project-row">
-        <app-toggle-switch
-          [checked]="saveToProject()"
-          [label]="'protocols.saveToProject' | translate"
-          [disabled]="generating()"
-          (checkedChange)="saveToProject.set($event)"
-        />
-        <app-toggle-switch
-          [checked]="includeChecklists()"
-          [label]="'protocols.includeChecklists' | translate"
-          [disabled]="generating() || loadingPreview()"
-          (checkedChange)="includeChecklists.set($event)"
-        />
-        <app-toggle-switch
-          [checked]="includeHeaderFooter()"
-          [label]="'protocols.includeHeaderFooter' | translate"
-          [disabled]="generating()"
-          (checkedChange)="includeHeaderFooter.set($event)"
-        />
-      </div>
-
-      @if (includeChecklists() && checklistControlRows().length > 0) {
-        <div class="checklist-visibility-panel">
-          <p class="section-title">{{ 'todos.projectChecklist' | translate }}</p>
-          <p class="helper-text">{{ 'protocols.checklistVisibilityHint' | translate }}</p>
-          <ul class="checklist-visibility-list">
-            @for (row of checklistControlRows(); track row.todo_item_id ?? row.title) {
-              <li
-                class="checklist-visibility-item"
-                [class.checklist-visibility-item--excluded]="isChecklistExcluded(row.todo_item_id!)"
-              >
-                <button
-                  type="button"
-                  class="todo-protocol-visibility-btn"
-                  [class.todo-protocol-visibility-btn--hidden]="isChecklistExcluded(row.todo_item_id!)"
-                  [attr.aria-pressed]="!isChecklistExcluded(row.todo_item_id!)"
-                  [attr.aria-label]="
-                    isChecklistExcluded(row.todo_item_id!)
-                      ? ('protocols.showChecklistInProtocol' | translate: { title: row.title })
-                      : ('protocols.hideChecklistFromProtocol' | translate: { title: row.title })
-                  "
-                  [attr.title]="
-                    isChecklistExcluded(row.todo_item_id!)
-                      ? ('protocols.showChecklistInProtocol' | translate: { title: row.title })
-                      : ('protocols.hideChecklistFromProtocol' | translate: { title: row.title })
-                  "
-                  (click)="toggleExcludedChecklistItem(row.todo_item_id!)"
-                >
-                  @if (isChecklistExcluded(row.todo_item_id!)) {
-                    <app-icon [icon]="icons.eyeOff" />
-                  } @else {
-                    <app-icon [icon]="icons.eye" />
-                  }
-                </button>
-                <span class="checklist-visibility-label" [title]="row.title">
-                  <span class="checklist-visibility-title">{{ row.title }}</span>
-                  @if (row.note?.trim()) {
-                    <span class="checklist-visibility-note">{{ row.note }}</span>
-                  }
-                  @if (row.lines?.length) {
-                    <span class="checklist-visibility-meta">
-                      {{ 'protocols.checklistAssignedObjects' | translate: { count: row.lines!.length } }}
-                    </span>
-                  }
-                </span>
-              </li>
-            }
-          </ul>
+        <div class="preview-actions">
+          <button
+            type="button"
+            class="btn btn-secondary protocol-action-btn"
+            (click)="backToForm()"
+            [attr.aria-label]="'common.back' | translate"
+            [title]="'common.back' | translate"
+          >
+            <span class="protocol-action-icon" aria-hidden="true">
+              <app-icon [icon]="icons.chevronLeft" />
+            </span>
+            <span class="protocol-action-label">{{ 'common.back' | translate }}</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary protocol-action-btn"
+            (click)="loadPreview()"
+            [disabled]="loadingPreview() || !hasSelection()"
+            [attr.aria-label]="
+              loadingPreview()
+                ? ('protocols.loadingPreview' | translate)
+                : ('protocols.updatePreview' | translate)
+            "
+            [title]="
+              loadingPreview()
+                ? ('protocols.loadingPreview' | translate)
+                : ('protocols.updatePreview' | translate)
+            "
+          >
+            <span class="protocol-action-icon" aria-hidden="true">
+              @if (loadingPreview()) {
+                <app-icon [icon]="icons.loader" />
+              } @else {
+                <app-icon [icon]="icons.refresh" [strokeWidth]="2.5" />
+              }
+            </span>
+            <span class="protocol-action-label">
+              @if (loadingPreview()) {
+                {{ 'protocols.loadingPreview' | translate }}
+              } @else {
+                {{ 'protocols.updatePreview' | translate }}
+              }
+            </span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary protocol-action-btn"
+            (click)="onSubmit()"
+            [disabled]="generating()"
+            [attr.aria-label]="
+              generating()
+                ? ('protocols.generating' | translate)
+                : ('protocols.generatePDF' | translate)
+            "
+            [title]="
+              generating()
+                ? ('protocols.generating' | translate)
+                : ('protocols.generatePDF' | translate)
+            "
+          >
+            <span class="protocol-action-icon" aria-hidden="true">
+              @if (generating()) {
+                <app-icon [icon]="icons.loader" />
+              } @else {
+                <app-icon [icon]="icons.fileTextDetailed" [strokeWidth]="2.5" />
+              }
+            </span>
+            <span class="protocol-action-label">
+              @if (generating()) {
+                {{ 'protocols.generating' | translate }}
+              } @else {
+                {{ 'protocols.generatePDF' | translate }}
+              }
+            </span>
+          </button>
         </div>
-      }
 
-      <div class="preview-actions">
-        <button
-          type="button"
-          class="btn btn-secondary protocol-action-btn"
-          (click)="backToForm()"
-          [attr.aria-label]="'common.back' | translate"
-          [title]="'common.back' | translate"
-        >
-          <span class="protocol-action-icon" aria-hidden="true">
-            <app-icon [icon]="icons.chevronLeft" />
-          </span>
-          <span class="protocol-action-label">{{ 'common.back' | translate }}</span>
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary protocol-action-btn"
-          (click)="loadPreview()"
-          [disabled]="loadingPreview() || !hasSelection()"
-          [attr.aria-label]="
-            loadingPreview()
-              ? ('protocols.loadingPreview' | translate)
-              : ('protocols.updatePreview' | translate)
-          "
-          [title]="
-            loadingPreview()
-              ? ('protocols.loadingPreview' | translate)
-              : ('protocols.updatePreview' | translate)
-          "
-        >
-          <span class="protocol-action-icon" aria-hidden="true">
-            @if (loadingPreview()) {
-              <app-icon [icon]="icons.loader" />
-            } @else {
-              <app-icon [icon]="icons.refresh" [strokeWidth]="2.5" />
-            }
-          </span>
-          <span class="protocol-action-label">
-            @if (loadingPreview()) {
-              {{ 'protocols.loadingPreview' | translate }}
-            } @else {
-              {{ 'protocols.updatePreview' | translate }}
-            }
-          </span>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary protocol-action-btn"
-          (click)="onSubmit()"
-          [disabled]="generating()"
-          [attr.aria-label]="
-            generating() ? ('protocols.generating' | translate) : ('protocols.generatePDF' | translate)
-          "
-          [title]="
-            generating() ? ('protocols.generating' | translate) : ('protocols.generatePDF' | translate)
-          "
-        >
-          <span class="protocol-action-icon" aria-hidden="true">
-            @if (generating()) {
-              <app-icon [icon]="icons.loader" />
-            } @else {
-              <app-icon [icon]="icons.fileTextDetailed" [strokeWidth]="2.5" />
-            }
-          </span>
-          <span class="protocol-action-label">
-            @if (generating()) {
-              {{ 'protocols.generating' | translate }}
-            } @else {
-              {{ 'protocols.generatePDF' | translate }}
-            }
-          </span>
-        </button>
-      </div>
+        <div class="save-to-project-row">
+          <app-toggle-switch
+            [checked]="saveToProject()"
+            [label]="'protocols.saveToProject' | translate"
+            [disabled]="generating()"
+            (checkedChange)="saveToProject.set($event)"
+          />
+          <app-toggle-switch
+            [checked]="includeChecklists()"
+            [label]="'protocols.includeChecklists' | translate"
+            [disabled]="generating() || loadingPreview()"
+            (checkedChange)="includeChecklists.set($event)"
+          />
+          <app-toggle-switch
+            [checked]="includeHeaderFooter()"
+            [label]="'protocols.includeHeaderFooter' | translate"
+            [disabled]="generating()"
+            (checkedChange)="includeHeaderFooter.set($event)"
+          />
+        </div>
 
-      @if (projectCategories().length > 0) {
-        <fieldset class="file-group-categories-fieldset">
-          <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
-          <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
-          <div class="category-checkboxes">
-            @for (category of projectCategories(); track category) {
-              <label class="category-checkbox-label">
-                <input
-                  type="checkbox"
-                  [checked]="isProtocolCategorySelected(category)"
-                  (change)="toggleProtocolCategory(category, $any($event.target).checked)"
-                />
-                {{ category }}
-              </label>
-            }
+        @if (includeChecklists() && checklistControlRows().length > 0) {
+          <div class="checklist-visibility-panel">
+            <p class="section-title">{{ 'todos.projectChecklist' | translate }}</p>
+            <p class="helper-text">{{ 'protocols.checklistVisibilityHint' | translate }}</p>
+            <ul class="checklist-visibility-list">
+              @for (row of checklistControlRows(); track row.todo_item_id ?? row.title) {
+                <li
+                  class="checklist-visibility-item"
+                  [class.checklist-visibility-item--excluded]="
+                    isChecklistExcluded(row.todo_item_id!)
+                  "
+                >
+                  <button
+                    type="button"
+                    class="todo-protocol-visibility-btn"
+                    [class.todo-protocol-visibility-btn--hidden]="
+                      isChecklistExcluded(row.todo_item_id!)
+                    "
+                    [attr.aria-pressed]="!isChecklistExcluded(row.todo_item_id!)"
+                    [attr.aria-label]="
+                      isChecklistExcluded(row.todo_item_id!)
+                        ? ('protocols.showChecklistInProtocol' | translate: { title: row.title })
+                        : ('protocols.hideChecklistFromProtocol' | translate: { title: row.title })
+                    "
+                    [attr.title]="
+                      isChecklistExcluded(row.todo_item_id!)
+                        ? ('protocols.showChecklistInProtocol' | translate: { title: row.title })
+                        : ('protocols.hideChecklistFromProtocol' | translate: { title: row.title })
+                    "
+                    (click)="toggleExcludedChecklistItem(row.todo_item_id!)"
+                  >
+                    @if (isChecklistExcluded(row.todo_item_id!)) {
+                      <app-icon [icon]="icons.eyeOff" />
+                    } @else {
+                      <app-icon [icon]="icons.eye" />
+                    }
+                  </button>
+                  <span class="checklist-visibility-label" [title]="row.title">
+                    <span class="checklist-visibility-title">{{ row.title }}</span>
+                    @if (row.note?.trim()) {
+                      <span class="checklist-visibility-note">{{ row.note }}</span>
+                    }
+                    @if (row.lines?.length) {
+                      <span class="checklist-visibility-meta">
+                        {{
+                          'protocols.checklistAssignedObjects'
+                            | translate: { count: row.lines!.length }
+                        }}
+                      </span>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
           </div>
-        </fieldset>
-      }
+        }
 
-      <!-- Editable Fields Section in Preview -->
-      @if (fieldControls.controls.length > 0 && templateForPreview) {
-        <div class="template-fields-section preview-fields">
-          <h3>{{ 'protocols.templateFields' | translate }}</h3>
-          <p class="helper-text">{{ 'protocols.editFieldsHere' | translate }}</p>
-          <form [formGroup]="form">
-            <div class="template-fields-grid" formArrayName="fields">
-              @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
-                @let field = templateForPreview!.fields[i];
-                @if (field) {
-                  <div [formGroup]="$any(fieldControl)" class="template-field">
-                    <label [for]="'preview_field_' + i">
-                      {{ field.label }}
-                      @if (field.required) {
-                        <span class="required">*</span>
-                      }
-                    </label>
-                    @if (field.field_type === 'text' || field.field_type === 'custom') {
-                      <input
-                        [id]="'preview_field_' + i"
-                        type="text"
-                        formControlName="value"
-                        [placeholder]="field.label"
-                      />
-                    } @else if (field.field_type === 'number') {
-                      <input
-                        [id]="'preview_field_' + i"
-                        type="number"
-                        formControlName="value"
-                        [placeholder]="field.label"
-                      />
-                    } @else if (field.field_type === 'date') {
-                      <input [id]="'preview_field_' + i" type="date" formControlName="value" />
-                    } @else if (field.field_type === 'address') {
-                      <input
-                        [id]="'preview_field_' + i"
-                        type="text"
-                        formControlName="value"
-                        [placeholder]="'common.address' | translate"
-                      />
-                    } @else if (field.field_type === 'status') {
-                      <select [id]="'preview_field_' + i" formControlName="value">
-                        <option value="">{{ 'objects.status' | translate }}</option>
-                        <option value="created">{{ 'status.created' | translate }}</option>
-                        <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
-                        <option value="rejected">{{ 'status.rejected' | translate }}</option>
-                        <option value="verified">{{ 'status.verified' | translate }}</option>
-                        <option value="closed">{{ 'status.closed' | translate }}</option>
-                      </select>
-                    } @else if (field.field_type === 'note') {
-                      <textarea
-                        [id]="'preview_field_' + i"
-                        formControlName="value"
-                        rows="3"
-                        [placeholder]="'common.note' | translate"
-                      ></textarea>
-                    }
-                    @if (
-                      $any(fieldControl).get('value')?.invalid &&
-                      $any(fieldControl).get('value')?.touched
-                    ) {
-                      <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
-                    }
-                  </div>
-                }
+        @if (projectCategories().length > 0) {
+          <fieldset class="file-group-categories-fieldset">
+            <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
+            <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
+            <div class="category-checkboxes">
+              @for (category of projectCategories(); track category) {
+                <label class="category-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isProtocolCategorySelected(category)"
+                    (change)="toggleProtocolCategory(category, $any($event.target).checked)"
+                  />
+                  {{ category }}
+                </label>
               }
             </div>
-          </form>
-        </div>
-      }
+          </fieldset>
+        }
 
-      @if (objectsForProtocolSelection().length === 0) {
-        <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
-      } @else {
-        <div class="object-selection preview-object-selection">
-          <div class="object-selection-header">
-            <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
-            <button
-              type="button"
-              class="btn btn-secondary object-select-toggle protocol-action-btn"
-              (click)="toggleSelectAllObjects()"
-              [disabled]="availableObjectIds().length === 0"
-              [attr.aria-label]="
-                allObjectsSelected()
-                  ? ('protocols.deselectAllObjects' | translate)
-                  : ('protocols.selectAllObjects' | translate)
-              "
-              [title]="
-                allObjectsSelected()
-                  ? ('protocols.deselectAllObjects' | translate)
-                  : ('protocols.selectAllObjects' | translate)
-              "
+        <!-- Editable Fields Section in Preview -->
+        @if (fieldControls.controls.length > 0 && templateForPreview) {
+          <div class="template-fields-section preview-fields">
+            <h3>{{ 'protocols.templateFields' | translate }}</h3>
+            <p class="helper-text">{{ 'protocols.editFieldsHere' | translate }}</p>
+            <form [formGroup]="form">
+              <div class="template-fields-grid" formArrayName="fields">
+                @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
+                  @let field = templateForPreview!.fields[i];
+                  @if (field) {
+                    <div [formGroup]="$any(fieldControl)" class="template-field">
+                      <label [for]="'preview_field_' + i">
+                        {{ field.label }}
+                        @if (field.required) {
+                          <span class="required">*</span>
+                        }
+                      </label>
+                      @if (field.field_type === 'text' || field.field_type === 'custom') {
+                        <input
+                          [id]="'preview_field_' + i"
+                          type="text"
+                          formControlName="value"
+                          [placeholder]="field.label"
+                        />
+                      } @else if (field.field_type === 'number') {
+                        <input
+                          [id]="'preview_field_' + i"
+                          type="number"
+                          formControlName="value"
+                          [placeholder]="field.label"
+                        />
+                      } @else if (field.field_type === 'date') {
+                        <input [id]="'preview_field_' + i" type="date" formControlName="value" />
+                      } @else if (field.field_type === 'address') {
+                        <input
+                          [id]="'preview_field_' + i"
+                          type="text"
+                          formControlName="value"
+                          [placeholder]="'common.address' | translate"
+                        />
+                      } @else if (field.field_type === 'status') {
+                        <select [id]="'preview_field_' + i" formControlName="value">
+                          <option value="">{{ 'objects.status' | translate }}</option>
+                          <option value="created">{{ 'status.created' | translate }}</option>
+                          <option value="in_progress">
+                            {{ 'status.in_progress' | translate }}
+                          </option>
+                          <option value="rejected">{{ 'status.rejected' | translate }}</option>
+                          <option value="verified">{{ 'status.verified' | translate }}</option>
+                          <option value="closed">{{ 'status.closed' | translate }}</option>
+                        </select>
+                      } @else if (field.field_type === 'note') {
+                        <textarea
+                          [id]="'preview_field_' + i"
+                          formControlName="value"
+                          rows="3"
+                          [placeholder]="'common.note' | translate"
+                        ></textarea>
+                      }
+                      @if (
+                        $any(fieldControl).get('value')?.invalid &&
+                        $any(fieldControl).get('value')?.touched
+                      ) {
+                        <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            </form>
+          </div>
+        }
+
+        @if (objectsForProtocolSelection().length === 0) {
+          <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+        } @else {
+          <div class="object-selection preview-object-selection">
+            <div class="object-selection-header">
+              <p class="section-title">
+                {{ 'protocols.selectObjects' | translate }}
+                <span class="selection-count"
+                  >{{ selectedObjectIds().length }} / {{ availableObjectIds().length }}</span
+                >
+              </p>
+              <button
+                type="button"
+                class="btn btn-secondary object-select-toggle protocol-action-btn"
+                (click)="toggleSelectAllObjects()"
+                [disabled]="availableObjectIds().length === 0"
+                [attr.aria-label]="
+                  allObjectsSelected()
+                    ? ('protocols.deselectAllObjects' | translate)
+                    : ('protocols.selectAllObjects' | translate)
+                "
+                [title]="
+                  allObjectsSelected()
+                    ? ('protocols.deselectAllObjects' | translate)
+                    : ('protocols.selectAllObjects' | translate)
+                "
+              >
+                <span class="protocol-action-icon" aria-hidden="true">
+                  @if (allObjectsSelected()) {
+                    <app-icon [icon]="icons.clipboardCheck" [strokeWidth]="2.5" />
+                  } @else {
+                    <app-icon [icon]="icons.squarePlus" [strokeWidth]="2.5" />
+                  }
+                </span>
+                <span class="protocol-action-label">
+                  @if (allObjectsSelected()) {
+                    {{ 'protocols.deselectAllObjects' | translate }}
+                  } @else {
+                    {{ 'protocols.selectAllObjects' | translate }}
+                  }
+                </span>
+              </button>
+            </div>
+            <p class="helper-text">{{ 'protocols.selectObjectsDescription' | translate }}</p>
+            <p class="helper-text reorder-hint">{{ 'protocols.reorderObjectsHint' | translate }}</p>
+            <p class="section-title reorder-title">{{ 'protocols.reorderObjects' | translate }}</p>
+            <div
+              class="object-list object-list--reorder"
+              (dragover)="$event.preventDefault()"
+              (touchmove)="onProtocolObjectTouchMove($event)"
+              (touchend)="onProtocolObjectTouchEnd($event)"
+              (touchcancel)="onProtocolObjectTouchCancel()"
             >
-              <span class="protocol-action-icon" aria-hidden="true">
-                @if (allObjectsSelected()) {
-                  <app-icon [icon]="icons.clipboardCheck" [strokeWidth]="2.5" />
-                } @else {
-                  <app-icon [icon]="icons.squarePlus" [strokeWidth]="2.5" />
-                }
-              </span>
-              <span class="protocol-action-label">
-                @if (allObjectsSelected()) {
-                  {{ 'protocols.deselectAllObjects' | translate }}
-                } @else {
-                  {{ 'protocols.selectAllObjects' | translate }}
-                }
-              </span>
-            </button>
-          </div>
-          <p class="helper-text">{{ 'protocols.selectObjectsDescription' | translate }}</p>
-          <p class="helper-text reorder-hint">{{ 'protocols.reorderObjectsHint' | translate }}</p>
-          <p class="section-title reorder-title">{{ 'protocols.reorderObjects' | translate }}</p>
-          <div
-            class="object-list object-list--reorder"
-            (dragover)="$event.preventDefault()"
-            (touchmove)="onProtocolObjectTouchMove($event)"
-            (touchend)="onProtocolObjectTouchEnd($event)"
-            (touchcancel)="onProtocolObjectTouchCancel()"
-          >
-            @for (object of objectsInProtocolOrder(); track object._id?.$oid) {
-              <div
-                class="object-item object-item--reorder"
-                [class.dragging]="draggedObjectId() === object._id?.$oid"
-                [class.drag-over]="dragOverObjectId() === object._id?.$oid"
-                [attr.data-reorder-id]="object._id?.$oid"
-                (dragover)="onProtocolObjectDragOver($event, object)"
-                (dragleave)="onProtocolObjectDragLeave(object)"
-                (drop)="onProtocolObjectDrop($event, object)"
-              >
-                <label class="object-item-checkbox">
-                  <input
-                    type="checkbox"
-                    [checked]="isSelected(object._id?.$oid)"
-                    (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
-                  />
-                  <span>{{ formatObjectLabel(object) }}</span>
-                </label>
-                @if (isSelected(object._id?.$oid)) {
-                  <span
-                    class="drag-handle"
-                    draggable="true"
-                    role="button"
-                    [attr.aria-label]="'protocols.reorderObjects' | translate"
-                    (dragstart)="onProtocolObjectDragStart($event, object)"
-                    (dragend)="onProtocolObjectDragEnd()"
-                    (touchstart)="onProtocolObjectTouchStart($event, object)"
-                  >⋮⋮</span>
-                  <span class="reorder-position">{{ objectProtocolPosition(object) }}</span>
-                }
-              </div>
+              @for (object of objectsInProtocolOrder(); track object._id?.$oid) {
+                <div
+                  class="object-item object-item--reorder"
+                  [class.dragging]="draggedObjectId() === object._id?.$oid"
+                  [class.drag-over]="dragOverObjectId() === object._id?.$oid"
+                  [attr.data-reorder-id]="object._id?.$oid"
+                  (dragover)="onProtocolObjectDragOver($event, object)"
+                  (dragleave)="onProtocolObjectDragLeave(object)"
+                  (drop)="onProtocolObjectDrop($event, object)"
+                >
+                  <label class="object-item-checkbox">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(object._id?.$oid)"
+                      (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+                    />
+                    <span>{{ formatObjectLabel(object) }}</span>
+                  </label>
+                  @if (isSelected(object._id?.$oid)) {
+                    <span
+                      class="drag-handle"
+                      draggable="true"
+                      role="button"
+                      [attr.aria-label]="'protocols.reorderObjects' | translate"
+                      (dragstart)="onProtocolObjectDragStart($event, object)"
+                      (dragend)="onProtocolObjectDragEnd()"
+                      (touchstart)="onProtocolObjectTouchStart($event, object)"
+                      >⋮⋮</span
+                    >
+                    <span class="reorder-position">{{ objectProtocolPosition(object) }}</span>
+                  }
+                </div>
+              }
+            </div>
+            @if (!hasSelection()) {
+              <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
             }
           </div>
-          @if (!hasSelection()) {
-            <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
-          }
-        </div>
-      }
+        }
 
-      @if (existingProtocols().length > 0) {
-        <div class="linked-protocols-selection preview-linked-selection">
-          <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
-          <p class="helper-text">
-            {{ 'protocols.includeOlderProtocolsDescription' | translate }}
-          </p>
-          <p class="helper-text reorder-hint">
-            {{ 'protocols.reorderLinkedProtocolsHint' | translate }}
-          </p>
-          <p class="section-title reorder-title">
-            {{ 'protocols.reorderLinkedProtocols' | translate }}
-          </p>
-          <div
-            class="protocol-list linked-list linked-list--reorder"
-            (dragover)="$event.preventDefault()"
-            (touchmove)="onLinkedProtocolTouchMove($event)"
-            (touchend)="onLinkedProtocolTouchEnd($event)"
-            (touchcancel)="onLinkedProtocolTouchCancel()"
-          >
-            @for (protocol of linkedProtocolsInOrder(); track protocol._id.$oid; let i = $index) {
-              <div
-                class="protocol-item linked-item linked-item--reorder"
-                [class.dragging]="draggedLinkedProtocolId() === protocol._id.$oid"
-                [class.drag-over]="dragOverLinkedProtocolId() === protocol._id.$oid"
-                [attr.data-reorder-id]="protocol._id.$oid"
-                (dragover)="onLinkedProtocolDragOver($event, protocol)"
-                (dragleave)="onLinkedProtocolDragLeave(protocol)"
-                (drop)="onLinkedProtocolDrop($event, protocol)"
-              >
-                <label class="linked-item-checkbox">
-                  <input
-                    type="checkbox"
-                    [checked]="isLinkedProtocolSelected(protocol)"
-                    (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
-                  />
-                  <span class="protocol-label" [attr.title]="formatProtocolLabel(protocol)">{{
-                    formatProtocolLabel(protocol)
-                  }}</span>
-                </label>
-                @if (isLinkedProtocolSelected(protocol)) {
-                  <span
-                    class="drag-handle"
-                    draggable="true"
-                    role="button"
-                    [attr.aria-label]="'protocols.reorderLinkedProtocols' | translate"
-                    (dragstart)="onLinkedProtocolDragStart($event, protocol)"
-                    (dragend)="onLinkedProtocolDragEnd()"
-                    (touchstart)="onLinkedProtocolTouchStart($event, protocol)"
-                  >⋮⋮</span>
-                  <span class="reorder-position">{{ linkedProtocolPosition(protocol) }}</span>
-                }
-              </div>
-            }
+        @if (existingProtocols().length > 0) {
+          <div class="linked-protocols-selection preview-linked-selection">
+            <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+            <p class="helper-text">
+              {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+            </p>
+            <p class="helper-text reorder-hint">
+              {{ 'protocols.reorderLinkedProtocolsHint' | translate }}
+            </p>
+            <p class="section-title reorder-title">
+              {{ 'protocols.reorderLinkedProtocols' | translate }}
+            </p>
+            <div
+              class="protocol-list linked-list linked-list--reorder"
+              (dragover)="$event.preventDefault()"
+              (touchmove)="onLinkedProtocolTouchMove($event)"
+              (touchend)="onLinkedProtocolTouchEnd($event)"
+              (touchcancel)="onLinkedProtocolTouchCancel()"
+            >
+              @for (protocol of linkedProtocolsInOrder(); track protocol._id.$oid; let i = $index) {
+                <div
+                  class="protocol-item linked-item linked-item--reorder"
+                  [class.dragging]="draggedLinkedProtocolId() === protocol._id.$oid"
+                  [class.drag-over]="dragOverLinkedProtocolId() === protocol._id.$oid"
+                  [attr.data-reorder-id]="protocol._id.$oid"
+                  (dragover)="onLinkedProtocolDragOver($event, protocol)"
+                  (dragleave)="onLinkedProtocolDragLeave(protocol)"
+                  (drop)="onLinkedProtocolDrop($event, protocol)"
+                >
+                  <label class="linked-item-checkbox">
+                    <input
+                      type="checkbox"
+                      [checked]="isLinkedProtocolSelected(protocol)"
+                      (change)="
+                        toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)
+                      "
+                    />
+                    <span class="protocol-label" [attr.title]="formatProtocolLabel(protocol)">{{
+                      formatProtocolLabel(protocol)
+                    }}</span>
+                  </label>
+                  @if (isLinkedProtocolSelected(protocol)) {
+                    <span
+                      class="drag-handle"
+                      draggable="true"
+                      role="button"
+                      [attr.aria-label]="'protocols.reorderLinkedProtocols' | translate"
+                      (dragstart)="onLinkedProtocolDragStart($event, protocol)"
+                      (dragend)="onLinkedProtocolDragEnd()"
+                      (touchstart)="onLinkedProtocolTouchStart($event, protocol)"
+                      >⋮⋮</span
+                    >
+                    <span class="reorder-position">{{ linkedProtocolPosition(protocol) }}</span>
+                  }
+                </div>
+              }
+            </div>
           </div>
-        </div>
-      }
-
+        }
       </div>
 
       <div class="preview-document">
-      <app-protocol-preview
-        [previewData]="displayPreviewData()!"
-        [checklistSourceSections]="checklistControlRows()"
-        [excludedChecklistIds]="excludedChecklistItemIds()"
-        [checklistVisibilityEditable]="includeChecklists()"
-        [showHeaderFooter]="includeHeaderFooter()"
-        (checklistVisibilityToggle)="toggleExcludedChecklistItem($event)"
-      />
+        <app-protocol-preview
+          [previewData]="displayPreviewData()!"
+          [checklistSourceSections]="checklistControlRows()"
+          [excludedChecklistIds]="excludedChecklistItemIds()"
+          [checklistVisibilityEditable]="includeChecklists()"
+          [showHeaderFooter]="includeHeaderFooter()"
+          (checklistVisibilityToggle)="toggleExcludedChecklistItem($event)"
+        />
       </div>
     </div>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="loadPreview()">
+    <form class="protocol-setup" [formGroup]="form" (ngSubmit)="loadPreview()">
       <div class="form-actions top-actions">
-        <button
-          type="button"
-          class="btn btn-secondary protocol-action-btn"
-          (click)="close()"
-          [attr.aria-label]="'common.cancel' | translate"
-          [title]="'common.cancel' | translate"
-        >
-          <span class="protocol-action-icon" aria-hidden="true">
-            <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
-          </span>
-          <span class="protocol-action-label">{{ 'common.cancel' | translate }}</span>
-        </button>
+        <span class="protocol-selection-summary">
+          <app-icon [icon]="icons.cube" />
+          <span
+            >{{ 'navbar.objects' | translate }}
+            <strong
+              >{{ selectedObjectIds().length }} / {{ availableObjectIds().length }}</strong
+            ></span
+          >
+        </span>
         <button
           type="submit"
           class="btn btn-primary protocol-action-btn"
           [disabled]="loadingPreview() || !isFormValidForPreview || !hasSelection()"
           [attr.aria-label]="
-            loadingPreview() ? ('protocols.loadingPreview' | translate) : ('protocols.preview' | translate)
+            loadingPreview()
+              ? ('protocols.loadingPreview' | translate)
+              : ('protocols.preview' | translate)
           "
           [title]="
-            loadingPreview() ? ('protocols.loadingPreview' | translate) : ('protocols.preview' | translate)
+            loadingPreview()
+              ? ('protocols.loadingPreview' | translate)
+              : ('protocols.preview' | translate)
           "
         >
           <span class="protocol-action-icon" aria-hidden="true">
@@ -438,217 +476,232 @@
         </button>
       </div>
 
-      <div class="form-group">
-        <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
-        <select id="template_id" formControlName="template_id">
-          <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
-          @for (template of templates(); track template._id?.$oid) {
-            <option [value]="template._id?.$oid || ''">
-              {{ formatTemplateSelectLabel(template) }}
-            </option>
-          }
-        </select>
-        @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {
-          <span class="error">{{ 'protocols.templateRequired' | translate }}</span>
-        }
-      </div>
+      <div class="protocol-setup-grid">
+        <div class="protocol-settings">
+          <section class="protocol-config-card">
+            <div class="form-group">
+              <label for="template_id">{{ 'protocols.selectTemplate' | translate }} *</label>
+              <select id="template_id" formControlName="template_id">
+                <option value="">{{ 'protocols.selectTemplate' | translate }}</option>
+                @for (template of templates(); track template._id?.$oid) {
+                  <option [value]="template._id?.$oid || ''">
+                    {{ formatTemplateSelectLabel(template) }}
+                  </option>
+                }
+              </select>
+              @if (form.get('template_id')?.invalid && form.get('template_id')?.touched) {
+                <span class="error">{{ 'protocols.templateRequired' | translate }}</span>
+              }
+            </div>
 
-      <div class="form-row form-row--dates">
-        <div class="form-group">
-          <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
-          <input
-            id="from_date"
-            type="date"
-            formControlName="from_date"
-            [title]="'protocols.dateRangeHint' | translate"
-          />
-          <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
-        </div>
-
-        <div class="form-group">
-          <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
-          <input
-            id="to_date"
-            type="date"
-            formControlName="to_date"
-            [title]="'protocols.dateRangeHint' | translate"
-          />
-          <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
-        </div>
-      </div>
-
-      @if (projectCategories().length > 0) {
-        <fieldset class="file-group-categories-fieldset">
-          <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
-          <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
-          <div class="category-checkboxes">
-            @for (category of projectCategories(); track category) {
-              <label class="category-checkbox-label">
+            <div class="form-row form-row--dates">
+              <div class="form-group">
+                <label for="from_date">{{ 'filter.dateFrom' | translate }}</label>
                 <input
-                  type="checkbox"
-                  [checked]="isProtocolCategorySelected(category)"
-                  (change)="toggleProtocolCategory(category, $any($event.target).checked)"
+                  id="from_date"
+                  type="date"
+                  formControlName="from_date"
+                  [title]="'protocols.dateRangeHint' | translate"
                 />
-                {{ category }}
-              </label>
-            }
-          </div>
-        </fieldset>
-      }
+                <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+              </div>
 
-      @if (selectedTemplate()) {
-        @if (selectedTemplate()!.fields && selectedTemplate()!.fields.length > 0) {
-          <div class="template-fields-section">
-            <h3>{{ 'protocols.templateFields' | translate }}</h3>
-            <p class="helper-text">{{ 'protocols.fillFieldsBeforePreview' | translate }}</p>
-            <div class="template-fields-grid" formArrayName="fields">
-              @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
-                @let field = selectedTemplate()!.fields[i];
-                <div [formGroup]="$any(fieldControl)" class="template-field">
-                  <label [for]="'field_' + i">
-                    {{ field.label }}
-                    @if (field.required) {
-                      <span class="required">*</span>
+              <div class="form-group">
+                <label for="to_date">{{ 'filter.dateTo' | translate }}</label>
+                <input
+                  id="to_date"
+                  type="date"
+                  formControlName="to_date"
+                  [title]="'protocols.dateRangeHint' | translate"
+                />
+                <small class="helper-text">{{ 'protocols.dateRangeOptional' | translate }}</small>
+              </div>
+            </div>
+
+            @if (projectCategories().length > 0) {
+              <fieldset class="file-group-categories-fieldset">
+                <legend>{{ 'protocols.fileGroupCategories' | translate }}</legend>
+                <p class="helper-text">{{ 'protocols.fileGroupCategoriesHint' | translate }}</p>
+                <div class="category-checkboxes">
+                  @for (category of projectCategories(); track category) {
+                    <label class="category-checkbox-label">
+                      <input
+                        type="checkbox"
+                        [checked]="isProtocolCategorySelected(category)"
+                        (change)="toggleProtocolCategory(category, $any($event.target).checked)"
+                      />
+                      {{ category }}
+                    </label>
+                  }
+                </div>
+              </fieldset>
+            }
+          </section>
+          @if (selectedTemplate()) {
+            @if (selectedTemplate()!.fields && selectedTemplate()!.fields.length > 0) {
+              <div class="template-fields-section">
+                <h3>{{ 'protocols.templateFields' | translate }}</h3>
+                <p class="helper-text">{{ 'protocols.fillFieldsBeforePreview' | translate }}</p>
+                <div class="template-fields-grid" formArrayName="fields">
+                  @for (fieldControl of fieldControls.controls; track $index; let i = $index) {
+                    @let field = selectedTemplate()!.fields[i];
+                    <div [formGroup]="$any(fieldControl)" class="template-field">
+                      <label [for]="'field_' + i">
+                        {{ field.label }}
+                        @if (field.required) {
+                          <span class="required">*</span>
+                        }
+                      </label>
+                      @if (field.field_type === 'text' || field.field_type === 'custom') {
+                        <input
+                          [id]="'field_' + i"
+                          type="text"
+                          formControlName="value"
+                          [placeholder]="field.label"
+                        />
+                      } @else if (field.field_type === 'number') {
+                        <input
+                          [id]="'field_' + i"
+                          type="number"
+                          formControlName="value"
+                          [placeholder]="field.label"
+                        />
+                      } @else if (field.field_type === 'date') {
+                        <input [id]="'field_' + i" type="date" formControlName="value" />
+                      } @else if (field.field_type === 'address') {
+                        <input
+                          [id]="'field_' + i"
+                          type="text"
+                          formControlName="value"
+                          [placeholder]="'common.address' | translate"
+                        />
+                      } @else if (field.field_type === 'status') {
+                        <select [id]="'field_' + i" formControlName="value">
+                          <option value="">{{ 'objects.status' | translate }}</option>
+                          <option value="created">{{ 'status.created' | translate }}</option>
+                          <option value="in_progress">
+                            {{ 'status.in_progress' | translate }}
+                          </option>
+                          <option value="rejected">{{ 'status.rejected' | translate }}</option>
+                          <option value="verified">{{ 'status.verified' | translate }}</option>
+                          <option value="closed">{{ 'status.closed' | translate }}</option>
+                        </select>
+                      } @else if (field.field_type === 'note') {
+                        <textarea
+                          [id]="'field_' + i"
+                          formControlName="value"
+                          rows="3"
+                          [placeholder]="'common.note' | translate"
+                        ></textarea>
+                      }
+                      @if (
+                        $any(fieldControl).get('value')?.invalid &&
+                        $any(fieldControl).get('value')?.touched
+                      ) {
+                        <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="template-fields-section">
+                <p class="helper-text">{{ 'protocols.noFieldsInTemplate' | translate }}</p>
+              </div>
+            }
+          }
+        </div>
+        <div class="protocol-selection-panels">
+          @if (objectsForProtocolSelection().length === 0) {
+            <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+          } @else {
+            <div class="form-row form-row--selections">
+              <div class="object-selection">
+                <div class="object-selection-header">
+                  <p class="section-title">
+                    {{ 'protocols.selectObjects' | translate }}
+                    <span class="selection-count"
+                      >{{ selectedObjectIds().length }} / {{ availableObjectIds().length }}</span
+                    >
+                  </p>
+                  <button
+                    type="button"
+                    class="btn btn-secondary object-select-toggle protocol-action-btn"
+                    (click)="toggleSelectAllObjects()"
+                    [disabled]="availableObjectIds().length === 0"
+                    [attr.aria-label]="
+                      allObjectsSelected()
+                        ? ('protocols.deselectAllObjects' | translate)
+                        : ('protocols.selectAllObjects' | translate)
+                    "
+                    [title]="
+                      allObjectsSelected()
+                        ? ('protocols.deselectAllObjects' | translate)
+                        : ('protocols.selectAllObjects' | translate)
+                    "
+                  >
+                    <span class="protocol-action-icon" aria-hidden="true">
+                      @if (allObjectsSelected()) {
+                        <app-icon [icon]="icons.clipboardCheck" [strokeWidth]="2.5" />
+                      } @else {
+                        <app-icon [icon]="icons.squarePlus" [strokeWidth]="2.5" />
+                      }
+                    </span>
+                    <span class="protocol-action-label">
+                      @if (allObjectsSelected()) {
+                        {{ 'protocols.deselectAllObjects' | translate }}
+                      } @else {
+                        {{ 'protocols.selectAllObjects' | translate }}
+                      }
+                    </span>
+                  </button>
+                </div>
+                <p class="helper-text">
+                  {{ 'protocols.selectObjectsDescription' | translate }}
+                </p>
+                <div class="object-list">
+                  @for (object of objectsForProtocolSelection(); track object._id?.$oid) {
+                    <label class="object-item">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(object._id?.$oid)"
+                        (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
+                      />
+                      <span>{{ formatObjectLabel(object) }}</span>
+                    </label>
+                  }
+                </div>
+                @if (!hasSelection()) {
+                  <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
+                }
+              </div>
+
+              @if (existingProtocols().length > 0) {
+                <div class="linked-protocols-selection">
+                  <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
+                  <p class="helper-text">
+                    {{ 'protocols.includeOlderProtocolsDescription' | translate }}
+                  </p>
+                  <div class="protocol-list linked-list">
+                    @for (protocol of existingProtocols(); track protocol._id.$oid) {
+                      <label class="protocol-item linked-item">
+                        <input
+                          type="checkbox"
+                          [checked]="isLinkedProtocolSelected(protocol)"
+                          (change)="
+                            toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)
+                          "
+                        />
+                        <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
+                      </label>
                     }
-                  </label>
-                  @if (field.field_type === 'text' || field.field_type === 'custom') {
-                    <input
-                      [id]="'field_' + i"
-                      type="text"
-                      formControlName="value"
-                      [placeholder]="field.label"
-                    />
-                  } @else if (field.field_type === 'number') {
-                    <input
-                      [id]="'field_' + i"
-                      type="number"
-                      formControlName="value"
-                      [placeholder]="field.label"
-                    />
-                  } @else if (field.field_type === 'date') {
-                    <input [id]="'field_' + i" type="date" formControlName="value" />
-                  } @else if (field.field_type === 'address') {
-                    <input
-                      [id]="'field_' + i"
-                      type="text"
-                      formControlName="value"
-                      [placeholder]="'common.address' | translate"
-                    />
-                  } @else if (field.field_type === 'status') {
-                    <select [id]="'field_' + i" formControlName="value">
-                      <option value="">{{ 'objects.status' | translate }}</option>
-                      <option value="created">{{ 'status.created' | translate }}</option>
-                      <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
-                      <option value="rejected">{{ 'status.rejected' | translate }}</option>
-                      <option value="verified">{{ 'status.verified' | translate }}</option>
-                      <option value="closed">{{ 'status.closed' | translate }}</option>
-                    </select>
-                  } @else if (field.field_type === 'note') {
-                    <textarea
-                      [id]="'field_' + i"
-                      formControlName="value"
-                      rows="3"
-                      [placeholder]="'common.note' | translate"
-                    ></textarea>
-                  }
-                  @if (
-                    $any(fieldControl).get('value')?.invalid &&
-                    $any(fieldControl).get('value')?.touched
-                  ) {
-                    <span class="error">{{ 'protocols.fieldRequired' | translate }}</span>
-                  }
+                  </div>
                 </div>
               }
             </div>
-          </div>
-        } @else {
-          <div class="template-fields-section">
-            <p class="helper-text">{{ 'protocols.noFieldsInTemplate' | translate }}</p>
-          </div>
-        }
-      }
-
-      @if (objectsForProtocolSelection().length === 0) {
-        <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
-      } @else {
-        <div class="form-row form-row--selections">
-          <div class="object-selection">
-          <div class="object-selection-header">
-            <p class="section-title">{{ 'protocols.selectObjects' | translate }}</p>
-            <button
-              type="button"
-              class="btn btn-secondary object-select-toggle protocol-action-btn"
-              (click)="toggleSelectAllObjects()"
-              [disabled]="availableObjectIds().length === 0"
-              [attr.aria-label]="
-                allObjectsSelected()
-                  ? ('protocols.deselectAllObjects' | translate)
-                  : ('protocols.selectAllObjects' | translate)
-              "
-              [title]="
-                allObjectsSelected()
-                  ? ('protocols.deselectAllObjects' | translate)
-                  : ('protocols.selectAllObjects' | translate)
-              "
-            >
-              <span class="protocol-action-icon" aria-hidden="true">
-                @if (allObjectsSelected()) {
-                  <app-icon [icon]="icons.clipboardCheck" [strokeWidth]="2.5" />
-                } @else {
-                  <app-icon [icon]="icons.squarePlus" [strokeWidth]="2.5" />
-                }
-              </span>
-              <span class="protocol-action-label">
-                @if (allObjectsSelected()) {
-                  {{ 'protocols.deselectAllObjects' | translate }}
-                } @else {
-                  {{ 'protocols.selectAllObjects' | translate }}
-                }
-              </span>
-            </button>
-          </div>
-          <p class="helper-text">
-            {{ 'protocols.selectObjectsDescription' | translate }}
-          </p>
-          <div class="object-list">
-            @for (object of objectsForProtocolSelection(); track object._id?.$oid) {
-              <label class="object-item">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(object._id?.$oid)"
-                  (change)="toggleSelection(object._id?.$oid, $any($event.target).checked)"
-                />
-                <span>{{ formatObjectLabel(object) }}</span>
-              </label>
-            }
-          </div>
-          @if (!hasSelection()) {
-            <span class="error">{{ 'protocols.selectObjectsRequired' | translate }}</span>
-          }
-          </div>
-
-          @if (existingProtocols().length > 0) {
-            <div class="linked-protocols-selection">
-              <p class="section-title">{{ 'protocols.includeOlderProtocols' | translate }}</p>
-              <p class="helper-text">
-                {{ 'protocols.includeOlderProtocolsDescription' | translate }}
-              </p>
-              <div class="protocol-list linked-list">
-                @for (protocol of existingProtocols(); track protocol._id.$oid) {
-                  <label class="protocol-item linked-item">
-                    <input
-                      type="checkbox"
-                      [checked]="isLinkedProtocolSelected(protocol)"
-                      (change)="toggleLinkedProtocol(protocol._id.$oid, $any($event.target).checked)"
-                    />
-                    <span class="protocol-label">{{ formatProtocolLabel(protocol) }}</span>
-                  </label>
-                }
-              </div>
-            </div>
           }
         </div>
-      }
+      </div>
     </form>
   }
 </div>

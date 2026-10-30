@@ -122,31 +122,6 @@
             }}</span>
           }
         </button>
-        @if (protocolsEnabled()) {
-          <button
-            type="button"
-            class="button button-primary project-toolbar-btn"
-            [class.icon-only]="toolbarIconOnly()"
-            (click)="generateProtocol()"
-            [disabled]="loadingTemplates()"
-            [attr.aria-label]="'protocols.generateProtocol' | translate"
-            [title]="'protocols.generateProtocol' | translate"
-          >
-            @if (loadingTemplates()) {
-              <span class="spinner"></span>
-              @if (!toolbarIconOnly()) {
-                <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
-              }
-            } @else {
-              <app-icon [icon]="icons.fileTextDetailed" [svgClass]="'project-toolbar-icon'" />
-              @if (!toolbarIconOnly()) {
-                <span class="project-toolbar-label">{{
-                  'protocols.generateProtocol' | translate
-                }}</span>
-              }
-            }
-          </button>
-        }
         <button
           type="button"
           class="button button-outline project-toolbar-btn"
@@ -172,6 +147,31 @@
             <app-icon [icon]="icons.list" [svgClass]="'project-toolbar-icon'" />
             @if (!toolbarIconOnly()) {
               <span class="project-toolbar-label">{{ 'todos.projectChecklist' | translate }}</span>
+            }
+          </button>
+        }
+        @if (protocolsEnabled()) {
+          <button
+            type="button"
+            class="button button-primary project-toolbar-btn project-toolbar-primary"
+            [class.icon-only]="toolbarIconOnly()"
+            (click)="generateProtocol()"
+            [disabled]="loadingTemplates()"
+            [attr.aria-label]="'protocols.generateProtocol' | translate"
+            [title]="'protocols.generateProtocol' | translate"
+          >
+            @if (loadingTemplates()) {
+              <span class="spinner"></span>
+              @if (!toolbarIconOnly()) {
+                <span class="project-toolbar-label">{{ 'common.loading' | translate }}</span>
+              }
+            } @else {
+              <app-icon [icon]="icons.fileTextDetailed" [svgClass]="'project-toolbar-icon'" />
+              @if (!toolbarIconOnly()) {
+                <span class="project-toolbar-label">{{
+                  'protocols.generateProtocol' | translate
+                }}</span>
+              }
             }
           </button>
         }

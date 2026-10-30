@@ -9,7 +9,7 @@
 }
 
 .protocol-action-icon {
-  display: none;
+  display: inline-flex;
   line-height: 0;
   flex-shrink: 0;
 
@@ -58,7 +58,7 @@
   border: 1px solid var(--default-color, #e0e0e0);
   background: rgba(157, 0, 0, 0.04);
 
-  @media screen and (min-width: 769px) {
+  @media screen and (min-width: 1024px) {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 1rem 1.5rem;
@@ -88,7 +88,7 @@
   background: #fafafa;
   overflow: hidden;
 
-  @media screen and (min-width: 769px) {
+  @media screen and (min-width: 1024px) {
     flex: 1 0 auto;
     min-height: min(36dvh, 360px);
     max-height: min(52dvh, 520px);
@@ -121,7 +121,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
-  @media screen and (min-width: 769px) {
+  @media screen and (min-width: 1024px) {
     min-height: 12rem;
   }
 }
@@ -207,7 +207,7 @@
     gap: 1rem;
     min-height: 0;
 
-    @media screen and (min-width: 769px) {
+    @media screen and (min-width: 1024px) {
       display: grid;
       grid-template-columns: minmax(16rem, 34%) minmax(0, 1fr);
       gap: 1rem 1.25rem;
@@ -221,7 +221,7 @@
     gap: 1rem;
     min-width: 0;
 
-    @media screen and (min-width: 769px) {
+    @media screen and (min-width: 1024px) {
       align-self: stretch;
       max-height: min(68dvh, 720px);
       overflow-y: auto;
@@ -232,7 +232,7 @@
   .preview-document {
     min-width: 0;
 
-    @media screen and (min-width: 769px) {
+    @media screen and (min-width: 1024px) {
       max-height: min(68dvh, 720px);
       overflow-y: auto;
       padding: 1.25rem 1.5rem;
@@ -249,7 +249,7 @@
     margin-bottom: 1.5rem;
 
     &--dates {
-      @media screen and (min-width: 769px) {
+      @media screen and (min-width: 1024px) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -259,7 +259,7 @@
     }
 
     &--selections {
-      @media screen and (min-width: 769px) {
+      @media screen and (min-width: 1024px) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
       }
@@ -306,7 +306,6 @@
     gap: 0.35rem;
     font-size: 0.95rem;
     cursor: pointer;
-
   }
 
   .form-group {
@@ -379,7 +378,7 @@
       flex-direction: column;
       gap: 0.5rem;
 
-      @media screen and (min-width: 769px) {
+      @media screen and (min-width: 1024px) {
         max-height: 280px;
       }
     }
@@ -390,7 +389,6 @@
       gap: 0.5rem;
       font-size: 0.95rem;
       color: #333;
-
     }
 
     .error {
@@ -492,14 +490,14 @@
     }
 
     .template-fields-grid {
-      @media screen and (min-width: 769px) {
+      @media screen and (min-width: 1024px) {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.75rem 1rem;
       }
     }
 
-    @media screen and (min-width: 769px) {
+    @media screen and (min-width: 1024px) {
       .template-field {
         margin-bottom: 0;
       }
@@ -538,7 +536,7 @@
       flex-direction: column;
       gap: 0.5rem;
 
-      @media screen and (min-width: 769px) {
+      @media screen and (min-width: 1024px) {
         max-height: 280px;
       }
     }
@@ -659,6 +657,314 @@
       padding-bottom: 1rem;
       border-top: none;
       border-bottom: 1px solid #ddd;
+    }
+  }
+}
+
+.protocol-steps {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0 0 1rem;
+  border-bottom: 1px solid #eee;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #9ca3af;
+  }
+
+  .is-current {
+    color: #1f2937;
+  }
+
+  .is-current .protocol-step-number {
+    color: #fff;
+    background: var(--primary-default, #9d0000);
+  }
+
+  .is-complete .protocol-step-number {
+    color: var(--primary-default, #9d0000);
+    background: #f9eded;
+  }
+}
+
+.protocol-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #f3f4f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.protocol-selection-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-end: auto;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+
+  app-icon {
+    --icon-size: 1rem;
+  }
+
+  strong {
+    margin-inline-start: 0.25rem;
+    color: #374151;
+  }
+}
+
+.protocol-setup-grid,
+.protocol-settings,
+.protocol-selection-panels {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .protocol-setup-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.protocol-generate-form {
+  .protocol-config-card,
+  .template-fields-section,
+  .object-selection,
+  .linked-protocols-selection,
+  .checklist-visibility-panel {
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    min-width: 0;
+  }
+
+  .protocol-config-card {
+    background: #fcfcfd;
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .form-row--selections {
+    grid-template-columns: minmax(0, 1fr);
+    margin: 0;
+  }
+
+  .form-row--dates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .section-title,
+  .template-fields-section h3,
+  .file-group-categories-fieldset legend {
+    margin: 0 0 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #1f2937;
+  }
+
+  .helper-text {
+    display: block;
+    margin: 0.35rem 0 0.85rem;
+    color: #6b7280;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #dfe3e8;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    font-size: 0.9rem;
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-default, #9d0000);
+      outline-offset: 2px;
+    }
+  }
+
+  input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    accent-color: var(--primary-default, #9d0000);
+  }
+
+  .category-checkboxes {
+    gap: 0.4rem;
+  }
+
+  .category-checkbox-label {
+    min-height: 44px;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.8rem;
+
+    &:has(input:checked) {
+      border-color: #d7aaaa;
+      background: #fcf3f3;
+    }
+  }
+
+  .object-selection .object-list,
+  .linked-protocols-selection .linked-list {
+    border: 0;
+    padding: 0;
+    gap: 0.35rem;
+    max-height: min(38dvh, 340px);
+  }
+
+  .object-selection .object-item,
+  .linked-protocols-selection .linked-item {
+    min-height: 44px;
+    padding: 0.55rem 0.65rem;
+    margin: 0;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &:has(input:checked) {
+      background: #fcf3f3;
+      border-color: #ecd4d4;
+    }
+  }
+
+  .object-selection .object-selection-header {
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .selection-count {
+    display: inline-block;
+    margin-inline-start: 0.35rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.7rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .form-actions.top-actions,
+  .preview-actions {
+    margin: 0 0 1rem;
+    padding: 0.65rem 0;
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid #eee;
+    gap: 0.5rem;
+  }
+
+  .preview-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+
+    .protocol-action-btn {
+      min-height: 44px;
+    }
+
+    .btn-primary {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .save-to-project-row {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.85rem;
+    border-color: #e5e7eb;
+    border-radius: 12px;
+    background: #fcfcfd;
+  }
+
+  .checklist-visibility-panel {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .preview-document {
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f8f9fb;
+  }
+
+  .preview-controls .template-fields-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@include mobile {
+  .protocol-steps {
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+
+    li {
+      font-size: 0.75rem;
+    }
+  }
+
+  .protocol-generate-form {
+    .protocol-config-card,
+    .template-fields-section,
+    .object-selection,
+    .linked-protocols-selection,
+    .checklist-visibility-panel {
+      padding: 0.75rem;
+    }
+
+    .form-row--dates {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+    }
+
+    .preview-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .preview-document {
+      padding: 0.5rem;
     }
   }
 }

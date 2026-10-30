@@ -1,1 +1,207 @@
 [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+▲ [WARNING] NG8113: FilterComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:87:4:
+      87 │     FilterComponent,
+         ╵     ~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterLink is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:88:4:
+      88 │     RouterLink,
+         ╵     ~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FileListComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:90:4:
+      90 │     FileListComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FileUploadModalComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:91:4:
+      91 │     FileUploadModalComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: BreadcrumbComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:92:4:
+      92 │     BreadcrumbComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TrashIconComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:93:4:
+      93 │     TrashIconComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TabGroupComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:94:4:
+      94 │     TabGroupComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TabPanelComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:95:4:
+      95 │     TabPanelComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: VirtualScrollViewportComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:96:4:
+      96 │     VirtualScrollViewportComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: ObjectCardComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:97:4:
+      97 │     ObjectCardComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: IconComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:98:4:
+      98 │     IconComponent,
+         ╵     ~~~~~~~~~~~~~
+
+
+X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.html:89:10:
+      89 │           </div>
+         ╵           ~~~~~~
+
+  Error occurs in the template of component ProjectTabComponent.
+
+    src/app/components/projects/tab/project-tab.component.ts:79:15:
+      79 │   templateUrl: './project-tab.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG5002: Unexpected closing tag "dl". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.html:100:8:
+      100 │         </dl>
+          ╵         ~~~~~
+
+  Error occurs in the template of component ProjectTabComponent.
+
+    src/app/components/projects/tab/project-tab.component.ts:79:15:
+      79 │   templateUrl: './project-tab.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FilterComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:87:4:
+      87 │     FilterComponent,
+         ╵     ~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterLink is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:88:4:
+      88 │     RouterLink,
+         ╵     ~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FileListComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:90:4:
+      90 │     FileListComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FileUploadModalComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:91:4:
+      91 │     FileUploadModalComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: BreadcrumbComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:92:4:
+      92 │     BreadcrumbComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TrashIconComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:93:4:
+      93 │     TrashIconComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TabGroupComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:94:4:
+      94 │     TabGroupComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: TabPanelComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:95:4:
+      95 │     TabPanelComponent,
+         ╵     ~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: VirtualScrollViewportComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:96:4:
+      96 │     VirtualScrollViewportComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: ObjectCardComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:97:4:
+      97 │     ObjectCardComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: IconComponent is not used within the template of ProjectTabComponent [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.ts:98:4:
+      98 │     IconComponent,
+         ╵     ~~~~~~~~~~~~~
+
+
+X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.html:89:10:
+      89 │           </div>
+         ╵           ~~~~~~
+
+  Error occurs in the template of component ProjectTabComponent.
+
+    src/app/components/projects/tab/project-tab.component.ts:79:15:
+      79 │   templateUrl: './project-tab.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG5002: Unexpected closing tag "dl". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
+
+    src/app/components/projects/tab/project-tab.component.html:100:8:
+      100 │         </dl>
+          ╵         ~~~~~
+
+  Error occurs in the template of component ProjectTabComponent.
+
+    src/app/components/projects/tab/project-tab.component.ts:79:15:
+      79 │   templateUrl: './project-tab.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
