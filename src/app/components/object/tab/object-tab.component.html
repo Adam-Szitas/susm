@@ -32,6 +32,19 @@
             </div>
           </div>
           <div class="object-details-actions">
+            @if (externalSharingEnabled()) {
+              <button
+                type="button"
+                class="button button-outline object-details-action"
+                (click)="generateShareQr()"
+                [disabled]="shareLoading()"
+                [attr.aria-label]="'objects.generateQr' | translate"
+                [title]="'objects.generateQr' | translate"
+              >
+                <app-icon [icon]="shareLoading() ? icons.loader : icons.uploadArrow" />
+              </button>
+            }
+
             <button
               type="button"
               class="button button-outline object-details-action"
@@ -156,11 +169,11 @@
   }
 
   <div class="content-wrapper">
-    @if (shareError()) {
+    @if (externalSharingEnabled() && shareError()) {
       <p class="share-error">{{ shareError() | translate }}</p>
     }
 
-    @if (shareQrDataUrl()) {
+    @if (externalSharingEnabled() && shareQrDataUrl()) {
       <div class="qr-preview">
         <img [src]="shareQrDataUrl()" alt="Object share QR code" />
         <p class="share-hint">{{ shareUrl() }}</p>

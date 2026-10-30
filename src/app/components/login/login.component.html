@@ -1,12 +1,6 @@
 <div class="login-page">
   @if (form) {
-    <form
-      class="login-form"
-      [formGroup]="form"
-      (ngSubmit)="Submit()"
-      method="post"
-      novalidate
-    >
+    <form class="login-form" [formGroup]="form" (ngSubmit)="Submit()" method="post" novalidate>
       <header class="login-form__header">
         <p class="login-form__brand">SUSM</p>
         <h1 class="login-form__title">
@@ -33,7 +27,16 @@
             enterkeyhint="next"
             required
             [formControl]="getEmailControl()"
+            [attr.aria-invalid]="getEmailControl().touched && getEmailControl().invalid"
+            [attr.aria-describedby]="
+              getEmailControl().touched && getEmailControl().invalid ? 'email-error' : null
+            "
           />
+          @if (getEmailControl().touched && getEmailControl().invalid) {
+            <p id="email-error" class="login-error" role="alert" lang="en">
+              Enter a valid email address.
+            </p>
+          }
         </div>
 
         <div class="control">
@@ -47,8 +50,17 @@
             enterkeyhint="done"
             required
             [formControl]="getPasswordControl()"
+            [attr.aria-invalid]="getPasswordControl().touched && getPasswordControl().invalid"
+            [attr.aria-describedby]="
+              getPasswordControl().touched && getPasswordControl().invalid ? 'password-error' : null
+            "
           />
         </div>
+        @if (getPasswordControl().touched && getPasswordControl().invalid) {
+          <p id="password-error" class="login-error" role="alert" lang="en">
+            Enter your password (at least 5 characters).
+          </p>
+        }
       </div>
 
       <div class="login-form__actions">

@@ -67,7 +67,10 @@ export class ModalService {
     return container;
   }
 
-  open(config?: ModalConfig): { modalRef: ComponentRef<ModalComponent>; childRef?: ComponentRef<any> } {
+  open(config?: ModalConfig): {
+    modalRef: ComponentRef<ModalComponent>;
+    childRef?: ComponentRef<any>;
+  } {
     if (!config?.stack) {
       this.closeAll();
     }
@@ -116,6 +119,7 @@ export class ModalService {
       setTimeout(remountIfEmpty, 0);
     }
 
+    container.querySelector<HTMLDialogElement>('dialog.modal-content')?.showModal();
     return { modalRef: componentRef, childRef: layer.childRef ?? undefined };
   }
 
@@ -147,7 +151,11 @@ export class ModalService {
     return !!body?.firstElementChild;
   }
 
-  #inject(layer: ModalLayer, componentType: any, inputs?: Record<string, any>): ComponentRef<any> | null {
+  #inject(
+    layer: ModalLayer,
+    componentType: any,
+    inputs?: Record<string, any>,
+  ): ComponentRef<any> | null {
     if (layer.childRef) {
       layer.childRef.destroy();
       layer.childRef = null;
@@ -214,6 +222,9 @@ export class ModalService {
     const layer = this.#layers.at(-1);
     if (!layer) return;
 
+    // Repeated Escape/close requests must not bypass an unresolved unsaved-change guard.
+    if (!force && layer.beforeClose && this.#closeGuardPending) return;
+
     if (!force && layer.beforeClose && !this.#closeGuardPending) {
       const result = layer.beforeClose();
       if (result instanceof Promise) {
@@ -233,6 +244,7 @@ export class ModalService {
       if (!result) return;
     }
 
+    layer.container.querySelector<HTMLDialogElement>('dialog.modal-content')?.close();
     this.#layers.pop();
 
     if (this.pendingConfirmResolve) {

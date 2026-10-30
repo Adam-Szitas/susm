@@ -286,3 +286,19 @@ body.modal-open .floating-icon {
     }
   }
 }
+
+// Native dialog shell: keep the existing sizing while letting the browser manage focus.
+dialog.modal-content {
+  position: fixed;
+  inset: 0;
+  width: calc(100% - 2rem);
+  border: 0;
+  padding: 0;
+  margin: auto;
+  color: inherit;
+  overscroll-behavior: contain;
+}
+dialog.modal-content:not([open]) { display: none; }
+dialog.modal-content::backdrop { background: rgba(0, 0, 0, 0.6); overflow: hidden; overscroll-behavior: contain; }
+
+.modal-overlay:has(dialog.modal-content) { background: transparent; }

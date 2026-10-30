@@ -1,4 +1,4 @@
-const CACHE_NAME = 'susm-cache-v6'; // Increment version to clear old cache
+const CACHE_NAME = 'susm-cache-v7'; // Increment version to clear old cache
 const urlsToCache = [
   '/',
   '/index.csr.html',
@@ -52,6 +52,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Fresh navigation HTML keeps deployed metadata and route shells current.
+  if (request.mode === 'navigate') { event.respondWith(fetch(request)); return; }
+
   // Only handle GET requests
   if (request.method !== 'GET') {
     event.respondWith(fetch(request));

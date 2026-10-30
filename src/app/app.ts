@@ -1,6 +1,7 @@
+import { SeoService } from './services/seo.service';
 import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TranslationService } from './services/translation.service';
@@ -13,12 +14,15 @@ import { TranslationService } from './services/translation.service';
 })
 export class App implements OnInit {
   protected readonly title = signal('susm');
+  private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
   #translationService = inject(TranslationService);
   #platformId = inject(PLATFORM_ID);
   #destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.#translationService.initialize();
+    this.seo.update(this.router.url);
     this.#setupIosScrollRecovery();
   }
 

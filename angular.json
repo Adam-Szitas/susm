@@ -50,8 +50,7 @@
                 }
               ],
               "outputHashing": "all",
-              "outputMode": "static",
-              "prerender": false
+              "outputMode": "static"
             },
             "development": {
               "optimization": false,

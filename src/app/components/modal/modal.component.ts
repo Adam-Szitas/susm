@@ -11,6 +11,8 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './modal.component.scss',
 })
 export class ModalComponent {
+  private static nextId = 0;
+  readonly titleId = `modal-title-${ModalComponent.nextId++}`;
   @Input() title = 'Modal';
   @Input() showConfirm = false;
   @Input() confirmText = 'Confirm';

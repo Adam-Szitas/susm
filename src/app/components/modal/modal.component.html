@@ -1,17 +1,24 @@
 <div class="modal-overlay">
-  <div
+  <dialog
     class="modal-content"
+    [attr.aria-labelledby]="titleId"
+    (cancel)="$event.preventDefault(); close()"
     [class.wide]="wide"
     [class.wide-xl]="extraWide"
-    (click)="$event.stopPropagation()"
-    (touchend)="$event.stopPropagation()"
   >
     <div class="modal-header">
-      <h2>{{ title | translate }}</h2>
-      <button class="close-btn" (click)="close()">×</button>
+      <h2 [id]="titleId">{{ title | translate }}</h2>
+      <button
+        type="button"
+        class="close-btn"
+        [attr.aria-label]="'common.close' | translate"
+        (click)="close()"
+      >
+        ×
+      </button>
     </div>
     <div class="modal-body">
       <ng-container #dynamicContent></ng-container>
     </div>
-  </div>
+  </dialog>
 </div>

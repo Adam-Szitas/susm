@@ -77,6 +77,8 @@ export class ObjectTabComponent implements OnInit {
   #userStore = inject(UserStore);
   #platformId = inject(PLATFORM_ID);
 
+  readonly externalSharingEnabled = this.#userStore.externalSharingEnabled;
+  readonly streetPlanEnabled = this.#userStore.streetPlanEnabled;
   readonly isAdmin = this.#userStore.isAdmin;
 
   object = signal<Object | null>(null);
@@ -136,7 +138,7 @@ export class ObjectTabComponent implements OnInit {
 
   readonly objectDisplayTitle = computed(() => this.#objectDisplayName(this.object()));
 
-  readonly isPinnedOnPlan = computed(() => !!this.object()?.map_pin);
+  readonly isPinnedOnPlan = computed(() => this.streetPlanEnabled() && !!this.object()?.map_pin);
 
   readonly hasUrlFileGroupCategoryFilter = computed(() => this.urlFileGroupCategories().length > 0);
 
@@ -347,7 +349,7 @@ export class ObjectTabComponent implements OnInit {
 
   generateShareQr(): void {
     const objectId = this.object()?._id?.$oid;
-    if (!objectId || this.shareLoading()) {
+    if (!this.externalSharingEnabled() || !objectId || this.shareLoading()) {
       return;
     }
 

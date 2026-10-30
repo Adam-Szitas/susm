@@ -1,19 +1,28 @@
 {
-  "name": "Susm",
-  "short_name": "Susm",
-  "description": "Susm Application",
+  "name": "SUSM",
+  "short_name": "SUSM",
+  "description": "Project documentation, photos, checklists and PDF protocols.",
   "theme_color": "#9d0000",
   "background_color": "#9d0000",
   "display": "standalone",
   "scope": "/",
-  "start_url": "/",
-  "orientation": "portrait-primary",
+  "start_url": "/projects",
   "icons": [
     {
-      "src": "susm.svg",
+      "src": "/susm.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

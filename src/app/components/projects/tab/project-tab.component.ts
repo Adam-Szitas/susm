@@ -119,6 +119,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #mobileTabHeightMq?: MediaQueryList;
   #tabHeightResizeObserver?: ResizeObserver;
 
+  readonly streetPlanEnabled = this.#userStore.streetPlanEnabled;
   readonly isAdmin = this.#userStore.isAdmin;
 
   project = this.#projectStore.project;
@@ -486,6 +487,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   openStreetPlan(): void {
+    if (!this.streetPlanEnabled()) return;
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) return;
 

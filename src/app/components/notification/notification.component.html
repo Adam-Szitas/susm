@@ -1,11 +1,13 @@
-<div class="notification-container">
+<div class="notification-container" aria-live="polite" aria-relevant="additions">
   @for (notification of notifications(); track notification.id) {
     <div
       class="notification"
       [class]="'notification--' + notification.type"
       [attr.data-type]="notification.type"
     >
-      <div class="notification__icon">{{ getNotificationIcon(notification.type) }}</div>
+      <div class="notification__icon" aria-hidden="true">
+        {{ getNotificationIcon(notification.type) }}
+      </div>
       <div class="notification__content">
         <p class="notification__message">{{ notification.message }}</p>
       </div>
@@ -20,4 +22,3 @@
     </div>
   }
 </div>
-

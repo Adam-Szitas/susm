@@ -33,7 +33,7 @@ let _backendUrl: string | undefined;
 function getFrontendUrl(): string {
   if (typeof window === 'undefined') {
     // SSR fallback - you may want to set this via environment variable
-    return 'https://your-frontend-domain.com';
+    return 'https://susm.vercel.app';
   }
   
   // In most cases, window.location.origin is correct

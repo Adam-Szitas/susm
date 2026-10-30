@@ -122,19 +122,21 @@
             }}</span>
           }
         </button>
-        <button
-          type="button"
-          class="button button-outline project-toolbar-btn"
-          [class.icon-only]="toolbarIconOnly()"
-          (click)="openStreetPlan()"
-          [attr.aria-label]="'projectPlan.title' | translate"
-          [title]="'projectPlan.title' | translate"
-        >
-          <app-icon [icon]="icons.mapPin" [svgClass]="'project-toolbar-icon'" />
-          @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{ 'projectPlan.title' | translate }}</span>
-          }
-        </button>
+        @if (streetPlanEnabled()) {
+          <button
+            type="button"
+            class="button button-outline project-toolbar-btn"
+            [class.icon-only]="toolbarIconOnly()"
+            (click)="openStreetPlan()"
+            [attr.aria-label]="'projectPlan.title' | translate"
+            [title]="'projectPlan.title' | translate"
+          >
+            <app-icon [icon]="icons.mapPin" [svgClass]="'project-toolbar-icon'" />
+            @if (!toolbarIconOnly()) {
+              <span class="project-toolbar-label">{{ 'projectPlan.title' | translate }}</span>
+            }
+          </button>
+        }
         @if (isAdmin()) {
           <button
             type="button"

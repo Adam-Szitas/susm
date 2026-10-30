@@ -1,3 +1,6 @@
+import { DOCUMENT } from '@angular/common';
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { effect, inject, Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
@@ -14,6 +17,10 @@ export class TranslationService {
   #userStore = inject(UserStore);
 
   constructor() {
+    const document = inject(DOCUMENT);
+    this.#translateService.onLangChange
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe((event) => (document.documentElement.lang = this.normalizeLanguage(event.lang)));
     this.#translateService.setDefaultLang('en');
     effect(() => {
       const language = this.resolveLanguage(this.#userStore.user());
@@ -60,7 +67,9 @@ export class TranslationService {
     return this.#translateService.get(key, params);
   }
 
-  private resolveLanguage(user: { language?: string | null } | null | undefined): SupportedLanguage {
+  private resolveLanguage(
+    user: { language?: string | null } | null | undefined,
+  ): SupportedLanguage {
     return this.normalizeLanguage(user?.language);
   }
 

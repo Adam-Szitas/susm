@@ -1,0 +1,25 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/susm/browser",
+  "rewrites": [
+    {
+      "source": "/((?:login|register|dashboard|admin|projects|objects|protocols|files|share)(?:/.*)?)",
+      "destination": "/index.csr.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/((?:login|register|dashboard|admin|projects|objects|protocols|files|share)(?:/.*)?)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        }
+      ]
+    }
+  ]
+}

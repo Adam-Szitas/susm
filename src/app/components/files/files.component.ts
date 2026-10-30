@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { UserStore } from '@store/user.store';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FileService,
   FileWithContext,
@@ -10,7 +18,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Filter, FilterResult } from '@models';
 import { FilterComponent } from '../filter/filter.component';
-import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+import {
+  FilterPersistenceService,
+  PersistedFilterState,
+} from '@services/filter-persistence.service';
 import { buildUploadImageUrl } from '../../utils/upload-image-url';
 
 const FILTER_KEY = 'files';
@@ -25,6 +36,7 @@ const PICTURES_PAGE_SIZE = 50;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilesComponent implements OnInit {
+  readonly trashEnabled = inject(UserStore).trashEnabled;
   #fileService = inject(FileService);
   #router = inject(Router);
   #filterPersistence = inject(FilterPersistenceService);
@@ -149,7 +161,10 @@ export class FilesComponent implements OnInit {
 
   onFiltersVisibleChange(visible: boolean): void {
     this.#filtersVisible = visible;
-    this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
+    this.#filterPersistence.save(FILTER_KEY, {
+      filter: this.#currentFilter(),
+      filtersVisible: visible,
+    });
   }
 
   onProjectFilterChange(projectId: string): void {

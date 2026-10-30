@@ -16,6 +16,7 @@ export interface PlatformMetrics {
 }
 
 export interface CompanySummary {
+  capabilities?: Record<string, boolean>;
   id: string;
   name: string;
   active_users: number;
@@ -45,6 +46,7 @@ export interface SuperuserOverview {
 }
 
 export interface FeatureAuditEntry {
+  feature?: string;
   id: string;
   enabled: boolean;
   previous_enabled: boolean;
@@ -81,7 +83,7 @@ export interface OperationsSnapshot {
   page_views: number;
   request_errors: number;
   by_category: Record<string, number>;
-  daily: Array<{ date: string; events: number; errors: number }>;
+  daily: { date: string; events: number; errors: number }[];
   events: OperationalEvent[];
   health: {
     backend: string;
@@ -104,6 +106,13 @@ export class PlatformAdminService {
     return this.#http.get<SuperuserOverview>('superuser/overview');
   }
 
+  setCapability(companyId: string, feature: string, enabled: boolean, reason: string) {
+    return this.#http.put<{ enabled: boolean; audit_recorded: boolean }>(
+      `superuser/companies/${companyId}/features/${feature}`,
+      { enabled, reason },
+    );
+  }
+
   setProtocolsEnabled(
     companyId: string,
     enabled: boolean,
@@ -116,14 +125,10 @@ export class PlatformAdminService {
   }
 
   getFeatureAudit(companyId: string): Observable<FeatureAuditEntry[]> {
-    return this.#http.get<FeatureAuditEntry[]>(
-      `superuser/companies/${companyId}/feature-audit`,
-    );
+    return this.#http.get<FeatureAuditEntry[]>(`superuser/companies/${companyId}/feature-audit`);
   }
 
   getOperations(days: number, limit = 100): Observable<OperationsSnapshot> {
-    return this.#http.get<OperationsSnapshot>(
-      `superuser/operations?days=${days}&limit=${limit}`,
-    );
+    return this.#http.get<OperationsSnapshot>(`superuser/operations?days=${days}&limit=${limit}`);
   }
 }

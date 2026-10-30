@@ -1,0 +1,275 @@
+:host {
+  display: block;
+  background: #faf9f7;
+  color: #252525;
+}
+.public-home {
+  max-width: 1280px;
+  margin: auto;
+  padding: 0 clamp(1.25rem, 4vw, 4rem);
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 3rem;
+  padding: clamp(3rem, 7vw, 7rem) 0;
+}
+.eyebrow {
+  color: #8a0808;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h1 {
+  font-size: clamp(2.5rem, 4.5vw, 4.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  margin: 1rem 0 1.5rem;
+}
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  margin: 0.75rem 0 1.5rem;
+}
+h3 {
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+p {
+  line-height: 1.7;
+}
+.intro {
+  font-size: 1.1rem;
+  color: #545454;
+  max-width: 35rem;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+a {
+  text-decoration: none;
+}
+.cta,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.cta {
+  background: #9d0000;
+  color: #fff;
+}
+.cta:hover {
+  background: #780000;
+}
+.secondary {
+  color: #444;
+  border: 1px solid #d8d5d1;
+}
+.access-note,
+.availability,
+.preview-caption {
+  font-size: 0.8rem;
+  color: #666;
+}
+.workspace-preview {
+  border: 1px solid #dedbd7;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 20px 50px #332b2310;
+}
+.preview-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.preview-top img {
+  border-radius: 8px;
+}
+.preview-top > span {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: #666;
+}
+.preview-title {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.5rem 0;
+}
+.preview-title > strong {
+  font-size: 1.35rem;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  min-width: 0;
+}
+.preview-card > span:not(.number) {
+  font-size: 0.7rem;
+  color: #666;
+}
+.number {
+  font-size: 0.7rem;
+  color: #8a0808;
+}
+.line {
+  height: 6px;
+  margin-top: 0.6rem;
+  background: #e8e6e3;
+  border-radius: 3px;
+}
+.short {
+  width: 65%;
+  margin-top: 0;
+}
+.photo-tiles {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+.photo-tiles i {
+  width: 28px;
+  height: 25px;
+  background: #e3e9e4;
+  border-radius: 4px;
+}
+.checks {
+  color: #326744;
+  padding-top: 0.5rem;
+}
+.report {
+  background: #fff8f7;
+  border-color: #e8cecb;
+}
+.pdf {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #9d0000;
+  margin-top: 0.5rem;
+}
+.preview-caption {
+  margin-bottom: 0;
+  text-align: center;
+}
+.features {
+  padding: 3rem 0;
+  border-top: 1px solid #dedbd7;
+  scroll-margin-top: 5rem;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2.5rem;
+}
+.feature-index {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #8a0808;
+  letter-spacing: 0.05em;
+}
+.feature-grid p {
+  color: #545454;
+  font-size: 0.95rem;
+}
+.workflow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 3rem 0;
+  border-top: 1px solid #dedbd7;
+}
+.workflow ol {
+  padding-left: 1.5rem;
+  margin: 0;
+}
+.workflow li {
+  padding: 0 0 1.5rem 0.5rem;
+}
+.workflow li::marker {
+  color: #9d0000;
+  font-weight: 600;
+}
+.workflow strong,
+.workflow span {
+  display: block;
+}
+.workflow span {
+  color: #545454;
+  line-height: 1.6;
+  margin-top: 0.4rem;
+}
+.closing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem;
+  background: #f0ece7;
+  border-radius: 12px;
+}
+.closing h2 {
+  margin: 0;
+}
+.closing p {
+  margin-bottom: 0;
+}
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 2rem 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+footer a {
+  color: #555;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+footer > span {
+  align-self: center;
+}
+footer a:last-child {
+  margin-left: auto;
+}
+@media (max-width: 800px) {
+  .hero,
+  .workflow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .closing {
+    padding: 1.25rem;
+  }
+}

@@ -15,6 +15,9 @@ export interface ObjectAddress {
 export type UserRole = 'admin' | 'member';
 
 export interface FeatureFlags {
+  externalSharing?: { enabled: boolean };
+  trash?: { enabled: boolean };
+  streetPlan?: { enabled: boolean };
   protocols: { enabled: boolean };
 }
 

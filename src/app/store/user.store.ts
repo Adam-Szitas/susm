@@ -27,14 +27,21 @@ export class UserStore {
   readonly token = computed(() => this._token());
   readonly isAuthenticated = computed(() => !!this._token());
   readonly isAdmin = computed(() => this._user()?.role === 'admin');
-  readonly isSuperuser = computed(
-    () => this._profileVerified() && !!this._user()?.is_superuser,
-  );
+  readonly isSuperuser = computed(() => this._profileVerified() && !!this._user()?.is_superuser);
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
   readonly initialized = computed(() => this._initialized());
   readonly profileReady = computed(() => this._profileReady());
   readonly profileVerified = computed(() => this._profileVerified());
+  readonly externalSharingEnabled = computed(
+    () => this._profileVerified() && this._user()?.feature_flags?.externalSharing?.enabled === true,
+  );
+  readonly trashEnabled = computed(
+    () => this._profileVerified() && this._user()?.feature_flags?.trash?.enabled === true,
+  );
+  readonly streetPlanEnabled = computed(
+    () => this._profileVerified() && this._user()?.feature_flags?.streetPlan?.enabled === true,
+  );
   readonly protocolsEnabled = computed(
     () => this._profileVerified() && this._user()?.feature_flags?.protocols?.enabled === true,
   );

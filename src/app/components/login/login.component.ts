@@ -23,12 +23,13 @@ export class LoginComponent {
   readonly error = this.#userStore.error;
 
   public form: FormGroup = new FormGroup({
-    email: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, Validators.minLength(5)]),
   });
 
   public Submit() {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
     const credentials = this.form.getRawValue();
@@ -36,11 +37,7 @@ export class LoginComponent {
       this.#route.snapshot.queryParams['returnUrl'] ||
         (this.platformAdmin() ? '/admin' : '/projects'),
     );
-    this.#userStore.login(
-      credentials.email.trim().toLowerCase(),
-      credentials.password,
-      returnUrl,
-    );
+    this.#userStore.login(credentials.email.trim().toLowerCase(), credentials.password, returnUrl);
   }
 
   public getEmailControl(): FormControl {

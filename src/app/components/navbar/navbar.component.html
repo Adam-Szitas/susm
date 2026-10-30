@@ -1,18 +1,14 @@
 @if (isLoggedIn()) {
   <nav class="app-nav" aria-label="Main">
     <div class="navbar-start">
-      <a
-        class="navbar-brand"
-        routerLink="/dashboard"
-        (click)="hideMobileMenu()"
-        aria-label="SUSM"
-      >
+      <a class="navbar-brand" routerLink="/dashboard" (click)="hideMobileMenu()" aria-label="SUSM">
         <app-susm-logo />
       </a>
       <button
         type="button"
         class="nav-toggle"
         (click)="toggleMobileMenu()"
+        aria-controls="mobileNavigation"
         [attr.aria-expanded]="toggledMenu()"
         [attr.aria-label]="'navbar.menu' | translate"
       >
@@ -43,9 +39,9 @@
         </li>
         @if (protocolsEnabled()) {
           <li>
-          <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
-            {{ 'navbar.protocols' | translate }}
-          </a>
+            <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
+              {{ 'navbar.protocols' | translate }}
+            </a>
           </li>
         }
         @if (isSuperuser()) {
@@ -65,8 +61,14 @@
       </li>
     </ul>
   </nav>
-  <div class="mobile-menu-backdrop" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></div>
-  <div class="mobile-menu" [class.open]="toggledMenu()">
+  <button type="button" class="mobile-menu-backdrop" tabindex="-1" [attr.aria-label]="'common.close' | translate" [attr.inert]="!toggledMenu() ? '' : null" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></button>
+  <div
+    class="mobile-menu"
+    id="mobileNavigation"
+    [class.open]="toggledMenu()"
+    [attr.inert]="!toggledMenu() ? '' : null"
+    [attr.aria-hidden]="!toggledMenu()"
+  >
     <div class="mobile-menu-header">
       <a
         class="navbar-brand navbar-brand--menu"
@@ -76,7 +78,12 @@
       >
         <app-susm-logo />
       </a>
-      <button type="button" class="nav-close" (click)="hideMobileMenu()" [attr.aria-label]="'common.close' | translate">
+      <button
+        type="button"
+        class="nav-close"
+        (click)="hideMobileMenu()"
+        [attr.aria-label]="'common.close' | translate"
+      >
         <app-icon [icon]="icons.closeFilled" />
       </button>
     </div>
@@ -103,9 +110,9 @@
       </li>
       @if (protocolsEnabled()) {
         <li>
-        <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
-          {{ 'navbar.protocols' | translate }}
-        </a>
+          <a class="nav-link" routerLink="/protocols" (click)="hideMobileMenu()">
+            {{ 'navbar.protocols' | translate }}
+          </a>
         </li>
       }
       @if (isSuperuser()) {
@@ -116,7 +123,11 @@
         </li>
       }
       <li class="logout-item">
-        <button type="button" class="nav-link nav-link--button" (click)="hideMobileMenu(); logout()">
+        <button
+          type="button"
+          class="nav-link nav-link--button"
+          (click)="hideMobileMenu(); logout()"
+        >
           {{ 'navbar.logout' | translate }}
         </button>
       </li>
@@ -124,7 +135,7 @@
   </div>
 } @else {
   <nav class="app-nav app-nav--guest" aria-label="Main">
-    <a class="navbar-brand" routerLink="/login" aria-label="SUSM">
+    <a class="navbar-brand" routerLink="/" aria-label="SUSM home">
       <app-susm-logo />
     </a>
     @if (!isLoginPage()) {

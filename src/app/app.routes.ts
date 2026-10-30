@@ -4,8 +4,9 @@ import { authGuard, guestGuard, protocolsFeatureGuard } from './guards/user.guar
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'projects',
     pathMatch: 'full',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./components/home/home.component').then((c) => c.HomeComponent),
   },
   {
     path: 'login',
@@ -27,7 +28,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadChildren: () => import('./components/admin/admin.routes').then((router) => router.AdminRoutes),
+    loadChildren: () =>
+      import('./components/admin/admin.routes').then((router) => router.AdminRoutes),
   },
   {
     path: 'projects',
@@ -57,7 +59,12 @@ export const routes: Routes = [
     path: 'share/:token',
     loadComponent: () =>
       import('./components/object/share/object-share.component').then(
-        (c) => c.ObjectShareComponent
+        (c) => c.ObjectShareComponent,
       ),
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./components/home/not-found.component').then((c) => c.NotFoundComponent),
   },
 ];

@@ -1,0 +1,23 @@
+﻿import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = (file) => readFileSync(new URL(`../dist/susm/browser/${file}`, import.meta.url), 'utf8');
+const home = read('index.html');
+const privateShell = read('index.csr.html');
+assert.match(home, /Every detail\./, 'Homepage must contain prerendered copy without JavaScript');
+assert.match(home, /name="robots" content="index, follow, max-image-preview:large"/);
+assert.match(home, /rel="canonical" href="https:\/\/susm\.vercel\.app\/"/);
+assert.match(home, /property="og:image" content="https:\/\/susm\.vercel\.app\/social\/susm-preview\.png"/);
+assert.match(home, /name="twitter:card" content="summary_large_image"/);
+assert.match(home, /id="main-content"/);
+const data = home.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/s);
+assert.ok(data, 'Structured data must be present');
+assert.equal(JSON.parse(data[1])['@type'], 'SoftwareApplication');
+assert.match(privateShell, /name="robots" content="noindex, nofollow"/);
+assert.doesNotMatch(privateShell, /rel="canonical"/);
+assert.match(read('robots.txt'), /Sitemap: https:\/\/susm\.vercel\.app\/sitemap.xml/);
+assert.match(read('sitemap.xml'), /<loc>https:\/\/susm\.vercel\.app\/<\/loc>/);
+const png = readFileSync(new URL('../dist/susm/browser/social/susm-preview.png', import.meta.url));
+assert.equal(png.readUInt32BE(16), 1200);
+assert.equal(png.readUInt32BE(20), 630);
+console.log('Production SEO checks passed: rendered copy, metadata, indexing boundaries, sitemap and social image.');

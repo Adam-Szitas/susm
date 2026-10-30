@@ -112,3 +112,16 @@ export const protocolsFeatureGuard: CanActivateFn = async (_route, state) => {
   await waitForProfile(userStore);
   return userStore.protocolsEnabled() ? true : router.createUrlTree(['/dashboard']);
 };
+
+export const trashFeatureGuard: CanActivateFn = async (_route, state) => {
+  const platformId = inject(PLATFORM_ID);
+  const userStore = inject(UserStore);
+  const router = inject(Router);
+  if (!isBrowserPlatform(platformId)) return true;
+  await waitUntilInitialized(userStore);
+  if (!userStore.isAuthenticated()) {
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  }
+  await waitForProfile(userStore);
+  return userStore.trashEnabled() ? true : router.createUrlTree(['/dashboard']);
+};

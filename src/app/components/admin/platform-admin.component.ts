@@ -61,10 +61,14 @@ export class PlatformAdminComponent {
     const sort = this.sortBy();
     return companies.sort((a, b) => {
       if (sort === 'name') return a.name.localeCompare(b.name);
-      if (sort === 'projects') return b.active_projects - a.active_projects || a.name.localeCompare(b.name);
+      if (sort === 'projects')
+        return b.active_projects - a.active_projects || a.name.localeCompare(b.name);
       if (sort === 'files') return b.active_files - a.active_files || a.name.localeCompare(b.name);
-      if (sort === 'protocols') return b.generated_protocols - a.generated_protocols || a.name.localeCompare(b.name);
-      return Number(b.protocols_enabled) - Number(a.protocols_enabled) || a.name.localeCompare(b.name);
+      if (sort === 'protocols')
+        return b.generated_protocols - a.generated_protocols || a.name.localeCompare(b.name);
+      return (
+        Number(b.protocols_enabled) - Number(a.protocols_enabled) || a.name.localeCompare(b.name)
+      );
     });
   });
 
@@ -77,12 +81,18 @@ export class PlatformAdminComponent {
   readonly usageCompanies = computed(() => {
     const key = this.usageMetric();
     return [...(this.overview()?.companies ?? [])]
-      .sort((a, b) => this.metricValue(b, key) - this.metricValue(a, key) || a.name.localeCompare(b.name))
+      .sort(
+        (a, b) =>
+          this.metricValue(b, key) - this.metricValue(a, key) || a.name.localeCompare(b.name),
+      )
       .slice(0, 6);
   });
 
   readonly maxUsageValue = computed(() =>
-    Math.max(1, ...this.usageCompanies().map((company) => this.metricValue(company, this.usageMetric()))),
+    Math.max(
+      1,
+      ...this.usageCompanies().map((company) => this.metricValue(company, this.usageMetric())),
+    ),
   );
 
   readonly visibleEvents = computed(() => {
@@ -116,9 +126,11 @@ export class PlatformAdminComponent {
     this.operationsError.set(false);
     this.#adminService
       .getOperations(this.operationsDays())
-      .pipe(finalize(() => {
-        if (requestId === this.#operationsRequest) this.operationsLoading.set(false);
-      }))
+      .pipe(
+        finalize(() => {
+          if (requestId === this.#operationsRequest) this.operationsLoading.set(false);
+        }),
+      )
       .subscribe({
         next: (snapshot) => {
           if (requestId === this.#operationsRequest) this.operations.set(snapshot);
@@ -174,7 +186,75 @@ export class PlatformAdminComponent {
     return parts.join(' · ') || '—';
   }
 
+  readonly capabilityOptions = [
+    {
+      key: 'externalSharing',
+      label: 'admin.features.externalSharing.name',
+      description: 'admin.features.externalSharing.description',
+    },
+    {
+      key: 'trash',
+      label: 'admin.features.trash.name',
+      description: 'admin.features.trash.description',
+    },
+    {
+      key: 'streetPlan',
+      label: 'admin.features.streetPlan.name',
+      description: 'admin.features.streetPlan.description',
+    },
+  ];
+  readonly editingCapability = signal<string | null>(null);
+
+  capabilityLabel(feature: string): string {
+    return this.capabilityOptions.find((option) => option.key === feature)?.label ?? feature;
+  }
+
+  openCapability(company: CompanySummary, feature: string): void {
+    this.openToggle(company);
+    this.editingCapability.set(feature);
+  }
+
+  saveCapability(company: CompanySummary, feature: string): void {
+    const reason = this.reason().trim();
+    if (!reason || reason.length > 500 || this.savingCompanyId()) return;
+    this.savingCompanyId.set(company.id);
+    this.toggleError.set(null);
+    this.#adminService
+      .setCapability(company.id, feature, !company.capabilities?.[feature], reason)
+      .pipe(finalize(() => this.savingCompanyId.set(null)))
+      .subscribe({
+        next: (response) => {
+          this.overview.update((data) =>
+            data
+              ? {
+                  ...data,
+                  companies: data.companies.map((entry) =>
+                    entry.id === company.id
+                      ? {
+                          ...entry,
+                          capabilities: { ...entry.capabilities, [feature]: response.enabled },
+                        }
+                      : entry,
+                  ),
+                }
+              : data,
+          );
+          this.cancelToggle();
+          this.#notifications.showSuccess(this.#translations.instant('admin.featureSaved'));
+          if (!response.audit_recorded)
+            this.#notifications.showWarning(this.#translations.instant('admin.auditSaveWarning'));
+          if (this.auditCompanyId() === company.id) this.loadAudit(company.id);
+          this.#userStore.refreshProfile();
+        },
+        error: (err) =>
+          this.toggleError.set(
+            err?.message || this.#translations.instant('admin.featureSaveFailed'),
+          ),
+      });
+  }
+
   openToggle(company: CompanySummary): void {
+    this.editingCapability.set(null);
     if (this.savingCompanyId()) return;
     this.editingCompanyId.set(company.id);
     this.reason.set('');
@@ -188,6 +268,11 @@ export class PlatformAdminComponent {
   }
 
   saveToggle(company: CompanySummary): void {
+    const feature = this.editingCapability();
+    if (feature) {
+      this.saveCapability(company, feature);
+      return;
+    }
     const reason = this.reason().trim();
     if (!reason || reason.length > 500 || this.savingCompanyId()) return;
     const nextEnabled = !company.protocols_enabled;
@@ -213,8 +298,10 @@ export class PlatformAdminComponent {
             );
             const metrics = {
               ...current.metrics,
-              protocols_enabled_companies: companies.filter((entry) => entry.protocols_enabled).length,
-              protocols_disabled_companies: companies.filter((entry) => !entry.protocols_enabled).length,
+              protocols_enabled_companies: companies.filter((entry) => entry.protocols_enabled)
+                .length,
+              protocols_disabled_companies: companies.filter((entry) => !entry.protocols_enabled)
+                .length,
             };
             return { ...current, companies, metrics };
           });
@@ -228,7 +315,9 @@ export class PlatformAdminComponent {
           this.#userStore.refreshProfile();
         },
         error: (err) => {
-          this.toggleError.set(err?.message || this.#translations.instant('admin.featureSaveFailed'));
+          this.toggleError.set(
+            err?.message || this.#translations.instant('admin.featureSaveFailed'),
+          );
         },
       });
   }
@@ -249,9 +338,11 @@ export class PlatformAdminComponent {
     this.auditError.set(false);
     this.#adminService
       .getFeatureAudit(companyId)
-      .pipe(finalize(() => {
-        if (this.auditCompanyId() === companyId) this.auditLoading.set(false);
-      }))
+      .pipe(
+        finalize(() => {
+          if (this.auditCompanyId() === companyId) this.auditLoading.set(false);
+        }),
+      )
       .subscribe({
         next: (entries) => {
           if (this.auditCompanyId() === companyId) this.auditEntries.set(entries);
@@ -269,7 +360,10 @@ export class PlatformAdminComponent {
   }
 
   usageWidth(company: CompanySummary): number {
-    return Math.max(2, Math.round((this.metricValue(company, this.usageMetric()) / this.maxUsageValue()) * 100));
+    return Math.max(
+      2,
+      Math.round((this.metricValue(company, this.usageMetric()) / this.maxUsageValue()) * 100),
+    );
   }
 
   metricLabel(metric: UsageMetric): string {
