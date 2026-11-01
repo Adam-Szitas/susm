@@ -33,6 +33,7 @@
   input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #9ca3af; border-radius: 8px; font: inherit; }
 }
 .file-edit-preview { align-self: center; max-width: min(250px, 100%); max-height: 250px; width: auto; height: auto; object-fit: contain; }
+.file-edit-media-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; .button { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0; } }
 // overlays, grids, groups — global via styles.scss; do not @use here (duplicates ~4kB into component budget)
 
 // Visible to screen readers & HTML validators that ignore Angular `title` bindings
@@ -724,6 +725,14 @@
 
 .image-container {
   position: relative;
+}
+
+.image-container--editable {
+  cursor: pointer;
+}
+
+.image-container .overlay[hidden] {
+  display: none !important;
 }
 
 .file-category {

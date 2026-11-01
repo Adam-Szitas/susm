@@ -89,6 +89,7 @@ export class FileListComponent implements OnDestroy {
   readonly imageLightbox = viewChild<ElementRef<HTMLDialogElement>>('imageLightbox');
   readonly fileEditDialog = viewChild<ElementRef<HTMLDialogElement>>('fileEditDialog');
   readonly editingFile = signal<FileGroupItem | ProjectFile | null>(null);
+  readonly editingFileGroup = signal<FileGroup | null>(null);
   readonly fileMetadataSaving = signal(false);
 
   /** Which group the next file-picker selection applies to (single shared input). */
@@ -1091,11 +1092,12 @@ export class FileListComponent implements OnDestroy {
       });
   }
 
-  public startEditFile(file: FileGroupItem | ProjectFile): void {
+  public startEditFile(file: FileGroupItem | ProjectFile, group?: FileGroup): void {
     const id = file._id?.$oid;
     if (!id) return;
     this.editingFileId.set(id);
     this.editingFile.set(file);
+    this.editingFileGroup.set(group ?? null);
     this.fileEditDialog()?.nativeElement.showModal();
     this.editFileDescription.set(file.description || '');
     this.editFileName.set(file.filename || '');
@@ -1122,6 +1124,7 @@ export class FileListComponent implements OnDestroy {
     if (dialog?.open) dialog.close();
     this.editingFileId.set(null);
     this.editingFile.set(null);
+    this.editingFileGroup.set(null);
   }
 
   public saveFileMetadata(file: FileGroupItem | ProjectFile): void {
