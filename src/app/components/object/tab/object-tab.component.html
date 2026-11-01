@@ -185,6 +185,15 @@
 
     @if (externalSharingEnabled() && shareQrDataUrl()) {
       <div class="qr-preview">
+        <button
+          type="button"
+          class="qr-preview-close"
+          (click)="closeShareQr()"
+          [attr.aria-label]="'common.close' | translate"
+          [title]="'common.close' | translate"
+        >
+          <app-icon [icon]="icons.close" />
+        </button>
         <img [src]="shareQrDataUrl()" alt="Object share QR code" />
         <p class="share-hint">{{ shareUrl() }}</p>
         <small>{{ 'objects.shareHint' | translate }}</small>

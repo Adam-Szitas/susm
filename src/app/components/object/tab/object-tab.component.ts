@@ -347,6 +347,11 @@ export class ObjectTabComponent implements OnInit {
     });
   }
 
+  closeShareQr(): void {
+    this.shareQrDataUrl.set(null);
+    this.shareUrl.set(null);
+  }
+
   generateShareQr(): void {
     const objectId = this.object()?._id?.$oid;
     if (!this.externalSharingEnabled() || !objectId || this.shareLoading()) {
