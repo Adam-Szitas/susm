@@ -34,7 +34,6 @@ import { TranslationService } from '../../services/translation.service';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
-import { compactFormActions } from '../shared/compact-form-actions';
 import {
   MoveFileTargetRow,
   MoveFileToGroupModalComponent,
@@ -50,7 +49,6 @@ import {
 })
 export class SubGroupDetailModalComponent implements OnDestroy {
   protected readonly icons = icons;
-  readonly iconOnlyActions = compactFormActions();
 
   #fileService = inject(FileService);
   #modalService = inject(ModalService);
@@ -69,6 +67,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   closed = output<void>();
   metadataUpdated = output<void>();
   requestAddPhotos = output<void>();
+  photoEditRequested = output<FileGroupItem>();
 
   editingMetadata = signal(false);
   editName = signal('');
@@ -325,7 +324,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     }
 
     event.stopPropagation();
-    this.activeFileId.set(this.activeFileId() === id ? null : id);
+    this.photoEditRequested.emit(file);
   }
 
   hideOverlay(): void {

@@ -68,16 +68,12 @@
               </div>
               <button
                 type="button"
-                class="button button-outline sub-group-edit-meta-btn toolbar-btn"
-                [class.icon-only]="iconOnlyActions()"
+                class="button button-outline sub-group-edit-meta-btn toolbar-btn icon-only"
                 (click)="startEditMetadata()"
                 [attr.aria-label]="'common.edit' | translate"
                 [attr.title]="'common.edit' | translate"
               >
                 <app-icon [icon]="icons.edit" [svgClass]="'toolbar-btn-icon'" />
-                @if (!iconOnlyActions()) {
-                  <span class="toolbar-btn-label">{{ 'common.edit' | translate }}</span>
-                }
               </button>
             </div>
             @if (sg.note?.trim()) {
@@ -89,21 +85,16 @@
         <div class="sub-group-toolbar">
           <button
             type="button"
-            class="button button-primary toolbar-btn"
-            [class.icon-only]="iconOnlyActions()"
+            class="button button-primary toolbar-btn icon-only"
             (click)="requestAddPhotos.emit()"
             [attr.aria-label]="'subGroups.addPhotos' | translate"
             [attr.title]="'subGroups.addPhotos' | translate"
           >
             <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
-            @if (!iconOnlyActions()) {
-              <span class="toolbar-btn-label">{{ 'subGroups.addPhotos' | translate }}</span>
-            }
           </button>
           <button
             type="button"
-            class="button button-outline toolbar-btn"
-            [class.icon-only]="iconOnlyActions()"
+            class="button button-outline toolbar-btn icon-only"
             [class.active]="reorderMode()"
             (click)="toggleReorderMode()"
             [disabled]="reorderSaving() || visibleFiles().length < 2"
@@ -119,26 +110,15 @@
             "
           >
             <app-icon [icon]="icons.arrowsUpDown" [svgClass]="'toolbar-btn-icon'" />
-            @if (!iconOnlyActions()) {
-              <span class="toolbar-btn-label">{{
-                reorderMode()
-                  ? ('fileList.doneReorderPictures' | translate)
-                  : ('fileList.reorderPictures' | translate)
-              }}</span>
-            }
           </button>
           <button
             type="button"
-            class="button button-outline sub-group-delete-btn toolbar-btn"
-            [class.icon-only]="iconOnlyActions()"
+            class="button button-outline sub-group-delete-btn toolbar-btn icon-only"
             (click)="openDeleteConfirm()"
             [attr.aria-label]="'subGroups.deleteSubGroup' | translate"
             [attr.title]="'subGroups.deleteSubGroup' | translate"
           >
             <app-trash-icon [size]="18" />
-            @if (!iconOnlyActions()) {
-              <span class="toolbar-btn-label">{{ 'subGroups.deleteSubGroup' | translate }}</span>
-            }
           </button>
         </div>
 
@@ -188,78 +168,7 @@
                   loading="lazy"
                   (error)="onImageError(file, $event)"
                 />
-                @if (!reorderMode()) {
-                  <div
-                    class="overlay"
-                    [class.visible]="activeFileId() === file._id.$oid"
-                    (click)="$event.stopPropagation()"
-                  >
-                    <button type="button" class="zoom-hint" (click)="openImageLightbox($event, file)">
-                      <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
-                    </button>
-                    @if (buildMoveTargets().length > 0) {
-                      <button
-                        type="button"
-                        class="move-hint"
-                        (click)="openMoveFileModal($event, file)"
-                        [disabled]="moveFileInProgress()"
-                      >
-                        <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      class="download-hint"
-                      (click)="handleOverlayDownload($event, file.path, file.filename)"
-                    >
-                      <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
-                    </button>
-                    <button type="button" class="delete-hint" (click)="handleOverlayDelete($event, file)">
-                      <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
-                    </button>
-                  </div>
-                }
               </div>
-              <button type="button" class="button button-outline subgroup-picture-edit" (click)="pictureEdit.showModal()" [disabled]="reorderMode()">{{ 'common.edit' | translate }}</button>
-              <dialog #pictureEdit class="subgroup-picture-dialog" [attr.aria-label]="'common.edit' | translate" (click)="$event.stopPropagation()" (cancel)="$event.preventDefault(); cancelPictureEdit(file, pictureEdit)">
-                <div class="subgroup-picture-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" (click)="cancelPictureEdit(file, pictureEdit)" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
-                <img class="subgroup-picture-preview" [src]="getImageUrl(file.path)" [alt]="file.filename || ('fileList.imagePreview' | translate)" />
-              <div class="sub-group-file-note" (click)="$event.stopPropagation()">
-                <label class="sub-group-file-note-label" [attr.for]="'sg-file-name-' + file._id.$oid">
-                  {{ 'fileList.pictureName' | translate }}
-                </label>
-                <input
-                  [id]="'sg-file-name-' + file._id.$oid"
-                  type="text"
-                  class="sub-group-file-name-input"
-                  [disabled]="reorderMode()"
-                  [ngModel]="fileNameDraft(file)"
-                  (ngModelChange)="onFileNameInput(file, $event)"
-                  [placeholder]="'fileList.pictureNamePlaceholder' | translate"
-                  [attr.aria-busy]="isSavingFileNote(file)"
-                  autocomplete="off"
-                  enterkeyhint="done"
-                />
-                <label class="sub-group-file-note-label" [attr.for]="'sg-file-note-' + file._id.$oid">
-                  {{ 'fileUpload.note' | translate }}
-                </label>
-                <textarea
-                  [id]="'sg-file-note-' + file._id.$oid"
-                  class="sub-group-file-note-input"
-                  rows="4"
-                  [disabled]="reorderMode()"
-                  [ngModel]="fileNoteDraft(file)"
-                  (ngModelChange)="onFileNoteInput(file, $event)"
-                  [placeholder]="'fileUpload.notePlaceholder' | translate"
-                  [attr.aria-busy]="isSavingFileNote(file)"
-                  enterkeyhint="done"
-                ></textarea>
-              </div>
-              <div class="subgroup-picture-footer">
-                <button type="button" class="button button-secondary" (click)="cancelPictureEdit(file, pictureEdit)" [disabled]="isSavingFileNote(file)">{{ 'common.cancel' | translate }}</button>
-                <button type="button" class="button button-primary" (click)="saveFileMeta(file, pictureEdit)" [disabled]="!isFileMetaDirty(file) || isSavingFileNote(file)">{{ (isSavingFileNote(file) ? 'common.saving' : 'common.save') | translate }}</button>
-              </div>
-              </dialog>
             </li>
           }
         </ul>

@@ -613,14 +613,14 @@
       <div class="file-edit-body">
         <img class="file-edit-preview" [src]="getImageUrl(file.path)" [alt]="file.filename || ('fileList.imagePreview' | translate)" />
         <div class="file-edit-media-actions">
-          <button type="button" class="button button-outline" (click)="openImageLightbox($event, file)"><app-icon [icon]="icons.zoomIn" /> {{ 'fileList.zoom' | translate }}</button>
-          <button type="button" class="button button-outline" (click)="downloadFile(file.path, file.filename)"><app-icon [icon]="icons.download" /> {{ 'fileList.download' | translate }}</button>
+          <button type="button" class="button button-outline file-edit-icon-action" (click)="openImageLightbox($event, file)" [attr.aria-label]="'fileList.zoom' | translate" [attr.title]="'fileList.zoom' | translate"><app-icon [icon]="icons.zoomIn" /></button>
+          <button type="button" class="button button-outline file-edit-icon-action" (click)="downloadFile(file.path, file.filename)" [attr.aria-label]="'fileList.download' | translate" [attr.title]="'fileList.download' | translate"><app-icon [icon]="icons.download" /></button>
           @if (editingFileGroup(); as group) {
-            @if (hasMoveTargetsForFile(group)) { <button type="button" class="button button-outline" (click)="openMoveFileModal($event, $any(file), group)" [disabled]="moveFileInProgress()"><app-icon [icon]="icons.chevronRight" /> {{ 'fileList.movePicture' | translate }}</button> }
+            @if (hasMoveTargetsForFile(group)) { <button type="button" class="button button-outline file-edit-icon-action" (click)="openMoveFileModal($event, $any(file), group)" [attr.aria-label]="'fileList.movePicture' | translate" [attr.title]="'fileList.movePicture' | translate" [disabled]="moveFileInProgress()"><app-icon [icon]="icons.chevronRight" /></button> }
           } @else if (canSendProjectFiles()) {
-            <button type="button" class="button button-outline" (click)="openSendProjectFileModal($event, $any(file))" [disabled]="sendProjectFilesInProgress()"><app-icon [icon]="icons.chevronRight" /> {{ 'fileList.sendToObject' | translate }}</button>
+            <button type="button" class="button button-outline file-edit-icon-action" (click)="openSendProjectFileModal($event, $any(file))" [attr.aria-label]="'fileList.sendToObject' | translate" [attr.title]="'fileList.sendToObject' | translate" [disabled]="sendProjectFilesInProgress()"><app-icon [icon]="icons.chevronRight" /></button>
           }
-          <button type="button" class="button button-error" (click)="deleteFile(file)"><app-trash-icon [size]="18" /> {{ 'fileList.delete' | translate }}</button>
+          <button type="button" class="button button-error file-edit-icon-action" (click)="deleteFile(file)" [attr.aria-label]="'fileList.delete' | translate" [attr.title]="'fileList.delete' | translate"><app-trash-icon [size]="18" /></button>
         </div>
         <label for="file-edit-name">{{ 'fileList.filename' | translate }}</label><input id="file-edit-name" type="text" [(ngModel)]="editFileName" />
         <label for="file-edit-date">{{ 'fileList.createdAt' | translate }}</label><input id="file-edit-date" type="date" [(ngModel)]="editFileCreatedAt" />
@@ -671,6 +671,7 @@
       (closed)="onSubGroupDetailClosed()"
       (metadataUpdated)="metadataUpdated.emit()"
       (requestAddPhotos)="onSubGroupDetailAddPhotos()"
+      (photoEditRequested)="startEditFile($event, detailTarget.group)"
     />
   }
 
