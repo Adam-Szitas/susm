@@ -1,6 +1,4 @@
 <div class="category-modal">
-  <p class="category-modal__intro">{{ 'projects.selectCategoryHint' | translate }}</p>
-
   <section class="category-modal__section" aria-labelledby="categorySelectHeading">
     <h3 id="categorySelectHeading" class="category-modal__heading">
       {{ 'projects.selectCategory' | translate }}
@@ -54,8 +52,6 @@
       <h3 id="categoryManageHeading" class="category-modal__heading">
         {{ 'projects.manageCategories' | translate }}
       </h3>
-      <p class="category-modal__hint">{{ 'projects.manageCategoriesHint' | translate }}</p>
-
       <form [formGroup]="form" class="category-admin-form" (ngSubmit)="addCategory()">
         <label class="sr-only" for="newCategory">{{ 'projects.addCategory' | translate }}</label>
         <div class="category-add-row">

@@ -38,6 +38,40 @@
           />
         </div>
 
+        @if (filter().showStatus) {
+          <div class="control">
+            <label for="status">{{ 'filter.status' | translate }}</label>
+            <select formControlName="status" id="status" class="filter-input">
+              <option value="">{{ 'filter.allStatuses' | translate }}</option>
+              @for (status of filter().statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (filter().showDateRange) {
+          <div class="control date-range">
+            <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>
+            <input id="dateFrom" type="date" formControlName="dateFrom" class="filter-input" />
+          </div>
+          <div class="control date-range">
+            <label for="dateTo">{{ 'filter.dateTo' | translate }}</label>
+            <input id="dateTo" type="date" formControlName="dateTo" class="filter-input" />
+          </div>
+        }
+
+        @if (filter().showSort) {
+          <div class="control">
+            <label for="sortDirection">{{ 'filter.sortDirection' | translate }}</label>
+            <select id="sortDirection" formControlName="sortDirection" class="filter-input">
+              <option value="">{{ 'filter.noSort' | translate }}</option>
+              <option value="asc">{{ 'filter.ascending' | translate }}</option>
+              <option value="desc">{{ 'filter.descending' | translate }}</option>
+            </select>
+          </div>
+        }
+
         @if (filter().showCategory && (filter().categories?.length ?? 0) > 0) {
           @if (filter().multiSelectCategories) {
             <div class="control category-filter">
@@ -80,40 +114,6 @@
               </select>
             </div>
           }
-        }
-
-        @if (filter().showStatus) {
-          <div class="control">
-            <label for="status">{{ 'filter.status' | translate }}</label>
-            <select formControlName="status" id="status" class="filter-input">
-              <option value="">{{ 'filter.allStatuses' | translate }}</option>
-              @for (status of filter().statuses; track status) {
-                <option [value]="status">{{ status }}</option>
-              }
-            </select>
-          </div>
-        }
-
-        @if (filter().showDateRange) {
-          <div class="control date-range">
-            <label for="dateFrom">{{ 'filter.dateFrom' | translate }}</label>
-            <input id="dateFrom" type="date" formControlName="dateFrom" class="filter-input" />
-          </div>
-          <div class="control date-range">
-            <label for="dateTo">{{ 'filter.dateTo' | translate }}</label>
-            <input id="dateTo" type="date" formControlName="dateTo" class="filter-input" />
-          </div>
-        }
-
-        @if (filter().showSort) {
-          <div class="control">
-            <label for="sortDirection">{{ 'filter.sortDirection' | translate }}</label>
-            <select id="sortDirection" formControlName="sortDirection" class="filter-input">
-              <option value="">{{ 'filter.noSort' | translate }}</option>
-              <option value="asc">{{ 'filter.ascending' | translate }}</option>
-              <option value="desc">{{ 'filter.descending' | translate }}</option>
-            </select>
-          </div>
         }
 
         <div class="control control-actions">

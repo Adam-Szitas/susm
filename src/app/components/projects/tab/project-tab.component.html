@@ -27,6 +27,17 @@
           </div>
         </div>
         <div class="project-details-actions">
+          @if (!project()?.archived_at) {
+            <button
+              type="button"
+              class="button button-outline project-details-action"
+              (click)="openCategoryModal()"
+              [attr.aria-label]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
+              [title]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
+            >
+              <app-icon [icon]="icons.tag" />
+            </button>
+          }
           <button
             type="button"
             class="button button-outline project-details-action"
@@ -103,25 +114,6 @@
 
     @if (!project()?.archived_at) {
       <div class="project-toolbar">
-        <button
-          type="button"
-          class="button button-outline project-toolbar-btn"
-          [class.icon-only]="toolbarIconOnly()"
-          (click)="openCategoryModal()"
-          [attr.aria-label]="
-            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
-          "
-          [title]="
-            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
-          "
-        >
-          <app-icon [icon]="icons.tag" [svgClass]="'project-toolbar-icon'" />
-          @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{
-              (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
-            }}</span>
-          }
-        </button>
         @if (streetPlanEnabled()) {
           <button
             type="button"
@@ -256,8 +248,6 @@
         </header>
         <div class="column-content objects-section-content">
           @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
-            <div class="apply-sort-order-toolbar">
-              <p class="apply-sort-order-hint">{{ 'projects.applySortOrderHint' | translate }}</p>
               <button
                 type="button"
                 class="button button-primary apply-sort-order-btn"
@@ -270,7 +260,6 @@
                   {{ 'projects.applySortOrder' | translate }}
                 }
               </button>
-            </div>
           }
           @if (objectReorderMode() && objectsInReorderMode().length > 0) {
             <div
@@ -340,8 +329,7 @@
             <app-virtual-scroll-viewport
               class="object-list-viewport"
               [items]="filteredObjects()"
-              [itemSize]="objectCardItemSize()"
-              [threshold]="objectVirtualScrollThreshold()"
+              [variableHeight]="true"
               [trackBy]="trackObjectById"
               [fill]="objectListFillHeight()"
               [ariaLabel]="'navbar.objects' | translate"

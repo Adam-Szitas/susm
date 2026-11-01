@@ -35,6 +35,7 @@ import {
   sortObjectsByStoredOrder,
   packFilteredFirstOrder,
   objectTodoCardClassNames,
+  objectAddressSearchText,
 } from '@models';
 import { ModalService } from '@services/modal.service';
 import { ObjectModalComponent } from '../../object/new-object/object-modal.component';
@@ -152,10 +153,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     () => this.toolbarIconOnly() && this.projectDataExpanded(),
   );
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
-  /** Virtual scroll on desktop columns; mobile uses the same fill viewport with a plain list. */
-  readonly objectVirtualScrollThreshold = computed(() =>
-    this.toolbarIconOnly() ? Number.MAX_SAFE_INTEGER : VIRTUAL_SCROLL_DEFAULT_THRESHOLD,
-  );
   #projectFilterKey = '';
   restoredFilterState = signal<PersistedFilterState | null>(null);
   /** Collapsed by default — compact summary; expand for full project data + category. */
@@ -232,7 +229,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   });
 
   /** Fixed virtual row height (px), including inter-card gap. */
-  readonly objectCardItemSize = computed(() => (this.toolbarIconOnly() ? 60 : 96));
 
   readonly objectListMaxHeight = computed(() => 'min(65dvh, 720px)');
   /** Fill the tab column on mobile and in desktop side-by-side layout. */
@@ -923,12 +919,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     if (filter.searchText) {
       const searchLower = filter.searchText.toLowerCase();
       filtered = filtered.filter((obj) => {
-        const addr = obj.address;
-        // ObjectAddress only has level, door_number, and postal_code
-        const addressText = [addr?.level, addr?.door_number, addr?.postal_code]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
+        const addressText = objectAddressSearchText(obj.address);
 
         const noteText = obj.note?.toLowerCase() ?? '';
 

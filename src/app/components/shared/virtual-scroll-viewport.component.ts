@@ -44,6 +44,8 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   itemSize = input(72);
   /** Enable virtual scroll only when length exceeds this. */
   threshold = input(VIRTUAL_SCROLL_DEFAULT_THRESHOLD);
+  /** Render natural-height items without fixed-size virtualization. */
+  variableHeight = input(false);
   /** Viewport max height (CSS length). Ignored when {@link fill} is true. */
   maxHeight = input('min(68dvh, 720px)');
   /** Stretch viewport to fill the parent flex region (height: 100%). */
@@ -65,7 +67,7 @@ export class VirtualScrollViewportComponent<T> implements AfterViewInit {
   readonly #viewportWidth = signal(800);
 
   readonly useVirtualScroll = computed(
-    () => !this.gridLayout() && this.items().length > this.threshold(),
+    () => !this.variableHeight() && !this.gridLayout() && this.items().length > this.threshold(),
   );
 
   readonly columnCount = computed(() => {

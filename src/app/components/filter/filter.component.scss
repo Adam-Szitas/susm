@@ -8,6 +8,10 @@
   contain: layout style;
 }
 
+:host-context(dialog) .wrapper.filter-wrapper {
+  padding: 1rem;
+}
+
 form {
   width: 100%;
   max-width: 100%;
