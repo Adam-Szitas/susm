@@ -322,8 +322,21 @@ export const qrCodeIcon = stroke24([
   { tag: 'path', d: 'M15 15h2v2h-2zM19 15h2v4h-2M15 19v2h4M21 21h.01' },
 ]);
 
+export const folderPlusIcon = stroke24([
+  { tag: 'path', d: 'M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z' },
+  { tag: 'path', d: 'M12 10v6M9 13h6' },
+]);
+
+export const folderTreeIcon = stroke24([
+  { tag: 'path', d: 'M3 5v12a2 2 0 0 0 2 2h3M3 10h5' },
+  { tag: 'path', d: 'M8 8h4l1 1h6a2 2 0 0 1 2 2v3H8z' },
+  { tag: 'path', d: 'M8 17h4l1 1h6a2 2 0 0 1 2 2v1H8z' },
+]);
+
 export const icons = {
   qrCode: qrCodeIcon,
+  folderPlus: folderPlusIcon,
+  folderTree: folderTreeIcon,
   tag: tagIcon,
   archive: archiveIcon,
   plus: plusIcon,

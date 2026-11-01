@@ -37,10 +37,10 @@
               class="button button-outline object-details-action"
               (click)="openUploadModal()"
               [disabled]="uploading()"
-              [attr.aria-label]="'objects.uploadFile' | translate"
-              [title]="'objects.uploadFile' | translate"
+              [attr.aria-label]="'fileList.createGroup' | translate"
+              [title]="'fileList.createGroup' | translate"
             >
-              <app-icon [icon]="icons.cloudUpload" />
+              <app-icon [icon]="icons.plus" />
             </button>
             @if (externalSharingEnabled()) {
               <button
