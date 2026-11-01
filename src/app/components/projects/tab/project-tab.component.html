@@ -488,6 +488,17 @@
         <header class="column-header">
           <h3>{{ 'files.title' | translate }}</h3>
           <div class="column-header-actions">
+            @if (projectFileList()?.canSendProjectFiles() && !projectFileList()?.selectionMode()) {
+              <button
+                type="button"
+                class="button button-outline object-header-action"
+                (click)="projectFileList()?.selectionMode?.set(true)"
+                [attr.aria-label]="'fileList.selectPictures' | translate"
+                [title]="'fileList.selectPictures' | translate"
+              >
+                <app-icon [icon]="icons.clipboardCheck" />
+              </button>
+            }
             @if (!project()?.archived_at) {
               <button
                 type="button"

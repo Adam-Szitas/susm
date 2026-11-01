@@ -154,6 +154,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     );
   });
   readonly projectFilter = viewChild(FilterComponent);
+  readonly projectFileList = viewChild(FileListComponent);
   readonly contentTabsHost = viewChild<ElementRef<HTMLElement>>('contentTabsHost');
   /** Icon-only toolbar buttons on viewports ≤768px. */
   readonly toolbarIconOnly = compactFormActions();
