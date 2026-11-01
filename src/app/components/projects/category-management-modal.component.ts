@@ -116,7 +116,6 @@ export class CategoryManagementModalComponent implements OnInit {
 
     this.categoryArray.push(this.#fb.control(newCategory, [Validators.required]));
     this.form.patchValue({ newCategory: '' });
-    this.selectedCategory.set(newCategory);
   }
 
   startEditing(index: number): void {
