@@ -183,17 +183,17 @@
 
     @if (fileGroups().length > 0) {
       @if (projectCategories().length > 0) {
-        <div class="object-file-group-category-filter">
-          <span
-            class="object-file-group-category-filter-label"
-            id="objectFileGroupCategoryFilterLabel"
-          >
+        <details class="object-file-group-category-filter">
+          <summary class="object-file-group-category-filter-label">
             {{ 'filter.category' | translate }}
-          </span>
+            @if (urlFileGroupCategories().length) {
+              <span class="object-file-group-category-count">{{ urlFileGroupCategories().length }}</span>
+            }
+          </summary>
           <div
             class="object-file-group-category-filter-chips"
             role="group"
-            [attr.aria-labelledby]="'objectFileGroupCategoryFilterLabel'"
+            [attr.aria-label]="'filter.category' | translate"
           >
             @for (category of projectCategories(); track category) {
               <button
@@ -209,7 +209,12 @@
               </button>
             }
           </div>
-        </div>
+          @if (hasUrlFileGroupCategoryFilter()) {
+            <button type="button" class="button button-secondary category-filter-clear" (click)="clearUrlCategoryFilter()">
+              {{ 'filter.clear' | translate }}
+            </button>
+          }
+        </details>
       }
       @if (hasUrlFileGroupCategoryFilter()) {
         <p class="url-file-group-filter-hint">

@@ -21,6 +21,7 @@ export interface Filter {
 }
 
 export interface FilterResult {
+  prefix?: string;
   searchText?: string;
   category?: string;
   /** When set (non-empty), object list filters by file groups matching any of these labels. */

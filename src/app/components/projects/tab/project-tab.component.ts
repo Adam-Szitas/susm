@@ -74,6 +74,7 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import { ObjectCardComponent } from '../../shared/object-card.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
+import { objectBasePrefix } from '../../../utils/object-prefix';
 
 @Component({
   selector: 'app-project-tab',
@@ -134,10 +135,16 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
+  readonly selectedPrefix = computed(() => this.#currentFilter().prefix ?? '');
+  readonly objectPrefixes = computed(() => {
+    const prefixes = new Set(this.objects().map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number)).filter(Boolean));
+    return [...prefixes].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  });
   readonly hasActiveFilter = computed(() => {
     const filter = this.#currentFilter();
     return !!(
       filter.searchText ||
+      filter.prefix ||
       filter.dateFrom ||
       filter.dateTo ||
       filter.sortDirection ||
@@ -438,6 +445,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         filtersVisible: false,
       });
     }
+  }
+
+  togglePrefix(prefix: string): void {
+    this.projectFilter()?.setPrefix(this.selectedPrefix() === prefix ? '' : prefix);
   }
 
   addObject(): void {
@@ -915,6 +926,10 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   #applyFilters(objects: Object[], filter: FilterResult): Object[] {
     let filtered = sortObjectsByStoredOrder([...objects]);
+
+    if (filter.prefix) {
+      filtered = filtered.filter((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number) === filter.prefix);
+    }
 
     if (filter.searchText) {
       const searchLower = filter.searchText.toLowerCase();

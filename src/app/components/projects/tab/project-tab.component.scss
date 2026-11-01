@@ -101,6 +101,29 @@
   margin-bottom: var(--space-small) !important;
 }
 
+.prefix-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.2rem 0.65rem;
+}
+
+.prefix-filter {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+
+  &.active {
+    @include primary-active-toggle;
+  }
+}
+
 .project-content-tabs {
   width: 100%;
   max-width: 100%;

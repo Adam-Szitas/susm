@@ -30,24 +30,38 @@
 }
 
 .object-file-group-category-filter {
-  display: flex;
-  flex-direction: column;
   flex: 0 0 auto;
   align-self: stretch;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
 .object-file-group-category-filter-label {
+  display: list-item;
+  width: fit-content;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
   font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.object-file-group-category-count {
+  margin-inline-start: 0.35rem;
+  color: var(--primary-default, #9d0000);
 }
 
 .object-file-group-category-filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.category-filter-clear {
+  margin: 0.75rem 0 0;
 }
 
 .url-file-group-filter-hint {

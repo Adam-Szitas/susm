@@ -119,6 +119,7 @@ export class FilterComponent implements OnInit {
     const restored = this.initialState();
     if (restored) {
       const f = restored.filter;
+      this.currentFilter = { ...f };
       this.searchForm.patchValue({
         search: f.searchText ?? '',
         category: f.category ?? '',
@@ -184,6 +185,11 @@ export class FilterComponent implements OnInit {
   }
 
   /** Clear only the sort direction (e.g. after persisting sort as stored object order). */
+  setPrefix(prefix: string): void {
+    this.currentFilter = { ...this.currentFilter, prefix };
+    this.emitFilterChange();
+  }
+
   clearSortDirection(): void {
     this.searchForm.patchValue({ sortDirection: '' }, { emitEvent: false });
     this.currentFilter = { ...this.currentFilter, sortDirection: '' as SortDirection };

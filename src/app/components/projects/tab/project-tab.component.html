@@ -247,6 +247,16 @@
           </div>
         </header>
         <div class="column-content objects-section-content">
+          @if (objectPrefixes().length) {
+            <div class="prefix-filters" role="group" [attr.aria-label]="'objects.prefix' | translate">
+              @for (prefix of objectPrefixes(); track prefix) {
+                <button type="button" class="prefix-filter" [class.active]="selectedPrefix() === prefix"
+                  [attr.aria-pressed]="selectedPrefix() === prefix" (click)="togglePrefix(prefix)">
+                  {{ prefix }}
+                </button>
+              }
+            </div>
+          }
           @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
               <button
                 type="button"
