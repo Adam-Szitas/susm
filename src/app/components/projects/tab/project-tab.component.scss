@@ -669,6 +669,7 @@
   justify-content: center;
   @include touch-target-min;
   padding: 0.35rem;
+  margin: 0;
   border-radius: 8px;
 
   app-icon {

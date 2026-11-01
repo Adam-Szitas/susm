@@ -147,7 +147,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin-bottom: 0.5rem;
+  &:not(:empty) { margin-bottom: 0.5rem; }
+}
+
+.category-options {
+  margin-bottom: 0.65rem;
+
+  summary {
+    cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    background: #fff;
+    font-weight: 500;
+  }
 }
 
 .category-chip-mini {
@@ -166,7 +179,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1rem;
-  margin-bottom: 0.5rem;
+  padding: 0.75rem 0.25rem 0.25rem;
 }
 
 .category-cb-label {
@@ -204,10 +217,21 @@
 }
 
 .modal-footer {
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  @include mobile {
+    flex-direction: row;
+    button { width: auto; }
+  }
+
   .toolbar-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    justify-content: center;
   }
 
   .toolbar-btn.icon-only {

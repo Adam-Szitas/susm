@@ -315,7 +315,15 @@ export const tagIcon = stroke24([
   { tag: 'circle', cx: 7.5, cy: 7.5, r: 1 },
 ]);
 
+export const qrCodeIcon = stroke24([
+  { tag: 'rect', x: 3, y: 3, width: 6, height: 6 },
+  { tag: 'rect', x: 15, y: 3, width: 6, height: 6 },
+  { tag: 'rect', x: 3, y: 15, width: 6, height: 6 },
+  { tag: 'path', d: 'M15 15h2v2h-2zM19 15h2v4h-2M15 19v2h4M21 21h.01' },
+]);
+
 export const icons = {
+  qrCode: qrCodeIcon,
   tag: tagIcon,
   archive: archiveIcon,
   plus: plusIcon,

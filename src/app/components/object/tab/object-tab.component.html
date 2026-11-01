@@ -32,6 +32,16 @@
             </div>
           </div>
           <div class="object-details-actions">
+            <button
+              type="button"
+              class="button button-outline object-details-action"
+              (click)="openUploadModal()"
+              [disabled]="uploading()"
+              [attr.aria-label]="'objects.uploadFile' | translate"
+              [title]="'objects.uploadFile' | translate"
+            >
+              <app-icon [icon]="icons.cloudUpload" />
+            </button>
             @if (externalSharingEnabled()) {
               <button
                 type="button"
@@ -41,7 +51,7 @@
                 [attr.aria-label]="'objects.generateQr' | translate"
                 [title]="'objects.generateQr' | translate"
               >
-                <app-icon [icon]="shareLoading() ? icons.loader : icons.uploadArrow" />
+                <app-icon [icon]="shareLoading() ? icons.loader : icons.qrCode" />
               </button>
             }
 
@@ -237,18 +247,6 @@
         </button>
       }
     }
-  </div>
-
-  <div class="file-upload">
-    <button
-      type="button"
-      class="icon upload-icon floating-icon"
-      (click)="openUploadModal()"
-      [disabled]="uploading()"
-      aria-label="{{ 'objects.uploadFile' | translate }}"
-    >
-      <app-icon [icon]="icons.cloudUpload" />
-    </button>
   </div>
 
   <app-file-upload-modal

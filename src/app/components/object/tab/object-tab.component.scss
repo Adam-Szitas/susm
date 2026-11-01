@@ -5,7 +5,7 @@
 }
 
 .wrapper {
-  padding: 0 var(--space) max(var(--space), var(--app-floating-action-clearance, 5rem));
+  padding: 0 var(--space) var(--space);
   width: 100%;
 }
 
@@ -226,7 +226,9 @@
 
 .object-details-actions {
   display: flex;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.35rem;
 }
 
@@ -236,6 +238,7 @@
   justify-content: center;
   @include touch-target-min;
   padding: 0.35rem;
+  margin: 0;
   border-radius: 8px;
 
   app-icon {
@@ -363,11 +366,6 @@
 .note-empty {
   font-style: italic;
   color: #9ca3af;
-}
-
-.file-upload {
-  position: relative;
-  z-index: var(--z-floating);
 }
 
 @media (prefers-reduced-motion: reduce) {

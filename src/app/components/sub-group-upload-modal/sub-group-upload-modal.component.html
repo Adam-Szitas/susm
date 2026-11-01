@@ -81,7 +81,7 @@
           </div>
         }
 
-        @if (!addMode() && categories().length > 0) {
+        @if (!addMode()) {
           <div class="form-group form-group-categories">
             <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
             <div class="selected-category-chips">
@@ -91,14 +91,17 @@
                   class="category-chip-mini"
                   (click)="removeSelectedCategory(c)"
                   [disabled]="uploading()"
-                  [attr.aria-label]="'fileList.removeCategory' | translate"
+                  [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + c"
                 >
                   <span>{{ c }}</span>
                   <app-trash-icon [size]="12" />
                 </button>
               }
             </div>
-            <div class="category-checkbox-grid">
+            @if (categories().length > 0) {
+            <details class="category-options">
+              <summary>{{ 'fileUpload.category' | translate }} @if (selectedCategories().length) { ({{ selectedCategories().length }}) }</summary>
+              <div class="category-checkbox-grid">
               @for (cat of categories(); track cat) {
                 <label class="category-cb-label">
                   <input
@@ -110,11 +113,14 @@
                   <span>{{ cat }}</span>
                 </label>
               }
-            </div>
+              </div>
+            </details>
+            }
             <div class="category-add-inline">
               <input
                 type="text"
                 class="category-add-input"
+                [attr.aria-label]="'fileList.addCategoryPlaceholder' | translate"
                 [ngModel]="categoryCustomDraft()"
                 (ngModelChange)="categoryCustomDraft.set($event)"
                 (keydown.enter)="$event.preventDefault(); addCustomCategory()"
@@ -157,28 +163,23 @@
         <button
           type="button"
           class="button button-secondary toolbar-btn"
-          [class.icon-only]="iconOnlyActions()"
           (click)="onCancel()"
           [disabled]="uploading()"
           [attr.aria-label]="'fileUpload.cancel' | translate"
           [attr.title]="'fileUpload.cancel' | translate"
         >
           <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
-          @if (!iconOnlyActions()) {
             <span class="toolbar-btn-label">{{ 'fileUpload.cancel' | translate }}</span>
-          }
         </button>
         <button
           type="button"
           class="button button-primary toolbar-btn"
-          [class.icon-only]="iconOnlyActions()"
           (click)="onUpload()"
           [disabled]="!canSave()"
           [attr.aria-label]="'fileUpload.upload' | translate"
           [attr.title]="'fileUpload.upload' | translate"
         >
           <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
-          @if (!iconOnlyActions()) {
             <span class="toolbar-btn-label">
               @if (uploading()) {
                 {{ 'fileUpload.uploading' | translate }}
@@ -188,7 +189,6 @@
                 {{ 'fileUpload.upload' | translate }}
               }
             </span>
-          }
         </button>
       </div>
     </div>
