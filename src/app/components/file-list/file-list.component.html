@@ -230,6 +230,16 @@
                 [attr.aria-label]="'subGroups.createTitle' | translate"
                 [attr.title]="'subGroups.createTitle' | translate"
               >
+                <app-icon [icon]="icons.folderPlus" />
+              </button>
+              <button
+                type="button"
+                class="group-toolbar-icon-btn"
+                (click)="openGroupPhotoPicker(group)"
+                [disabled]="groupPhotoUploading()"
+                [attr.aria-label]="'fileList.uploadToGroup' | translate"
+                title="{{ 'fileList.uploadToGroup' | translate }}"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="24" height="24" aria-hidden="true" focusable="false">
                   <rect x="8" y="8" width="240" height="240" rx="48" fill="none" stroke="currentColor" stroke-width="8" />
                   <g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
@@ -240,16 +250,6 @@
                     <path d="M128 111 V145 M111 128 H145" stroke-width="9" />
                   </g>
                 </svg>
-              </button>
-              <button
-                type="button"
-                class="group-toolbar-icon-btn"
-                (click)="openGroupPhotoPicker(group)"
-                [disabled]="groupPhotoUploading()"
-                [attr.aria-label]="'fileList.uploadToGroup' | translate"
-                title="{{ 'fileList.uploadToGroup' | translate }}"
-              >
-                <app-icon [icon]="icons.folderTree" />
               </button>
               <button
                 type="button"
