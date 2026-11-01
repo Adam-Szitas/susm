@@ -1,0 +1,19 @@
+:host-context(app-edit-project),
+:host-context(app-edit-object) {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .control {
+    gap: 0.4rem;
+  }
+
+  .control[formGroupName] {
+    gap: 0.75rem;
+  }
+
+  h4 {
+    margin: 0;
+    line-height: 1.3;
+  }
+}

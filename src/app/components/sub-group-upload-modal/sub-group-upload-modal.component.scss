@@ -227,21 +227,8 @@
     button { width: auto; }
   }
 
-  .toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    justify-content: center;
-  }
-
-  .toolbar-btn.icon-only {
-    @include touch-target-min;
-    padding: 0.5rem !important;
-  }
-
-  .toolbar-btn-icon {
-    @include icon-size(var(--icon-size-md));
-    display: block;
+  .button-secondary {
+    border: 1px solid var(--secondary-default);
   }
 }
 

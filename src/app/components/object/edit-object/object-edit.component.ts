@@ -20,7 +20,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
-import { compactFormActions } from '../../shared/compact-form-actions';
 
 import { ObjectFormFieldsComponent } from '../../shared/object-form-fields.component';
 
@@ -47,7 +46,6 @@ export class EditObjectComponent implements OnInit {
   #userStore = inject(UserStore);
 
   isAdmin = this.#userStore.isAdmin;
-  readonly iconOnlyActions = compactFormActions();
   public progressing = signal<boolean>(false);
   public deleting = signal<boolean>(false);
   public form!: FormGroup;

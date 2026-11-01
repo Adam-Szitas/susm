@@ -159,6 +159,10 @@ button.file-description-edit {
     margin: 0;
   }
 
+  > button.group-toolbar-icon-btn--danger {
+    margin-inline-start: 0.5rem !important;
+  }
+
   .group-toolbar-icon-btn {
     box-sizing: border-box;
     display: inline-flex;

@@ -162,25 +162,22 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="button button-secondary toolbar-btn"
+          class="button button-secondary"
           (click)="onCancel()"
           [disabled]="uploading()"
           [attr.aria-label]="'fileUpload.cancel' | translate"
           [attr.title]="'fileUpload.cancel' | translate"
         >
-          <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
-            <span class="toolbar-btn-label">{{ 'fileUpload.cancel' | translate }}</span>
+          {{ 'fileUpload.cancel' | translate }}
         </button>
         <button
           type="button"
-          class="button button-primary toolbar-btn"
+          class="button button-primary"
           (click)="onUpload()"
           [disabled]="!canSave()"
           [attr.aria-label]="'fileUpload.upload' | translate"
           [attr.title]="'fileUpload.upload' | translate"
         >
-          <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
-            <span class="toolbar-btn-label">
               @if (uploading()) {
                 {{ 'fileUpload.uploading' | translate }}
               } @else if (filePreviews().length > 0) {
@@ -188,7 +185,6 @@
               } @else {
                 {{ 'fileUpload.upload' | translate }}
               }
-            </span>
         </button>
       </div>
     </div>

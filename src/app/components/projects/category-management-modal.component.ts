@@ -77,6 +77,19 @@ export class CategoryManagementModalComponent implements OnInit {
     return (this.categories() ?? []).map((c) => c.trim()).filter(Boolean);
   }
 
+  categoryOptions(): (string | null)[] {
+    const selected = this.selectedCategory();
+    const options: (string | null)[] = [null, ...this.categoryNames()];
+    return options.sort((a, b) => Number(b === selected) - Number(a === selected));
+  }
+
+  managedCategories(): { control: FormArray['controls'][number]; index: number }[] {
+    const selected = this.selectedCategory();
+    return this.categoryArray.controls
+      .map((control, index) => ({ control, index }))
+      .sort((a, b) => Number(b.control.value === selected) - Number(a.control.value === selected));
+  }
+
   isSelected(category: string): boolean {
     return this.selectedCategory() === category;
   }

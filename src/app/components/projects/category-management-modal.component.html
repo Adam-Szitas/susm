@@ -5,40 +5,23 @@
     </h3>
 
     <ul class="category-select-list" role="listbox" [attr.aria-label]="'projects.selectCategory' | translate">
+      @for (category of categoryOptions(); track category) {
       <li>
         <button
           type="button"
           class="category-select-item"
-          [class.category-select-item--selected]="selectedCategory() === null"
+          [class.category-select-item--selected]="selectedCategory() === category"
           role="option"
-          [attr.aria-selected]="selectedCategory() === null"
-          (click)="selectCategory(null)"
+          [attr.aria-selected]="selectedCategory() === category"
+          (click)="selectCategory(category)"
         >
           <span class="category-select-item__marker" aria-hidden="true"></span>
-          <span class="category-select-item__label">{{ 'objects.noCategory' | translate }}</span>
-          @if (selectedCategory() === null) {
+          <span class="category-select-item__label">{{ category ?? ('objects.noCategory' | translate) }}</span>
+          @if (selectedCategory() === category) {
             <app-icon class="category-select-item__check" [icon]="icons.check" [strokeWidth]="2.5" />
           }
         </button>
       </li>
-
-      @for (category of categoryNames(); track category) {
-        <li>
-          <button
-            type="button"
-            class="category-select-item"
-            [class.category-select-item--selected]="isSelected(category)"
-            role="option"
-            [attr.aria-selected]="isSelected(category)"
-            (click)="selectCategory(category)"
-          >
-            <span class="category-select-item__marker" aria-hidden="true"></span>
-            <span class="category-select-item__label">{{ category }}</span>
-            @if (isSelected(category)) {
-              <app-icon class="category-select-item__check" [icon]="icons.check" [strokeWidth]="2.5" />
-            }
-          </button>
-        </li>
       }
 
       @if (!hasCategories()) {
@@ -70,7 +53,9 @@
         </div>
 
         <div formArrayName="categories" class="category-manage-list">
-          @for (control of categoryArray.controls; track $index; let idx = $index) {
+          @for (entry of managedCategories(); track entry.control) {
+            @let control = entry.control;
+            @let idx = entry.index;
             <div class="category-manage-item">
               @if (editingIndex() === idx) {
                 <input

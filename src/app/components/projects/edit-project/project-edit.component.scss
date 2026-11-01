@@ -36,8 +36,9 @@
     white-space: nowrap;
   }
 
-  .delete-action.icon-only,
-  .submit-action.icon-only {
+  .delete-action,
+  .archive-action,
+  .submit-action {
     @include touch-target-min;
     padding: 0.5rem !important;
   }
@@ -51,23 +52,4 @@
     margin-bottom: 0.5rem;
   }
 
-  @media (max-width: 480px) {
-    .form-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .form-actions-start,
-    .form-actions-end {
-      width: 100%;
-      margin-left: 0;
-      justify-content: stretch;
-    }
-
-    .form-actions-start .button,
-    .form-actions-end .button {
-      flex: 1;
-      min-width: 0;
-    }
-  }
 }

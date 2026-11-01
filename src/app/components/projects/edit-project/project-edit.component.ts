@@ -12,7 +12,6 @@ import { TranslationService } from '@services/translation.service';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../../shared/trash-icon.component';
-import { compactFormActions } from '../../shared/compact-form-actions';
 
 import { ProjectFormFieldsComponent } from '../../shared/project-form-fields.component';
 
@@ -40,7 +39,6 @@ export class EditProjectComponent implements OnInit {
   isAdmin = this.#userStore.isAdmin;
   deleting = signal(false);
   archiving = signal(false);
-  readonly iconOnlyActions = compactFormActions();
   public projectForm!: FormGroup;
 
   isArchived(): boolean {

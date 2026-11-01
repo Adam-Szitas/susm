@@ -8,16 +8,12 @@
             <button
               type="button"
               class="button button-error delete-action"
-              [class.icon-only]="iconOnlyActions()"
               (click)="deleteProject()"
               [disabled]="deleting() || archiving()"
               [attr.aria-label]="'projects.deleteProject' | translate"
               [title]="'projects.deleteProject' | translate"
             >
               <app-trash-icon [size]="20" />
-              @if (!iconOnlyActions()) {
-                <span class="action-label">{{ 'projects.deleteProject' | translate }}</span>
-              }
             </button>
           }
           @if (isArchived()) {
@@ -26,12 +22,13 @@
               class="button button-secondary archive-action"
               (click)="toggleArchive(false)"
               [disabled]="archiving() || deleting()"
+              [attr.aria-label]="'projects.unarchiveProject' | translate"
+              [title]="'projects.unarchiveProject' | translate"
             >
               @if (archiving()) {
                 <span class="spinner"></span>
-                {{ 'common.loading' | translate }}
               } @else {
-                {{ 'projects.unarchiveProject' | translate }}
+                <app-icon [icon]="icons.refresh" />
               }
             </button>
           } @else {
@@ -40,12 +37,13 @@
               class="button button-secondary archive-action"
               (click)="toggleArchive(true)"
               [disabled]="archiving() || deleting()"
+              [attr.aria-label]="'projects.archiveProject' | translate"
+              [title]="'projects.archiveProject' | translate"
             >
               @if (archiving()) {
                 <span class="spinner"></span>
-                {{ 'common.loading' | translate }}
               } @else {
-                {{ 'projects.archiveProject' | translate }}
+                <app-icon [icon]="icons.archive" />
               }
             </button>
           }
@@ -54,17 +52,12 @@
           <button
             type="button"
             class="button button-primary submit-action"
-            [class.icon-only]="iconOnlyActions()"
             [disabled]="projectForm.invalid || deleting() || archiving()"
             (click)="submit()"
             [attr.aria-label]="'common.submit' | translate"
             [title]="'common.submit' | translate"
           >
-            @if (iconOnlyActions()) {
               <app-icon [icon]="icons.check" [svgClass]="'submit-icon'" [strokeWidth]="2.5" />
-            } @else {
-              <span class="action-label">{{ 'common.submit' | translate }}</span>
-            }
           </button>
         </div>
       </div>

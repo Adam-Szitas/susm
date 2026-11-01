@@ -142,14 +142,16 @@
                     type="button"
                     class="category-chip category-chip-remove"
                     (click)="removeEditCategory(cat)"
-                    [attr.aria-label]="'fileList.removeCategory' | translate"
+                    [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat"
                   >
                     <span class="category-chip-label">{{ cat }}</span>
                     <app-trash-icon [size]="14" />
                   </button>
                 }
               </div>
-              <div class="group-category-checkboxes">
+              <details class="group-category-options" [open]="categoryOptionsInitiallyOpen()">
+                <summary>{{ 'fileUpload.category' | translate }}</summary>
+                <div class="group-category-checkboxes">
                 @for (opt of categoryOptionsForEdit(); track opt) {
                   <label class="group-category-cb">
                     <input
@@ -162,7 +164,8 @@
                     <span>{{ opt }}</span>
                   </label>
                 }
-              </div>
+                </div>
+              </details>
               <div class="group-category-add-row">
                 <input
                   type="text"
@@ -212,21 +215,21 @@
               }
               <button
                 type="button"
-                class="group-edit-btn group-edit-btn-save"
-                (click)="saveGroupMetadata(group)"
-                [attr.aria-label]="'common.save' | translate"
-                title="{{ 'common.save' | translate }}"
-              >
-                <span class="group-edit-btn-icon">✓</span>
-              </button>
-              <button
-                type="button"
                 class="group-edit-btn group-edit-btn-cancel"
                 (click)="cancelEditGroup()"
                 [attr.aria-label]="'common.cancel' | translate"
                 title="{{ 'common.cancel' | translate }}"
               >
                 <span class="group-edit-btn-icon">✕</span>
+              </button>
+              <button
+                type="button"
+                class="group-edit-btn group-edit-btn-save"
+                (click)="saveGroupMetadata(group)"
+                [attr.aria-label]="'common.save' | translate"
+                title="{{ 'common.save' | translate }}"
+              >
+                <span class="group-edit-btn-icon">✓</span>
               </button>
             </div>
             </div>
@@ -275,6 +278,16 @@
               <button
                 type="button"
                 class="group-toolbar-icon-btn"
+                (click)="openGroupPhotoPicker(group)"
+                [disabled]="groupPhotoUploading()"
+                [attr.aria-label]="'fileList.uploadToGroup' | translate"
+                title="{{ 'fileList.uploadToGroup' | translate }}"
+              >
+                <app-icon [icon]="icons.folderTree" />
+              </button>
+              <button
+                type="button"
+                class="group-toolbar-icon-btn"
                 [class.group-toolbar-icon-btn--active]="reorderMode()"
                 (click)="toggleReorderMode()"
                 [disabled]="reorderSaving()"
@@ -291,26 +304,15 @@
               >
                 <app-icon [icon]="icons.arrowsUpDown" />
               </button>
-              <button
-                type="button"
-                class="group-toolbar-icon-btn"
-                (click)="openGroupPhotoPicker(group)"
-                [disabled]="groupPhotoUploading()"
-                [attr.aria-label]="'fileList.uploadToGroup' | translate"
-                title="{{ 'fileList.uploadToGroup' | translate }}"
-              >
-                <app-icon [icon]="icons.folderTree" />
-              </button>
             }
             <button
               type="button"
-              class="group-edit-toggle button button-primary"
+              class="group-toolbar-icon-btn"
               (click)="startEditGroup(group)"
               [attr.aria-label]="'common.edit' | translate"
               title="{{ 'common.edit' | translate }}"
             >
-              <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
-              ✎
+              <app-icon [icon]="icons.edit" />
             </button>
             @if (objectId()) {
               <button

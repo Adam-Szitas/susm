@@ -320,6 +320,7 @@ export class FileListComponent implements OnDestroy {
   public editingGroupId = signal<string | null>(null);
   public editDescription = signal<string>('');
   public editCategories = signal<string[]>([]);
+  public categoryOptionsInitiallyOpen = signal(false);
   public categoryCustomDraft = signal<string>('');
   public editNote = signal<string>('');
 
@@ -341,6 +342,7 @@ export class FileListComponent implements OnDestroy {
     this.editingGroupId.set(id);
     this.editDescription.set(group.description ?? '');
     this.editCategories.set([...fileGroupCategoryLabels(group)]);
+    this.categoryOptionsInitiallyOpen.set(this.editCategories().length === 0);
     this.categoryCustomDraft.set('');
     this.editNote.set(group.note ?? '');
     queueMicrotask(() => {

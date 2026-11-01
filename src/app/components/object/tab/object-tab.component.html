@@ -42,6 +42,15 @@
             >
               <app-icon [icon]="icons.plus" />
             </button>
+            <button
+              type="button"
+              class="button button-outline object-details-action"
+              (click)="editObjectDetails()"
+              [attr.aria-label]="'objects.editObject' | translate"
+              [title]="'objects.editObject' | translate"
+            >
+              <app-icon [icon]="icons.edit" />
+            </button>
             @if (externalSharingEnabled()) {
               <button
                 type="button"
@@ -54,16 +63,6 @@
                 <app-icon [icon]="shareLoading() ? icons.loader : icons.qrCode" />
               </button>
             }
-
-            <button
-              type="button"
-              class="button button-outline object-details-action"
-              (click)="editObjectDetails()"
-              [attr.aria-label]="'objects.editObject' | translate"
-              [title]="'objects.editObject' | translate"
-            >
-              <app-icon [icon]="icons.edit" />
-            </button>
             <button
               type="button"
               class="button button-outline object-details-action object-details-expand-toggle"

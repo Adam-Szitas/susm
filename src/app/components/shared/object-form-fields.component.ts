@@ -8,6 +8,7 @@ import { StatusSelectComponent } from './status-select.component';
   standalone: true,
   imports: [ReactiveFormsModule, TranslateModule, StatusSelectComponent],
   templateUrl: './object-form-fields.component.html',
+  styleUrl: './edit-form-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ObjectFormFieldsComponent {
