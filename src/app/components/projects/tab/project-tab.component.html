@@ -27,17 +27,6 @@
           </div>
         </div>
         <div class="project-details-actions">
-          @if (!project()?.archived_at) {
-            <button
-              type="button"
-              class="button button-outline project-details-action"
-              (click)="openCategoryModal()"
-              [attr.aria-label]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
-              [title]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
-            >
-              <app-icon [icon]="icons.tag" />
-            </button>
-          }
           <button
             type="button"
             class="button button-outline project-details-action"
@@ -144,6 +133,19 @@
             }
           </button>
         }
+        <button
+          type="button"
+          class="button button-outline project-toolbar-btn project-toolbar-categories"
+          [class.icon-only]="toolbarIconOnly()"
+          (click)="openCategoryModal()"
+          [attr.aria-label]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
+          [title]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
+        >
+          <app-icon [icon]="icons.tag" [svgClass]="'project-toolbar-icon'" />
+          @if (!toolbarIconOnly()) {
+            <span class="project-toolbar-label">{{ (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate }}</span>
+          }
+        </button>
         @if (protocolsEnabled()) {
           <button
             type="button"
