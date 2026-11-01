@@ -73,7 +73,6 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   editingMetadata = signal(false);
   editName = signal('');
   editCategories = signal<string[]>([]);
-  categoryCustomDraft = signal('');
   editNote = signal('');
   savingMetadata = signal(false);
 
@@ -200,7 +199,6 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.editingMetadata.set(true);
     this.editName.set(sg.name ?? '');
     this.editCategories.set([...fileSubGroupCategoryLabels(sg)]);
-    this.categoryCustomDraft.set('');
     this.editNote.set(sg.note ?? '');
   }
 
@@ -218,13 +216,6 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     this.editCategories.update((list) =>
       list.includes(t) ? list.filter((c) => c !== t) : [...list, t],
     );
-  }
-
-  addCustomCategoryFromDraft(): void {
-    const t = this.categoryCustomDraft().trim();
-    if (!t) return;
-    this.editCategories.update((list) => (list.includes(t) ? list : [...list, t]));
-    this.categoryCustomDraft.set('');
   }
 
   removeEditCategory(label: string): void {
@@ -438,7 +429,15 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     return this.isFileNameDirty(file) || this.isFileNoteDirty(file);
   }
 
-  saveFileMeta(file: FileGroupItem): void {
+  cancelPictureEdit(file: FileGroupItem, dialog: HTMLDialogElement): void {
+    const id = file._id?.$oid;
+    if (!id || this.isSavingFileNote(file)) return;
+    this.fileNameDrafts.update((drafts) => { const next = { ...drafts }; delete next[id]; return next; });
+    this.fileNoteDrafts.update((drafts) => { const next = { ...drafts }; delete next[id]; return next; });
+    dialog.close();
+  }
+
+  saveFileMeta(file: FileGroupItem, dialog?: HTMLDialogElement): void {
     const id = file._id?.$oid;
     if (!id || this.savingFileNoteId() === id) return;
 
@@ -469,6 +468,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
             this.#translationService.instant('fileList.pictureMetaUpdated'),
           );
           this.metadataUpdated.emit();
+          dialog?.close();
         },
         error: (error: Error) => {
           this.#notificationService.showError(

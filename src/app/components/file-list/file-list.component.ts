@@ -87,6 +87,9 @@ export class FileListComponent implements OnDestroy {
 
   readonly groupFileInput = viewChild<ElementRef<HTMLInputElement>>('groupFileInput');
   readonly imageLightbox = viewChild<ElementRef<HTMLDialogElement>>('imageLightbox');
+  readonly fileEditDialog = viewChild<ElementRef<HTMLDialogElement>>('fileEditDialog');
+  readonly editingFile = signal<FileGroupItem | ProjectFile | null>(null);
+  readonly fileMetadataSaving = signal(false);
 
   /** Which group the next file-picker selection applies to (single shared input). */
   private pendingGroupUpload = signal<{ groupId: string } | null>(null);
@@ -340,6 +343,8 @@ export class FileListComponent implements OnDestroy {
     const id = group._id?.$oid;
     if (!id) return;
     this.editingGroupId.set(id);
+    const dialog = document.getElementById(`group-edit-dialog-${id}`);
+    if (dialog instanceof HTMLDialogElement && !dialog.open) dialog.showModal();
     this.editDescription.set(group.description ?? '');
     this.editCategories.set([...fileGroupCategoryLabels(group)]);
     this.categoryOptionsInitiallyOpen.set(this.editCategories().length === 0);
@@ -394,6 +399,9 @@ export class FileListComponent implements OnDestroy {
   }
 
   public cancelEditGroup(): void {
+    const id = this.editingGroupId();
+    const dialog = id ? document.getElementById(`group-edit-dialog-${id}`) : null;
+    if (dialog instanceof HTMLDialogElement && dialog.open) dialog.close();
     this.editingGroupId.set(null);
   }
 
@@ -1070,7 +1078,7 @@ export class FileListComponent implements OnDestroy {
             this.#translationService.instant('fileList.updateMetadataSuccess') ||
               'Group updated successfully',
           );
-          this.editingGroupId.set(null);
+          this.cancelEditGroup();
           this.metadataUpdated.emit();
         },
         error: (error) => {
@@ -1087,6 +1095,8 @@ export class FileListComponent implements OnDestroy {
     const id = file._id?.$oid;
     if (!id) return;
     this.editingFileId.set(id);
+    this.editingFile.set(file);
+    this.fileEditDialog()?.nativeElement.showModal();
     this.editFileDescription.set(file.description || '');
     this.editFileName.set(file.filename || '');
 
@@ -1107,12 +1117,18 @@ export class FileListComponent implements OnDestroy {
   }
 
   public cancelEditFile(): void {
+    if (this.fileMetadataSaving()) return;
+    const dialog = this.fileEditDialog()?.nativeElement;
+    if (dialog?.open) dialog.close();
     this.editingFileId.set(null);
+    this.editingFile.set(null);
   }
 
   public saveFileMetadata(file: FileGroupItem | ProjectFile): void {
     const id = file._id?.$oid;
     if (!id) return;
+    if (this.fileMetadataSaving()) return;
+    this.fileMetadataSaving.set(true);
 
     const description = this.editFileDescription().trim();
     const filename = this.editFileName().trim();
@@ -1141,13 +1157,15 @@ export class FileListComponent implements OnDestroy {
         filename,
         created_at: createdAt,
       })
+      .pipe(finalize(() => this.fileMetadataSaving.set(false)))
       .subscribe({
         next: () => {
           this.#notificationService.showSuccess(
             this.#translationService.instant('fileList.updateMetadataSuccess') ||
               'File updated successfully',
           );
-          this.editingFileId.set(null);
+          this.fileMetadataSaving.set(false);
+          this.cancelEditFile();
           this.metadataUpdated.emit();
         },
         error: (error) => {

@@ -1,5 +1,38 @@
 @use 'sass:color';
 @use '../../../styles/mixins' as *;
+
+.file-edit-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: auto;
+
+  &::backdrop { background: rgb(0 0 0 / 60%); }
+}
+
+.file-edit-header, .file-edit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #fff;
+  h2 { margin: 0; font-size: 1.1rem; }
+  .button { margin: 0; }
+}
+
+.file-edit-footer { position: sticky; bottom: 0; border-top: 1px solid #e5e7eb; }
+.file-edit-close { border: 0; background: transparent; cursor: pointer; @include touch-target-min; }
+.file-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  input, textarea { width: 100%; padding: 0.6rem; border: 1px solid #9ca3af; border-radius: 8px; font: inherit; }
+}
+.file-edit-preview { align-self: center; max-width: min(250px, 100%); max-height: 250px; width: auto; height: auto; object-fit: contain; }
 // overlays, grids, groups — global via styles.scss; do not @use here (duplicates ~4kB into component budget)
 
 // Visible to screen readers & HTML validators that ignore Angular `title` bindings

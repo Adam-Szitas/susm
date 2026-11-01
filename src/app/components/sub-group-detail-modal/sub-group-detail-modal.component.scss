@@ -145,15 +145,16 @@
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid #e5e7eb;
   background: #fff;
+  justify-content: space-between;
 
   .button {
     margin: 0;
-    flex: 1 1 calc(50% - 0.25rem);
+    flex: 0 1 auto;
     min-height: var(--touch-target-min, 44px);
   }
 
   @include tablet-up {
-    justify-content: flex-end;
+    justify-content: space-between;
 
     .button {
       flex: 0 0 auto;
@@ -161,6 +162,59 @@
     }
   }
 }
+
+.category-options summary {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+
+  app-icon { --icon-size: 1.1rem; vertical-align: middle; margin-inline: 0.25rem; }
+  &:focus-visible { outline: 2px solid var(--primary-default, #9d0000); outline-offset: 2px; }
+}
+
+.category-options .category-checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 0 0;
+}
+
+.category-options .category-cb-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  cursor: pointer;
+  input { accent-color: var(--primary-default, #9d0000); }
+}
+
+.subgroup-picture-edit { align-self: flex-end; margin: 0.5rem; }
+.subgroup-picture-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  &::backdrop { background: rgb(0 0 0 / 60%); }
+}
+.subgroup-picture-header, .subgroup-picture-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  h2 { margin: 0; font-size: 1.1rem; }
+  button { margin: 0; }
+}
+.subgroup-picture-footer { position: sticky; bottom: -1rem; padding: 0.75rem 0 1rem; background: #fff; border-top: 1px solid #e5e7eb; }
+.subgroup-picture-header > button { border: 0; background: transparent; cursor: pointer; @include touch-target-min; }
+.subgroup-picture-preview { display: block; margin: 1rem auto; max-width: min(250px, 100%); max-height: 250px; width: auto; height: auto; object-fit: contain; }
 
 .sub-group-delete-btn {
   margin-left: auto;
@@ -208,19 +262,19 @@
 
   .image-container {
     position: relative;
-    aspect-ratio: 4 / 3;
-    min-height: 12rem;
+    width: min(250px, 100%);
+    height: 250px;
+    align-self: center;
     background: #f3f4f6;
 
     @include tablet-up {
-      aspect-ratio: 3 / 2;
-      min-height: 14rem;
+      min-height: 0;
     }
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
     }
 
@@ -418,7 +472,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin-bottom: 0.5rem;
+  &:not(:empty) { margin-bottom: 0.5rem; }
 }
 
 .category-chip {

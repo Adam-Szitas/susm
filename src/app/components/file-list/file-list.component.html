@@ -117,11 +117,14 @@
             </button>
           </div>
         }
-        @if (editingGroupId() === group._id.$oid) {
+        <dialog class="file-edit-dialog" [id]="'group-edit-dialog-' + group._id.$oid" [attr.aria-label]="'common.edit' | translate" (close)="cancelEditGroup()">
+          <div class="file-edit-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" class="file-edit-close" (click)="cancelEditGroup()" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
           <div class="group-edit-form">
             <div class="group-header-row group-header-row--title">
+              <label [attr.for]="'group-description-' + group._id.$oid">{{ 'fileUpload.description' | translate }}</label>
               <input
                 type="text"
+                [id]="'group-description-' + group._id.$oid"
                 [ngModel]="editDescription()"
                 (ngModelChange)="editDescription.set($event)"
                 placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
@@ -149,7 +152,7 @@
                 }
               </div>
               <details class="group-category-options" [open]="categoryOptionsInitiallyOpen()">
-                <summary>{{ 'fileUpload.category' | translate }}</summary>
+                <summary><app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}</summary>
                 <div class="group-category-checkboxes">
                 @for (opt of categoryOptionsForEdit(); track opt) {
                   <label class="group-category-cb">
@@ -186,52 +189,6 @@
               </div>
             </div>
             </div>
-            <div class="group-header-row group-header-row--toolbar">
-            <div class="group-header-actions">
-              @if (objectId()) {
-                <button
-                  type="button"
-                  class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
-                  (click)="openSubGroupUploadModal(group)"
-                  [disabled]="subGroupUploadUploading()"
-                  [attr.aria-label]="'subGroups.createTitle' | translate"
-                  [attr.title]="'subGroups.createTitle' | translate"
-                >
-                  <app-icon [icon]="icons.folderPlus" />
-                </button>
-              }
-              @if (objectId()) {
-                <button
-                  type="button"
-                  class="group-toolbar-icon-btn"
-                  (click)="openGroupPhotoPicker(group)"
-                  [disabled]="groupPhotoUploading()"
-                  [attr.aria-label]="'fileList.uploadToGroup' | translate"
-                  title="{{ 'fileList.uploadToGroup' | translate }}"
-                >
-                  <app-icon [icon]="icons.folderTree" />
-                </button>
-              }
-              <button
-                type="button"
-                class="group-edit-btn group-edit-btn-cancel"
-                (click)="cancelEditGroup()"
-                [attr.aria-label]="'common.cancel' | translate"
-                title="{{ 'common.cancel' | translate }}"
-              >
-                <span class="group-edit-btn-icon">✕</span>
-              </button>
-              <button
-                type="button"
-                class="group-edit-btn group-edit-btn-save"
-                (click)="saveGroupMetadata(group)"
-                [attr.aria-label]="'common.save' | translate"
-                title="{{ 'common.save' | translate }}"
-              >
-                <span class="group-edit-btn-icon">✓</span>
-              </button>
-            </div>
-            </div>
             <div class="group-header-row group-header-row--note">
             <div class="group-note-field group-note-field--edit">
               <label class="group-note-label" [attr.for]="'group-note-' + group._id.$oid">{{
@@ -250,7 +207,8 @@
             </div>
             </div>
           </div>
-        } @else {
+          <div class="file-edit-footer"><button type="button" class="button button-secondary" (click)="cancelEditGroup()">{{ 'common.cancel' | translate }}</button><button type="button" class="button button-primary" (click)="saveGroupMetadata(group)">{{ 'common.save' | translate }}</button></div>
+        </dialog>
           @if (group.description) {
             <div class="group-header-row group-header-row--title">
               <h3 class="group-description">{{ group.description }}</h3>
@@ -334,7 +292,6 @@
               </div>
             </div>
           }
-        }
       </div>
       <ul class="file-gallery">@for (file of group.files; track file._id.$oid; let i = $index) {<li
           class="file-item"
@@ -446,76 +403,14 @@
                 </div>
               }
             </div>
-            @if (editingFileId() === file._id.$oid) {
-              <input
-                type="text"
-                class="file-name-input"
-                [(ngModel)]="editFileName"
-                placeholder="{{ 'fileList.filename' | translate }}"
-              />
-              <input
-                type="date"
-                class="file-date-input"
-                [(ngModel)]="editFileCreatedAt"
-                placeholder="{{ 'fileList.createdAt' | translate }}"
-              />
-            } @else {
-              @if (file.filename) {
-                <p class="file-name">{{ file.filename }}</p>
-              }
-              @if (file.created_at) {
-                <div class="created-at-wrapper">
-                  <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
-                </div>
-              }
-            }
+            @if (file.filename) { <p class="file-name">{{ file.filename }}</p> }
+            @if (file.created_at) { <div class="created-at-wrapper"><span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span></div> }
             <div class="file-description-wrapper">
-              @if (editingFileId() === file._id.$oid) {
-                <textarea
-                  class="file-description-input"
-                  [(ngModel)]="editFileDescription"
-                  rows="2"
-                  placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                ></textarea>
-                <div class="file-description-actions">
-                  <button
-                    type="button"
-                    class="file-description-action-btn file-description-action-btn--save"
-                    (click)="saveFileMetadata(file)"
-                    [attr.aria-label]="'common.save' | translate"
-                    title="{{ 'common.save' | translate }}"
-                  >
-                    <span class="visually-hidden">{{ 'common.save' | translate }}</span>
-                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
-                  </button>
-                  <button
-                    type="button"
-                    class="file-description-action-btn file-description-action-btn--cancel"
-                    (click)="cancelEditFile()"
-                    [attr.aria-label]="'common.cancel' | translate"
-                    title="{{ 'common.cancel' | translate }}"
-                  >
-                    <span class="visually-hidden">{{ 'common.cancel' | translate }}</span>
-                    <app-icon [icon]="icons.close" />
-                  </button>
-                </div>
-              } @else {
-                @if (file.description) {
-                  <p class="file-description-text">
-                    {{ file.description }}
-                  </p>
-                }
-                <button
-                  type="button"
-                  class="file-description-edit button button-primary"
-                  (click)="startEditFile(file)"
-                  [attr.aria-label]="'common.edit' | translate"
-                  title="{{ 'common.edit' | translate }}"
-                >
-                  <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
-                  ✎
-                </button>
-              }
+              @if (file.description) { <p class="file-description-text">{{ file.description }}</p> }
+              <button type="button" class="file-description-edit button button-primary"
+                (click)="startEditFile(file)" [attr.aria-label]="'common.edit' | translate" [title]="'common.edit' | translate">
+                <app-icon [icon]="icons.edit" />
+              </button>
             </div>
           </li>
         }
@@ -681,77 +576,14 @@
               </div>
               }
             </div>
-            @if (editingFileId() === file._id.$oid) {
-              <input
-                type="text"
-                class="file-name-input"
-                [(ngModel)]="editFileName"
-                placeholder="{{ 'fileList.filename' | translate }}"
-              />
-              <input
-                type="date"
-                class="file-date-input"
-                [(ngModel)]="editFileCreatedAt"
-                placeholder="{{ 'fileList.createdAt' | translate }}"
-              />
-            } @else {
-              @if (file.filename) {
-                <p class="file-name">{{ file.filename }}</p>
-              }
-              @if (file.created_at) {
-                <div class="created-at-wrapper">
-                  <span class="separator">•</span>
-                  <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
-                </div>
-              }
-            }
+            @if (file.filename) { <p class="file-name">{{ file.filename }}</p> }
+            @if (file.created_at) { <div class="created-at-wrapper"><span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span></div> }
             <div class="file-description-wrapper">
-              @if (editingFileId() === file._id.$oid) {
-                <textarea
-                  class="file-description-input"
-                  [(ngModel)]="editFileDescription"
-                  rows="2"
-                  placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                ></textarea>
-                <div class="file-description-actions">
-                  <button
-                    type="button"
-                    class="file-description-action-btn file-description-action-btn--save"
-                    (click)="saveFileMetadata(file)"
-                    [attr.aria-label]="'common.save' | translate"
-                    title="{{ 'common.save' | translate }}"
-                  >
-                    <span class="visually-hidden">{{ 'common.save' | translate }}</span>
-                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
-                  </button>
-                  <button
-                    type="button"
-                    class="file-description-action-btn file-description-action-btn--cancel"
-                    (click)="cancelEditFile()"
-                    [attr.aria-label]="'common.cancel' | translate"
-                    title="{{ 'common.cancel' | translate }}"
-                  >
-                    <span class="visually-hidden">{{ 'common.cancel' | translate }}</span>
-                    <app-icon [icon]="icons.close" />
-                  </button>
-                </div>
-              } @else {
-                @if (file.description) {
-                  <p class="file-description-text">
-                    {{ file.description }}
-                  </p>
-                }
-                <button
-                  type="button"
-                  class="file-description-edit button button-primary"
-                  (click)="startEditFile(file)"
-                  [attr.aria-label]="'common.edit' | translate"
-                  title="{{ 'common.edit' | translate }}"
-                >
-                  <span class="visually-hidden">{{ 'common.edit' | translate }}</span>
-                  ✎
-                </button>
-              }
+              @if (file.description) { <p class="file-description-text">{{ file.description }}</p> }
+              <button type="button" class="file-description-edit button button-primary"
+                (click)="startEditFile(file)" [attr.aria-label]="'common.edit' | translate" [title]="'common.edit' | translate">
+                <app-icon [icon]="icons.edit" />
+              </button>
             </div>
           </li>
         }
@@ -770,6 +602,19 @@
       }
     </div>
   }
+
+  <dialog #fileEditDialog class="file-edit-dialog" [attr.aria-label]="'common.edit' | translate" (cancel)="fileMetadataSaving() && $event.preventDefault()" (close)="cancelEditFile()">
+    @if (editingFile(); as file) {
+      <div class="file-edit-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" class="file-edit-close" (click)="cancelEditFile()" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
+      <div class="file-edit-body">
+        <img class="file-edit-preview" [src]="getImageUrl(file.path)" [alt]="file.filename || ('fileList.imagePreview' | translate)" />
+        <label for="file-edit-name">{{ 'fileList.filename' | translate }}</label><input id="file-edit-name" type="text" [(ngModel)]="editFileName" />
+        <label for="file-edit-date">{{ 'fileList.createdAt' | translate }}</label><input id="file-edit-date" type="date" [(ngModel)]="editFileCreatedAt" />
+        <label for="file-edit-description">{{ 'fileUpload.description' | translate }}</label><textarea id="file-edit-description" rows="3" [(ngModel)]="editFileDescription"></textarea>
+      </div>
+      <div class="file-edit-footer"><button type="button" class="button button-secondary" (click)="cancelEditFile()" [disabled]="fileMetadataSaving()">{{ 'common.cancel' | translate }}</button><button type="button" class="button button-primary" (click)="saveFileMetadata(file)" [disabled]="fileMetadataSaving()">{{ (fileMetadataSaving() ? 'common.saving' : 'common.save') | translate }}</button></div>
+    }
+  </dialog>
 
   <dialog
     #imageLightbox

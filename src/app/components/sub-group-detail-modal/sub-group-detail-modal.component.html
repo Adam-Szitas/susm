@@ -22,16 +22,17 @@
               />
             </div>
             <div class="form-group">
-              <span class="categories-label">{{ 'fileUpload.category' | translate }}</span>
               <div class="category-chips-editing">
                 @for (cat of editCategories(); track cat) {
-                  <button type="button" class="category-chip" (click)="removeEditCategory(cat)">
+                  <button type="button" class="category-chip" (click)="removeEditCategory(cat)" [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat">
                     <span>{{ cat }}</span>
                     <app-trash-icon [size]="12" />
                   </button>
                 }
               </div>
-              <div class="category-checkbox-grid">
+              <details class="category-options">
+                <summary><app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}</summary>
+                <div class="category-checkbox-grid">
                 @for (opt of categoryOptionsForEdit(); track opt) {
                   <label class="category-cb-label">
                     <input
@@ -42,30 +43,8 @@
                     <span>{{ opt }}</span>
                   </label>
                 }
-              </div>
-              <div class="category-add-inline">
-                <input
-                  type="text"
-                  class="category-add-input"
-                  [ngModel]="categoryCustomDraft()"
-                  (ngModelChange)="categoryCustomDraft.set($event)"
-                  (keydown.enter)="$event.preventDefault(); addCustomCategoryFromDraft()"
-                  [placeholder]="'fileList.addCategoryPlaceholder' | translate"
-                />
-                <button
-                  type="button"
-                  class="button button-secondary toolbar-btn"
-                  [class.icon-only]="iconOnlyActions()"
-                  (click)="addCustomCategoryFromDraft()"
-                  [attr.aria-label]="'fileList.addCategory' | translate"
-                  [attr.title]="'fileList.addCategory' | translate"
-                >
-                  <app-icon [icon]="icons.plus" [svgClass]="'toolbar-btn-icon'" />
-                  @if (!iconOnlyActions()) {
-                    <span class="toolbar-btn-label">{{ 'fileList.addCategory' | translate }}</span>
-                  }
-                </button>
-              </div>
+                </div>
+              </details>
             </div>
             <div class="form-group">
               <label [attr.for]="'sg-edit-note'">{{ 'fileUpload.note' | translate }}</label>
@@ -241,6 +220,10 @@
                   </div>
                 }
               </div>
+              <button type="button" class="button button-outline subgroup-picture-edit" (click)="pictureEdit.showModal()" [disabled]="reorderMode()">{{ 'common.edit' | translate }}</button>
+              <dialog #pictureEdit class="subgroup-picture-dialog" [attr.aria-label]="'common.edit' | translate" (click)="$event.stopPropagation()" (cancel)="$event.preventDefault(); cancelPictureEdit(file, pictureEdit)">
+                <div class="subgroup-picture-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" (click)="cancelPictureEdit(file, pictureEdit)" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
+                <img class="subgroup-picture-preview" [src]="getImageUrl(file.path)" [alt]="file.filename || ('fileList.imagePreview' | translate)" />
               <div class="sub-group-file-note" (click)="$event.stopPropagation()">
                 <label class="sub-group-file-note-label" [attr.for]="'sg-file-name-' + file._id.$oid">
                   {{ 'fileList.pictureName' | translate }}
@@ -271,34 +254,12 @@
                   [attr.aria-busy]="isSavingFileNote(file)"
                   enterkeyhint="done"
                 ></textarea>
-                <div class="sub-group-file-note-actions" aria-live="polite">
-                  @if (isFileMetaDirty(file) || isSavingFileNote(file)) {
-                    <button
-                      type="button"
-                      class="button button-primary sub-group-file-note-save toolbar-btn"
-                      [class.icon-only]="iconOnlyActions() && !isSavingFileNote(file)"
-                      [disabled]="isSavingFileNote(file)"
-                      (pointerdown)="onSaveFileMetaPointerDown($event, file)"
-                      (click)="saveFileMeta(file)"
-                      [attr.aria-label]="'common.save' | translate"
-                      [attr.title]="'common.save' | translate"
-                    >
-                      @if (isSavingFileNote(file)) {
-                        <span class="toolbar-btn-label">{{ 'common.saving' | translate }}</span>
-                      } @else {
-                        <app-icon [icon]="icons.check" [svgClass]="'toolbar-btn-icon'" [strokeWidth]="2.5" />
-                        @if (!iconOnlyActions()) {
-                          <span class="toolbar-btn-label">{{ 'common.save' | translate }}</span>
-                        }
-                      }
-                    </button>
-                  } @else if (isFileMetaSaved(file)) {
-                    <span class="sub-group-file-note-status sub-group-file-note-status--saved">
-                      {{ 'common.saved' | translate }}
-                    </span>
-                  }
-                </div>
               </div>
+              <div class="subgroup-picture-footer">
+                <button type="button" class="button button-secondary" (click)="cancelPictureEdit(file, pictureEdit)" [disabled]="isSavingFileNote(file)">{{ 'common.cancel' | translate }}</button>
+                <button type="button" class="button button-primary" (click)="saveFileMeta(file, pictureEdit)" [disabled]="!isFileMetaDirty(file) || isSavingFileNote(file)">{{ (isSavingFileNote(file) ? 'common.saving' : 'common.save') | translate }}</button>
+              </div>
+              </dialog>
             </li>
           }
         </ul>
