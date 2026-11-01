@@ -17,11 +17,13 @@ export interface Filter {
   dateFrom?: string;
   dateTo?: string;
   showSort?: boolean;
+  showExcludePrefix?: boolean;
   sortDirection?: SortDirection;
 }
 
 export interface FilterResult {
   prefix?: string;
+  excludePrefix?: boolean;
   searchText?: string;
   category?: string;
   /** When set (non-empty), object list filters by file groups matching any of these labels. */

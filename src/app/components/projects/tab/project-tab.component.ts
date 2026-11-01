@@ -74,7 +74,7 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import { ObjectCardComponent } from '../../shared/object-card.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
-import { objectBasePrefix } from '../../../utils/object-prefix';
+import { matchesPrefixFilter, objectBasePrefix } from '../../../utils/object-prefix';
 
 @Component({
   selector: 'app-project-tab',
@@ -136,6 +136,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   filteredObjects = signal<Object[]>([]);
   #currentFilter = signal<FilterResult>({});
   readonly selectedPrefix = computed(() => this.#currentFilter().prefix ?? '');
+  readonly excludePrefix = computed(() => this.#currentFilter().excludePrefix === true);
   readonly objectPrefixes = computed(() => {
     const prefixes = new Set(this.objects().map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number)).filter(Boolean));
     return [...prefixes].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
@@ -145,6 +146,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     return !!(
       filter.searchText ||
       filter.prefix ||
+      filter.excludePrefix ||
       filter.dateFrom ||
       filter.dateTo ||
       filter.sortDirection ||
@@ -434,6 +436,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       multiSelectCategories: true,
       categories: project?.categories || [],
       showSort: true,
+      showExcludePrefix: true,
     };
   }
 
@@ -928,7 +931,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     let filtered = sortObjectsByStoredOrder([...objects]);
 
     if (filter.prefix) {
-      filtered = filtered.filter((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number) === filter.prefix);
+      filtered = filtered.filter((obj) => {
+        return matchesPrefixFilter(obj.prefix, obj.address?.house_number, filter.prefix, !!filter.excludePrefix);
+      });
     }
 
     if (filter.searchText) {

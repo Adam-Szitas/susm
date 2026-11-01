@@ -187,6 +187,16 @@ form {
   justify-content: flex-end;
 }
 
+.exclude-prefix-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target-min);
+  cursor: pointer;
+
+  input { accent-color: var(--primary-default, #9d0000); }
+}
+
 .filter-input {
   border: 1px solid var(--default-color);
   border-radius: var(--input-border-radius, 8px);

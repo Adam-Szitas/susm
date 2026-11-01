@@ -116,6 +116,13 @@
           }
         }
 
+        @if (filter().showExcludePrefix) {
+          <label class="exclude-prefix-control">
+            <input type="checkbox" formControlName="excludePrefix" />
+            <span>{{ 'filter.excludePrefix' | translate }}</span>
+          </label>
+        }
+
         <div class="control control-actions">
           <button type="button" class="btn btn-secondary btn-small" (click)="clearFilters()">
             {{ 'filter.clear' | translate }}

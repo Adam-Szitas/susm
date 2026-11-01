@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { Filter, FilterResult, SortDirection } from '@models';
 import { CommonModule } from '@angular/common';
@@ -49,6 +49,7 @@ export class FilterComponent implements OnInit {
     dateFrom: new FormControl(''),
     dateTo: new FormControl(''),
     sortDirection: new FormControl(''),
+    excludePrefix: new FormControl(false, { nonNullable: true }),
   });
 
   constructor() {
@@ -56,10 +57,16 @@ export class FilterComponent implements OnInit {
       requestAnimationFrame(() => this.filterControlsAnimate.set(true));
     });
 
+    this.searchForm.controls.excludePrefix.valueChanges.subscribe((value) => {
+      this.currentFilter = { ...this.currentFilter, excludePrefix: value };
+      this.emitFilterChange();
+    });
+
     // Emit search text immediately on change (with debounce)
     this.searchForm.get('search')?.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(300))
       .subscribe((value: string | null) => {
+        if (value !== this.searchForm.controls.search.value) return;
         this.currentFilter = { ...this.currentFilter, searchText: value?.toString() };
         this.emitFilterChange()
       });
@@ -127,6 +134,7 @@ export class FilterComponent implements OnInit {
         dateFrom: f.dateFrom ?? '',
         dateTo: f.dateTo ?? '',
         sortDirection: f.sortDirection ?? '',
+        excludePrefix: f.excludePrefix ?? false,
       });
       this.areFiltersVisible = restored.filtersVisible;
     }
@@ -206,6 +214,7 @@ export class FilterComponent implements OnInit {
         dateFrom: '',
         dateTo: '',
         sortDirection: '',
+        excludePrefix: false,
       },
       { emitEvent: false },
     );
