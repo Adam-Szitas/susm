@@ -119,7 +119,9 @@
 }
 
 .qr-preview {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   align-self: flex-start;
   background: #fff;
   padding: 1rem;
@@ -144,21 +146,22 @@
 }
 
 .qr-preview-close {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
+  align-self: flex-end;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   @include touch-target-min;
   padding: 0.5rem;
-  border: 0;
+  border: 1px solid #9ca3af;
   border-radius: 8px;
-  background: #fff;
-  color: #374151;
+  background: #f3f4f6;
+  color: #111827;
   cursor: pointer;
 
-  app-icon { --icon-size: var(--icon-size-compact); }
+  &:hover { background: #e5e7eb; }
+  &:focus-visible { @include focus-state; }
+
+  app-icon { --icon-size: var(--icon-size-lg); }
 }
 
 .share-error {
