@@ -39,17 +39,16 @@
 
 .object-control-block {
   min-width: 0;
-  min-height: 3.25rem;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .object-file-controls-actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -64,23 +63,50 @@
 }
 
 .object-file-controls .object-file-group-category-filter {
-  flex: 1 1 auto;
+  position: relative;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
 .object-file-controls .object-file-group-category-filter-label {
-  width: 100%;
+  width: auto;
+  min-width: 9rem;
   min-height: 2.75rem;
 }
 
 .object-checklist-controls {
   padding: 0;
-  overflow: hidden;
 }
 
-.object-checklist-controls .object-todos-section {
+.object-checklist-controls ::ng-deep .object-todos-section {
   margin: 0;
   border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.object-checklist-controls ::ng-deep .object-todos-toolbar {
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+}
+
+.object-checklist-controls ::ng-deep .object-todos-header {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.object-checklist-controls ::ng-deep .object-todos-add-btn {
+  width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
 }
 
 @media (max-width: 767px) {
@@ -89,7 +115,7 @@
 
 .object-file-group-category-filter {
   flex: 0 0 auto;
-  align-self: stretch;
+  align-self: center;
 }
 
 .object-file-group-category-filter-label {
@@ -119,11 +145,34 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  max-height: min(18rem, 45vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.15rem 0.2rem 0.4rem 0;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.object-file-group-category-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  width: max-content;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 14%);
+}
+
+.object-file-group-category-filter:not([open]) .object-file-group-category-panel {
+  display: none;
 }
 
 .category-filter-clear {
-  margin: 0.75rem 0 0;
+  margin: 0.65rem 0 0;
 }
 
 .url-file-group-filter-hint {

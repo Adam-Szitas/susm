@@ -687,6 +687,12 @@
   background: #fcfcfd;
 }
 
+.project-details-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
 @container (max-width: 520px) {
   .project-details-header {
     gap: 0.5rem;

@@ -32,16 +32,6 @@
             </div>
           </div>
           <div class="object-details-actions">
-            <button
-              type="button"
-              class="button button-outline object-details-action"
-              (click)="openUploadModal()"
-              [disabled]="uploading()"
-              [attr.aria-label]="'fileList.createGroup' | translate"
-              [title]="'fileList.createGroup' | translate"
-            >
-              <app-icon [icon]="icons.plus" />
-            </button>
             @if (objectDataExpanded()) {
               <button
                 type="button"
@@ -187,12 +177,14 @@
           @if (projectCategories().length > 0) {
             <details class="object-file-group-category-filter">
               <summary class="object-file-group-category-filter-label">{{ 'filter.category' | translate }} @if (urlFileGroupCategories().length) { <span class="object-file-group-category-count">{{ urlFileGroupCategories().length }}</span> }</summary>
-              <div class="object-file-group-category-filter-chips" role="group" [attr.aria-label]="'filter.category' | translate">
-                @for (category of projectCategories(); track category) {
-                  <button type="button" class="object-file-group-category-chip" [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)" [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)" (click)="toggleFileGroupCategoryFilter(category)">{{ category }}</button>
-                }
+              <div class="object-file-group-category-panel">
+                <div class="object-file-group-category-filter-chips" role="group" [attr.aria-label]="'filter.category' | translate">
+                  @for (category of projectCategories(); track category) {
+                    <button type="button" class="object-file-group-category-chip" [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)" [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)" (click)="toggleFileGroupCategoryFilter(category)">{{ category }}</button>
+                  }
+                </div>
+                @if (hasUrlFileGroupCategoryFilter()) { <button type="button" class="button button-secondary category-filter-clear" (click)="clearUrlCategoryFilter()">{{ 'filter.clear' | translate }}</button> }
               </div>
-              @if (hasUrlFileGroupCategoryFilter()) { <button type="button" class="button button-secondary category-filter-clear" (click)="clearUrlCategoryFilter()">{{ 'filter.clear' | translate }}</button> }
             </details>
           }
         </div>
