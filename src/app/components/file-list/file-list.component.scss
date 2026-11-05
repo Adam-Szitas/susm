@@ -569,11 +569,9 @@
   line-height: 1.2;
 }
 
-.group-category-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  padding: 0.75rem 0.25rem 0.25rem;
+.group-category-options app-category-checkbox-list {
+  display: block;
+  padding: 0.65rem 0.25rem 0;
 }
 
 .group-category-options summary {
@@ -584,22 +582,6 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-}
-
-.group-category-cb {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-
-  input {
-    inline-size: var(--icon-size-sm);
-    block-size: var(--icon-size-sm);
-    accent-color: var(--primary-default, #9d0000);
-  }
 }
 
 .group-category-add-row {

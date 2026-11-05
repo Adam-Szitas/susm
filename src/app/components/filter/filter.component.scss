@@ -36,10 +36,6 @@ form {
   @include collapse-chevron;
 }
 
-.chevron.collapsed {
-  transform: rotate(-135deg);
-}
-
 /* 0fr → 1fr row: smooth height without display:none (avoids full-page layout flash) */
 .filter-controls {
   display: grid;

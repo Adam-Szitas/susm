@@ -43,8 +43,17 @@
             <div class="files-grid">
               @for (preview of filePreviews(); track $index) {
                 <div class="file-preview-item">
-                  <img [src]="preview.previewUrl" [alt]="preview.file.name" class="preview-thumbnail" />
-                  <button type="button" class="remove-file-btn" (click)="removeFile($index)" aria-label="Remove file">
+                  <img
+                    [src]="preview.previewUrl"
+                    [alt]="preview.file.name"
+                    class="preview-thumbnail"
+                  />
+                  <button
+                    type="button"
+                    class="remove-file-btn"
+                    (click)="removeFile($index)"
+                    aria-label="Remove file"
+                  >
                     <app-trash-icon [size]="14" />
                   </button>
                   <span class="file-name">{{ preview.file.name }}</span>
@@ -85,19 +94,13 @@
                 </button>
               }
             </div>
-            <div class="category-checkbox-grid">
-              @for (cat of categories(); track cat) {
-                <label class="category-cb-label">
-                  <input
-                    type="checkbox"
-                    [checked]="isCategorySelected(cat)"
-                    (change)="toggleCategory(cat)"
-                    [disabled]="uploading()"
-                  />
-                  <span>{{ cat }}</span>
-                </label>
-              }
-            </div>
+            <app-category-checkbox-list
+              [categories]="categories()"
+              [selected]="selectedCategories()"
+              [disabled]="uploading()"
+              [label]="'fileUpload.category' | translate"
+              (selectionChange)="toggleCategory($event)"
+            />
             <div class="category-add-inline">
               <input
                 type="text"
@@ -133,7 +136,12 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="button button-secondary" (click)="onCancel()" [disabled]="uploading()">
+        <button
+          type="button"
+          class="button button-secondary"
+          (click)="onCancel()"
+          [disabled]="uploading()"
+        >
           {{ 'fileUpload.cancel' | translate }}
         </button>
         <button
@@ -154,4 +162,3 @@
     </div>
   </div>
 }
-

@@ -165,25 +165,6 @@
   }
 }
 
-.category-checkbox-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.category-cb-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-
-  input {
-    accent-color: var(--primary-default, #9d0000);
-  }
-}
-
 .category-add-inline {
   display: flex;
   flex-wrap: wrap;

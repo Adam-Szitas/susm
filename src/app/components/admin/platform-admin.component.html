@@ -358,6 +358,52 @@
             }
           </section>
         </div>
+        <section class="operations-card user-errors-card" aria-labelledby="user-errors-heading">
+          <div class="user-errors-heading">
+            <div>
+              <h3 id="user-errors-heading">{{ 'admin.userErrorsTitle' | translate }}</h3>
+              <p>{{ 'admin.userErrorsIntro' | translate }}</p>
+            </div>
+            <strong>{{ ops.user_errors?.length ?? 0 }}</strong>
+          </div>
+          @if (ops.user_errors?.length) {
+            <div
+              class="events-table-scroll user-errors-scroll"
+              tabindex="0"
+              role="region"
+              aria-label="{{ 'admin.userErrorsTitle' | translate }}"
+            >
+              <table class="events-table user-errors-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ 'admin.date' | translate }}</th>
+                    <th scope="col">{{ 'admin.company' | translate }}</th>
+                    <th scope="col">{{ 'admin.user' | translate }}</th>
+                    <th scope="col">{{ 'admin.errorCode' | translate }}</th>
+                    <th scope="col">{{ 'admin.errorMessage' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (event of ops.user_errors ?? []; track $index) {
+                    <tr>
+                      <td>
+                        <time [attr.datetime]="event.date">{{ event.date | date: 'short' }}</time>
+                      </td>
+                      <td>{{ event.company_name }}</td>
+                      <td>{{ event.user_name }}</td>
+                      <td>
+                        <span class="error-code">{{ event.status }}</span>
+                      </td>
+                      <td class="error-message">{{ event.message }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="user-errors-empty">{{ 'admin.noUserErrors' | translate }}</p>
+          }
+        </section>
         <p class="operations-disclaimer">{{ 'admin.observabilityDisclaimer' | translate }}</p>
       }
     </section>

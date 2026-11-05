@@ -5,6 +5,7 @@ export interface Notification {
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
+  status?: number;
 }
 
 @Injectable({
@@ -29,12 +30,13 @@ export class NotificationService {
   /**
    * Show an error notification
    */
-  showError(message: string, duration: number = 5000): void {
+  showError(message: string, duration: number = 5000, status?: number): void {
     this.addNotification({
       id: this.generateId(),
       message,
       type: 'error',
       duration,
+      status,
     });
   }
 
@@ -66,9 +68,7 @@ export class NotificationService {
    * Remove a notification by ID
    */
   removeNotification(id: string): void {
-    this._notifications.update((notifications) =>
-      notifications.filter((n) => n.id !== id)
-    );
+    this._notifications.update((notifications) => notifications.filter((n) => n.id !== id));
   }
 
   /**
@@ -93,4 +93,3 @@ export class NotificationService {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
-

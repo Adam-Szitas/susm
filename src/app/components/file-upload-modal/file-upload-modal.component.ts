@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { ImageCompressionService } from '@services/image-compression.service';
@@ -8,6 +16,7 @@ import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
 import { lockDocumentScroll, unlockDocumentScroll } from '@services/document-scroll-lock';
+import { CategoryCheckboxListComponent } from '../shared/category-checkbox-list.component';
 
 interface FilePreview {
   file: globalThis.File;
@@ -18,7 +27,13 @@ interface FilePreview {
 @Component({
   selector: 'app-file-upload-modal',
   standalone: true,
-  imports: [TranslateModule, FormsModule, TrashIconComponent, IconComponent],
+  imports: [
+    TranslateModule,
+    FormsModule,
+    TrashIconComponent,
+    IconComponent,
+    CategoryCheckboxListComponent,
+  ],
   templateUrl: './file-upload-modal.component.html',
   styleUrl: './file-upload-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,7 +87,7 @@ export class FileUploadModalComponent {
     }
 
     const files = Array.from(input.files);
-    const imageFiles = files.filter(file => this.#imageCompressionService.isImageFile(file));
+    const imageFiles = files.filter((file) => this.#imageCompressionService.isImageFile(file));
 
     if (imageFiles.length === 0) {
       input.value = '';
@@ -80,20 +95,18 @@ export class FileUploadModalComponent {
     }
 
     // Get existing unique IDs to avoid duplicates
-    const existingUniqueIds = new Set(
-      this.filePreviews().map(p => p.uniqueId)
-    );
+    const existingUniqueIds = new Set(this.filePreviews().map((p) => p.uniqueId));
 
     // Create unique identifiers for new files
     // For camera photos, we need to ensure each file gets a unique ID even if they have the same name/size
     const newFilesWithIds = imageFiles.map((file, index) => ({
       file,
-      uniqueId: `${Date.now()}-${index}-${Math.random().toString(36).substring(2, 15)}-${file.name}-${file.size}`
+      uniqueId: `${Date.now()}-${index}-${Math.random().toString(36).substring(2, 15)}-${file.name}-${file.size}`,
     }));
 
     // Filter out files that might be duplicates (though camera photos should all be unique)
     const filesToProcess = newFilesWithIds.filter(
-      ({ uniqueId }) => !existingUniqueIds.has(uniqueId)
+      ({ uniqueId }) => !existingUniqueIds.has(uniqueId),
     );
 
     if (filesToProcess.length === 0) {
@@ -125,7 +138,7 @@ export class FileUploadModalComponent {
               type: compressedFile.type,
               lastModified: Date.now() + index, // Ensure unique timestamp for each file
             });
-            
+
             resolve({
               file: uniqueFile,
               previewUrl: e.target?.result as string,
@@ -139,7 +152,7 @@ export class FileUploadModalComponent {
       const newPreviews = await Promise.all(previewPromises);
       const allPreviews = [...currentPreviews, ...newPreviews];
       this.filePreviews.set(allPreviews);
-      this.filesSelected.emit(allPreviews.map(p => p.file));
+      this.filesSelected.emit(allPreviews.map((p) => p.file));
     } catch (error) {
       console.error('Error processing files:', error);
       this.#notificationService.showError(
@@ -156,8 +169,14 @@ export class FileUploadModalComponent {
   }
 
   onUpload(): void {
-    const files = this.filePreviews().map(p => p.file);
-    const cats = [...new Set(this.selectedCategories().map(c => c.trim()).filter(Boolean))];
+    const files = this.filePreviews().map((p) => p.file);
+    const cats = [
+      ...new Set(
+        this.selectedCategories()
+          .map((c) => c.trim())
+          .filter(Boolean),
+      ),
+    ];
     this.upload.emit({
       files,
       description: this.description().trim(),
@@ -180,7 +199,7 @@ export class FileUploadModalComponent {
     const previews = this.filePreviews();
     const updatedPreviews = previews.filter((_, i) => i !== index);
     this.filePreviews.set(updatedPreviews);
-    this.filesSelected.emit(updatedPreviews.map(p => p.file));
+    this.filesSelected.emit(updatedPreviews.map((p) => p.file));
   }
 
   clearAll(): void {
@@ -215,4 +234,3 @@ export class FileUploadModalComponent {
     this.selectedCategories.update((list) => list.filter((c) => c !== label));
   }
 }
-

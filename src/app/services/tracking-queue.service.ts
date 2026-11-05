@@ -1,9 +1,10 @@
 import { isPlatformBrowser } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { effect, inject, Injectable, Injector, PLATFORM_ID } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { environment } from '../environment';
 import { UserStore } from '../store/user.store';
+import { NotificationService } from './notification.service';
 
 type TrackedRoute =
   | 'dashboard'
@@ -15,10 +16,9 @@ type TrackedRoute =
   | 'files'
   | 'trash';
 
-interface QueuedEvent {
-  name: 'page_view';
-  route: TrackedRoute;
-}
+type QueuedEvent =
+  | { name: 'page_view'; route: TrackedRoute }
+  | { name: 'user_error'; route: 'app'; status: number; message: string };
 
 const BATCH_SIZE = 20;
 const MAX_QUEUE_SIZE = 200;
@@ -29,15 +29,42 @@ export class TrackingQueueService {
   #router = inject(Router);
   #userStore = inject(UserStore);
   #platformId = inject(PLATFORM_ID);
+  #injector = inject(Injector);
+  #notifications = inject(NotificationService);
   #queue: QueuedEvent[] = [];
   #queueToken: string | null = null;
   #flushTimer: number | null = null;
   #started = false;
   #retryCount = 0;
+  #seenNotificationIds = new Set<string>();
 
   start(): void {
     if (this.#started || !isPlatformBrowser(this.#platformId)) return;
     this.#started = true;
+
+    effect(
+      () => {
+        for (const notification of this.#notifications.notifications()) {
+          if (this.#seenNotificationIds.has(notification.id)) continue;
+          this.#seenNotificationIds.add(notification.id);
+          if (
+            notification.type === 'error' &&
+            notification.status &&
+            notification.status >= 400 &&
+            notification.status <= 599 &&
+            notification.status !== 401
+          ) {
+            this.#trackError(notification.status, notification.message);
+          }
+        }
+        if (this.#seenNotificationIds.size > 500) {
+          this.#seenNotificationIds = new Set(
+            this.#notifications.notifications().map((item) => item.id),
+          );
+        }
+      },
+      { injector: this.#injector },
+    );
 
     this.#router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -67,6 +94,18 @@ export class TrackingQueueService {
     if (this.#queue.length >= MAX_QUEUE_SIZE) this.#queue.shift();
     this.#queue.push({ name: 'page_view', route });
     this.#scheduleFlush(this.#queue.length >= BATCH_SIZE ? 0 : FLUSH_INTERVAL_MS);
+  }
+
+  #trackError(status: number, message: string): void {
+    const token = this.#userStore.token();
+    if (!token || typeof message !== 'string' || !message.trim() || message.length > 1000) return;
+    if (this.#queueToken !== token) {
+      this.#queue = [];
+      this.#queueToken = token;
+    }
+    if (this.#queue.length >= MAX_QUEUE_SIZE) this.#queue.shift();
+    this.#queue.push({ name: 'user_error', route: 'app', status, message });
+    this.#scheduleFlush(0);
   }
 
   #safeRoute(url: string): TrackedRoute | null {

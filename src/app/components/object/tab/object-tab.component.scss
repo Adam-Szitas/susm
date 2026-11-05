@@ -35,7 +35,7 @@
 }
 
 .object-file-group-category-filter-label {
-  display: list-item;
+  display: flex;
   width: fit-content;
   padding: 0.6rem 0.8rem;
   border: 1px solid #d1d5db;
@@ -45,7 +45,11 @@
   font-weight: 600;
   color: #374151;
   cursor: pointer;
-  list-style-position: inside;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  list-style: none;
+  text-align: center;
 }
 
 .object-file-group-category-count {
@@ -391,7 +395,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .object-details-expand-toggle .chevron {
-    transition: none;
-  }
+  .object-details-expand-toggle .chevron { transition: none; }
 }

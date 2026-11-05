@@ -174,6 +174,7 @@ export class PlatformAdminComponent {
 
   eventActionLabel(action: string): string {
     if (action === 'page_view') return 'admin.actionPageView';
+    if (action === 'user_error') return 'admin.userErrorsTitle';
     return this.eventCategoryLabel(action);
   }
 

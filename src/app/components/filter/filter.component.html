@@ -12,7 +12,7 @@
           <span class="toggle-label">
             {{ areFiltersVisible ? ('filter.hide' | translate) : ('filter.show' | translate) }}
           </span>
-          <span class="chevron" [class.collapsed]="areFiltersVisible"></span>
+          <span class="chevron" [class.collapsed]="areFiltersVisible" aria-hidden="true"></span>
         </button>
       </div>
     }

@@ -113,3 +113,49 @@ body {
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid #9d0000; outline-offset: 3px; }
+
+/* One consistent arrow for native single-choice dropdowns. Keep the native menu and keyboard behavior. */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m4 7 6 6 6-6' stroke='%235c6b73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1rem 1rem !important;
+  padding-inline-end: 2.35rem !important;
+  cursor: pointer;
+}
+
+select:not([multiple]):not([size]):disabled {
+  cursor: not-allowed;
+}
+
+/* Match the existing collapse-chevron on native details summaries. */
+details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  list-style: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+details > summary::-webkit-details-marker { display: none; }
+
+details > summary::after {
+  content: '';
+  inline-size: var(--icon-size-2xs);
+  block-size: var(--icon-size-2xs);
+  flex: none;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+details[open] > summary::after { transform: rotate(-135deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  details > summary::after { transition: none; }
+}

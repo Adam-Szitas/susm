@@ -12,10 +12,16 @@
     />
   }
   <!-- Selection mode toolbar (object files only) -->
-  @if (objectId() && filteredFileGroups().length > 0 && (selectionMode() || selectedFileIds().size > 0)) {
+  @if (
+    objectId() && filteredFileGroups().length > 0 && (selectionMode() || selectedFileIds().size > 0)
+  ) {
     <div class="selection-toolbar">
       <span class="selection-count">
-        {{ selectedFileIds().size }} {{ (selectedFileIds().size === 1 ? 'fileList.fileSelected' : 'fileList.filesSelected') | translate }}
+        {{ selectedFileIds().size }}
+        {{
+          (selectedFileIds().size === 1 ? 'fileList.fileSelected' : 'fileList.filesSelected')
+            | translate
+        }}
       </span>
       <div class="selection-actions">
         @if (selectedFileIds().size > 0 && moveTargetGroups().length > 1) {
@@ -45,7 +51,11 @@
           </button>
         }
         <button type="button" class="button button-secondary" (click)="clearSelection()">
-          {{ selectionMode() && selectedFileIds().size === 0 ? ('fileList.cancelSelect' | translate) : ('fileList.clearSelection' | translate) }}
+          {{
+            selectionMode() && selectedFileIds().size === 0
+              ? ('fileList.cancelSelect' | translate)
+              : ('fileList.clearSelection' | translate)
+          }}
         </button>
       </div>
     </div>
@@ -53,162 +63,191 @@
 
   <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
   @if (objectId()) {
-  @if (activeGroupCount() > 1) {
-    <div class="file-groups-toolbar">
-      <button
-        type="button"
-        class="button button-outline file-groups-reorder-toggle"
-        [class.active]="groupReorderMode()"
-        (click)="toggleGroupReorderMode()"
-        [disabled]="groupReorderSaving()"
-        [attr.aria-label]="
-          groupReorderMode()
-            ? ('fileList.doneReorderGroups' | translate)
-            : ('fileList.reorderGroups' | translate)
-        "
-        [attr.title]="
-          groupReorderSaving()
-            ? ('fileList.savingOrder' | translate)
-            : groupReorderMode() && categoryFilter().length > 0
-              ? ('fileList.groupReorderFilteredHint' | translate)
-              : groupReorderMode()
-                ? ('fileList.reorderGroupsActiveHint' | translate)
-                : ('fileList.reorderGroups' | translate)
-        "
-      >
-        @if (groupReorderSaving()) {
-          <span class="spinner" aria-hidden="true"></span>
-          <span class="file-groups-reorder-label">{{ 'fileList.savingOrder' | translate }}</span>
-        } @else if (groupReorderMode()) {
-          <app-icon [icon]="icons.check" [svgClass]="'file-groups-reorder-icon'" [strokeWidth]="2.5" />
-          <span class="file-groups-reorder-label">{{ 'fileList.doneReorderGroups' | translate }}</span>
-        } @else {
-          <app-icon [icon]="icons.gripHorizontal" [svgClass]="'file-groups-reorder-icon'" />
-          <span class="file-groups-reorder-label">{{ 'fileList.reorderGroups' | translate }}</span>
-        }
-      </button>
-    </div>
-  }
-  @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
-    <div class="file-group" [class.group-reorder-active]="groupReorderMode()">
-      <div class="group-header">
-        @if (groupReorderMode()) {
-          <div class="group-block-reorder-controls">
-            <button
-              type="button"
-              class="reorder-btn reorder-btn-up"
-              (click)="moveGroupUp(group)"
-              [disabled]="gi === 0 || groupReorderSaving()"
-              [attr.aria-label]="'fileList.moveGroupUp' | translate"
-              [attr.title]="'fileList.moveGroupUp' | translate"
-            >
-              ▲
-            </button>
-            <span class="reorder-position">{{ gi + 1 }}</span>
-            <button
-              type="button"
-              class="reorder-btn reorder-btn-down"
-              (click)="moveGroupDown(group)"
-              [disabled]="gi === filteredFileGroups().length - 1 || groupReorderSaving()"
-              [attr.aria-label]="'fileList.moveGroupDown' | translate"
-              [attr.title]="'fileList.moveGroupDown' | translate"
-            >
-              ▼
-            </button>
-          </div>
-        }
-        <dialog class="file-edit-dialog" [id]="'group-edit-dialog-' + group._id.$oid" [attr.aria-label]="'common.edit' | translate" (close)="cancelEditGroup()">
-          <div class="file-edit-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" class="file-edit-close" (click)="cancelEditGroup()" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
-          <div class="group-edit-form">
-            <div class="group-header-row group-header-row--title">
-              <label [attr.for]="'group-description-' + group._id.$oid">{{ 'fileUpload.description' | translate }}</label>
-              <input
-                type="text"
-                [id]="'group-description-' + group._id.$oid"
-                [ngModel]="editDescription()"
-                (ngModelChange)="editDescription.set($event)"
-                placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
-                class="group-edit-input group-edit-description"
-                [attr.aria-label]="'fileUpload.descriptionPlaceholder' | translate"
-              />
-            </div>
-            <div class="group-header-row group-header-row--categories">
-            <div class="group-edit-categories">
-              <div
-                class="group-category-chips-editing"
-                [attr.aria-label]="'fileUpload.category' | translate"
-                role="group"
+    @if (activeGroupCount() > 1) {
+      <div class="file-groups-toolbar">
+        <button
+          type="button"
+          class="button button-outline file-groups-reorder-toggle"
+          [class.active]="groupReorderMode()"
+          (click)="toggleGroupReorderMode()"
+          [disabled]="groupReorderSaving()"
+          [attr.aria-label]="
+            groupReorderMode()
+              ? ('fileList.doneReorderGroups' | translate)
+              : ('fileList.reorderGroups' | translate)
+          "
+          [attr.title]="
+            groupReorderSaving()
+              ? ('fileList.savingOrder' | translate)
+              : groupReorderMode() && categoryFilter().length > 0
+                ? ('fileList.groupReorderFilteredHint' | translate)
+                : groupReorderMode()
+                  ? ('fileList.reorderGroupsActiveHint' | translate)
+                  : ('fileList.reorderGroups' | translate)
+          "
+        >
+          @if (groupReorderSaving()) {
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="file-groups-reorder-label">{{ 'fileList.savingOrder' | translate }}</span>
+          } @else if (groupReorderMode()) {
+            <app-icon
+              [icon]="icons.check"
+              [svgClass]="'file-groups-reorder-icon'"
+              [strokeWidth]="2.5"
+            />
+            <span class="file-groups-reorder-label">{{
+              'fileList.doneReorderGroups' | translate
+            }}</span>
+          } @else {
+            <app-icon [icon]="icons.gripHorizontal" [svgClass]="'file-groups-reorder-icon'" />
+            <span class="file-groups-reorder-label">{{
+              'fileList.reorderGroups' | translate
+            }}</span>
+          }
+        </button>
+      </div>
+    }
+    @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
+      <div class="file-group" [class.group-reorder-active]="groupReorderMode()">
+        <div class="group-header">
+          @if (groupReorderMode()) {
+            <div class="group-block-reorder-controls">
+              <button
+                type="button"
+                class="reorder-btn reorder-btn-up"
+                (click)="moveGroupUp(group)"
+                [disabled]="gi === 0 || groupReorderSaving()"
+                [attr.aria-label]="'fileList.moveGroupUp' | translate"
+                [attr.title]="'fileList.moveGroupUp' | translate"
               >
-                @for (cat of editCategories(); track cat) {
-                  <button
-                    type="button"
-                    class="category-chip category-chip-remove"
-                    (click)="removeEditCategory(cat)"
-                    [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat"
-                  >
-                    <span class="category-chip-label">{{ cat }}</span>
-                    <app-trash-icon [size]="14" />
-                  </button>
-                }
-              </div>
-              <details class="group-category-options" [open]="categoryOptionsInitiallyOpen()">
-                <summary><app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}</summary>
-                <div class="group-category-checkboxes">
-                @for (opt of categoryOptionsForEdit(); track opt) {
-                  <label class="group-category-cb">
-                    <input
-                      type="checkbox"
-                      [checked]="isEditCategorySelected(opt)"
-                      (change)="toggleEditCategory(opt)"
-                      [attr.title]="opt"
-                      [attr.aria-label]="opt"
-                    />
-                    <span>{{ opt }}</span>
-                  </label>
-                }
-                </div>
-              </details>
-              <div class="group-category-add-row">
+                ▲
+              </button>
+              <span class="reorder-position">{{ gi + 1 }}</span>
+              <button
+                type="button"
+                class="reorder-btn reorder-btn-down"
+                (click)="moveGroupDown(group)"
+                [disabled]="gi === filteredFileGroups().length - 1 || groupReorderSaving()"
+                [attr.aria-label]="'fileList.moveGroupDown' | translate"
+                [attr.title]="'fileList.moveGroupDown' | translate"
+              >
+                ▼
+              </button>
+            </div>
+          }
+          <dialog
+            class="file-edit-dialog"
+            [id]="'group-edit-dialog-' + group._id.$oid"
+            [attr.aria-label]="'common.edit' | translate"
+            (close)="cancelEditGroup()"
+          >
+            <div class="file-edit-header">
+              <h2>{{ 'common.edit' | translate }}</h2>
+              <button
+                type="button"
+                class="file-edit-close"
+                (click)="cancelEditGroup()"
+                [attr.aria-label]="'common.close' | translate"
+              >
+                <app-icon [icon]="icons.close" />
+              </button>
+            </div>
+            <div class="group-edit-form">
+              <div class="group-header-row group-header-row--title">
+                <label [attr.for]="'group-description-' + group._id.$oid">{{
+                  'fileUpload.description' | translate
+                }}</label>
                 <input
                   type="text"
-                  class="group-edit-input group-category-add-input"
-                  [ngModel]="categoryCustomDraft()"
-                  (ngModelChange)="categoryCustomDraft.set($event)"
-                  (keydown.enter)="$event.preventDefault(); addCustomCategoryFromDraft()"
-                  [placeholder]="'fileList.addCategoryPlaceholder' | translate"
-                  [attr.aria-label]="'fileList.addCategoryPlaceholder' | translate"
-                  title="{{ 'fileList.addCategoryPlaceholder' | translate }}"
+                  [id]="'group-description-' + group._id.$oid"
+                  [ngModel]="editDescription()"
+                  (ngModelChange)="editDescription.set($event)"
+                  placeholder="{{ 'fileUpload.descriptionPlaceholder' | translate }}"
+                  class="group-edit-input group-edit-description"
+                  [attr.aria-label]="'fileUpload.descriptionPlaceholder' | translate"
                 />
-                <button
-                  type="button"
-                  class="button button-secondary group-category-add-btn"
-                  (click)="addCustomCategoryFromDraft()"
-                >
-                  {{ 'fileList.addCategory' | translate }}
-                </button>
+              </div>
+              <div class="group-header-row group-header-row--categories">
+                <div class="group-edit-categories">
+                  <div
+                    class="group-category-chips-editing"
+                    [attr.aria-label]="'fileUpload.category' | translate"
+                    role="group"
+                  >
+                    @for (cat of editCategories(); track cat) {
+                      <button
+                        type="button"
+                        class="category-chip category-chip-remove"
+                        (click)="removeEditCategory(cat)"
+                        [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat"
+                      >
+                        <span class="category-chip-label">{{ cat }}</span>
+                        <app-trash-icon [size]="14" />
+                      </button>
+                    }
+                  </div>
+                  <details class="group-category-options" [open]="categoryOptionsInitiallyOpen()">
+                    <summary>
+                      <app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}
+                    </summary>
+                    <app-category-checkbox-list
+                      [categories]="categoryOptionsForEdit()"
+                      [selected]="editCategories()"
+                      [label]="'fileUpload.category' | translate"
+                      (selectionChange)="toggleEditCategory($event)"
+                    />
+                  </details>
+                  <div class="group-category-add-row">
+                    <input
+                      type="text"
+                      class="group-edit-input group-category-add-input"
+                      [ngModel]="categoryCustomDraft()"
+                      (ngModelChange)="categoryCustomDraft.set($event)"
+                      (keydown.enter)="$event.preventDefault(); addCustomCategoryFromDraft()"
+                      [placeholder]="'fileList.addCategoryPlaceholder' | translate"
+                      [attr.aria-label]="'fileList.addCategoryPlaceholder' | translate"
+                      title="{{ 'fileList.addCategoryPlaceholder' | translate }}"
+                    />
+                    <button
+                      type="button"
+                      class="button button-secondary group-category-add-btn"
+                      (click)="addCustomCategoryFromDraft()"
+                    >
+                      {{ 'fileList.addCategory' | translate }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="group-header-row group-header-row--note">
+                <div class="group-note-field group-note-field--edit">
+                  <label class="group-note-label" [attr.for]="'group-note-' + group._id.$oid">{{
+                    'fileUpload.note' | translate
+                  }}</label>
+                  <textarea
+                    #groupNoteTextarea
+                    [id]="'group-note-' + group._id.$oid"
+                    class="group-edit-input group-edit-note"
+                    [ngModel]="editNote()"
+                    (ngModelChange)="onEditNoteChange($event, groupNoteTextarea)"
+                    (focus)="autoResizeTextarea(groupNoteTextarea)"
+                    rows="1"
+                    placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
+                  ></textarea>
+                </div>
               </div>
             </div>
+            <div class="file-edit-footer">
+              <button type="button" class="button button-secondary" (click)="cancelEditGroup()">
+                {{ 'common.cancel' | translate }}</button
+              ><button
+                type="button"
+                class="button button-primary"
+                (click)="saveGroupMetadata(group)"
+              >
+                {{ 'common.save' | translate }}
+              </button>
             </div>
-            <div class="group-header-row group-header-row--note">
-            <div class="group-note-field group-note-field--edit">
-              <label class="group-note-label" [attr.for]="'group-note-' + group._id.$oid">{{
-                'fileUpload.note' | translate
-              }}</label>
-              <textarea
-                #groupNoteTextarea
-                [id]="'group-note-' + group._id.$oid"
-                class="group-edit-input group-edit-note"
-                [ngModel]="editNote()"
-                (ngModelChange)="onEditNoteChange($event, groupNoteTextarea)"
-                (focus)="autoResizeTextarea(groupNoteTextarea)"
-                rows="1"
-                placeholder="{{ 'fileUpload.notePlaceholder' | translate }}"
-              ></textarea>
-            </div>
-            </div>
-          </div>
-          <div class="file-edit-footer"><button type="button" class="button button-secondary" (click)="cancelEditGroup()">{{ 'common.cancel' | translate }}</button><button type="button" class="button button-primary" (click)="saveGroupMetadata(group)">{{ 'common.save' | translate }}</button></div>
-        </dialog>
+          </dialog>
           @if (group.description) {
             <div class="group-header-row group-header-row--title">
               <h3 class="group-description">{{ group.description }}</h3>
@@ -221,77 +260,107 @@
               }
             </div>
             <div class="group-header-actions">
-            @if (objectId() && !groupReorderMode()) {
-              <button
-                type="button"
-                class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
-                (click)="openSubGroupUploadModal(group)"
-                [disabled]="subGroupUploadUploading()"
-                [attr.aria-label]="'subGroups.createTitle' | translate"
-                [attr.title]="'subGroups.createTitle' | translate"
-              >
-                <app-icon [icon]="icons.folderPlus" />
-              </button>
+              @if (objectId() && !groupReorderMode()) {
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
+                  (click)="openSubGroupUploadModal(group)"
+                  [disabled]="subGroupUploadUploading()"
+                  [attr.aria-label]="'subGroups.createTitle' | translate"
+                  [attr.title]="'subGroups.createTitle' | translate"
+                >
+                  <app-icon [icon]="icons.folderPlus" />
+                </button>
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn"
+                  (click)="openGroupPhotoPicker(group)"
+                  [disabled]="groupPhotoUploading()"
+                  [attr.aria-label]="'fileList.uploadToGroup' | translate"
+                  title="{{ 'fileList.uploadToGroup' | translate }}"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 256 256"
+                    width="24"
+                    height="24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <rect
+                      x="8"
+                      y="8"
+                      width="240"
+                      height="240"
+                      rx="48"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="8"
+                    />
+                    <g
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M39 55 H65 L74 64 H91 Q99 64 99 72 V91 Q99 99 91 99 H39 Q31 99 31 91 V63 Q31 55 39 55 Z"
+                      />
+                      <path
+                        d="M165 55 H191 L200 64 H217 Q225 64 225 72 V91 Q225 99 217 99 H165 Q157 99 157 91 V63 Q157 55 165 55 Z"
+                      />
+                      <path
+                        d="M39 157 H65 L74 166 H91 Q99 166 99 174 V193 Q99 201 91 201 H39 Q31 201 31 193 V165 Q31 157 39 157 Z"
+                      />
+                      <path
+                        d="M165 157 H191 L200 166 H217 Q225 166 225 174 V193 Q225 201 217 201 H165 Q157 201 157 193 V165 Q157 157 165 157 Z"
+                      />
+                      <path d="M128 111 V145 M111 128 H145" stroke-width="9" />
+                    </g>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn"
+                  [class.group-toolbar-icon-btn--active]="reorderMode()"
+                  (click)="toggleReorderMode()"
+                  [disabled]="reorderSaving()"
+                  [attr.aria-label]="
+                    reorderMode()
+                      ? ('fileList.doneReorderPictures' | translate)
+                      : ('fileList.reorderPictures' | translate)
+                  "
+                  [attr.title]="
+                    reorderMode()
+                      ? ('fileList.doneReorderPictures' | translate)
+                      : ('fileList.reorderPictures' | translate)
+                  "
+                >
+                  <app-icon [icon]="icons.arrowsUpDown" />
+                </button>
+              }
               <button
                 type="button"
                 class="group-toolbar-icon-btn"
-                (click)="openGroupPhotoPicker(group)"
-                [disabled]="groupPhotoUploading()"
-                [attr.aria-label]="'fileList.uploadToGroup' | translate"
-                title="{{ 'fileList.uploadToGroup' | translate }}"
+                (click)="startEditGroup(group)"
+                [attr.aria-label]="'common.edit' | translate"
+                title="{{ 'common.edit' | translate }}"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="24" height="24" aria-hidden="true" focusable="false">
-                  <rect x="8" y="8" width="240" height="240" rx="48" fill="none" stroke="currentColor" stroke-width="8" />
-                  <g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M39 55 H65 L74 64 H91 Q99 64 99 72 V91 Q99 99 91 99 H39 Q31 99 31 91 V63 Q31 55 39 55 Z" />
-                    <path d="M165 55 H191 L200 64 H217 Q225 64 225 72 V91 Q225 99 217 99 H165 Q157 99 157 91 V63 Q157 55 165 55 Z" />
-                    <path d="M39 157 H65 L74 166 H91 Q99 166 99 174 V193 Q99 201 91 201 H39 Q31 201 31 193 V165 Q31 157 39 157 Z" />
-                    <path d="M165 157 H191 L200 166 H217 Q225 166 225 174 V193 Q225 201 217 201 H165 Q157 201 157 193 V165 Q157 157 165 157 Z" />
-                    <path d="M128 111 V145 M111 128 H145" stroke-width="9" />
-                  </g>
-                </svg>
+                <app-icon [icon]="icons.edit" />
               </button>
-              <button
-                type="button"
-                class="group-toolbar-icon-btn"
-                [class.group-toolbar-icon-btn--active]="reorderMode()"
-                (click)="toggleReorderMode()"
-                [disabled]="reorderSaving()"
-                [attr.aria-label]="
-                  reorderMode()
-                    ? ('fileList.doneReorderPictures' | translate)
-                    : ('fileList.reorderPictures' | translate)
-                "
-                [attr.title]="
-                  reorderMode()
-                    ? ('fileList.doneReorderPictures' | translate)
-                    : ('fileList.reorderPictures' | translate)
-                "
-              >
-                <app-icon [icon]="icons.arrowsUpDown" />
-              </button>
-            }
-            <button
-              type="button"
-              class="group-toolbar-icon-btn"
-              (click)="startEditGroup(group)"
-              [attr.aria-label]="'common.edit' | translate"
-              title="{{ 'common.edit' | translate }}"
-            >
-              <app-icon [icon]="icons.edit" />
-            </button>
-            @if (objectId()) {
-              <button
-                type="button"
-                class="group-toolbar-icon-btn group-toolbar-icon-btn--danger"
-                (click)="deleteFileGroup(group)"
-                [attr.aria-label]="'fileList.deleteFileGroup' | translate"
-                title="{{ 'fileList.deleteFileGroup' | translate }}"
-              >
-                <app-trash-icon [size]="18" />
-              </button>
-            }
-          </div>
+              @if (objectId()) {
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn group-toolbar-icon-btn--danger"
+                  (click)="deleteFileGroup(group)"
+                  [attr.aria-label]="'fileList.deleteFileGroup' | translate"
+                  title="{{ 'fileList.deleteFileGroup' | translate }}"
+                >
+                  <app-trash-icon [size]="18" />
+                </button>
+              }
+            </div>
           </div>
           @if (group.note?.trim()) {
             <div class="group-header-row group-header-row--note">
@@ -301,179 +370,201 @@
               </div>
             </div>
           }
-      </div>
-      <ul class="file-gallery">@for (file of group.files; track file._id.$oid; let i = $index) {<li
-          class="file-item"
-          [class.selected]="isFileSelected(file)"
-          [class.dragging]="draggedFileId() === file._id.$oid"
-          [class.drag-over]="dragOverFileId() === file._id.$oid"
-          [class.reorder-active]="reorderMode()"
-          [attr.draggable]="reorderMode() && !reorderSaving() ? 'true' : null"
-          (dragstart)="reorderMode() ? onDragStart($event, file) : null"
-          (dragover)="reorderMode() ? onDragOver($event, file) : null"
-          (dragleave)="reorderMode() ? onDragLeave($event, file) : null"
-          (drop)="reorderMode() ? onDrop($event, file, group) : null"
-          (dragend)="reorderMode() ? onDragEnd() : null"
-        >
-            @if (reorderMode()) {
-              <div class="reorder-controls">
-                <button
-                  type="button"
-                  class="reorder-btn reorder-btn-up"
-                  (click)="moveFileUp(file, group)"
-                  [disabled]="i === 0 || reorderSaving()"
-                  aria-label="Move left"
-                  title="Move left"
-                >
-                  ◀
-                </button>
-                <span class="reorder-position">{{ i + 1 }}</span>
-                <button
-                  type="button"
-                  class="reorder-btn reorder-btn-down"
-                  (click)="moveFileDown(file, group)"
-                  [disabled]="i === group.files.length - 1 || reorderSaving()"
-                  aria-label="Move right"
-                  title="Move right"
-                >
-                  ▶
-                </button>
-              </div>
-            }
-            <div
-              class="image-container"
-              [class.overlay-actions-blocked]="reorderMode()"
-              [class.image-container--editable]="!selectionMode() && !reorderMode()"
-              (click)="selectionMode() || reorderMode() ? onImageContainerClick($event, file) : startEditFile(file, group)"
+        </div>
+        <ul class="file-gallery">
+          @for (file of group.files; track file._id.$oid; let i = $index) {
+            <li
+              class="file-item"
+              [class.selected]="isFileSelected(file)"
+              [class.dragging]="draggedFileId() === file._id.$oid"
+              [class.drag-over]="dragOverFileId() === file._id.$oid"
+              [class.reorder-active]="reorderMode()"
+              [attr.draggable]="reorderMode() && !reorderSaving() ? 'true' : null"
+              (dragstart)="reorderMode() ? onDragStart($event, file) : null"
+              (dragover)="reorderMode() ? onDragOver($event, file) : null"
+              (dragleave)="reorderMode() ? onDragLeave($event, file) : null"
+              (drop)="reorderMode() ? onDrop($event, file, group) : null"
+              (dragend)="reorderMode() ? onDragEnd() : null"
             >
-              <img
-                [src]="getImageUrl(file.path)"
-                [alt]="file.filename || 'File Preview'"
-                title="{{ file.filename || 'File Preview' }}"
-                loading="lazy"
-                (error)="onImageError(file, $event)"
-              />
-              @if (selectionMode()) {
-                <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
-                  @if (isFileSelected(file)) {
-                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
-                  }
-                </div>
-              } @else if (!reorderMode()) {
-                <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()" hidden>
+              @if (reorderMode()) {
+                <div class="reorder-controls">
                   <button
                     type="button"
-                    class="zoom-hint"
-                    (click)="openImageLightbox($event, file)"
-                    [attr.aria-label]="'fileList.zoom' | translate"
-                    title="{{ 'fileList.zoom' | translate }}"
+                    class="reorder-btn reorder-btn-up"
+                    (click)="moveFileUp(file, group)"
+                    [disabled]="i === 0 || reorderSaving()"
+                    aria-label="Move left"
+                    title="Move left"
                   >
-                    <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
-                    <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
+                    ◀
                   </button>
-                  @if (objectId() && hasMoveTargetsForFile(group)) {
+                  <span class="reorder-position">{{ i + 1 }}</span>
+                  <button
+                    type="button"
+                    class="reorder-btn reorder-btn-down"
+                    (click)="moveFileDown(file, group)"
+                    [disabled]="i === group.files.length - 1 || reorderSaving()"
+                    aria-label="Move right"
+                    title="Move right"
+                  >
+                    ▶
+                  </button>
+                </div>
+              }
+              <div
+                class="image-container"
+                [class.overlay-actions-blocked]="reorderMode()"
+                [class.image-container--editable]="!selectionMode() && !reorderMode()"
+                (click)="
+                  selectionMode() || reorderMode()
+                    ? onImageContainerClick($event, file)
+                    : startEditFile(file, group)
+                "
+              >
+                <img
+                  [src]="getImageUrl(file.path)"
+                  [alt]="file.filename || 'File Preview'"
+                  title="{{ file.filename || 'File Preview' }}"
+                  loading="lazy"
+                  (error)="onImageError(file, $event)"
+                />
+                @if (selectionMode()) {
+                  <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
+                    @if (isFileSelected(file)) {
+                      <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+                    }
+                  </div>
+                } @else if (!reorderMode()) {
+                  <div
+                    class="overlay"
+                    [class.visible]="activeFileId() === file._id.$oid"
+                    (click)="$event.stopPropagation()"
+                    hidden
+                  >
                     <button
                       type="button"
-                      class="move-hint"
-                      (click)="openMoveFileModal($event, file, group)"
-                      [attr.aria-label]="'fileList.movePicture' | translate"
-                      title="{{ 'fileList.movePicture' | translate }}"
-                      [disabled]="moveFileInProgress()"
+                      class="zoom-hint"
+                      (click)="openImageLightbox($event, file)"
+                      [attr.aria-label]="'fileList.zoom' | translate"
+                      title="{{ 'fileList.zoom' | translate }}"
                     >
-                      <span class="visually-hidden">{{
-                        'fileList.movePicture' | translate
-                      }}</span>
-                      <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                      <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
+                      <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
                     </button>
-                  }
-                  <button
-                    type="button"
-                    class="download-hint"
-                    (click)="handleOverlayDownload($event, file.path, file.filename)"
-                    [attr.aria-label]="'fileList.download' | translate"
-                    title="{{ 'fileList.download' | translate }}"
-                  >
-                    <span class="visually-hidden">{{
-                      'fileList.download' | translate
-                    }}</span>
-                    <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
-                  </button>
-                  <button
-                    type="button"
-                    class="delete-hint"
-                    (click)="handleOverlayDelete($event, file)"
-                    [attr.aria-label]="'fileList.delete' | translate"
-                    title="{{ 'fileList.delete' | translate }}"
-                  >
-                    <span class="visually-hidden">{{
-                      'fileList.delete' | translate
-                    }}</span>
-                    <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
-                  </button>
-                </div>
-              }
-            </div>
-            @if (file.filename) { <p class="file-name">{{ file.filename }}</p> }
-            @if (file.created_at) { <div class="created-at-wrapper"><span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span></div> }
-            <div class="file-description-wrapper">
-              @if (file.description) { <p class="file-description-text">{{ file.description }}</p> }
-            </div>
-          </li>
-        }
-        @for (subGroup of group.sub_groups; track subGroup._id.$oid) {
-          <li
-            class="file-item sub-group-item"
-            [class.dragging]="draggedSubGroupId() === subGroup._id.$oid"
-            [class.drag-over]="dragOverSubGroupId() === subGroup._id.$oid"
-            [attr.draggable]="group.sub_groups.length > 1 && !subGroupReorderSaving() ? 'true' : null"
-            tabindex="0"
-            [attr.aria-label]="subGroup.name"
-            (click)="onSubGroupItemClick($event, group, subGroup)"
-            (keydown.enter)="openSubGroupDetail(group, subGroup)"
-            (keydown.space)="onSubGroupItemKeyActivate($event, group, subGroup)"
-            (dragstart)="onSubGroupDragStart($event, subGroup)"
-            (dragover)="onSubGroupDragOver($event, subGroup)"
-            (dragleave)="onSubGroupDragLeave($event, subGroup)"
-            (drop)="onSubGroupDrop($event, subGroup, group)"
-            (dragend)="onSubGroupDragEnd()"
-          >
-            <div class="image-container">
-              @if (subGroup.files.length > 0) {
-                <div class="sub-group-preview-collage">
-                  @for (slot of subGroupPreviewSlots(subGroup); track slot.index) {
-                    <div
-                      class="sub-group-preview-cell"
-                      [class.sub-group-preview-cell--empty]="!slot.file"
+                    @if (objectId() && hasMoveTargetsForFile(group)) {
+                      <button
+                        type="button"
+                        class="move-hint"
+                        (click)="openMoveFileModal($event, file, group)"
+                        [attr.aria-label]="'fileList.movePicture' | translate"
+                        title="{{ 'fileList.movePicture' | translate }}"
+                        [disabled]="moveFileInProgress()"
+                      >
+                        <span class="visually-hidden">{{
+                          'fileList.movePicture' | translate
+                        }}</span>
+                        <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="download-hint"
+                      (click)="handleOverlayDownload($event, file.path, file.filename)"
+                      [attr.aria-label]="'fileList.download' | translate"
+                      title="{{ 'fileList.download' | translate }}"
                     >
-                      @if (slot.file) {
-                        <img
-                          [src]="getImageUrl(slot.file.path)"
-                          [alt]="slot.file.filename || subGroup.name"
-                          loading="lazy"
-                          class="sub-group-preview-thumb"
-                        />
-                      }
-                    </div>
-                  }
+                      <span class="visually-hidden">{{ 'fileList.download' | translate }}</span>
+                      <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
+                    </button>
+                    <button
+                      type="button"
+                      class="delete-hint"
+                      (click)="handleOverlayDelete($event, file)"
+                      [attr.aria-label]="'fileList.delete' | translate"
+                      title="{{ 'fileList.delete' | translate }}"
+                    >
+                      <span class="visually-hidden">{{ 'fileList.delete' | translate }}</span>
+                      <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
+                    </button>
+                  </div>
+                }
+              </div>
+              @if (file.filename) {
+                <p class="file-name">{{ file.filename }}</p>
+              }
+              @if (file.created_at) {
+                <div class="created-at-wrapper">
+                  <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
                 </div>
-              } @else {
-                <span class="sub-group-empty-cover">
-                  <app-icon [icon]="icons.fileUpload" [svgClass]="'sub-group-empty-icon'" />
-                  <span class="sub-group-empty-label">{{ 'subGroups.noPhotos' | translate }}</span>
-                </span>
               }
-              @if (group.sub_groups.length > 1) {
-                <span class="sub-group-drag-handle" [attr.title]="'subGroups.dragToReorder' | translate">
-                  <app-icon [icon]="icons.gripHorizontal" />
-                </span>
-              }
-            </div>
-            <p class="file-name">{{ subGroup.name }}</p>
-          </li>
-        }
-      </ul>
-    </div>
-  }
+              <div class="file-description-wrapper">
+                @if (file.description) {
+                  <p class="file-description-text">{{ file.description }}</p>
+                }
+              </div>
+            </li>
+          }
+          @for (subGroup of group.sub_groups; track subGroup._id.$oid) {
+            <li
+              class="file-item sub-group-item"
+              [class.dragging]="draggedSubGroupId() === subGroup._id.$oid"
+              [class.drag-over]="dragOverSubGroupId() === subGroup._id.$oid"
+              [attr.draggable]="
+                group.sub_groups.length > 1 && !subGroupReorderSaving() ? 'true' : null
+              "
+              tabindex="0"
+              [attr.aria-label]="subGroup.name"
+              (click)="onSubGroupItemClick($event, group, subGroup)"
+              (keydown.enter)="openSubGroupDetail(group, subGroup)"
+              (keydown.space)="onSubGroupItemKeyActivate($event, group, subGroup)"
+              (dragstart)="onSubGroupDragStart($event, subGroup)"
+              (dragover)="onSubGroupDragOver($event, subGroup)"
+              (dragleave)="onSubGroupDragLeave($event, subGroup)"
+              (drop)="onSubGroupDrop($event, subGroup, group)"
+              (dragend)="onSubGroupDragEnd()"
+            >
+              <div class="image-container">
+                @if (subGroup.files.length > 0) {
+                  <div class="sub-group-preview-collage">
+                    @for (slot of subGroupPreviewSlots(subGroup); track slot.index) {
+                      <div
+                        class="sub-group-preview-cell"
+                        [class.sub-group-preview-cell--empty]="!slot.file"
+                      >
+                        @if (slot.file) {
+                          <img
+                            [src]="getImageUrl(slot.file.path)"
+                            [alt]="slot.file.filename || subGroup.name"
+                            loading="lazy"
+                            class="sub-group-preview-thumb"
+                          />
+                        }
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <span class="sub-group-empty-cover">
+                    <app-icon [icon]="icons.fileUpload" [svgClass]="'sub-group-empty-icon'" />
+                    <span class="sub-group-empty-label">{{
+                      'subGroups.noPhotos' | translate
+                    }}</span>
+                  </span>
+                }
+                @if (group.sub_groups.length > 1) {
+                  <span
+                    class="sub-group-drag-handle"
+                    [attr.title]="'subGroups.dragToReorder' | translate"
+                  >
+                    <app-icon [icon]="icons.gripHorizontal" />
+                  </span>
+                }
+              </div>
+              <p class="file-name">{{ subGroup.name }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    }
   }
 
   <!-- Project Files (simple, no groups) -->
@@ -510,13 +601,17 @@
     }
 
     <div class="file-group ungrouped">
-      <ul
-        class="file-gallery"
-        [class.file-gallery--defer-items]="deferProjectFileItems()"
-      >
+      <ul class="file-gallery" [class.file-gallery--defer-items]="deferProjectFileItems()">
         @for (file of windowedProjectFiles(); track file._id.$oid) {
           <li class="file-item file-item--deferred">
-            <div class="image-container image-container--editable" (click)="selectionMode() || reorderMode() ? onImageContainerClick($event, file) : startEditFile(file)">
+            <div
+              class="image-container image-container--editable"
+              (click)="
+                selectionMode() || reorderMode()
+                  ? onImageContainerClick($event, file)
+                  : startEditFile(file)
+              "
+            >
               <img
                 [src]="getImageUrl(file.path)"
                 [alt]="file.filename || 'File Preview'"
@@ -531,63 +626,74 @@
                   }
                 </div>
               } @else {
-              @if (!objectId()) {
-              <div class="overlay" [class.visible]="activeFileId() === file._id.$oid" (click)="$event.stopPropagation()" hidden>
-                <button
-                  type="button"
-                  class="zoom-hint"
-                  (click)="openImageLightbox($event, file)"
-                  [attr.aria-label]="'fileList.zoom' | translate"
-                  title="{{ 'fileList.zoom' | translate }}"
-                >
-                  <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
-                  <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
-                </button>
-                @if (canSendProjectFiles()) {
-                  <button
-                    type="button"
-                    class="move-hint"
-                    (click)="openSendProjectFileModal($event, file)"
-                    [attr.aria-label]="'fileList.sendToObject' | translate"
-                    [title]="'fileList.sendToObject' | translate"
-                    [disabled]="sendProjectFilesInProgress()"
+                @if (!objectId()) {
+                  <div
+                    class="overlay"
+                    [class.visible]="activeFileId() === file._id.$oid"
+                    (click)="$event.stopPropagation()"
+                    hidden
                   >
-                    <span class="visually-hidden">{{ 'fileList.sendToObject' | translate }}</span>
-                    <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
-                  </button>
+                    <button
+                      type="button"
+                      class="zoom-hint"
+                      (click)="openImageLightbox($event, file)"
+                      [attr.aria-label]="'fileList.zoom' | translate"
+                      title="{{ 'fileList.zoom' | translate }}"
+                    >
+                      <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
+                      <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
+                    </button>
+                    @if (canSendProjectFiles()) {
+                      <button
+                        type="button"
+                        class="move-hint"
+                        (click)="openSendProjectFileModal($event, file)"
+                        [attr.aria-label]="'fileList.sendToObject' | translate"
+                        [title]="'fileList.sendToObject' | translate"
+                        [disabled]="sendProjectFilesInProgress()"
+                      >
+                        <span class="visually-hidden">{{
+                          'fileList.sendToObject' | translate
+                        }}</span>
+                        <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="download-hint"
+                      (click)="handleOverlayDownload($event, file.path, file.filename)"
+                      [attr.aria-label]="'fileList.download' | translate"
+                      title="{{ 'fileList.download' | translate }}"
+                    >
+                      <span class="visually-hidden">{{ 'fileList.download' | translate }}</span>
+                      <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
+                    </button>
+                    <button
+                      type="button"
+                      class="delete-hint"
+                      (click)="handleOverlayDelete($event, file)"
+                      [attr.aria-label]="'fileList.delete' | translate"
+                      title="{{ 'fileList.delete' | translate }}"
+                    >
+                      <span class="visually-hidden">{{ 'fileList.delete' | translate }}</span>
+                      <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
+                    </button>
+                  </div>
                 }
-                <button
-                  type="button"
-                  class="download-hint"
-                  (click)="handleOverlayDownload($event, file.path, file.filename)"
-                  [attr.aria-label]="'fileList.download' | translate"
-                  title="{{ 'fileList.download' | translate }}"
-                >
-                  <span class="visually-hidden">{{
-                    'fileList.download' | translate
-                  }}</span>
-                  <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
-                </button>
-                <button
-                  type="button"
-                  class="delete-hint"
-                  (click)="handleOverlayDelete($event, file)"
-                  [attr.aria-label]="'fileList.delete' | translate"
-                  title="{{ 'fileList.delete' | translate }}"
-                >
-                  <span class="visually-hidden">{{
-                    'fileList.delete' | translate
-                  }}</span>
-                  <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
-                </button>
-              </div>
-              }
               }
             </div>
-            @if (file.filename) { <p class="file-name">{{ file.filename }}</p> }
-            @if (file.created_at) { <div class="created-at-wrapper"><span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span></div> }
+            @if (file.filename) {
+              <p class="file-name">{{ file.filename }}</p>
+            }
+            @if (file.created_at) {
+              <div class="created-at-wrapper">
+                <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
+              </div>
+            }
             <div class="file-description-wrapper">
-              @if (file.description) { <p class="file-description-text">{{ file.description }}</p> }
+              @if (file.description) {
+                <p class="file-description-text">{{ file.description }}</p>
+              }
             </div>
           </li>
         }
@@ -607,26 +713,109 @@
     </div>
   }
 
-  <dialog #fileEditDialog class="file-edit-dialog" [attr.aria-label]="'common.edit' | translate" (cancel)="fileMetadataSaving() && $event.preventDefault()" (close)="cancelEditFile()">
+  <dialog
+    #fileEditDialog
+    class="file-edit-dialog"
+    [attr.aria-label]="'common.edit' | translate"
+    (cancel)="fileMetadataSaving() && $event.preventDefault()"
+    (close)="cancelEditFile()"
+  >
     @if (editingFile(); as file) {
-      <div class="file-edit-header"><h2>{{ 'common.edit' | translate }}</h2><button type="button" class="file-edit-close" (click)="cancelEditFile()" [attr.aria-label]="'common.close' | translate"><app-icon [icon]="icons.close" /></button></div>
-      <div class="file-edit-body">
-        <img class="file-edit-preview" [src]="getImageUrl(file.path)" [alt]="file.filename || ('fileList.imagePreview' | translate)" />
-        <div class="file-edit-media-actions">
-          <button type="button" class="button button-outline file-edit-icon-action" (click)="openImageLightbox($event, file)" [attr.aria-label]="'fileList.zoom' | translate" [attr.title]="'fileList.zoom' | translate"><app-icon [icon]="icons.zoomIn" /></button>
-          <button type="button" class="button button-outline file-edit-icon-action" (click)="downloadFile(file.path, file.filename)" [attr.aria-label]="'fileList.download' | translate" [attr.title]="'fileList.download' | translate"><app-icon [icon]="icons.download" /></button>
-          @if (editingFileGroup(); as group) {
-            @if (hasMoveTargetsForFile(group)) { <button type="button" class="button button-outline file-edit-icon-action" (click)="openMoveFileModal($event, $any(file), group)" [attr.aria-label]="'fileList.movePicture' | translate" [attr.title]="'fileList.movePicture' | translate" [disabled]="moveFileInProgress()"><app-icon [icon]="icons.chevronRight" /></button> }
-          } @else if (canSendProjectFiles()) {
-            <button type="button" class="button button-outline file-edit-icon-action" (click)="openSendProjectFileModal($event, $any(file))" [attr.aria-label]="'fileList.sendToObject' | translate" [attr.title]="'fileList.sendToObject' | translate" [disabled]="sendProjectFilesInProgress()"><app-icon [icon]="icons.chevronRight" /></button>
-          }
-          <button type="button" class="button button-error file-edit-icon-action" (click)="deleteFile(file)" [attr.aria-label]="'fileList.delete' | translate" [attr.title]="'fileList.delete' | translate"><app-trash-icon [size]="18" /></button>
-        </div>
-        <label for="file-edit-name">{{ 'fileList.filename' | translate }}</label><input id="file-edit-name" type="text" [(ngModel)]="editFileName" />
-        <label for="file-edit-date">{{ 'fileList.createdAt' | translate }}</label><input id="file-edit-date" type="date" [(ngModel)]="editFileCreatedAt" />
-        <label for="file-edit-description">{{ 'fileUpload.description' | translate }}</label><textarea id="file-edit-description" rows="3" [(ngModel)]="editFileDescription"></textarea>
+      <div class="file-edit-header">
+        <h2>{{ 'common.edit' | translate }}</h2>
+        <button
+          type="button"
+          class="file-edit-close"
+          (click)="cancelEditFile()"
+          [attr.aria-label]="'common.close' | translate"
+        >
+          <app-icon [icon]="icons.close" />
+        </button>
       </div>
-      <div class="file-edit-footer"><button type="button" class="button button-secondary" (click)="cancelEditFile()" [disabled]="fileMetadataSaving()">{{ 'common.cancel' | translate }}</button><button type="button" class="button button-primary" (click)="saveFileMetadata(file)" [disabled]="fileMetadataSaving()">{{ (fileMetadataSaving() ? 'common.saving' : 'common.save') | translate }}</button></div>
+      <div class="file-edit-body">
+        <img
+          class="file-edit-preview"
+          [src]="getImageUrl(file.path)"
+          [alt]="file.filename || ('fileList.imagePreview' | translate)"
+        />
+        <div class="file-edit-media-actions">
+          <button
+            type="button"
+            class="button button-outline file-edit-icon-action"
+            (click)="openImageLightbox($event, file)"
+            [attr.aria-label]="'fileList.zoom' | translate"
+            [attr.title]="'fileList.zoom' | translate"
+          >
+            <app-icon [icon]="icons.zoomIn" />
+          </button>
+          <button
+            type="button"
+            class="button button-outline file-edit-icon-action"
+            (click)="downloadFile(file.path, file.filename)"
+            [attr.aria-label]="'fileList.download' | translate"
+            [attr.title]="'fileList.download' | translate"
+          >
+            <app-icon [icon]="icons.download" />
+          </button>
+          @if (editingFileGroup(); as group) {
+            @if (hasMoveTargetsForFile(group)) {
+              <button
+                type="button"
+                class="button button-outline file-edit-icon-action"
+                (click)="openMoveFileModal($event, $any(file), group)"
+                [attr.aria-label]="'fileList.movePicture' | translate"
+                [attr.title]="'fileList.movePicture' | translate"
+                [disabled]="moveFileInProgress()"
+              >
+                <app-icon [icon]="icons.chevronRight" />
+              </button>
+            }
+          } @else if (canSendProjectFiles()) {
+            <button
+              type="button"
+              class="button button-outline file-edit-icon-action"
+              (click)="openSendProjectFileModal($event, $any(file))"
+              [attr.aria-label]="'fileList.sendToObject' | translate"
+              [attr.title]="'fileList.sendToObject' | translate"
+              [disabled]="sendProjectFilesInProgress()"
+            >
+              <app-icon [icon]="icons.chevronRight" />
+            </button>
+          }
+          <button
+            type="button"
+            class="button button-error file-edit-icon-action"
+            (click)="deleteFile(file)"
+            [attr.aria-label]="'fileList.delete' | translate"
+            [attr.title]="'fileList.delete' | translate"
+          >
+            <app-trash-icon [size]="18" />
+          </button>
+        </div>
+        <label for="file-edit-name">{{ 'fileList.filename' | translate }}</label
+        ><input id="file-edit-name" type="text" [(ngModel)]="editFileName" />
+        <label for="file-edit-date">{{ 'fileList.createdAt' | translate }}</label
+        ><input id="file-edit-date" type="date" [(ngModel)]="editFileCreatedAt" />
+        <label for="file-edit-description">{{ 'fileUpload.description' | translate }}</label
+        ><textarea id="file-edit-description" rows="3" [(ngModel)]="editFileDescription"></textarea>
+      </div>
+      <div class="file-edit-footer">
+        <button
+          type="button"
+          class="button button-secondary"
+          (click)="cancelEditFile()"
+          [disabled]="fileMetadataSaving()"
+        >
+          {{ 'common.cancel' | translate }}</button
+        ><button
+          type="button"
+          class="button button-primary"
+          (click)="saveFileMetadata(file)"
+          [disabled]="fileMetadataSaving()"
+        >
+          {{ (fileMetadataSaving() ? 'common.saving' : 'common.save') | translate }}
+        </button>
+      </div>
     }
   </dialog>
 
@@ -646,9 +835,7 @@
         [attr.aria-label]="'fileList.closeImagePreview' | translate"
         title="{{ 'fileList.closeImagePreview' | translate }}"
       >
-        <span class="visually-hidden">{{
-          'fileList.closeImagePreview' | translate
-        }}</span>
+        <span class="visually-hidden">{{ 'fileList.closeImagePreview' | translate }}</span>
         ×
       </button>
       <img

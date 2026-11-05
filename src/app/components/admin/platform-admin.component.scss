@@ -218,6 +218,53 @@
 .operations-card > h3 {
   margin-block-end: 0.9rem;
 }
+.user-errors-card {
+  margin-block-start: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: #fbfcfe;
+}
+.user-errors-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+.user-errors-heading p,
+.user-errors-empty {
+  margin: 0.35rem 0 0;
+  color: var(--admin-muted);
+  font-size: 0.86rem;
+}
+.user-errors-heading strong {
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  background: #feecec;
+  color: #a12c2c;
+}
+.user-errors-scroll {
+  max-block-size: 32rem;
+  background: #fff;
+}
+.user-errors-table {
+  font-size: 0.85rem;
+}
+.user-errors-table td:last-child {
+  min-width: 18rem;
+}
+.error-code {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  background: #feecec;
+  color: #a12c2c;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.error-message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .events-heading {
   display: flex;
   align-items: flex-start;

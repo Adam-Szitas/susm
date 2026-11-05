@@ -55,6 +55,7 @@ import {
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+import { CategoryCheckboxListComponent } from '../shared/category-checkbox-list.component';
 
 @Component({
   selector: 'app-file-list',
@@ -68,6 +69,7 @@ import { TrashIconComponent } from '../shared/trash-icon.component';
     FormsModule,
     TrashIconComponent,
     IconComponent,
+    CategoryCheckboxListComponent,
     SubGroupUploadModalComponent,
     SubGroupDetailModalComponent,
   ],
@@ -189,7 +191,9 @@ export class FileListComponent implements OnDestroy {
     const activeGroups = sortFileGroupsByStoredOrder(
       this.fileGroups().filter((group) => !this.isGroupRemoved(group)),
     );
-    const filterLabels = this.categoryFilter().map((c) => c?.trim()).filter(Boolean);
+    const filterLabels = this.categoryFilter()
+      .map((c) => c?.trim())
+      .filter(Boolean);
     const groups =
       filterLabels.length === 0
         ? activeGroups
@@ -365,8 +369,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public autoResizeTextarea(target: HTMLTextAreaElement | Event | null | undefined): void {
-    const el =
-      target instanceof Event ? (target.target as HTMLTextAreaElement | null) : target;
+    const el = target instanceof Event ? (target.target as HTMLTextAreaElement | null) : target;
     if (!el || el.nodeName !== 'TEXTAREA') return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
@@ -584,8 +587,7 @@ export class FileListComponent implements OnDestroy {
   public openSendProjectFilesModal(fileIds?: string[]): void {
     if (!this.canSendProjectFiles() || this.sendProjectFilesInProgress()) return;
 
-    const ids =
-      fileIds && fileIds.length > 0 ? fileIds : Array.from(this.selectedFileIds());
+    const ids = fileIds && fileIds.length > 0 ? fileIds : Array.from(this.selectedFileIds());
     if (ids.length === 0) return;
 
     this.activeFileId.set(null);
@@ -617,11 +619,7 @@ export class FileListComponent implements OnDestroy {
     this.openSendProjectFilesModal([id]);
   }
 
-  #sendProjectFilesToGroup(
-    fileIds: string[],
-    objectId: string,
-    groupId: string,
-  ): void {
+  #sendProjectFilesToGroup(fileIds: string[], objectId: string, groupId: string): void {
     if (!fileIds.length || this.sendProjectFilesInProgress()) return;
 
     this.sendProjectFilesInProgress.set(true);
@@ -883,11 +881,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   /** Opens detail when the user clicks anywhere on the sub-group tile (not after drag). */
-  public onSubGroupItemClick(
-    _event: MouseEvent,
-    group: FileGroup,
-    subGroup: FileSubGroup,
-  ): void {
+  public onSubGroupItemClick(_event: MouseEvent, group: FileGroup, subGroup: FileSubGroup): void {
     if (this.subGroupDidDrag) {
       this.subGroupDidDrag = false;
       return;
@@ -895,11 +889,7 @@ export class FileListComponent implements OnDestroy {
     this.openSubGroupDetail(group, subGroup);
   }
 
-  public onSubGroupItemKeyActivate(
-    event: Event,
-    group: FileGroup,
-    subGroup: FileSubGroup,
-  ): void {
+  public onSubGroupItemKeyActivate(event: Event, group: FileGroup, subGroup: FileSubGroup): void {
     event.preventDefault();
     this.openSubGroupDetail(group, subGroup);
   }
@@ -944,7 +934,9 @@ export class FileListComponent implements OnDestroy {
   #subGroupOrderIds(group: FileGroup): string[] {
     const raw = this.fileGroups().find((g) => g._id.$oid === group._id.$oid);
     if (!raw) return [];
-    return sortFileSubGroupsByStoredOrder((raw.sub_groups ?? []).filter((sg) => !this.isSubGroupRemoved(sg)))
+    return sortFileSubGroupsByStoredOrder(
+      (raw.sub_groups ?? []).filter((sg) => !this.isSubGroupRemoved(sg)),
+    )
       .map((sg) => sg._id?.$oid)
       .filter((id): id is string => !!id);
   }
@@ -1359,7 +1351,9 @@ export class FileListComponent implements OnDestroy {
     }
 
     const groupLabel = this.getGroupDisplayName(group);
-    let message = this.#translationService.instant('fileList.confirmDeleteFileGroup', { groupLabel });
+    let message = this.#translationService.instant('fileList.confirmDeleteFileGroup', {
+      groupLabel,
+    });
     if (message === 'fileList.confirmDeleteFileGroup') {
       message = `Remove the file group "${groupLabel}"? The group will be hidden; files remain on the server.`;
     }
@@ -1509,11 +1503,7 @@ export class FileListComponent implements OnDestroy {
     const visibleBefore = this.#visibleGroupIds();
     if (!fullBefore.length || !visibleBefore.length) return;
 
-    const merged = mergeVisibleReorderIntoFullOrder(
-      fullBefore,
-      visibleBefore,
-      visibleOrderAfter,
-    );
+    const merged = mergeVisibleReorderIntoFullOrder(fullBefore, visibleBefore, visibleOrderAfter);
     this.#saveGroupOrder(objectId, merged);
   }
 
@@ -1551,8 +1541,7 @@ export class FileListComponent implements OnDestroy {
         },
         error: (error: Error) => {
           this.#notificationService.showError(
-            error.message ||
-              this.#translationService.instant('fileList.groupOrderSaveFailed'),
+            error.message || this.#translationService.instant('fileList.groupOrderSaveFailed'),
           );
         },
       });
@@ -1560,9 +1549,7 @@ export class FileListComponent implements OnDestroy {
 
   /** Files shown in the gallery (excludes broken thumbnails). */
   #visibleFilesInGroup(group: FileGroup): FileGroupItem[] {
-    return (
-      this.filteredFileGroups().find((g) => g._id.$oid === group._id.$oid)?.files ?? []
-    );
+    return this.filteredFileGroups().find((g) => g._id.$oid === group._id.$oid)?.files ?? [];
   }
 
   /** Visible file IDs in display order. */
@@ -1592,11 +1579,7 @@ export class FileListComponent implements OnDestroy {
     const visibleBefore = this.#visibleFileOrderIds(group);
     if (!fullBefore.length || !visibleBefore.length) return;
 
-    const merged = mergeVisibleReorderIntoFullOrder(
-      fullBefore,
-      visibleBefore,
-      visibleOrderAfter,
-    );
+    const merged = mergeVisibleReorderIntoFullOrder(fullBefore, visibleBefore, visibleOrderAfter);
     this.#saveFileOrder(group._id.$oid, merged);
   }
 
@@ -1691,17 +1674,16 @@ export class FileListComponent implements OnDestroy {
   #saveFileOrder(groupId: string, fileIds: string[]): void {
     if (this.reorderSaving()) return;
     this.reorderSaving.set(true);
-    this.#fileService.reorderFiles(groupId, fileIds).pipe(
-      finalize(() => this.reorderSaving.set(false)),
-    ).subscribe({
-      next: () => {
-        this.metadataUpdated.emit();
-      },
-      error: (error: Error) => {
-        this.#notificationService.showError(
-          error.message || 'Failed to save file order',
-        );
-      },
-    });
+    this.#fileService
+      .reorderFiles(groupId, fileIds)
+      .pipe(finalize(() => this.reorderSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.metadataUpdated.emit();
+        },
+        error: (error: Error) => {
+          this.#notificationService.showError(error.message || 'Failed to save file order');
+        },
+      });
   }
 }

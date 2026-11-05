@@ -66,15 +66,31 @@ export class ErrorHandlerService {
         (error.status === 404 && responseIndicatesAuthSessionInvalid(error)) ||
         (error.status === 403 && responseIndicatesAuthSessionInvalid(error));
       if (sessionLike) {
-        this.#notificationService.showError('Session expired. Please log in again.');
+        this.#notificationService.showError(
+          'Session expired. Please log in again.',
+          5000,
+          error.status,
+        );
       } else if (error.status === 403) {
-        this.#notificationService.showError('You do not have permission to perform this action.');
+        this.#notificationService.showError(
+          'You do not have permission to perform this action.',
+          5000,
+          error.status,
+        );
       } else if (error.status === 404) {
-        this.#notificationService.showError('The requested resource was not found.');
+        this.#notificationService.showError(
+          'The requested resource was not found.',
+          5000,
+          error.status,
+        );
       } else if (error.status >= 500) {
-        this.#notificationService.showError('Server error. Please try again later.');
+        this.#notificationService.showError(
+          'Server error. Please try again later.',
+          5000,
+          error.status,
+        );
       } else {
-        this.#notificationService.showError(message);
+        this.#notificationService.showError(message, 5000, error.status);
       }
     }
 
@@ -108,4 +124,3 @@ export class ErrorHandlerService {
     }
   }
 }
-

@@ -72,6 +72,8 @@ export interface OperationalEvent {
   action: string;
   extra: Record<string, unknown>;
   outcome: 'success' | 'error';
+  status?: number;
+  message?: string;
 }
 
 export interface OperationsSnapshot {
@@ -85,6 +87,7 @@ export interface OperationsSnapshot {
   by_category: Record<string, number>;
   daily: { date: string; events: number; errors: number }[];
   events: OperationalEvent[];
+  user_errors?: OperationalEvent[];
   health: {
     backend: string;
     backend_version: string;
