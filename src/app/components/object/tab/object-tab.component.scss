@@ -120,8 +120,9 @@
 
 .object-file-group-category-filter-label {
   display: flex;
-  width: fit-content;
-  padding: 0.6rem 0.8rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #fff;
@@ -130,15 +131,46 @@
   color: #374151;
   cursor: pointer;
   align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
+  justify-content: space-between;
   list-style: none;
   text-align: center;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.object-file-group-category-filter-leading {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.object-file-group-category-icon {
+  color: var(--primary-default, #9d0000);
+  flex: 0 0 auto;
+}
+
+.object-file-group-category-chevron {
+  color: #6b7280;
+}
+
+.object-file-group-category-filter[open] .object-file-group-category-chevron {
+  transform: rotate(-135deg);
 }
 
 .object-file-group-category-count {
-  margin-inline-start: 0.35rem;
+  min-width: 1.35rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid rgba(157, 0, 0, 0.15);
+  border-radius: 999px;
+  background: rgba(157, 0, 0, 0.08);
   color: var(--primary-default, #9d0000);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .object-file-group-category-filter-chips {
@@ -154,21 +186,8 @@
 }
 
 .object-file-group-category-panel {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 0.4rem);
-  left: 0;
-  width: max-content;
-  max-width: min(32rem, calc(100vw - 2rem));
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 12px 28px rgb(15 23 42 / 14%);
-}
-
-.object-file-group-category-filter:not([open]) .object-file-group-category-panel {
-  display: none;
+  width: 100%;
+  padding: 0.75rem 0 0;
 }
 
 .category-filter-clear {
