@@ -347,7 +347,7 @@
                       (dragstart)="onProtocolObjectDragStart($event, object)"
                       (dragend)="onProtocolObjectDragEnd()"
                       (touchstart)="onProtocolObjectTouchStart($event, object)"
-                      >⋮⋮</span
+                      ><app-icon [icon]="icons.gripHorizontal" /></span
                     >
                     <span class="reorder-position">{{ objectProtocolPosition(object) }}</span>
                   }
@@ -410,7 +410,7 @@
                       (dragstart)="onLinkedProtocolDragStart($event, protocol)"
                       (dragend)="onLinkedProtocolDragEnd()"
                       (touchstart)="onLinkedProtocolTouchStart($event, protocol)"
-                      >⋮⋮</span
+                      ><app-icon [icon]="icons.gripHorizontal" /></span
                     >
                     <span class="reorder-position">{{ linkedProtocolPosition(protocol) }}</span>
                   }

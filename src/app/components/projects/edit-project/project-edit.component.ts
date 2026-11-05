@@ -74,7 +74,17 @@ export class EditProjectComponent implements OnInit {
       next: (response: Project) => {
         this.#modalService.close();
         this.#notificationService.showSuccess('projects.updateSuccess');
+        // Update the visible project immediately, then reload the authoritative detail
+        // so normalized fields and related project data are refreshed in the tab.
         this.#projectStore.setProject(response);
+        const projectId = response._id?.$oid ?? this.projectData._id?.$oid;
+        if (projectId) {
+          this.#projectStore.loadProject(projectId).subscribe({
+            error: (err) => {
+              console.error('Project refresh after update failed:', err);
+            },
+          });
+        }
       },
       error: (err) => {
         this.#notificationService.showError('projects.updateError');

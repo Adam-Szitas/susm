@@ -219,7 +219,7 @@
                     ) | translate
                   "
                 >
-                  <app-icon [icon]="objectReorderMode() ? icons.check : icons.arrowsUpDown" />
+                  <app-icon [icon]="objectReorderMode() ? icons.check : icons.gripHorizontal" />
                 </button>
               }
             }
@@ -306,7 +306,7 @@
                       (dragstart)="onObjectDragStart($event, object)"
                       (dragend)="onObjectDragEnd()"
                       (touchstart)="onObjectTouchStart($event, object)"
-                      >⋮⋮</span
+                      ><app-icon [icon]="icons.gripHorizontal" /></span
                     >
                     <span class="reorder-position">{{ i + 1 }}</span>
                     <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">

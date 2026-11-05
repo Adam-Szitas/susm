@@ -63,50 +63,6 @@
 
   <!-- Object file groups only (`objectId` unset on project tab — projects use flat `projectFiles` below). -->
   @if (objectId()) {
-    @if (activeGroupCount() > 1) {
-      <div class="file-groups-toolbar">
-        <button
-          type="button"
-          class="button button-outline file-groups-reorder-toggle"
-          [class.active]="groupReorderMode()"
-          (click)="toggleGroupReorderMode()"
-          [disabled]="groupReorderSaving()"
-          [attr.aria-label]="
-            groupReorderMode()
-              ? ('fileList.doneReorderGroups' | translate)
-              : ('fileList.reorderGroups' | translate)
-          "
-          [attr.title]="
-            groupReorderSaving()
-              ? ('fileList.savingOrder' | translate)
-              : groupReorderMode() && categoryFilter().length > 0
-                ? ('fileList.groupReorderFilteredHint' | translate)
-                : groupReorderMode()
-                  ? ('fileList.reorderGroupsActiveHint' | translate)
-                  : ('fileList.reorderGroups' | translate)
-          "
-        >
-          @if (groupReorderSaving()) {
-            <span class="spinner" aria-hidden="true"></span>
-            <span class="file-groups-reorder-label">{{ 'fileList.savingOrder' | translate }}</span>
-          } @else if (groupReorderMode()) {
-            <app-icon
-              [icon]="icons.check"
-              [svgClass]="'file-groups-reorder-icon'"
-              [strokeWidth]="2.5"
-            />
-            <span class="file-groups-reorder-label">{{
-              'fileList.doneReorderGroups' | translate
-            }}</span>
-          } @else {
-            <app-icon [icon]="icons.gripHorizontal" [svgClass]="'file-groups-reorder-icon'" />
-            <span class="file-groups-reorder-label">{{
-              'fileList.reorderGroups' | translate
-            }}</span>
-          }
-        </button>
-      </div>
-    }
     @for (group of filteredFileGroups(); track group._id.$oid; let gi = $index) {
       <div class="file-group" [class.group-reorder-active]="groupReorderMode()">
         <div class="group-header">
@@ -337,7 +293,7 @@
                       : ('fileList.reorderPictures' | translate)
                   "
                 >
-                  <app-icon [icon]="icons.arrowsUpDown" />
+                  <app-icon [icon]="icons.gripHorizontal" />
                 </button>
               }
               <button

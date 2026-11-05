@@ -35,6 +35,8 @@
 .sub-group-detail-body {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -74,70 +76,6 @@
   white-space: pre-wrap;
 }
 
-.sub-group-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-
-  .toolbar-btn {
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .toolbar-btn.icon-only {
-    @include touch-target-min;
-    padding: 0.5rem !important;
-  }
-
-  .toolbar-btn-icon {
-    @include icon-size(var(--icon-size-md));
-    display: block;
-  }
-
-  .sub-group-delete-btn.icon-only {
-    margin-left: auto;
-  }
-}
-
-.sub-group-edit-meta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-
-  &.icon-only {
-    @include touch-target-min;
-    padding: 0.5rem !important;
-  }
-
-  .toolbar-btn-icon {
-    @include icon-size(var(--icon-size-md));
-    display: block;
-  }
-}
-
-.meta-edit-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-
-  .button {
-    margin: 0;
-  }
-
-  .toolbar-btn.icon-only {
-    @include touch-target-min;
-    padding: 0.5rem !important;
-  }
-
-  .toolbar-btn-icon {
-    @include icon-size(var(--icon-size-md));
-    display: block;
-  }
-}
-
 .sub-group-modal-footer {
   flex-shrink: 0;
   display: flex;
@@ -151,8 +89,10 @@
 
   .button {
     margin: 0;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-height: var(--touch-target-min, 44px);
+    min-width: var(--touch-target-min, 44px);
+    padding: 0.5rem !important;
   }
 
   @include tablet-up {
@@ -160,9 +100,19 @@
 
     .button {
       flex: 0 0 auto;
-      min-width: 6.5rem;
     }
   }
+}
+
+.sub-group-footer-leading,
+.sub-group-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sub-group-footer-actions {
+  margin-inline-start: auto;
 }
 
 .category-options summary {
@@ -174,8 +124,13 @@
   font-weight: 600;
   cursor: pointer;
 
-  app-icon { --icon-size: 1.1rem; }
-  &:focus-visible { outline: 2px solid var(--primary-default, #9d0000); outline-offset: 2px; }
+  app-icon {
+    --icon-size: 1.1rem;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--primary-default, #9d0000);
+    outline-offset: 2px;
+  }
 }
 
 .category-options .category-checkbox-grid {
@@ -194,34 +149,60 @@
   border-radius: 8px;
   background: #f9fafb;
   cursor: pointer;
-  input { accent-color: var(--primary-default, #9d0000); }
+  input {
+    accent-color: var(--primary-default, #9d0000);
+  }
 }
 
-.subgroup-picture-edit { align-self: flex-end; margin: 0.5rem; }
+.subgroup-picture-edit {
+  align-self: flex-end;
+  margin: 0.5rem;
+}
 .subgroup-picture-dialog {
   width: min(32rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  &::backdrop { background: rgb(0 0 0 / 60%); }
+  &::backdrop {
+    background: rgb(0 0 0 / 60%);
+  }
 }
-.subgroup-picture-header, .subgroup-picture-footer {
+.subgroup-picture-header,
+.subgroup-picture-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  h2 { margin: 0; font-size: 1.1rem; }
-  button { margin: 0; }
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  button {
+    margin: 0;
+  }
 }
-.subgroup-picture-footer { position: sticky; bottom: -1rem; padding: 0.75rem 0 1rem; background: #fff; border-top: 1px solid #e5e7eb; }
-.subgroup-picture-header > button { border: 0; background: transparent; cursor: pointer; @include touch-target-min; }
-.subgroup-picture-preview { display: block; margin: 1rem auto; max-width: min(250px, 100%); max-height: 250px; width: auto; height: auto; object-fit: contain; }
-
-.sub-group-delete-btn {
-  margin-left: auto;
-  border-color: #b22222;
-  color: #b22222;
+.subgroup-picture-footer {
+  position: sticky;
+  bottom: -1rem;
+  padding: 0.75rem 0 1rem;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+.subgroup-picture-header > button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  @include touch-target-min;
+}
+.subgroup-picture-preview {
+  display: block;
+  margin: 1rem auto;
+  max-width: min(250px, 100%);
+  max-height: 250px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .sub-group-gallery {
@@ -477,7 +458,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  &:not(:empty) { margin-bottom: 0.5rem; }
+  &:not(:empty) {
+    margin-bottom: 0.5rem;
+  }
 }
 
 .category-chip {

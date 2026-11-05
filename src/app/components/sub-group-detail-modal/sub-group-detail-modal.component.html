@@ -3,7 +3,12 @@
     <div class="modal-content modal-content--wide" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ sg.name }}</h2>
-        <button type="button" class="close-btn" (click)="onClose()" [attr.aria-label]="'common.close' | translate">
+        <button
+          type="button"
+          class="close-btn"
+          (click)="onClose()"
+          [attr.aria-label]="'common.close' | translate"
+        >
           <app-icon [icon]="icons.close" />
         </button>
       </div>
@@ -24,25 +29,32 @@
             <div class="form-group">
               <div class="category-chips-editing">
                 @for (cat of editCategories(); track cat) {
-                  <button type="button" class="category-chip" (click)="removeEditCategory(cat)" [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat">
+                  <button
+                    type="button"
+                    class="category-chip"
+                    (click)="removeEditCategory(cat)"
+                    [attr.aria-label]="('fileList.removeCategory' | translate) + ': ' + cat"
+                  >
                     <span>{{ cat }}</span>
                     <app-trash-icon [size]="12" />
                   </button>
                 }
               </div>
               <details class="category-options">
-                <summary><app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}</summary>
+                <summary>
+                  <app-icon [icon]="icons.tag" /> {{ 'fileUpload.category' | translate }}
+                </summary>
                 <div class="category-checkbox-grid">
-                @for (opt of categoryOptionsForEdit(); track opt) {
-                  <label class="category-cb-label">
-                    <input
-                      type="checkbox"
-                      [checked]="isEditCategorySelected(opt)"
-                      (change)="toggleEditCategory(opt)"
-                    />
-                    <span>{{ opt }}</span>
-                  </label>
-                }
+                  @for (opt of categoryOptionsForEdit(); track opt) {
+                    <label class="category-cb-label">
+                      <input
+                        type="checkbox"
+                        [checked]="isEditCategorySelected(opt)"
+                        (change)="toggleEditCategory(opt)"
+                      />
+                      <span>{{ opt }}</span>
+                    </label>
+                  }
                 </div>
               </details>
             </div>
@@ -66,61 +78,12 @@
                   <span class="sub-group-category-pill">{{ c }}</span>
                 }
               </div>
-              <button
-                type="button"
-                class="button button-outline sub-group-edit-meta-btn toolbar-btn icon-only"
-                (click)="startEditMetadata()"
-                [attr.aria-label]="'common.edit' | translate"
-                [attr.title]="'common.edit' | translate"
-              >
-                <app-icon [icon]="icons.edit" [svgClass]="'toolbar-btn-icon'" />
-              </button>
             </div>
             @if (sg.note?.trim()) {
               <p class="sub-group-note">{{ sg.note }}</p>
             }
           </div>
         }
-
-        <div class="sub-group-toolbar">
-          <button
-            type="button"
-            class="button button-primary toolbar-btn icon-only"
-            (click)="requestAddPhotos.emit()"
-            [attr.aria-label]="'subGroups.addPhotos' | translate"
-            [attr.title]="'subGroups.addPhotos' | translate"
-          >
-            <app-icon [icon]="icons.uploadArrow" [svgClass]="'toolbar-btn-icon'" />
-          </button>
-          <button
-            type="button"
-            class="button button-outline toolbar-btn icon-only"
-            [class.active]="reorderMode()"
-            (click)="toggleReorderMode()"
-            [disabled]="reorderSaving() || visibleFiles().length < 2"
-            [attr.aria-label]="
-              reorderMode()
-                ? ('fileList.doneReorderPictures' | translate)
-                : ('fileList.reorderPictures' | translate)
-            "
-            [attr.title]="
-              reorderMode()
-                ? ('fileList.doneReorderPictures' | translate)
-                : ('fileList.reorderPictures' | translate)
-            "
-          >
-            <app-icon [icon]="icons.arrowsUpDown" [svgClass]="'toolbar-btn-icon'" />
-          </button>
-          <button
-            type="button"
-            class="button button-outline sub-group-delete-btn toolbar-btn icon-only"
-            (click)="openDeleteConfirm()"
-            [attr.aria-label]="'subGroups.deleteSubGroup' | translate"
-            [attr.title]="'subGroups.deleteSubGroup' | translate"
-          >
-            <app-trash-icon [size]="18" />
-          </button>
-        </div>
 
         <ul class="sub-group-gallery">
           @for (file of visibleFiles(); track file._id.$oid; let i = $index) {
@@ -178,30 +141,85 @@
         }
       </div>
 
-      @if (editingMetadata()) {
-        <div class="modal-footer sub-group-modal-footer">
+      <div class="modal-footer sub-group-modal-footer">
+        <div class="sub-group-footer-leading">
+          @if (editingMetadata()) {
+            <button
+              type="button"
+              class="button button-outline toolbar-btn icon-only"
+              (click)="cancelEditMetadata()"
+              [disabled]="savingMetadata()"
+              [attr.aria-label]="'common.cancel' | translate"
+              [title]="'common.cancel' | translate"
+            >
+              <app-icon [icon]="icons.close" [svgClass]="'toolbar-btn-icon'" />
+            </button>
+            <button
+              type="button"
+              class="button button-primary toolbar-btn icon-only"
+              (click)="saveMetadata()"
+              [disabled]="savingMetadata()"
+              [attr.aria-label]="(savingMetadata() ? 'common.saving' : 'common.save') | translate"
+              [title]="(savingMetadata() ? 'common.saving' : 'common.save') | translate"
+            >
+              @if (savingMetadata()) {
+                <span class="spinner" aria-hidden="true"></span>
+              } @else {
+                <app-icon [icon]="icons.check" [svgClass]="'toolbar-btn-icon'" />
+              }
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="button button-outline toolbar-btn icon-only"
+              (click)="startEditMetadata()"
+              [attr.aria-label]="'common.edit' | translate"
+              [attr.title]="'common.edit' | translate"
+            >
+              <app-icon [icon]="icons.edit" [svgClass]="'toolbar-btn-icon'" />
+            </button>
+          }
+        </div>
+        <div class="sub-group-footer-actions">
           <button
             type="button"
-            class="button button-secondary"
-            (click)="cancelEditMetadata()"
-            [disabled]="savingMetadata()"
+            class="button button-primary toolbar-btn icon-only"
+            (click)="requestAddPhotos.emit()"
+            [attr.aria-label]="'subGroups.addPhotos' | translate"
+            [attr.title]="'subGroups.addPhotos' | translate"
           >
-            {{ 'common.cancel' | translate }}
+            <app-icon [icon]="icons.plus" [svgClass]="'toolbar-btn-icon'" />
           </button>
           <button
             type="button"
-            class="button button-primary"
-            (click)="saveMetadata()"
-            [disabled]="savingMetadata()"
+            class="button button-outline toolbar-btn icon-only"
+            [class.active]="reorderMode()"
+            (click)="toggleReorderMode()"
+            [disabled]="reorderSaving() || visibleFiles().length < 2"
+            [attr.aria-label]="
+              reorderMode()
+                ? ('fileList.doneReorderPictures' | translate)
+                : ('fileList.reorderPictures' | translate)
+            "
+            [attr.title]="
+              reorderMode()
+                ? ('fileList.doneReorderPictures' | translate)
+                : ('fileList.reorderPictures' | translate)
+            "
           >
-            @if (savingMetadata()) {
-              {{ 'common.saving' | translate }}
-            } @else {
-              {{ 'common.save' | translate }}
-            }
+            <app-icon [icon]="icons.gripHorizontal" [svgClass]="'toolbar-btn-icon'" />
+          </button>
+          <button
+            type="button"
+            class="button button-danger toolbar-btn icon-only"
+            (click)="openDeleteConfirm()"
+            [attr.aria-label]="'subGroups.deleteSubGroup' | translate"
+            [attr.title]="'subGroups.deleteSubGroup' | translate"
+          >
+            <app-trash-icon [size]="18" />
           </button>
         </div>
-      }
+      </div>
     </div>
   </div>
 
@@ -244,7 +262,11 @@
     (click)="onImageLightboxBackdropClick($event)"
   >
     @if (imageLightboxUrl(); as lightboxSrc) {
-      <button type="button" class="image-lightbox-close" (click)="closeImageLightbox(); $event.stopPropagation()">
+      <button
+        type="button"
+        class="image-lightbox-close"
+        (click)="closeImageLightbox(); $event.stopPropagation()"
+      >
         ×
       </button>
       <img

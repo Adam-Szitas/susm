@@ -8,6 +8,7 @@ import {
   OnInit,
   PLATFORM_ID,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -82,6 +83,7 @@ export class ObjectTabComponent implements OnInit {
   readonly isAdmin = this.#userStore.isAdmin;
 
   object = signal<Object | null>(null);
+  readonly fileListComponent = viewChild(FileListComponent);
   /** Project context for breadcrumb when the store was cleared (e.g. page refresh). */
   objectProjectContext = signal<{ id: string; name: string } | null>(null);
   projectTodoItems = signal<TodoItem[]>([]);

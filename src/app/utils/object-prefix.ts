@@ -15,21 +15,17 @@ export function resolveObjectPrefix(
   return `${prefix} ${house}`;
 }
 
-/** Recover the shared prefix from the stored prefix and the object's house number. */
-export function objectBasePrefix(prefix?: string | null, houseNumber?: string | null): string {
-  const value = prefix?.trim() ?? '';
-  const house = houseNumber?.trim() ?? '';
-  const suffix = ` ${house}`;
-  return house && value.endsWith(suffix) ? value.slice(0, -suffix.length).trim() : value;
+/** Return the actual stored prefix used to identify an object in the project list. */
+export function objectPrefixValue(prefix?: string | null): string {
+  return prefix?.trim() ?? '';
 }
 
 export function matchesPrefixFilter(
   prefix: string | null | undefined,
-  houseNumber: string | null | undefined,
   selected: string | null | undefined,
   exclude: boolean,
 ): boolean {
   if (!selected) return true;
-  const matches = objectBasePrefix(prefix, houseNumber) === selected;
+  const matches = objectPrefixValue(prefix) === selected;
   return exclude ? !matches : matches;
 }
