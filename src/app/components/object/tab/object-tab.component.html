@@ -162,41 +162,43 @@
 
   @if (object()) {
     <div class="object-control-blocks">
-      <section class="object-control-block object-new-group-control" aria-label="{{ 'fileList.createGroup' | translate }}">
-        <button type="button" class="button button-outline object-control-button object-new-group-button" (click)="openUploadModal()" [disabled]="uploading()" [attr.aria-label]="'fileList.createGroup' | translate" [title]="'fileList.createGroup' | translate">
+      <section class="object-control-block object-group-actions">
+        <button type="button" class="button button-outline object-control-button object-group-action-button" (click)="openUploadModal()" [disabled]="uploading()" [attr.aria-label]="'fileList.createGroup' | translate" [title]="'fileList.createGroup' | translate">
           <app-icon [icon]="icons.plus" />
         </button>
+        @if ((fileListComponent()?.activeGroupCount() ?? 0) > 1) {
+          <button type="button" class="button button-outline object-control-button object-group-action-button file-groups-reorder-toggle" [class.active]="fileListComponent()?.groupReorderMode()" (click)="fileListComponent()?.toggleGroupReorderMode()" [disabled]="fileListComponent()?.groupReorderSaving() ?? false" [attr.aria-label]="(fileListComponent()?.groupReorderMode() ? 'fileList.doneReorderGroups' : 'fileList.reorderGroups') | translate" [title]="(fileListComponent()?.groupReorderMode() ? 'fileList.doneReorderGroups' : 'fileList.reorderGroups') | translate">
+            @if (fileListComponent()?.groupReorderSaving()) {
+              <span class="spinner" aria-hidden="true"></span>
+            } @else if (fileListComponent()?.groupReorderMode()) {
+              <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+            } @else {
+              <app-icon [icon]="icons.gripHorizontal" />
+            }
+          </button>
+        }
       </section>
-      <section class="object-control-block object-file-controls" aria-label="{{ 'fileList.reorderGroups' | translate }}">
-        <div class="object-file-controls-actions">
-          @if ((fileListComponent()?.activeGroupCount() ?? 0) > 1) {
-            <button type="button" class="button button-outline object-control-button file-groups-reorder-toggle" [class.active]="fileListComponent()?.groupReorderMode()" (click)="fileListComponent()?.toggleGroupReorderMode()" [disabled]="fileListComponent()?.groupReorderSaving() ?? false" [attr.aria-label]="(fileListComponent()?.groupReorderMode() ? 'fileList.doneReorderGroups' : 'fileList.reorderGroups') | translate">
-              @if (fileListComponent()?.groupReorderSaving()) { <span class="spinner" aria-hidden="true"></span><span>{{ 'fileList.savingOrder' | translate }}</span> }
-              @else if (fileListComponent()?.groupReorderMode()) { <app-icon [icon]="icons.check" [strokeWidth]="2.5" /><span>{{ 'fileList.doneReorderGroups' | translate }}</span> }
-              @else { <app-icon [icon]="icons.gripHorizontal" /><span>{{ 'fileList.reorderGroups' | translate }}</span> }
-            </button>
-          }
-          @if (projectCategories().length > 0) {
-            <details class="object-file-group-category-filter">
-              <summary class="object-file-group-category-filter-label">
-                <span class="object-file-group-category-filter-leading">
-                  <app-icon [icon]="icons.tag" [svgClass]="'object-file-group-category-icon'" />
-                  <span>{{ 'filter.category' | translate }}</span>
-                  @if (urlFileGroupCategories().length) { <span class="object-file-group-category-count">{{ urlFileGroupCategories().length }}</span> }
-                </span>
-                <span class="chevron object-file-group-category-chevron" aria-hidden="true"></span>
-              </summary>
-              <div class="object-file-group-category-panel">
-                <div class="object-file-group-category-filter-chips" role="group" [attr.aria-label]="'filter.category' | translate">
-                  @for (category of projectCategories(); track category) {
-                    <button type="button" class="object-file-group-category-chip" [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)" [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)" (click)="toggleFileGroupCategoryFilter(category)">{{ category }}</button>
-                  }
-                </div>
-                @if (hasUrlFileGroupCategoryFilter()) { <button type="button" class="button button-secondary category-filter-clear" (click)="clearUrlCategoryFilter()">{{ 'filter.clear' | translate }}</button> }
+      <section class="object-control-block object-category-controls" [attr.aria-label]="'filter.category' | translate">
+        @if (projectCategories().length > 0) {
+          <details class="object-file-group-category-filter">
+            <summary class="object-file-group-category-filter-label">
+              <span class="object-file-group-category-filter-leading">
+                <app-icon [icon]="icons.tag" [svgClass]="'object-file-group-category-icon'" />
+                <span class="object-file-group-category-filter-text">{{ 'filter.category' | translate }}</span>
+                @if (urlFileGroupCategories().length) { <span class="object-file-group-category-count">{{ urlFileGroupCategories().length }}</span> }
+              </span>
+              <span class="chevron object-file-group-category-chevron" aria-hidden="true"></span>
+            </summary>
+            <div class="object-file-group-category-panel">
+              <div class="object-file-group-category-filter-chips" role="group" [attr.aria-label]="'filter.category' | translate">
+                @for (category of projectCategories(); track category) {
+                  <button type="button" class="object-file-group-category-chip" [class.object-file-group-category-chip--selected]="isFileGroupCategoryFilterActive(category)" [attr.aria-pressed]="isFileGroupCategoryFilterActive(category)" (click)="toggleFileGroupCategoryFilter(category)">{{ category }}</button>
+                }
               </div>
-            </details>
-          }
-        </div>
+              @if (hasUrlFileGroupCategoryFilter()) { <button type="button" class="button button-secondary category-filter-clear" (click)="clearUrlCategoryFilter()">{{ 'filter.clear' | translate }}</button> }
+            </div>
+          </details>
+        }
       </section>
       <section class="object-control-block object-checklist-controls">
         @if (projectTodoItems().length > 0) {

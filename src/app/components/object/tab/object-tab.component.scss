@@ -45,13 +45,6 @@
   background: transparent;
 }
 
-.object-file-controls-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .object-control-button {
   display: inline-flex;
   align-items: center;
@@ -62,31 +55,34 @@
   white-space: nowrap;
 }
 
-.object-new-group-control {
+.object-group-actions {
   display: flex;
   align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.object-new-group-button {
+.object-group-action-button {
   width: 2.75rem;
   min-width: 2.75rem;
   padding: 0;
 }
 
-.object-file-controls .object-file-group-category-filter {
-  position: relative;
-  flex: 0 0 auto;
-  min-width: 0;
-}
-
-.object-file-controls .object-file-group-category-filter-label {
-  width: auto;
-  min-width: 9rem;
-  min-height: 2.75rem;
+.object-category-controls {
+  display: flex;
+  inline-size: 100%;
+  min-inline-size: 0;
 }
 
 .object-checklist-controls {
+  inline-size: 100%;
+  min-inline-size: 0;
   padding: 0;
+
+  app-object-todos-section {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+  }
 }
 
 .object-checklist-controls ::ng-deep .object-todos-section {
@@ -99,12 +95,17 @@
 }
 
 .object-checklist-controls ::ng-deep .object-todos-toolbar {
+  inline-size: 100%;
+  min-inline-size: 0;
   align-items: center;
   gap: 0.5rem;
   border: 0;
 }
 
 .object-checklist-controls ::ng-deep .object-todos-header {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-inline-size: 0;
   min-height: 2.75rem;
   padding: 0.55rem 0.8rem;
   border: 1px solid #d1d5db;
@@ -125,13 +126,21 @@
 }
 
 .object-file-group-category-filter {
-  flex: 0 0 auto;
-  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .object-file-group-category-filter-label {
   display: flex;
+  box-sizing: border-box;
+  inline-size: 100%;
   width: 100%;
+  min-inline-size: 0;
   min-height: 2.75rem;
   padding: 0.55rem 0.8rem;
   border: 1px solid #d1d5db;
@@ -153,9 +162,18 @@
 
 .object-file-group-category-filter-leading {
   display: inline-flex;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
   align-items: center;
   gap: 0.55rem;
+}
+
+.object-file-group-category-filter-text {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .object-file-group-category-icon {
@@ -187,8 +205,13 @@
 .object-file-group-category-filter-chips {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 0.5rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   max-height: min(18rem, 45vh);
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.15rem 0.2rem 0.4rem 0;
@@ -197,7 +220,10 @@
 }
 
 .object-file-group-category-panel {
-  width: 100%;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   padding: 0.75rem 0 0;
 }
 
@@ -217,8 +243,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  max-inline-size: 100%;
   margin: 0;
   padding: 0.45rem 0.9rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
   border-radius: 999px;
   border: 1px solid #e5e7eb;
   background: #fff;
