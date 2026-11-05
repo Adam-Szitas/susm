@@ -118,6 +118,7 @@ export class FileListComponent implements OnDestroy {
     return { group, subGroup };
   });
   public subGroupReorderSaving = signal(false);
+  public subGroupReorderMode = signal(false);
   public draggedSubGroupId = signal<string | null>(null);
   public dragOverSubGroupId = signal<string | null>(null);
 
@@ -873,7 +874,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public openSubGroupDetail(group: FileGroup, subGroup: FileSubGroup): void {
-    if (this.groupReorderMode() || this.reorderMode()) {
+    if (this.groupReorderMode() || this.reorderMode() || this.subGroupReorderMode()) {
       return;
     }
     this.subGroupDetailTarget.set({ group, subGroup });
@@ -943,7 +944,7 @@ export class FileListComponent implements OnDestroy {
 
   public onSubGroupDragStart(event: DragEvent, subGroup: FileSubGroup): void {
     this.subGroupDidDrag = false;
-    if (this.subGroupReorderSaving()) {
+    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) {
       event.preventDefault();
       return;
     }
@@ -957,6 +958,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public onSubGroupDragOver(event: DragEvent, subGroup: FileSubGroup): void {
+    if (!this.subGroupReorderMode()) return;
     event.preventDefault();
     if (this.draggedSubGroupId()) {
       this.subGroupDidDrag = true;
@@ -976,7 +978,7 @@ export class FileListComponent implements OnDestroy {
 
   public onSubGroupDrop(event: DragEvent, targetSubGroup: FileSubGroup, group: FileGroup): void {
     event.preventDefault();
-    if (this.subGroupReorderSaving()) return;
+    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
 
     const draggedId = this.draggedSubGroupId();
     const targetId = targetSubGroup._id?.$oid;
@@ -1007,7 +1009,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public moveSubGroupUp(subGroup: FileSubGroup, group: FileGroup): void {
-    if (this.subGroupReorderSaving()) return;
+    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
     const groupId = group._id?.$oid;
     if (!groupId) return;
     const order = [...this.#subGroupOrderIds(group)];
@@ -1019,7 +1021,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public moveSubGroupDown(subGroup: FileSubGroup, group: FileGroup): void {
-    if (this.subGroupReorderSaving()) return;
+    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
     const groupId = group._id?.$oid;
     if (!groupId) return;
     const order = [...this.#subGroupOrderIds(group)];
@@ -1461,6 +1463,8 @@ export class FileListComponent implements OnDestroy {
     this.reorderMode.update((v) => !v);
     if (turningOn) {
       this.groupReorderMode.set(false);
+      this.subGroupReorderMode.set(false);
+      this.onSubGroupDragEnd();
       this.hideOverlay();
       this.clearSelection();
     } else {
@@ -1474,10 +1478,27 @@ export class FileListComponent implements OnDestroy {
     this.groupReorderMode.update((v) => !v);
     if (turningOn) {
       this.reorderMode.set(false);
+      this.subGroupReorderMode.set(false);
+      this.onSubGroupDragEnd();
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
       this.hideOverlay();
       this.clearSelection();
+    }
+  }
+
+  public toggleSubGroupReorderMode(): void {
+    const turningOn = !this.subGroupReorderMode();
+    this.subGroupReorderMode.set(turningOn);
+    if (turningOn) {
+      this.reorderMode.set(false);
+      this.groupReorderMode.set(false);
+      this.draggedFileId.set(null);
+      this.dragOverFileId.set(null);
+      this.hideOverlay();
+      this.clearSelection();
+    } else {
+      this.onSubGroupDragEnd();
     }
   }
 

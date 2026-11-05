@@ -80,25 +80,25 @@
           </dl>
           <dl class="project-data-panel project-data-panel--note">
             <dt>{{ 'projects.note' | translate }}</dt>
-            <dd class="project-note">
-              @if (project()?.note?.trim()) {
-                {{ project()?.note }}
-              } @else {
-                <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
-              }
+            <dd class="project-note-row">
+              <span class="project-note">
+                @if (project()?.note?.trim()) {
+                  {{ project()?.note }}
+                } @else {
+                  <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+                }
+              </span>
+              <button
+                type="button"
+                class="button button-outline project-details-action project-note-edit"
+                (click)="startEditingProject()"
+                [attr.aria-label]="'projects.editProject' | translate"
+                [title]="'projects.editProject' | translate"
+              >
+                <app-icon [icon]="icons.edit" />
+              </button>
             </dd>
           </dl>
-        </div>
-        <div class="project-details-footer">
-          <button
-            type="button"
-            class="button button-outline project-details-action"
-            (click)="startEditingProject()"
-            [attr.aria-label]="'projects.editProject' | translate"
-            [title]="'projects.editProject' | translate"
-          >
-            <app-icon [icon]="icons.edit" />
-          </button>
         </div>
       </div>
     </section>

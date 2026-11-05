@@ -216,7 +216,7 @@
               }
             </div>
             <div class="group-header-actions">
-              @if (objectId() && !groupReorderMode()) {
+              @if (objectId() && !groupReorderMode() && !subGroupReorderMode()) {
                 <button
                   type="button"
                   class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
@@ -294,6 +294,34 @@
                   "
                 >
                   <app-icon [icon]="icons.gripHorizontal" />
+                </button>
+              }
+              @if (objectId() && !groupReorderMode() && group.sub_groups.length > 1) {
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn"
+                  [class.group-toolbar-icon-btn--active]="subGroupReorderMode()"
+                  (click)="toggleSubGroupReorderMode()"
+                  [disabled]="subGroupReorderSaving()"
+                  [attr.aria-pressed]="subGroupReorderMode()"
+                  [attr.aria-label]="
+                    subGroupReorderMode()
+                      ? ('fileList.doneReorderGroups' | translate)
+                      : ('subGroups.dragToReorder' | translate)
+                  "
+                  [attr.title]="
+                    subGroupReorderMode()
+                      ? ('fileList.doneReorderGroups' | translate)
+                      : ('subGroups.dragToReorder' | translate)
+                  "
+                >
+                  @if (subGroupReorderSaving()) {
+                    <span class="spinner" aria-hidden="true"></span>
+                  } @else if (subGroupReorderMode()) {
+                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+                  } @else {
+                    <app-icon [icon]="icons.gripHorizontal" />
+                  }
                 </button>
               }
               <button
@@ -460,25 +488,53 @@
               </div>
             </li>
           }
-          @for (subGroup of group.sub_groups; track subGroup._id.$oid) {
+          @for (subGroup of group.sub_groups; track subGroup._id.$oid; let si = $index) {
             <li
               class="file-item sub-group-item"
               [class.dragging]="draggedSubGroupId() === subGroup._id.$oid"
               [class.drag-over]="dragOverSubGroupId() === subGroup._id.$oid"
+              [class.reorder-active]="subGroupReorderMode()"
               [attr.draggable]="
-                group.sub_groups.length > 1 && !subGroupReorderSaving() ? 'true' : null
+                subGroupReorderMode() && group.sub_groups.length > 1 && !subGroupReorderSaving()
+                  ? 'true'
+                  : null
               "
               tabindex="0"
               [attr.aria-label]="subGroup.name"
               (click)="onSubGroupItemClick($event, group, subGroup)"
               (keydown.enter)="openSubGroupDetail(group, subGroup)"
               (keydown.space)="onSubGroupItemKeyActivate($event, group, subGroup)"
-              (dragstart)="onSubGroupDragStart($event, subGroup)"
-              (dragover)="onSubGroupDragOver($event, subGroup)"
-              (dragleave)="onSubGroupDragLeave($event, subGroup)"
-              (drop)="onSubGroupDrop($event, subGroup, group)"
-              (dragend)="onSubGroupDragEnd()"
+              (dragstart)="subGroupReorderMode() ? onSubGroupDragStart($event, subGroup) : null"
+              (dragover)="subGroupReorderMode() ? onSubGroupDragOver($event, subGroup) : null"
+              (dragleave)="subGroupReorderMode() ? onSubGroupDragLeave($event, subGroup) : null"
+              (drop)="subGroupReorderMode() ? onSubGroupDrop($event, subGroup, group) : null"
+              (dragend)="subGroupReorderMode() ? onSubGroupDragEnd() : null"
             >
+              @if (subGroupReorderMode() && group.sub_groups.length > 1) {
+                <div class="sub-group-reorder-controls">
+                  <button
+                    type="button"
+                    class="sub-group-reorder-btn"
+                    (click)="$event.stopPropagation(); moveSubGroupUp(subGroup, group)"
+                    [disabled]="si === 0 || subGroupReorderSaving()"
+                    [attr.aria-label]="'fileList.moveGroupUp' | translate"
+                    [title]="'fileList.moveGroupUp' | translate"
+                  >
+                    <app-icon [icon]="icons.chevronLeft" [svgClass]="'sub-group-reorder-icon-up'" />
+                  </button>
+                  <span class="reorder-position">{{ si + 1 }}</span>
+                  <button
+                    type="button"
+                    class="sub-group-reorder-btn"
+                    (click)="$event.stopPropagation(); moveSubGroupDown(subGroup, group)"
+                    [disabled]="si === group.sub_groups.length - 1 || subGroupReorderSaving()"
+                    [attr.aria-label]="'fileList.moveGroupDown' | translate"
+                    [title]="'fileList.moveGroupDown' | translate"
+                  >
+                    <app-icon [icon]="icons.chevronRight" [svgClass]="'sub-group-reorder-icon-down'" />
+                  </button>
+                </div>
+              }
               <div class="image-container">
                 @if (subGroup.files.length > 0) {
                   <div class="sub-group-preview-collage">
@@ -506,7 +562,7 @@
                     }}</span>
                   </span>
                 }
-                @if (group.sub_groups.length > 1) {
+                @if (subGroupReorderMode() && group.sub_groups.length > 1) {
                   <span
                     class="sub-group-drag-handle"
                     [attr.title]="'subGroups.dragToReorder' | translate"

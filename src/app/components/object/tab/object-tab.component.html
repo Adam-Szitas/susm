@@ -32,17 +32,6 @@
             </div>
           </div>
           <div class="object-details-actions">
-            @if (objectDataExpanded()) {
-              <button
-                type="button"
-                class="button button-outline object-details-action"
-                (click)="editObjectDetails()"
-                [attr.aria-label]="'objects.editObject' | translate"
-                [title]="'objects.editObject' | translate"
-              >
-                <app-icon [icon]="icons.edit" />
-              </button>
-            }
             @if (externalSharingEnabled()) {
               <button
                 type="button"
@@ -146,12 +135,23 @@
             </dl>
             <dl class="object-data-panel object-data-panel--note">
               <dt>{{ 'common.note' | translate }}</dt>
-              <dd class="object-note">
-                @if (object()?.note?.trim()) {
-                  {{ object()?.note }}
-                } @else {
-                  <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
-                }
+              <dd class="object-note-row">
+                <span class="object-note">
+                  @if (object()?.note?.trim()) {
+                    {{ object()?.note }}
+                  } @else {
+                    <span class="note-empty">{{ 'objects.noNote' | translate }}</span>
+                  }
+                </span>
+                <button
+                  type="button"
+                  class="button button-outline object-details-action object-note-edit"
+                  (click)="editObjectDetails()"
+                  [attr.aria-label]="'objects.editObject' | translate"
+                  [title]="'objects.editObject' | translate"
+                >
+                  <app-icon [icon]="icons.edit" />
+                </button>
               </dd>
             </dl>
           </div>
@@ -162,11 +162,13 @@
 
   @if (object()) {
     <div class="object-control-blocks">
-      <section class="object-control-block object-file-controls" aria-label="{{ 'fileList.createGroup' | translate }}">
+      <section class="object-control-block object-new-group-control" aria-label="{{ 'fileList.createGroup' | translate }}">
+        <button type="button" class="button button-outline object-control-button object-new-group-button" (click)="openUploadModal()" [disabled]="uploading()" [attr.aria-label]="'fileList.createGroup' | translate" [title]="'fileList.createGroup' | translate">
+          <app-icon [icon]="icons.plus" />
+        </button>
+      </section>
+      <section class="object-control-block object-file-controls" aria-label="{{ 'fileList.reorderGroups' | translate }}">
         <div class="object-file-controls-actions">
-          <button type="button" class="button button-outline object-control-button" (click)="openUploadModal()" [disabled]="uploading()" [attr.aria-label]="'fileList.createGroup' | translate">
-            <app-icon [icon]="icons.plus" /><span>{{ 'fileList.createGroup' | translate }}</span>
-          </button>
           @if ((fileListComponent()?.activeGroupCount() ?? 0) > 1) {
             <button type="button" class="button button-outline object-control-button file-groups-reorder-toggle" [class.active]="fileListComponent()?.groupReorderMode()" (click)="fileListComponent()?.toggleGroupReorderMode()" [disabled]="fileListComponent()?.groupReorderSaving() ?? false" [attr.aria-label]="(fileListComponent()?.groupReorderMode() ? 'fileList.doneReorderGroups' : 'fileList.reorderGroups') | translate">
               @if (fileListComponent()?.groupReorderSaving()) { <span class="spinner" aria-hidden="true"></span><span>{{ 'fileList.savingOrder' | translate }}</span> }
