@@ -118,7 +118,8 @@ export class FileListComponent implements OnDestroy {
     return { group, subGroup };
   });
   public subGroupReorderSaving = signal(false);
-  public subGroupReorderMode = signal(false);
+  /** File group whose sub-groups are being reordered. Other groups stay idle. */
+  public subGroupReorderGroupId = signal<string | null>(null);
   public draggedSubGroupId = signal<string | null>(null);
   public dragOverSubGroupId = signal<string | null>(null);
 
@@ -315,8 +316,8 @@ export class FileListComponent implements OnDestroy {
   // Track files that failed to load
   private failedFileIds = new Set<string>();
 
-  // Drag-and-drop reorder (pictures within a group)
-  public reorderMode = signal<boolean>(false);
+  // Drag-and-drop reorder (pictures within one file group)
+  public reorderGroupId = signal<string | null>(null);
   public draggedFileId = signal<string | null>(null);
   public dragOverFileId = signal<string | null>(null);
   public reorderSaving = signal<boolean>(false);
@@ -874,7 +875,11 @@ export class FileListComponent implements OnDestroy {
   }
 
   public openSubGroupDetail(group: FileGroup, subGroup: FileSubGroup): void {
-    if (this.groupReorderMode() || this.reorderMode() || this.subGroupReorderMode()) {
+    if (
+      this.groupReorderMode() ||
+      this.isPictureReorderActive(group) ||
+      this.isSubGroupReorderActive(group)
+    ) {
       return;
     }
     this.subGroupDetailTarget.set({ group, subGroup });
@@ -944,7 +949,7 @@ export class FileListComponent implements OnDestroy {
 
   public onSubGroupDragStart(event: DragEvent, subGroup: FileSubGroup): void {
     this.subGroupDidDrag = false;
-    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) {
+    if (!this.subGroupReorderGroupId() || this.subGroupReorderSaving()) {
       event.preventDefault();
       return;
     }
@@ -958,7 +963,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public onSubGroupDragOver(event: DragEvent, subGroup: FileSubGroup): void {
-    if (!this.subGroupReorderMode()) return;
+    if (!this.subGroupReorderGroupId()) return;
     event.preventDefault();
     if (this.draggedSubGroupId()) {
       this.subGroupDidDrag = true;
@@ -978,7 +983,7 @@ export class FileListComponent implements OnDestroy {
 
   public onSubGroupDrop(event: DragEvent, targetSubGroup: FileSubGroup, group: FileGroup): void {
     event.preventDefault();
-    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
+    if (this.subGroupReorderGroupId() !== group._id?.$oid || this.subGroupReorderSaving()) return;
 
     const draggedId = this.draggedSubGroupId();
     const targetId = targetSubGroup._id?.$oid;
@@ -1009,7 +1014,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public moveSubGroupUp(subGroup: FileSubGroup, group: FileGroup): void {
-    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
+    if (this.subGroupReorderGroupId() !== group._id?.$oid || this.subGroupReorderSaving()) return;
     const groupId = group._id?.$oid;
     if (!groupId) return;
     const order = [...this.#subGroupOrderIds(group)];
@@ -1021,7 +1026,7 @@ export class FileListComponent implements OnDestroy {
   }
 
   public moveSubGroupDown(subGroup: FileSubGroup, group: FileGroup): void {
-    if (!this.subGroupReorderMode() || this.subGroupReorderSaving()) return;
+    if (this.subGroupReorderGroupId() !== group._id?.$oid || this.subGroupReorderSaving()) return;
     const groupId = group._id?.$oid;
     if (!groupId) return;
     const order = [...this.#subGroupOrderIds(group)];
@@ -1207,7 +1212,7 @@ export class FileListComponent implements OnDestroy {
    * First tap opens actions; tap image/backdrop again closes. Buttons only fire when overlay is open.
    */
   public onImageContainerClick(event: MouseEvent, file: FileGroupItem | ProjectFile): void {
-    if (this.reorderMode() || this.groupReorderMode()) {
+    if (this.groupReorderMode() || this.#fileBelongsToPictureReorder(file)) {
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -1458,27 +1463,38 @@ export class FileListComponent implements OnDestroy {
   // Drag-and-drop reorder
   // =========================================================================
 
-  public toggleReorderMode(): void {
-    const turningOn = !this.reorderMode();
-    this.reorderMode.update((v) => !v);
+  public isPictureReorderActive(group: FileGroup): boolean {
+    const id = group._id?.$oid;
+    return !!id && this.reorderGroupId() === id;
+  }
+
+  public isSubGroupReorderActive(group: FileGroup): boolean {
+    const id = group._id?.$oid;
+    return !!id && this.subGroupReorderGroupId() === id;
+  }
+
+  public toggleReorderMode(group: FileGroup): void {
+    const id = group._id?.$oid;
+    if (!id) return;
+    const turningOn = this.reorderGroupId() !== id;
+    this.reorderGroupId.set(turningOn ? id : null);
     if (turningOn) {
       this.groupReorderMode.set(false);
-      this.subGroupReorderMode.set(false);
+      this.subGroupReorderGroupId.set(null);
       this.onSubGroupDragEnd();
       this.hideOverlay();
       this.clearSelection();
-    } else {
-      this.draggedFileId.set(null);
-      this.dragOverFileId.set(null);
     }
+    this.draggedFileId.set(null);
+    this.dragOverFileId.set(null);
   }
 
   public toggleGroupReorderMode(): void {
     const turningOn = !this.groupReorderMode();
     this.groupReorderMode.update((v) => !v);
     if (turningOn) {
-      this.reorderMode.set(false);
-      this.subGroupReorderMode.set(false);
+      this.reorderGroupId.set(null);
+      this.subGroupReorderGroupId.set(null);
       this.onSubGroupDragEnd();
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
@@ -1487,19 +1503,28 @@ export class FileListComponent implements OnDestroy {
     }
   }
 
-  public toggleSubGroupReorderMode(): void {
-    const turningOn = !this.subGroupReorderMode();
-    this.subGroupReorderMode.set(turningOn);
+  public toggleSubGroupReorderMode(group: FileGroup): void {
+    const id = group._id?.$oid;
+    if (!id) return;
+    const turningOn = this.subGroupReorderGroupId() !== id;
+    this.subGroupReorderGroupId.set(turningOn ? id : null);
     if (turningOn) {
-      this.reorderMode.set(false);
+      this.reorderGroupId.set(null);
       this.groupReorderMode.set(false);
       this.draggedFileId.set(null);
       this.dragOverFileId.set(null);
       this.hideOverlay();
       this.clearSelection();
-    } else {
-      this.onSubGroupDragEnd();
     }
+    this.onSubGroupDragEnd();
+  }
+
+  #fileBelongsToPictureReorder(file: FileGroupItem | ProjectFile): boolean {
+    const groupId = this.reorderGroupId();
+    const fileId = file._id?.$oid;
+    if (!groupId || !fileId) return false;
+    const group = this.fileGroups().find((candidate) => candidate._id?.$oid === groupId);
+    return !!group?.files.some((item) => item._id?.$oid === fileId);
   }
 
   /** All active group IDs in stored order (includes groups hidden by category filter). */
@@ -1638,7 +1663,7 @@ export class FileListComponent implements OnDestroy {
 
   public onDrop(event: DragEvent, targetFile: FileGroupItem, group: FileGroup): void {
     event.preventDefault();
-    if (this.reorderSaving()) return;
+    if (this.reorderSaving() || !this.isPictureReorderActive(group)) return;
 
     const draggedId = this.draggedFileId();
     const targetId = targetFile._id?.$oid;
@@ -1672,7 +1697,7 @@ export class FileListComponent implements OnDestroy {
 
   /** Move file one position earlier (left/up) in the group. */
   public moveFileUp(file: FileGroupItem, group: FileGroup): void {
-    if (this.reorderSaving()) return;
+    if (this.reorderSaving() || !this.isPictureReorderActive(group)) return;
     const visible = [...this.#visibleFileOrderIds(group)];
     const index = visible.indexOf(file._id.$oid);
     if (index <= 0) return;
@@ -1683,7 +1708,7 @@ export class FileListComponent implements OnDestroy {
 
   /** Move file one position later (right/down) in the group. */
   public moveFileDown(file: FileGroupItem, group: FileGroup): void {
-    if (this.reorderSaving()) return;
+    if (this.reorderSaving() || !this.isPictureReorderActive(group)) return;
     const visible = [...this.#visibleFileOrderIds(group)];
     const index = visible.indexOf(file._id.$oid);
     if (index === -1 || index >= visible.length - 1) return;

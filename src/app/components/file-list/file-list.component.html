@@ -216,7 +216,7 @@
               }
             </div>
             <div class="group-header-actions">
-              @if (objectId() && !groupReorderMode() && !subGroupReorderMode()) {
+              @if (objectId() && !groupReorderMode() && !isSubGroupReorderActive(group)) {
                 <button
                   type="button"
                   class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
@@ -279,16 +279,16 @@
                 <button
                   type="button"
                   class="group-toolbar-icon-btn"
-                  [class.group-toolbar-icon-btn--active]="reorderMode()"
-                  (click)="toggleReorderMode()"
+                  [class.group-toolbar-icon-btn--active]="isPictureReorderActive(group)"
+                  (click)="toggleReorderMode(group)"
                   [disabled]="reorderSaving()"
                   [attr.aria-label]="
-                    reorderMode()
+                    isPictureReorderActive(group)
                       ? ('fileList.doneReorderPictures' | translate)
                       : ('fileList.reorderPictures' | translate)
                   "
                   [attr.title]="
-                    reorderMode()
+                    isPictureReorderActive(group)
                       ? ('fileList.doneReorderPictures' | translate)
                       : ('fileList.reorderPictures' | translate)
                   "
@@ -300,24 +300,24 @@
                 <button
                   type="button"
                   class="group-toolbar-icon-btn"
-                  [class.group-toolbar-icon-btn--active]="subGroupReorderMode()"
-                  (click)="toggleSubGroupReorderMode()"
+                  [class.group-toolbar-icon-btn--active]="isSubGroupReorderActive(group)"
+                  (click)="toggleSubGroupReorderMode(group)"
                   [disabled]="subGroupReorderSaving()"
-                  [attr.aria-pressed]="subGroupReorderMode()"
+                  [attr.aria-pressed]="isSubGroupReorderActive(group)"
                   [attr.aria-label]="
-                    subGroupReorderMode()
+                    isSubGroupReorderActive(group)
                       ? ('fileList.doneReorderGroups' | translate)
                       : ('subGroups.dragToReorder' | translate)
                   "
                   [attr.title]="
-                    subGroupReorderMode()
+                    isSubGroupReorderActive(group)
                       ? ('fileList.doneReorderGroups' | translate)
                       : ('subGroups.dragToReorder' | translate)
                   "
                 >
                   @if (subGroupReorderSaving()) {
                     <span class="spinner" aria-hidden="true"></span>
-                  } @else if (subGroupReorderMode()) {
+                  } @else if (isSubGroupReorderActive(group)) {
                     <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
                   } @else {
                     <app-icon [icon]="icons.gripHorizontal" />
@@ -362,15 +362,15 @@
               [class.selected]="isFileSelected(file)"
               [class.dragging]="draggedFileId() === file._id.$oid"
               [class.drag-over]="dragOverFileId() === file._id.$oid"
-              [class.reorder-active]="reorderMode()"
-              [attr.draggable]="reorderMode() && !reorderSaving() ? 'true' : null"
-              (dragstart)="reorderMode() ? onDragStart($event, file) : null"
-              (dragover)="reorderMode() ? onDragOver($event, file) : null"
-              (dragleave)="reorderMode() ? onDragLeave($event, file) : null"
-              (drop)="reorderMode() ? onDrop($event, file, group) : null"
-              (dragend)="reorderMode() ? onDragEnd() : null"
+              [class.reorder-active]="isPictureReorderActive(group)"
+              [attr.draggable]="isPictureReorderActive(group) && !reorderSaving() ? 'true' : null"
+              (dragstart)="isPictureReorderActive(group) ? onDragStart($event, file) : null"
+              (dragover)="isPictureReorderActive(group) ? onDragOver($event, file) : null"
+              (dragleave)="isPictureReorderActive(group) ? onDragLeave($event, file) : null"
+              (drop)="isPictureReorderActive(group) ? onDrop($event, file, group) : null"
+              (dragend)="isPictureReorderActive(group) ? onDragEnd() : null"
             >
-              @if (reorderMode()) {
+              @if (isPictureReorderActive(group)) {
                 <div class="reorder-controls">
                   <button
                     type="button"
@@ -397,10 +397,10 @@
               }
               <div
                 class="image-container"
-                [class.overlay-actions-blocked]="reorderMode()"
-                [class.image-container--editable]="!selectionMode() && !reorderMode()"
+                [class.overlay-actions-blocked]="isPictureReorderActive(group)"
+                [class.image-container--editable]="!selectionMode() && !isPictureReorderActive(group)"
                 (click)="
-                  selectionMode() || reorderMode()
+                  selectionMode() || isPictureReorderActive(group)
                     ? onImageContainerClick($event, file)
                     : startEditFile(file, group)
                 "
@@ -418,7 +418,7 @@
                       <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
                     }
                   </div>
-                } @else if (!reorderMode()) {
+                } @else if (!isPictureReorderActive(group)) {
                   <div
                     class="overlay"
                     [class.visible]="activeFileId() === file._id.$oid"
@@ -493,9 +493,9 @@
               class="file-item sub-group-item"
               [class.dragging]="draggedSubGroupId() === subGroup._id.$oid"
               [class.drag-over]="dragOverSubGroupId() === subGroup._id.$oid"
-              [class.reorder-active]="subGroupReorderMode()"
+              [class.reorder-active]="isSubGroupReorderActive(group)"
               [attr.draggable]="
-                subGroupReorderMode() && group.sub_groups.length > 1 && !subGroupReorderSaving()
+                isSubGroupReorderActive(group) && group.sub_groups.length > 1 && !subGroupReorderSaving()
                   ? 'true'
                   : null
               "
@@ -504,13 +504,13 @@
               (click)="onSubGroupItemClick($event, group, subGroup)"
               (keydown.enter)="openSubGroupDetail(group, subGroup)"
               (keydown.space)="onSubGroupItemKeyActivate($event, group, subGroup)"
-              (dragstart)="subGroupReorderMode() ? onSubGroupDragStart($event, subGroup) : null"
-              (dragover)="subGroupReorderMode() ? onSubGroupDragOver($event, subGroup) : null"
-              (dragleave)="subGroupReorderMode() ? onSubGroupDragLeave($event, subGroup) : null"
-              (drop)="subGroupReorderMode() ? onSubGroupDrop($event, subGroup, group) : null"
-              (dragend)="subGroupReorderMode() ? onSubGroupDragEnd() : null"
+              (dragstart)="isSubGroupReorderActive(group) ? onSubGroupDragStart($event, subGroup) : null"
+              (dragover)="isSubGroupReorderActive(group) ? onSubGroupDragOver($event, subGroup) : null"
+              (dragleave)="isSubGroupReorderActive(group) ? onSubGroupDragLeave($event, subGroup) : null"
+              (drop)="isSubGroupReorderActive(group) ? onSubGroupDrop($event, subGroup, group) : null"
+              (dragend)="isSubGroupReorderActive(group) ? onSubGroupDragEnd() : null"
             >
-              @if (subGroupReorderMode() && group.sub_groups.length > 1) {
+              @if (isSubGroupReorderActive(group) && group.sub_groups.length > 1) {
                 <div class="sub-group-reorder-controls">
                   <button
                     type="button"
@@ -562,7 +562,7 @@
                     }}</span>
                   </span>
                 }
-                @if (subGroupReorderMode() && group.sub_groups.length > 1) {
+                @if (isSubGroupReorderActive(group) && group.sub_groups.length > 1) {
                   <span
                     class="sub-group-drag-handle"
                     [attr.title]="'subGroups.dragToReorder' | translate"
@@ -619,7 +619,7 @@
             <div
               class="image-container image-container--editable"
               (click)="
-                selectionMode() || reorderMode()
+                selectionMode()
                   ? onImageContainerClick($event, file)
                   : startEditFile(file)
               "
