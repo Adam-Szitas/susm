@@ -13,11 +13,13 @@ export interface ObjectFile {
   deleted_at?: string;
 }
 
-// For project files: simple structure without groups
+// Project files share an optional persistent upload group.
 export interface ProjectFile {
   _id: {
     $oid: string;
   };
+  group_id?: string;
+  note?: string;
   project_id: {
     $oid: string;
   };

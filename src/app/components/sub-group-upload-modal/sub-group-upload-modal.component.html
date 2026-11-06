@@ -1,5 +1,5 @@
 @if (isOpen()) {
-  <div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-overlay" (click)="onCancel()" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" [class.is-dragging]="dragging()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>
@@ -36,7 +36,7 @@
             <div class="upload-placeholder">
               <app-icon [icon]="icons.uploadArrow" />
               <span>{{ 'fileUpload.selectFiles' | translate }}</span>
-              <small class="hint-text">{{ 'fileUpload.multipleFilesHint' | translate }}</small>
+              <small class="hint-text">{{ 'fileUpload.dropHint' | translate }}</small>
             </div>
           </label>
           <input

@@ -56,6 +56,8 @@ export class SubGroupUploadModalComponent implements OnDestroy {
   constructor() {
     effect((onCleanup) => {
       if (!this.isOpen()) {
+        this.selectionVersion++;
+        this.filePreviews.set([]);
         this.#restoreFromBodyPortal();
         return;
       }
@@ -141,18 +143,44 @@ export class SubGroupUploadModalComponent implements OnDestroy {
     return true;
   }
 
+  private processingCount = 0;
+  private selectionVersion = 0;
+  dragging = signal(false);
+
+  onDragOver(event: DragEvent): void {
+    if (!event.dataTransfer?.types.includes('Files')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = this.uploading() ? 'none' : 'copy';
+    this.dragging.set(!this.uploading());
+  }
+
+  onDragLeave(event: DragEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {
+      this.dragging.set(false);
+    }
+  }
+
+  async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragging.set(false);
+    await this.addFiles(Array.from(event.dataTransfer?.files ?? []));
+  }
+
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      input.value = '';
-      return;
-    }
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    await this.addFiles(files);
+  }
 
-    const files = Array.from(input.files);
+  async addFiles(files: globalThis.File[]): Promise<void> {
+    if (this.uploading() || !this.isOpen()) return;
+    const version = this.selectionVersion;
     const imageFiles = files.filter((file) => this.#imageCompressionService.isImageFile(file));
 
     if (imageFiles.length === 0) {
-      input.value = '';
       return;
     }
 
@@ -166,16 +194,15 @@ export class SubGroupUploadModalComponent implements OnDestroy {
     const filesToProcess = newFilesWithIds.filter(({ uniqueId }) => !existingUniqueIds.has(uniqueId));
 
     if (filesToProcess.length === 0) {
-      input.value = '';
       return;
     }
 
+    this.processingCount++;
     this.compressing.set(true);
     try {
       const filesToCompress = filesToProcess.map(({ file }) => file);
       const compressedFiles = await this.#imageCompressionService.compressImages(filesToCompress);
 
-      const currentPreviews = [...this.filePreviews()];
       const previewPromises = compressedFiles.map((compressedFile, index) => {
         return new Promise<FilePreview>((resolve, reject) => {
           const reader = new FileReader();
@@ -198,7 +225,8 @@ export class SubGroupUploadModalComponent implements OnDestroy {
       });
 
       const newPreviews = await Promise.all(previewPromises);
-      this.filePreviews.set([...currentPreviews, ...newPreviews]);
+      if (version !== this.selectionVersion || !this.isOpen()) return;
+      this.filePreviews.set([...this.filePreviews(), ...newPreviews]);
     } catch (error) {
       console.error('Error processing files:', error);
       this.#notificationService.showError(
@@ -206,10 +234,9 @@ export class SubGroupUploadModalComponent implements OnDestroy {
           ? error.message
           : this.#translationService.instant('errors.imageCompressionFailed'),
       );
-      input.value = '';
     } finally {
-      this.compressing.set(false);
-      input.value = '';
+      this.processingCount--;
+      this.compressing.set(this.processingCount > 0);
     }
   }
 
@@ -227,6 +254,9 @@ export class SubGroupUploadModalComponent implements OnDestroy {
   }
 
   onCancel(): void {
+    if (this.uploading()) return;
+    this.selectionVersion++;
+    this.dragging.set(false);
     this.resetForm();
     this.cancel.emit();
   }
@@ -237,8 +267,9 @@ export class SubGroupUploadModalComponent implements OnDestroy {
   }
 
   clearAll(): void {
+    this.selectionVersion++;
     this.filePreviews.set([]);
-    this.compressing.set(false);
+    this.compressing.set(this.processingCount > 0);
   }
 
   isCategorySelected(label: string): boolean {
@@ -270,6 +301,6 @@ export class SubGroupUploadModalComponent implements OnDestroy {
     this.categoryCustomDraft.set('');
     this.note.set('');
     this.filePreviews.set([]);
-    this.compressing.set(false);
+    this.compressing.set(this.processingCount > 0);
   }
 }

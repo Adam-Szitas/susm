@@ -247,3 +247,8 @@
 .modal-footer .button {
   margin: 0;
 }
+
+.modal-overlay.is-dragging .modal-content {
+  outline: 3px dashed var(--primary-color, #2563eb);
+  outline-offset: -6px;
+}

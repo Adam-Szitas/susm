@@ -193,7 +193,7 @@ export class FileService {
 
   /**
    * Updates metadata for an **object** file group (`projects[].objects[].file_groups[]`).
-   * Projects do not have file groups — project files live in `projects[].files` and use {@link updateFileMetadata} per file.
+   * Project upload groups share group_id on `projects[].files`; use {@link updateFileMetadata} per file.
    */
   updateFileGroup(
     groupId: string,
@@ -222,7 +222,7 @@ export class FileService {
   }
 
   /**
-   * Gets project-level files (`projects[].files`) — a flat list, no groups.
+   * Gets project-level files (`projects[].files`) — a flat list with optional shared group_id.
    */
   getFilesForProject(projectId: string): Observable<ProjectFile[]> {
     const endpoint = `file/project/${projectId}`;

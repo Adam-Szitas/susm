@@ -235,6 +235,20 @@ export class FileListComponent implements OnDestroy {
     );
   });
 
+  readonly projectFileGroups = computed(() => {
+    const groups = new Map<string, { id: string; description: string; note: string; files: ProjectFile[] }>();
+    for (const file of this.windowedProjectFiles()) {
+      const id = file.group_id || '';
+      let group = groups.get(id);
+      if (!group) {
+        group = { id, description: file.description || '', note: file.note || '', files: [] };
+        groups.set(id, group);
+      }
+      group.files.push(file);
+    }
+    return [...groups.values()];
+  });
+
   private static readonly PROJECT_FILES_CHUNK = 36;
   private static readonly PROJECT_FILES_WINDOW_THRESHOLD = 48;
 

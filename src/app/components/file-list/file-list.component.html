@@ -579,7 +579,7 @@
     }
   }
 
-  <!-- Project Files (simple, no groups) -->
+  <!-- Project upload groups and individual photos -->
   @if (filteredProjectFiles().length > 0) {
     @if (canSendProjectFiles() && (selectionMode() || selectedFileIds().size > 0)) {
       <div class="selection-toolbar project-send-toolbar">
@@ -612,104 +612,113 @@
       </div>
     }
 
-    <div class="file-group ungrouped">
-      <ul class="file-gallery" [class.file-gallery--defer-items]="deferProjectFileItems()">
-        @for (file of windowedProjectFiles(); track file._id.$oid) {
-          <li class="file-item file-item--deferred">
-            <div
-              class="image-container image-container--editable"
-              (click)="
-                selectionMode()
-                  ? onImageContainerClick($event, file)
-                  : startEditFile(file)
-              "
-            >
-              <img
-                [src]="getImageUrl(file.path)"
-                [alt]="file.filename || 'File Preview'"
-                title="{{ file.filename || 'File Preview' }}"
-                loading="lazy"
-                (error)="onImageError(file, $event)"
-              />
-              @if (selectionMode()) {
-                <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
-                  @if (isFileSelected(file)) {
-                    <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
-                  }
-                </div>
-              } @else {
-                @if (!objectId()) {
-                  <div
-                    class="overlay"
-                    [class.visible]="activeFileId() === file._id.$oid"
-                    (click)="$event.stopPropagation()"
-                    hidden
-                  >
-                    <button
-                      type="button"
-                      class="zoom-hint"
-                      (click)="openImageLightbox($event, file)"
-                      [attr.aria-label]="'fileList.zoom' | translate"
-                      title="{{ 'fileList.zoom' | translate }}"
+    @for (projectGroup of projectFileGroups(); track projectGroup.id) {
+      <details class="file-group project-file-group" open>
+        <summary>
+          {{ projectGroup.id ? (projectGroup.description || ('fileUpload.fileGroup' | translate)) : ('fileUpload.individualFiles' | translate) }}
+          ({{ projectGroup.files.length }})
+        </summary>
+        @if (projectGroup.note) { <p>{{ projectGroup.note }}</p> }
+        <ul class="file-gallery" [class.file-gallery--defer-items]="deferProjectFileItems()">
+          @for (file of projectGroup.files; track file._id.$oid) {
+            <li class="file-item file-item--deferred">
+              <div
+                class="image-container image-container--editable"
+                (click)="
+                  selectionMode()
+                    ? onImageContainerClick($event, file)
+                    : startEditFile(file)
+                "
+              >
+                <img
+                  [src]="getImageUrl(file.path)"
+                  [alt]="file.filename || 'File Preview'"
+                  title="{{ file.filename || 'File Preview' }}"
+                  loading="lazy"
+                  (error)="onImageError(file, $event)"
+                />
+                @if (selectionMode()) {
+                  <div class="selection-checkbox" [class.checked]="isFileSelected(file)">
+                    @if (isFileSelected(file)) {
+                      <app-icon [icon]="icons.check" [strokeWidth]="2.5" />
+                    }
+                  </div>
+                } @else {
+                  @if (!objectId()) {
+                    <div
+                      class="overlay"
+                      [class.visible]="activeFileId() === file._id.$oid"
+                      (click)="$event.stopPropagation()"
+                      hidden
                     >
-                      <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
-                      <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
-                    </button>
-                    @if (canSendProjectFiles()) {
                       <button
                         type="button"
-                        class="move-hint"
-                        (click)="openSendProjectFileModal($event, file)"
-                        [attr.aria-label]="'fileList.sendToObject' | translate"
-                        [title]="'fileList.sendToObject' | translate"
-                        [disabled]="sendProjectFilesInProgress()"
+                        class="zoom-hint"
+                        (click)="openImageLightbox($event, file)"
+                        [attr.aria-label]="'fileList.zoom' | translate"
+                        title="{{ 'fileList.zoom' | translate }}"
                       >
-                        <span class="visually-hidden">{{
-                          'fileList.sendToObject' | translate
-                        }}</span>
-                        <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                        <span class="visually-hidden">{{ 'fileList.zoom' | translate }}</span>
+                        <app-icon [icon]="icons.zoomIn" [svgClass]="'zoom-hint-icon'" />
                       </button>
-                    }
-                    <button
-                      type="button"
-                      class="download-hint"
-                      (click)="handleOverlayDownload($event, file.path, file.filename)"
-                      [attr.aria-label]="'fileList.download' | translate"
-                      title="{{ 'fileList.download' | translate }}"
-                    >
-                      <span class="visually-hidden">{{ 'fileList.download' | translate }}</span>
-                      <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
-                    </button>
-                    <button
-                      type="button"
-                      class="delete-hint"
-                      (click)="handleOverlayDelete($event, file)"
-                      [attr.aria-label]="'fileList.delete' | translate"
-                      title="{{ 'fileList.delete' | translate }}"
-                    >
-                      <span class="visually-hidden">{{ 'fileList.delete' | translate }}</span>
-                      <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
-                    </button>
-                  </div>
+                      @if (canSendProjectFiles()) {
+                        <button
+                          type="button"
+                          class="move-hint"
+                          (click)="openSendProjectFileModal($event, file)"
+                          [attr.aria-label]="'fileList.sendToObject' | translate"
+                          [title]="'fileList.sendToObject' | translate"
+                          [disabled]="sendProjectFilesInProgress()"
+                        >
+                          <span class="visually-hidden">{{
+                            'fileList.sendToObject' | translate
+                          }}</span>
+                          <app-icon [icon]="icons.chevronRight" [svgClass]="'move-hint-icon'" />
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="download-hint"
+                        (click)="handleOverlayDownload($event, file.path, file.filename)"
+                        [attr.aria-label]="'fileList.download' | translate"
+                        title="{{ 'fileList.download' | translate }}"
+                      >
+                        <span class="visually-hidden">{{ 'fileList.download' | translate }}</span>
+                        <app-icon [icon]="icons.download" [svgClass]="'overlay-action-icon'" />
+                      </button>
+                      <button
+                        type="button"
+                        class="delete-hint"
+                        (click)="handleOverlayDelete($event, file)"
+                        [attr.aria-label]="'fileList.delete' | translate"
+                        title="{{ 'fileList.delete' | translate }}"
+                      >
+                        <span class="visually-hidden">{{ 'fileList.delete' | translate }}</span>
+                        <span class="overlay-action-icon"><app-trash-icon [size]="18" /></span>
+                      </button>
+                    </div>
+                  }
                 }
-              }
-            </div>
-            @if (file.filename) {
-              <p class="file-name">{{ file.filename }}</p>
-            }
-            @if (file.created_at) {
-              <div class="created-at-wrapper">
-                <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
               </div>
-            }
-            <div class="file-description-wrapper">
-              @if (file.description) {
-                <p class="file-description-text">{{ file.description }}</p>
+              @if (file.filename) {
+                <p class="file-name">{{ file.filename }}</p>
               }
-            </div>
-          </li>
-        }
-      </ul>
+              @if (file.created_at) {
+                <div class="created-at-wrapper">
+                  <span class="file-created-at">{{ getCreatedAtDisplay(file) }}</span>
+                </div>
+              }
+              <div class="file-description-wrapper">
+                @if (file.description) {
+                  <p class="file-description-text">{{ file.description }}</p>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </details>
+    }
+    <div>
       @if (hasMoreProjectFiles()) {
         <div class="file-gallery-load-more">
           <button

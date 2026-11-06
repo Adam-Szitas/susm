@@ -48,6 +48,8 @@ export class FileUploadModalComponent {
   constructor() {
     effect((onCleanup) => {
       if (!this.isOpen()) {
+        this.selectionVersion++;
+        this.filePreviews.set([]);
         return;
       }
       lockDocumentScroll();
@@ -61,6 +63,8 @@ export class FileUploadModalComponent {
   /** When false, category pickers are hidden (e.g. project-level photo uploads). */
   showCategories = input(true);
   uploading = input<boolean>(false);
+  allowGroupingChoice = input(false);
+  groupFiles = signal(true);
 
   filesSelected = output<globalThis.File[]>();
   upload = output<{
@@ -68,6 +72,7 @@ export class FileUploadModalComponent {
     description: string;
     categories: string[];
     note: string;
+    groupFiles: boolean;
   }>();
   cancel = output<void>();
 
@@ -79,18 +84,44 @@ export class FileUploadModalComponent {
   filePreviews = signal<FilePreview[]>([]);
   compressing = signal(false);
 
+  private processingCount = 0;
+  private selectionVersion = 0;
+  dragging = signal(false);
+
+  onDragOver(event: DragEvent): void {
+    if (!event.dataTransfer?.types.includes('Files')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = this.uploading() ? 'none' : 'copy';
+    this.dragging.set(!this.uploading());
+  }
+
+  onDragLeave(event: DragEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {
+      this.dragging.set(false);
+    }
+  }
+
+  async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragging.set(false);
+    await this.addFiles(Array.from(event.dataTransfer?.files ?? []));
+  }
+
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      input.value = '';
-      return;
-    }
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    await this.addFiles(files);
+  }
 
-    const files = Array.from(input.files);
+  async addFiles(files: globalThis.File[]): Promise<void> {
+    if (this.uploading() || !this.isOpen()) return;
+    const version = this.selectionVersion;
     const imageFiles = files.filter((file) => this.#imageCompressionService.isImageFile(file));
 
     if (imageFiles.length === 0) {
-      input.value = '';
       return;
     }
 
@@ -110,12 +141,11 @@ export class FileUploadModalComponent {
     );
 
     if (filesToProcess.length === 0) {
-      // Reset input to allow selecting the same file again if needed
-      input.value = '';
       return;
     }
 
     // Compress images and create previews
+    this.processingCount++;
     this.compressing.set(true);
     try {
       // Compress all files
@@ -125,7 +155,6 @@ export class FileUploadModalComponent {
       // Create previews for compressed files with unique IDs
       // CRITICAL FIX: Ensure each compressed file gets its own unique File object
       // This prevents the issue where multiple camera photos end up referencing the same file
-      const currentPreviews = [...this.filePreviews()];
       const previewPromises = compressedFiles.map((compressedFile, index) => {
         return new Promise<FilePreview>((resolve, reject) => {
           const reader = new FileReader();
@@ -150,7 +179,8 @@ export class FileUploadModalComponent {
       });
 
       const newPreviews = await Promise.all(previewPromises);
-      const allPreviews = [...currentPreviews, ...newPreviews];
+      if (version !== this.selectionVersion || !this.isOpen()) return;
+      const allPreviews = [...this.filePreviews(), ...newPreviews];
       this.filePreviews.set(allPreviews);
       this.filesSelected.emit(allPreviews.map((p) => p.file));
     } catch (error) {
@@ -160,15 +190,14 @@ export class FileUploadModalComponent {
           ? error.message
           : this.#translationService.instant('errors.imageCompressionFailed'),
       );
-      input.value = '';
     } finally {
-      this.compressing.set(false);
-      // Reset input to allow selecting more files
-      input.value = '';
+      this.processingCount--;
+      this.compressing.set(this.processingCount > 0);
     }
   }
 
   onUpload(): void {
+    if (this.uploading() || this.compressing()) return;
     const files = this.filePreviews().map((p) => p.file);
     const cats = [
       ...new Set(
@@ -179,6 +208,7 @@ export class FileUploadModalComponent {
     ];
     this.upload.emit({
       files,
+      groupFiles: this.groupFiles(),
       description: this.description().trim(),
       categories: cats,
       note: this.note().trim(),
@@ -186,12 +216,15 @@ export class FileUploadModalComponent {
   }
 
   onCancel(): void {
+    if (this.uploading()) return;
+    this.selectionVersion++;
+    this.dragging.set(false);
     this.description.set('');
     this.selectedCategories.set([]);
     this.categoryCustomDraft.set('');
     this.note.set('');
     this.filePreviews.set([]);
-    this.compressing.set(false);
+    this.compressing.set(this.processingCount > 0);
     this.cancel.emit();
   }
 
@@ -203,12 +236,13 @@ export class FileUploadModalComponent {
   }
 
   clearAll(): void {
+    this.selectionVersion++;
     this.filePreviews.set([]);
     this.description.set('');
     this.selectedCategories.set([]);
     this.categoryCustomDraft.set('');
     this.note.set('');
-    this.compressing.set(false);
+    this.compressing.set(this.processingCount > 0);
   }
 
   isCategorySelected(label: string): boolean {

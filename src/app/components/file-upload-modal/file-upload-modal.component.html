@@ -1,5 +1,5 @@
 @if (isOpen()) {
-  <div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-overlay" (click)="onCancel()" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" [class.is-dragging]="dragging()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ 'fileUpload.title' | translate }}</h2>
@@ -9,12 +9,18 @@
       </div>
 
       <div class="modal-body">
+        @if (allowGroupingChoice()) {
+          <label class="grouping-choice">
+            <input type="checkbox" [(ngModel)]="groupFiles" [disabled]="uploading()" />
+            {{ 'fileUpload.groupFiles' | translate }}
+          </label>
+        }
         <div class="file-input-wrapper">
           <label for="file-upload" class="file-label">
             <div class="upload-placeholder">
               <app-icon [icon]="icons.uploadArrow" />
               <span>{{ 'fileUpload.selectFiles' | translate }}</span>
-              <small class="hint-text">{{ 'fileUpload.multipleFilesHint' | translate }}</small>
+              <small class="hint-text">{{ 'fileUpload.dropHint' | translate }}</small>
             </div>
           </label>
           <input
@@ -148,7 +154,7 @@
           type="button"
           class="button button-primary"
           (click)="onUpload()"
-          [disabled]="uploading()"
+          [disabled]="uploading() || compressing() || (allowGroupingChoice() && !filePreviews().length)"
         >
           @if (uploading()) {
             {{ 'fileUpload.uploading' | translate }}
