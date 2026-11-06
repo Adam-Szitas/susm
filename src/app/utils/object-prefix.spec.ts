@@ -1,9 +1,24 @@
-import { matchesPrefixFilter, objectBasePrefix, resolveObjectPrefix } from './object-prefix';
+import { matchesPrefixFilter, normalizeObjectPrefix, objectBasePrefix } from './object-prefix';
+
+describe('normalizeObjectPrefix', () => {
+  it('saves exactly the prefix the user typed, never the house number', () => {
+    expect(normalizeObjectPrefix('RH')).toBe('RH');
+    expect(normalizeObjectPrefix('  RH  ')).toBe('RH');
+    expect(normalizeObjectPrefix('WH Stg. 1')).toBe('WH Stg. 1');
+  });
+
+  it('stores no prefix when the field is empty', () => {
+    expect(normalizeObjectPrefix('')).toBeNull();
+    expect(normalizeObjectPrefix('   ')).toBeNull();
+    expect(normalizeObjectPrefix(null)).toBeNull();
+    expect(normalizeObjectPrefix(undefined)).toBeNull();
+  });
+});
 
 describe('objectBasePrefix', () => {
-  it('groups stored prefixes with different house numbers under the shared prefix', () => {
-    expect(objectBasePrefix(resolveObjectPrefix('Building A', '1'), '1')).toBe('Building A');
-    expect(objectBasePrefix(resolveObjectPrefix('Building A', '100'), '100')).toBe('Building A');
+  it('groups legacy stored prefixes with different house numbers under the shared prefix', () => {
+    expect(objectBasePrefix('Building A 1', '1')).toBe('Building A');
+    expect(objectBasePrefix('Building A 100', '100')).toBe('Building A');
   });
 
   it('groups RH objects whether the house number was stored on the prefix or only on the address', () => {

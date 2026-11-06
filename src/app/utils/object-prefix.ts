@@ -1,18 +1,6 @@
-/** Stored object prefix: `{basePrefix} {houseNumber}` when both are set. */
-export function resolveObjectPrefix(
-  basePrefix: string | null | undefined,
-  houseNumber: string,
-): string | null {
-  const prefix = basePrefix?.trim() ?? '';
-  const house = houseNumber?.trim() ?? '';
-
-  if (!prefix) {
-    return null;
-  }
-  if (!house) {
-    return prefix;
-  }
-  return `${prefix} ${house}`;
+/** Prefix saved on a new object: exactly what the user typed, trimmed; empty → none. */
+export function normalizeObjectPrefix(prefix: string | null | undefined): string | null {
+  return prefix?.trim() || null;
 }
 
 /** Recover the shared prefix from the stored prefix and the object's house number. */
