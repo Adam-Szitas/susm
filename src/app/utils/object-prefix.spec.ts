@@ -6,6 +6,14 @@ describe('objectBasePrefix', () => {
     expect(objectBasePrefix(resolveObjectPrefix('Building A', '100'), '100')).toBe('Building A');
   });
 
+  it('groups RH objects whether the house number was stored on the prefix or only on the address', () => {
+    expect(objectBasePrefix('RH 110', '110')).toBe('RH');
+    expect(objectBasePrefix('RH', '110')).toBe('RH');
+    expect(matchesPrefixFilter('RH 110', '110', 'RH', false)).toBeTrue();
+    expect(matchesPrefixFilter('RH', '110', 'RH', false)).toBeTrue();
+    expect(matchesPrefixFilter('RH 111', '111', 'RH', false)).toBeTrue();
+  });
+
   it('keeps standalone prefixes and does not remove a partial number', () => {
     expect(objectBasePrefix('Unit 12', '2')).toBe('Unit 12');
     expect(objectBasePrefix('Unit', '2')).toBe('Unit');

@@ -74,7 +74,7 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import { ObjectCardComponent } from '../../shared/object-card.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
-import { matchesPrefixFilter, objectPrefixValue } from '../../../utils/object-prefix';
+import { matchesPrefixFilter, objectBasePrefix } from '../../../utils/object-prefix';
 
 @Component({
   selector: 'app-project-tab',
@@ -138,7 +138,9 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   readonly selectedPrefix = computed(() => this.#currentFilter().prefix ?? '');
   readonly excludePrefix = computed(() => this.#currentFilter().excludePrefix === true);
   readonly objectPrefixes = computed(() => {
-    const prefixes = new Set(this.objects().map((obj) => objectPrefixValue(obj.prefix)).filter(Boolean));
+    const prefixes = new Set(
+      this.objects().map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number)).filter(Boolean),
+    );
     return [...prefixes].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
   });
   readonly hasActiveFilter = computed(() => {
@@ -936,7 +938,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (filter.prefix) {
       filtered = filtered.filter((obj) => {
-        return matchesPrefixFilter(obj.prefix, filter.prefix, !!filter.excludePrefix);
+        return matchesPrefixFilter(
+          obj.prefix,
+          obj.address?.house_number,
+          filter.prefix,
+          !!filter.excludePrefix,
+        );
       });
     }
 
