@@ -19,6 +19,7 @@ export interface ProjectFile {
     $oid: string;
   };
   group_id?: string;
+  sort_order?: number;
   note?: string;
   project_id: {
     $oid: string;
@@ -28,6 +29,15 @@ export interface ProjectFile {
   description?: string;
   created_at: string;
   deleted_at?: string;
+}
+
+/** Named project sub-group; its photos reference id through ProjectFile.group_id. */
+export interface ProjectPhotoSubGroup {
+  id: string;
+  name: string;
+  categories?: string[];
+  note?: string;
+  deleted_at?: MongoDateJson;
 }
 
 // Group of files within an object

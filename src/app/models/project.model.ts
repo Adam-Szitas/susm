@@ -1,3 +1,4 @@
+import { ProjectPhotoSubGroup } from './file.model';
 import { ProjectAddress } from './user.model';
 import { WorkStatus } from './status.model';
 import { Object } from './object.model';
@@ -24,6 +25,7 @@ export interface Project {
   categories?: string[];
   objects?: Object[];
   protocols?: ProtocolRecord[];
+  photo_sub_groups?: ProjectPhotoSubGroup[];
   todo_items?: TodoItem[];
   archived_at?: string;
   archive_comment?: string;

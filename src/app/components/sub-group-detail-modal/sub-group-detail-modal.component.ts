@@ -60,6 +60,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
   isOpen = input<boolean>(false);
   subGroup = input<FileSubGroup | null>(null);
   parentGroup = input<FileGroup | null>(null);
+  projectId = input<string>();
   /** All groups on the object (for move targets). */
   allGroups = input<FileGroup[]>([]);
   projectCategories = input<string[]>([]);
@@ -240,7 +241,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
 
     this.savingMetadata.set(true);
     this.#fileService
-      .updateSubGroup(id, { name, categories, note })
+      .updateSubGroup(id, { name, categories, note }, this.projectId())
       .pipe(finalize(() => this.savingMetadata.set(false)))
       .subscribe({
         next: () => {
@@ -272,7 +273,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
 
     this.deletingSubGroup.set(true);
     this.#fileService
-      .deleteSubGroup(id, mode)
+      .deleteSubGroup(id, mode, this.projectId())
       .pipe(finalize(() => this.deletingSubGroup.set(false)))
       .subscribe({
         next: () => {
@@ -606,7 +607,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
       if (isCurrentGroup) {
         rows.push({
           groupId,
-          label: `${groupLabel} (${this.#translationService.instant('subGroups.groupRoot')})`,
+          label: this.projectId() ? groupLabel : `${groupLabel} (${this.#translationService.instant('subGroups.groupRoot')})`,
           includeGroupRoot: true,
         });
         if (activeSubGroups.length > 0) {
@@ -660,8 +661,10 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     if (!fileId || this.moveFileInProgress()) return;
 
     this.moveFileInProgress.set(true);
-    this.#fileService
-      .moveFileToGroup(fileId, targetGroupId, targetSubGroupId ?? null)
+    const request = this.projectId()
+      ? this.#fileService.moveProjectPhoto(this.projectId()!, fileId, targetSubGroupId)
+      : this.#fileService.moveFileToGroup(fileId, targetGroupId, targetSubGroupId ?? null);
+    request
       .pipe(finalize(() => this.moveFileInProgress.set(false)))
       .subscribe({
         next: () => {
@@ -804,7 +807,7 @@ export class SubGroupDetailModalComponent implements OnDestroy {
     if (this.reorderSaving()) return;
     this.reorderSaving.set(true);
     this.#fileService
-      .reorderSubGroupFiles(subGroupId, fileIds)
+      .reorderSubGroupFiles(subGroupId, fileIds, this.projectId())
       .pipe(finalize(() => this.reorderSaving.set(false)))
       .subscribe({
         next: () => this.metadataUpdated.emit(),

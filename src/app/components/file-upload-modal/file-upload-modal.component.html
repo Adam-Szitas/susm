@@ -9,12 +9,6 @@
       </div>
 
       <div class="modal-body">
-        @if (allowGroupingChoice()) {
-          <label class="grouping-choice">
-            <input type="checkbox" [(ngModel)]="groupFiles" [disabled]="uploading()" />
-            {{ 'fileUpload.groupFiles' | translate }}
-          </label>
-        }
         <div class="file-input-wrapper">
           <label for="file-upload" class="file-label">
             <div class="upload-placeholder">
@@ -154,7 +148,7 @@
           type="button"
           class="button button-primary"
           (click)="onUpload()"
-          [disabled]="uploading() || compressing() || (allowGroupingChoice() && !filePreviews().length)"
+          [disabled]="uploading() || compressing() || (requireFiles() && !filePreviews().length)"
         >
           @if (uploading()) {
             {{ 'fileUpload.uploading' | translate }}

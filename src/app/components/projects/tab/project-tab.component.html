@@ -42,7 +42,11 @@
             "
             aria-controls="projectDetailsBody"
           >
-            <span class="chevron" [class.collapsed]="projectDataExpanded()" aria-hidden="true"></span>
+            <span
+              class="chevron"
+              [class.collapsed]="projectDataExpanded()"
+              aria-hidden="true"
+            ></span>
           </button>
         </div>
       </header>
@@ -140,12 +144,18 @@
           class="button button-outline project-toolbar-btn project-toolbar-categories"
           [class.icon-only]="toolbarIconOnly()"
           (click)="openCategoryModal()"
-          [attr.aria-label]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
-          [title]="(isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate"
+          [attr.aria-label]="
+            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
+          "
+          [title]="
+            (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
+          "
         >
           <app-icon [icon]="icons.tag" [svgClass]="'project-toolbar-icon'" />
           @if (!toolbarIconOnly()) {
-            <span class="project-toolbar-label">{{ (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate }}</span>
+            <span class="project-toolbar-label">{{
+              (isAdmin() ? 'projects.manageCategories' : 'projects.changeCategory') | translate
+            }}</span>
           }
         </button>
         @if (protocolsEnabled()) {
@@ -252,10 +262,19 @@
         </header>
         <div class="column-content objects-section-content">
           @if (objectPrefixes().length) {
-            <div class="prefix-filters" role="group" [attr.aria-label]="'objects.prefix' | translate">
+            <div
+              class="prefix-filters"
+              role="group"
+              [attr.aria-label]="'objects.prefix' | translate"
+            >
               @for (prefix of objectPrefixes(); track prefix) {
-                <button type="button" class="prefix-filter" [class.active]="selectedPrefix() === prefix"
-                  [attr.aria-pressed]="selectedPrefix() === prefix" (click)="togglePrefix(prefix)">
+                <button
+                  type="button"
+                  class="prefix-filter"
+                  [class.active]="selectedPrefix() === prefix"
+                  [attr.aria-pressed]="selectedPrefix() === prefix"
+                  (click)="togglePrefix(prefix)"
+                >
                   {{ prefix }}
                   @if (selectedPrefix() === prefix && excludePrefix()) {
                     <span>({{ 'filter.excluded' | translate }})</span>
@@ -265,18 +284,18 @@
             </div>
           }
           @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
-              <button
-                type="button"
-                class="button button-primary apply-sort-order-btn"
-                (click)="applySortOrder()"
-                [disabled]="objectReorderSaving() || filteredObjects().length === 0"
-              >
-                @if (objectReorderSaving()) {
-                  {{ 'common.loading' | translate }}
-                } @else {
-                  {{ 'projects.applySortOrder' | translate }}
-                }
-              </button>
+            <button
+              type="button"
+              class="button button-primary apply-sort-order-btn"
+              (click)="applySortOrder()"
+              [disabled]="objectReorderSaving() || filteredObjects().length === 0"
+            >
+              @if (objectReorderSaving()) {
+                {{ 'common.loading' | translate }}
+              } @else {
+                {{ 'projects.applySortOrder' | translate }}
+              }
+            </button>
           }
           @if (objectReorderMode() && objectsInReorderMode().length > 0) {
             <div
@@ -308,8 +327,8 @@
                       (dragstart)="onObjectDragStart($event, object)"
                       (dragend)="onObjectDragEnd()"
                       (touchstart)="onObjectTouchStart($event, object)"
-                      ><app-icon [icon]="icons.gripHorizontal" /></span
-                    >
+                      ><app-icon [icon]="icons.gripHorizontal"
+                    /></span>
                     <span class="reorder-position">{{ i + 1 }}</span>
                     <h2 class="headline" [attr.title]="objectCardDisplayLabel(object)">
                       <span class="headline-text">{{ objectCardDisplayLabel(object) }}</span>
@@ -507,29 +526,76 @@
               <button
                 type="button"
                 class="button button-secondary file-list-upload-btn"
-                (click)="openUploadModal()"
-                [disabled]="uploading()"
-                [attr.aria-label]="'objects.uploadFile' | translate"
-                [attr.title]="'objects.uploadFile' | translate"
+                (click)="projectFileList()?.openProjectSubGroupUploadModal()"
+                [disabled]="projectFileList()?.subGroupUploadUploading() || uploading()"
+                [attr.aria-label]="'subGroups.createTitle' | translate"
+                [title]="'subGroups.createTitle' | translate"
               >
-                @if (uploading()) {
-                  <span class="spinner"></span>
-                } @else {
-                  <app-icon [icon]="icons.cloudUpload" [svgClass]="'file-list-upload-icon'" />
-                }
+                <app-icon [icon]="icons.folderPlus" />
+              </button>
+              <button
+                type="button"
+                class="button button-outline file-list-upload-btn"
+                (click)="openUploadModal()"
+                [disabled]="uploading() || projectFileList()?.subGroupUploadUploading()"
+                [attr.aria-label]="'subGroups.addPhotosTitle' | translate"
+                [title]="'subGroups.addPhotosTitle' | translate"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 256 256"
+                  width="24"
+                  height="24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <rect
+                    x="8"
+                    y="8"
+                    width="240"
+                    height="240"
+                    rx="48"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="8"
+                  />
+                  <g
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M39 55 H65 L74 64 H91 Q99 64 99 72 V91 Q99 99 91 99 H39 Q31 99 31 91 V63 Q31 55 39 55 Z"
+                    />
+                    <path
+                      d="M165 55 H191 L200 64 H217 Q225 64 225 72 V91 Q225 99 217 99 H165 Q157 99 157 91 V63 Q157 55 165 55 Z"
+                    />
+                    <path
+                      d="M39 157 H65 L74 166 H91 Q99 166 99 174 V193 Q99 201 91 201 H39 Q31 201 31 193 V165 Q31 157 39 157 Z"
+                    />
+                    <path
+                      d="M165 157 H191 L200 166 H217 Q225 166 225 174 V193 Q225 201 217 201 H165 Q157 201 157 193 V165 Q157 157 165 157 Z"
+                    />
+                    <path d="M128 111 V145 M111 128 H145" stroke-width="9" />
+                  </g>
+                </svg>
               </button>
             }
           </div>
         </header>
         <div class="column-content file-list-section-content">
-          @if (files().length) {
-            <app-file-list
-              [projectFiles]="files()"
-              [projectObjectOptions]="projectObjectOptions()"
-              (fileDeleted)="onFileDeleted()"
-              (metadataUpdated)="onFileDeleted()"
-            ></app-file-list>
-          } @else {
+          <app-file-list
+            [projectFiles]="files()"
+            [projectId]="project()?._id?.$oid"
+            [projectSubGroups]="project()?.photo_sub_groups ?? []"
+            [projectCategories]="project()?.categories ?? []"
+            [projectObjectOptions]="projectObjectOptions()"
+            (fileDeleted)="onFileDeleted()"
+            (metadataUpdated)="onFileDeleted()"
+          />
+          @if (!files().length && !project()?.photo_sub_groups?.length) {
             <p class="empty-state">{{ 'files.noPictures' | translate }}</p>
           }
         </div>
@@ -541,7 +607,7 @@
     [isOpen]="uploadModalOpen()"
     [files]="selectedFiles()"
     [showCategories]="false"
-    [allowGroupingChoice]="true"
+    [requireFiles]="true"
     [uploading]="uploading()"
     (filesSelected)="onFilesSelected($event)"
     (upload)="onUploadFile($event)"

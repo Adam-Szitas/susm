@@ -1,3 +1,4 @@
+import { projectPhotoSubGroups } from '../../utils/project-photo-sub-groups';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import {
   FileGroup,
   ProjectFile,
+  ProjectPhotoSubGroup,
   FileGroupItem,
   FileSubGroup,
   fileGroupCategoryLabels,
@@ -112,7 +114,7 @@ export class FileListComponent implements OnDestroy {
     const subGroupId = target.subGroup._id?.$oid;
     if (!groupId || !subGroupId) return target;
 
-    const group = this.filteredFileGroups().find((g) => g._id?.$oid === groupId);
+    const group = this.projectId() ? this.projectPhotoContainer() : this.filteredFileGroups().find((g) => g._id?.$oid === groupId);
     const subGroup = group?.sub_groups?.find((sg) => sg._id?.$oid === subGroupId);
     if (!group || !subGroup) return target;
     return { group, subGroup };
@@ -129,6 +131,8 @@ export class FileListComponent implements OnDestroy {
   public categoryFilter = input<string[]>([]);
   // For project files: receives ProjectFile[]
   public projectFiles = input<ProjectFile[]>([]);
+  public projectId = input<string>();
+  public projectSubGroups = input<ProjectPhotoSubGroup[]>([]);
   /** Project objects available as send destinations (project tab). */
   public projectObjectOptions = input<ProjectObjectOption[]>([]);
   /** Parent object's project categories — all of these appear in the file-group category select. */
@@ -235,19 +239,17 @@ export class FileListComponent implements OnDestroy {
     );
   });
 
-  readonly projectFileGroups = computed(() => {
-    const groups = new Map<string, { id: string; description: string; note: string; files: ProjectFile[] }>();
-    for (const file of this.windowedProjectFiles()) {
-      const id = file.group_id || '';
-      let group = groups.get(id);
-      if (!group) {
-        group = { id, description: file.description || '', note: file.note || '', files: [] };
-        groups.set(id, group);
-      }
-      group.files.push(file);
-    }
-    return [...groups.values()];
-  });
+  readonly projectPhotoSubGroups = computed(() =>
+    projectPhotoSubGroups(this.filteredProjectFiles(), this.projectSubGroups()),
+  );
+  readonly projectRootFiles = computed(() => this.filteredProjectFiles().filter(file => !file.group_id));
+  /** Adapter for the shared subgroup detail and move UI; no file-group is shown or stored. */
+  readonly projectPhotoContainer = computed<FileGroup>(() => ({
+    _id: { $oid: this.projectId() ?? '' },
+    description: this.#translationService.instant('files.title'),
+    files: this.projectRootFiles(),
+    sub_groups: this.projectPhotoSubGroups(),
+  }));
 
   private static readonly PROJECT_FILES_CHUNK = 36;
   private static readonly PROJECT_FILES_WINDOW_THRESHOLD = 48;
@@ -256,7 +258,7 @@ export class FileListComponent implements OnDestroy {
   projectFilesDisplayLimit = signal(FileListComponent.PROJECT_FILES_CHUNK);
 
   readonly windowedProjectFiles = computed(() => {
-    const all = this.filteredProjectFiles();
+    const all = this.projectRootFiles();
     if (all.length <= FileListComponent.PROJECT_FILES_WINDOW_THRESHOLD) {
       return all;
     }
@@ -264,15 +266,15 @@ export class FileListComponent implements OnDestroy {
   });
 
   readonly hasMoreProjectFiles = computed(
-    () => this.filteredProjectFiles().length > this.windowedProjectFiles().length,
+    () => this.projectRootFiles().length > this.windowedProjectFiles().length,
   );
 
   readonly remainingProjectFilesCount = computed(
-    () => this.filteredProjectFiles().length - this.windowedProjectFiles().length,
+    () => this.projectRootFiles().length - this.windowedProjectFiles().length,
   );
 
   readonly deferProjectFileItems = computed(
-    () => this.filteredProjectFiles().length > FileListComponent.PROJECT_FILES_WINDOW_THRESHOLD,
+    () => this.projectRootFiles().length > FileListComponent.PROJECT_FILES_WINDOW_THRESHOLD,
   );
 
   loadMoreProjectFiles(): void {
@@ -802,9 +804,13 @@ export class FileListComponent implements OnDestroy {
       });
   }
 
+  public openProjectSubGroupUploadModal(): void {
+    this.openSubGroupUploadModal(this.projectPhotoContainer());
+  }
+
   public openSubGroupUploadModal(group: FileGroup): void {
     const groupId = group._id?.$oid;
-    if (!groupId || !this.objectId() || this.subGroupUploadUploading()) {
+    if (!groupId || (!this.objectId() && !this.projectId()) || this.subGroupUploadUploading()) {
       return;
     }
     this.subGroupUploadAddMode.set(false);
@@ -815,7 +821,7 @@ export class FileListComponent implements OnDestroy {
   public openSubGroupAddPhotosModal(group: FileGroup, subGroup: FileSubGroup): void {
     const groupId = group._id?.$oid;
     const subGroupId = subGroup._id?.$oid;
-    if (!groupId || !subGroupId || !this.objectId() || this.subGroupUploadUploading()) {
+    if (!groupId || !subGroupId || (!this.objectId() && !this.projectId()) || this.subGroupUploadUploading()) {
       return;
     }
     this.subGroupUploadAddMode.set(true);
@@ -838,7 +844,7 @@ export class FileListComponent implements OnDestroy {
     if (this.subGroupUploadAddMode() && target.subGroupId) {
       this.subGroupUploadUploading.set(true);
       this.#fileService
-        .addFilesToSubGroup(target.subGroupId, payload.files)
+        .addFilesToSubGroup(target.subGroupId, payload.files, this.projectId())
         .pipe(finalize(() => this.subGroupUploadUploading.set(false)))
         .subscribe({
           next: () => {
@@ -870,7 +876,7 @@ export class FileListComponent implements OnDestroy {
         name: payload.name,
         categories: payload.categories,
         note: payload.note,
-      })
+      }, this.projectId())
       .pipe(finalize(() => this.subGroupUploadUploading.set(false)))
       .subscribe({
         next: () => {
@@ -930,7 +936,7 @@ export class FileListComponent implements OnDestroy {
   public subGroupUploadInitialName(): string {
     const target = this.subGroupUploadTarget();
     if (!target?.subGroupId) return '';
-    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const group = this.projectId() ? this.projectPhotoContainer() : this.fileGroups().find((g) => g._id?.$oid === target.groupId);
     const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
     return sg?.name ?? '';
   }
@@ -938,7 +944,7 @@ export class FileListComponent implements OnDestroy {
   public subGroupUploadInitialCategories(): string[] {
     const target = this.subGroupUploadTarget();
     if (!target?.subGroupId) return [];
-    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const group = this.projectId() ? this.projectPhotoContainer() : this.fileGroups().find((g) => g._id?.$oid === target.groupId);
     const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
     return sg ? fileSubGroupCategoryLabels(sg) : [];
   }
@@ -946,7 +952,7 @@ export class FileListComponent implements OnDestroy {
   public subGroupUploadInitialNote(): string {
     const target = this.subGroupUploadTarget();
     if (!target?.subGroupId) return '';
-    const group = this.fileGroups().find((g) => g._id?.$oid === target.groupId);
+    const group = this.projectId() ? this.projectPhotoContainer() : this.fileGroups().find((g) => g._id?.$oid === target.groupId);
     const sg = group?.sub_groups?.find((s) => s._id?.$oid === target.subGroupId);
     return sg?.note ?? '';
   }

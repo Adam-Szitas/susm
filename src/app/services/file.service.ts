@@ -357,6 +357,7 @@ export class FileService {
     groupId: string,
     files: globalThis.File[],
     metadata: { name: string; categories?: string[]; note?: string },
+    projectId?: string,
   ): Observable<unknown> {
     const form = new FormData();
     form.append('name', metadata.name.trim());
@@ -373,13 +374,16 @@ export class FileService {
       form.append('avatar', file, file.name);
     }
     return this.#uploadWithRetry(() =>
-      this.#httpService.post(`file/group/${groupId}/sub-groups`, form, new HttpHeaders(), {
+      this.#httpService.post(projectId ? `file/project/${projectId}` : `file/group/${groupId}/sub-groups`, form, new HttpHeaders(), {
         suppressErrorNotification: true,
       }),
     );
   }
 
-  addFilesToSubGroup(subGroupId: string, files: globalThis.File[]): Observable<string[]> {
+  addFilesToSubGroup(subGroupId: string, files: globalThis.File[], projectId?: string): Observable<string[]> {
+    if (projectId) {
+      return this.uploadFileForProject(new FormData(), projectId, files, { groupId: subGroupId });
+    }
     return from(files).pipe(
       concatMap((file) => {
         const form = new FormData();
@@ -398,16 +402,18 @@ export class FileService {
   updateSubGroup(
     subGroupId: string,
     data: { name?: string; categories?: string[]; note?: string | null },
+    projectId?: string,
   ): Observable<{ message: string }> {
-    return this.#httpService.put<{ message: string }>(`file/sub-group/${subGroupId}`, data);
+    return this.#httpService.put<{ message: string }>(this.subGroupEndpoint(subGroupId, projectId), data);
   }
 
   deleteSubGroup(
     subGroupId: string,
     mode: 'delete_all' | 'unwrap',
+    projectId?: string,
   ): Observable<{ message: string }> {
     return this.#httpService.delete<{ message: string }>(
-      `file/sub-group/${subGroupId}?mode=${mode}`,
+      `${this.subGroupEndpoint(subGroupId, projectId)}?mode=${mode}`,
     );
   }
 
@@ -417,8 +423,20 @@ export class FileService {
     });
   }
 
-  reorderSubGroupFiles(subGroupId: string, fileIds: string[]): Observable<{ message: string }> {
-    return this.#httpService.put<{ message: string }>(`file/sub-group/${subGroupId}/reorder`, {
+  private subGroupEndpoint(subGroupId: string, projectId?: string): string {
+    return projectId
+      ? `file/project/${projectId}/sub-groups/${subGroupId}`
+      : `file/sub-group/${subGroupId}`;
+  }
+
+  moveProjectPhoto(projectId: string, fileId: string, subGroupId?: string): Observable<{ message: string }> {
+    return this.#httpService.post(`file/project/${projectId}/photos/${fileId}/move`, {
+      sub_group_id: subGroupId ?? null,
+    });
+  }
+
+  reorderSubGroupFiles(subGroupId: string, fileIds: string[], projectId?: string): Observable<{ message: string }> {
+    return this.#httpService.put<{ message: string }>(`${this.subGroupEndpoint(subGroupId, projectId)}/reorder`, {
       file_ids: fileIds,
     });
   }

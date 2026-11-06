@@ -653,7 +653,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     description: string;
     categories: string[];
     note: string;
-    groupFiles: boolean;
   }): void {
     const projectId = this.#route.snapshot.paramMap.get('id');
     if (!projectId) {
@@ -664,7 +663,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.uploadFiles(data.files, data.description, projectId, data.note, data.groupFiles);
+    this.uploadFiles(data.files, data.description, projectId, data.note);
   }
 
   onCancelUpload(): void {
@@ -677,7 +676,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
     description: string,
     projectId: string,
     note?: string,
-    groupFiles = true,
   ): void {
     if (!files.length || this.uploading()) {
       return;
@@ -701,7 +699,6 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       .uploadFileForProject(form, projectId, files, {
         description,
         note,
-        groupId: groupFiles ? crypto.randomUUID() : undefined,
       })
       .subscribe({
         next: () => {

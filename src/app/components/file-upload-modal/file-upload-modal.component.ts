@@ -63,8 +63,7 @@ export class FileUploadModalComponent {
   /** When false, category pickers are hidden (e.g. project-level photo uploads). */
   showCategories = input(true);
   uploading = input<boolean>(false);
-  allowGroupingChoice = input(false);
-  groupFiles = signal(true);
+  requireFiles = input(false);
 
   filesSelected = output<globalThis.File[]>();
   upload = output<{
@@ -72,7 +71,6 @@ export class FileUploadModalComponent {
     description: string;
     categories: string[];
     note: string;
-    groupFiles: boolean;
   }>();
   cancel = output<void>();
 
@@ -197,7 +195,7 @@ export class FileUploadModalComponent {
   }
 
   onUpload(): void {
-    if (this.uploading() || this.compressing()) return;
+    if (this.uploading() || this.compressing() || (this.requireFiles() && !this.filePreviews().length)) return;
     const files = this.filePreviews().map((p) => p.file);
     const cats = [
       ...new Set(
@@ -208,7 +206,6 @@ export class FileUploadModalComponent {
     ];
     this.upload.emit({
       files,
-      groupFiles: this.groupFiles(),
       description: this.description().trim(),
       categories: cats,
       note: this.note().trim(),
