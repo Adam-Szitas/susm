@@ -236,12 +236,18 @@ export class FileService {
     fileId: string,
     targetGroupId: string,
     targetSubGroupId?: string | null,
+    options?: { suppressErrorNotification?: boolean },
   ): Observable<{ message: string }> {
     const endpoint = `file/${fileId}/move`;
-    return this.#httpService.post<{ message: string }>(endpoint, {
-      target_group_id: targetGroupId,
-      ...(targetSubGroupId ? { target_sub_group_id: targetSubGroupId } : {}),
-    });
+    return this.#httpService.post<{ message: string }>(
+      endpoint,
+      {
+        target_group_id: targetGroupId,
+        ...(targetSubGroupId ? { target_sub_group_id: targetSubGroupId } : {}),
+      },
+      undefined,
+      options,
+    );
   }
 
   /**
@@ -429,10 +435,18 @@ export class FileService {
       : `file/sub-group/${subGroupId}`;
   }
 
-  moveProjectPhoto(projectId: string, fileId: string, subGroupId?: string): Observable<{ message: string }> {
-    return this.#httpService.post(`file/project/${projectId}/photos/${fileId}/move`, {
-      sub_group_id: subGroupId ?? null,
-    });
+  moveProjectPhoto(
+    projectId: string,
+    fileId: string,
+    subGroupId?: string,
+    options?: { suppressErrorNotification?: boolean },
+  ): Observable<{ message: string }> {
+    return this.#httpService.post(
+      `file/project/${projectId}/photos/${fileId}/move`,
+      { sub_group_id: subGroupId ?? null },
+      undefined,
+      options,
+    );
   }
 
   reorderSubGroupFiles(subGroupId: string, fileIds: string[], projectId?: string): Observable<{ message: string }> {

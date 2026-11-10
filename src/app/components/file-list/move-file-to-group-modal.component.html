@@ -1,46 +1,55 @@
-<div class="move-file-modal">
+<div class="move-file-modal" [attr.aria-busy]="pendingKey() ? 'true' : null">
   <ul class="move-file-modal-list">
     @for (row of targetRows(); track row.groupId + (row.includeGroupRoot ? '-root' : '')) {
-      @if (row.includeGroupRoot && (!row.subGroups || row.subGroups.length === 0)) {
-        <li>
-          <button type="button" class="move-file-modal-option" (click)="pick(row.groupId)">
-            {{ row.label }}
-          </button>
-        </li>
-      } @else {
+      <li class="move-file-modal-row">
         @if (row.includeGroupRoot) {
-          <li>
-            <button type="button" class="move-file-modal-option move-file-modal-option--root" (click)="pick(row.groupId)">
-              {{ row.label }}
-            </button>
-          </li>
+          <ng-container
+            *ngTemplateOutlet="option; context: { groupId: row.groupId, label: row.label, root: !!row.subGroups?.length }"
+          />
+        } @else if (row.subGroups?.length) {
+          <span class="move-file-modal-group-label">{{ row.label }}</span>
         }
         @if (row.subGroups?.length) {
-          <li class="move-file-modal-group">
-            @if (!row.includeGroupRoot) {
-              <span class="move-file-modal-group-label">{{ row.label }}</span>
+          <ul class="move-file-modal-sub-list">
+            @for (sg of row.subGroups; track sg.subGroupId) {
+              <li class="move-file-modal-row">
+                <ng-container
+                  *ngTemplateOutlet="option; context: { groupId: row.groupId, subGroupId: sg.subGroupId, label: sg.label, sub: true }"
+                />
+              </li>
             }
-            <ul class="move-file-modal-sub-list">
-              @for (sg of row.subGroups; track sg.subGroupId) {
-                <li>
-                  <button
-                    type="button"
-                    class="move-file-modal-option move-file-modal-option--sub"
-                    (click)="pick(row.groupId, sg.subGroupId)"
-                  >
-                    {{ sg.label }}
-                  </button>
-                </li>
-              }
-            </ul>
-          </li>
+          </ul>
         }
-      }
+      </li>
     }
   </ul>
+
+  @if (error() !== null) {
+    <p class="move-file-modal-error" role="alert">
+      {{ error() || ('fileList.moveFailed' | translate) }}
+    </p>
+  }
+
   <div class="move-file-modal-actions">
     <button type="button" class="button button-secondary move-file-modal-cancel" (click)="cancel()">
       {{ 'common.cancel' | translate }}
     </button>
   </div>
 </div>
+
+<ng-template #option let-groupId="groupId" let-subGroupId="subGroupId" let-label="label" let-root="root" let-sub="sub">
+  <button
+    type="button"
+    class="move-file-modal-option"
+    [class.move-file-modal-option--root]="root"
+    [class.move-file-modal-option--sub]="sub"
+    [class.move-file-modal-option--pending]="pendingKey() === optionKey(groupId, subGroupId)"
+    [attr.aria-disabled]="pendingKey() ? 'true' : null"
+    (click)="pick(groupId, subGroupId)"
+  >
+    <span class="move-file-modal-option-label">{{ label }}</span>
+    @if (pendingKey() === optionKey(groupId, subGroupId)) {
+      <span class="move-file-modal-option-status">{{ 'common.saving' | translate }}</span>
+    }
+  </button>
+</ng-template>

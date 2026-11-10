@@ -4,6 +4,7 @@ import { Params, RouterLink } from '@angular/router';
 import { Object, formatObjectDisplayLabel } from '@models';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
+import { objectBasePrefix } from '../../utils/object-prefix';
 
 @Component({
   selector: 'app-object-card',
@@ -31,11 +32,14 @@ export class ObjectCardComponent {
   readonly dateFormat = input<'date' | 'datetime'>('date');
   readonly fallbackLabel = input('');
 
-  readonly displayLabel = computed(() =>
-    formatObjectDisplayLabel(this.object(), {
+  readonly displayLabel = computed(() => {
+    const object = this.object();
+    const prefix = objectBasePrefix(object.prefix, object.address?.house_number);
+    const address = formatObjectDisplayLabel(object, {
       compact: this.compact(),
       includePostalCode: this.includePostalCode(),
       fallback: this.fallbackLabel(),
-    }),
-  );
+    });
+    return [prefix, address].filter(Boolean).join(' ');
+  });
 }

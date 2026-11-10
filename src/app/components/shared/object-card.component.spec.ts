@@ -21,11 +21,7 @@ describe('ObjectCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ObjectCardComponent, TranslateModule.forRoot()],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideRouter([]),
-        provideHttpClient(),
-      ],
+      providers: [provideZonelessChangeDetection(), provideRouter([]), provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ObjectCardComponent);
@@ -43,6 +39,28 @@ describe('ObjectCardComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-status-pill')).not.toBeNull();
+  });
+
+  it('shows the prefix before the address with the date underneath', () => {
+    fixture.componentRef.setInput('object', { ...mockObject, prefix: 'Block A' });
+    fixture.detectChanges();
+
+    const headline = fixture.nativeElement.querySelector('.headline') as HTMLElement;
+    const date = fixture.nativeElement.querySelector('.created-at') as HTMLElement;
+    expect(headline.textContent?.trim()).toBe('Block A 12, 2, A');
+    expect(headline.title).toBe('Block A 12, 2, A');
+    expect(date.textContent).toContain('2026');
+    expect(headline.nextElementSibling).toBe(date);
+  });
+
+  it('shows the prefix in compact mode without repeating a legacy house number suffix', () => {
+    fixture.componentRef.setInput('object', { ...mockObject, prefix: 'Block A 12' });
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.headline-text')?.textContent?.trim()).toBe(
+      'Block A 12',
+    );
   });
 
   it('hides note in compact mode', () => {

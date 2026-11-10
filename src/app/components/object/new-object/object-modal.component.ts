@@ -1,22 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
 import { DEFAULT_WORK_STATUS } from '@models';
 import { TranslateModule } from '@ngx-translate/core';
-import { IconComponent } from '@icons/icon.component';
-import { icons } from '@icons/icon.definitions';
-import { TrashIconComponent } from '../../shared/trash-icon.component';
 import { StatusSelectComponent } from '../../shared/status-select.component';
 import {
   buildHouseNumberRange,
@@ -31,10 +29,9 @@ import { normalizeObjectPrefix } from '../../../utils/object-prefix';
   styleUrl: './object-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TrashIconComponent, StatusSelectComponent, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, StatusSelectComponent],
 })
 export class ObjectModalComponent implements OnInit {
-  protected readonly icons = icons;
   #formBuilder = inject(FormBuilder);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
@@ -42,25 +39,18 @@ export class ObjectModalComponent implements OnInit {
   #translationService = inject(TranslationService);
   #destroyRef = inject(DestroyRef);
 
-  readonly maxRangeSize = MAX_HOUSE_NUMBER_RANGE_SIZE;
   progressing = signal(false);
   readonly #rangePreviewRevision = signal(0);
 
   readonly form: FormGroup = this.#formBuilder.group({
     status: [DEFAULT_WORK_STATUS, [Validators.required]],
     prefix: [''],
-    rangeStart: [''],
+    rangeStart: ['', Validators.required],
     rangeEnd: [''],
     skipExistingHouseNumbers: [true],
-    rows: this.#formBuilder.array([]),
   });
 
-  get rowsArray(): FormArray {
-    return this.form.get('rows') as FormArray;
-  }
-
   ngOnInit(): void {
-    this.addRow();
     for (const controlName of ['rangeStart', 'rangeEnd', 'skipExistingHouseNumbers'] as const) {
       this.form
         .get(controlName)
@@ -71,25 +61,7 @@ export class ObjectModalComponent implements OnInit {
     }
   }
 
-  createRowGroup(): FormGroup {
-    return this.#formBuilder.group({
-      house_number: ['', Validators.required],
-      level: [''],
-      door_number: [''],
-      note: [''],
-    });
-  }
-
-  addRow(): void {
-    this.rowsArray.push(this.createRowGroup());
-  }
-
-  removeRow(index: number): void {
-    if (this.rowsArray.length <= 1) return;
-    this.rowsArray.removeAt(index);
-  }
-
-  createFromRange(): void {
+  submit(): void {
     if (this.progressing()) {
       return;
     }
@@ -126,42 +98,6 @@ export class ObjectModalComponent implements OnInit {
     }));
 
     this.#createObjects(projectId, objects, preview.skippedCount, skipExistingHouseNumbers);
-  }
-
-  submit(): void {
-    if (this.form.invalid || this.progressing()) return;
-
-    const projectId = this.#projectStore.project()?._id;
-    if (!projectId?.$oid) {
-      this.#notificationService.showError(
-        this.#translationService.instant('errors.noProjectSelected'),
-      );
-      return;
-    }
-
-    const { status, prefix } = this.form.getRawValue();
-    const objects = this.rowsArray.getRawValue().map(
-      (row: {
-        house_number: string;
-        level: string;
-        door_number: string;
-        note: string;
-      }) => {
-        const house_number = row.house_number?.trim() ?? '';
-        return {
-          address: {
-            house_number,
-            level: row.level?.trim() ?? '',
-            door_number: row.door_number?.trim() ?? '',
-          },
-          note: row.note?.trim() ?? '',
-          status,
-          prefix: normalizeObjectPrefix(prefix),
-        };
-      },
-    );
-
-    this.#createObjects(projectId, objects);
   }
 
   #createObjects(
@@ -226,10 +162,19 @@ export class ObjectModalComponent implements OnInit {
   } {
     const { rangeStart, rangeEnd, skipExistingHouseNumbers } = this.form.getRawValue();
     const start = parseHouseNumberBound(rangeStart);
-    const end = parseHouseNumberBound(rangeEnd);
+    const end =
+      rangeEnd === '' || rangeEnd === null || rangeEnd === undefined
+        ? start
+        : parseHouseNumberBound(rangeEnd);
 
     if (start === null || end === null) {
-      return { valid: false, totalInRange: 0, toCreate: [], skippedCount: 0, errorKey: 'objects.rangeInvalid' };
+      return {
+        valid: false,
+        totalInRange: 0,
+        toCreate: [],
+        skippedCount: 0,
+        errorKey: 'objects.rangeInvalid',
+      };
     }
 
     const totalInRange = Math.abs(end - start) + 1;

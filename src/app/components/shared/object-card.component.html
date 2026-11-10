@@ -18,13 +18,13 @@
   <h2 class="headline" [attr.title]="displayLabel()">
     <span class="headline-text">{{ displayLabel() }}</span>
   </h2>
-  @if (!compact() && obj.note) {
-    <div class="note">{{ obj.note }}</div>
-  }
   @if (showMeta() && !compact()) {
     <div class="created-at">
       <span>{{ obj.created_at | localeDate: dateFormat() }}</span>
       <span>{{ obj.category || '' }}</span>
     </div>
+  }
+  @if (!compact() && obj.note) {
+    <div class="note">{{ obj.note }}</div>
   }
 </div>

@@ -39,9 +39,10 @@ import { NotificationService } from '../../services/notification.service';
 import { TranslationService } from '../../services/translation.service';
 import { DateFormatService } from '../../services/date-format.service';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { defer, finalize, Observable, tap } from 'rxjs';
 import {
   MoveFileDestination,
+  MoveFileSubmit,
   MoveFileTargetRow,
   MoveFileToGroupModalComponent,
 } from './move-file-to-group-modal.component';
@@ -553,53 +554,41 @@ export class FileListComponent implements OnDestroy {
   ): void {
     event.stopPropagation();
     event.preventDefault();
-    if (this.moveFileInProgress()) return;
+    if (this.moveFileInProgress() || !file._id?.$oid) return;
 
     const targetRows = this.buildMoveTargetsForFile(currentGroup, sourceSubGroupId);
     if (targetRows.length === 0) return;
 
     this.activeFileId.set(null);
 
-    const { childRef } = this.#modalService.open({
+    const submit: MoveFileSubmit = (dest) => this.#moveFileToGroup(file, dest);
+    this.#modalService.open({
       title: 'fileList.movePickDestination',
       component: MoveFileToGroupModalComponent,
-      componentInputs: { targetRows },
-      wide: true,
+      componentInputs: { targetRows, submit },
     });
-
-    if (childRef) {
-      const inst = childRef.instance as MoveFileToGroupModalComponent;
-      const sub = inst.destinationPicked.subscribe((dest: MoveFileDestination) => {
-        sub.unsubscribe();
-        this.#moveFileToGroup(file, dest.groupId, dest.subGroupId);
-      });
-    }
   }
 
-  #moveFileToGroup(file: FileGroupItem, targetGroupId: string, targetSubGroupId?: string): void {
-    const fileId = file._id?.$oid;
-    if (!fileId || this.moveFileInProgress()) return;
-
-    this.moveFileInProgress.set(true);
-    this.#fileService
-      .moveFileToGroup(fileId, targetGroupId, targetSubGroupId ?? null)
-      .pipe(finalize(() => this.moveFileInProgress.set(false)))
-      .subscribe({
-        next: () => {
-          this.#notificationService.showSuccess(
-            this.#translationService.instant('fileList.moveSuccess', { count: 1 }) ||
-              'Picture moved',
-          );
-          this.metadataUpdated.emit();
-        },
-        error: (error: Error) => {
-          this.#notificationService.showError(
-            error.message ||
-              this.#translationService.instant('fileList.moveFailed') ||
-              'Failed to move file',
-          );
-        },
-      });
+  /** Errors are shown inside the move modal, so the global error toast is suppressed. */
+  #moveFileToGroup(file: FileGroupItem, dest: MoveFileDestination): Observable<unknown> {
+    return defer(() => {
+      this.moveFileInProgress.set(true);
+      return this.#fileService.moveFileToGroup(
+        file._id?.$oid ?? '',
+        dest.groupId,
+        dest.subGroupId ?? null,
+        { suppressErrorNotification: true },
+      );
+    }).pipe(
+      tap(() => {
+        this.#notificationService.showSuccess(
+          this.#translationService.instant('fileList.moveSuccess', { count: 1 }) ||
+            'Picture moved',
+        );
+        this.metadataUpdated.emit();
+      }),
+      finalize(() => this.moveFileInProgress.set(false)),
+    );
   }
 
   public openSendProjectFilesModal(fileIds?: string[]): void {

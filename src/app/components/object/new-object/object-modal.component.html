@@ -1,192 +1,48 @@
-<div class="object-bulk-form">
-  <p class="intro">{{ 'objects.bulkIntro' | translate }}</p>
-
+﻿<div class="object-bulk-form">
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="shared-fields">
+    <div class="object-fields">
       <div class="control">
         <label for="prefix">{{ 'objects.prefix' | translate }}</label>
-        <input
-          id="prefix"
-          type="text"
-          formControlName="prefix"
-          [placeholder]="'objects.prefixPlaceholder' | translate"
-        />
-        <span class="field-hint">{{ 'objects.sharedPrefixHint' | translate }}</span>
+        <input id="prefix" type="text" formControlName="prefix" />
+      </div>
+      <div class="control">
+        <label for="rangeStart">{{ 'objects.rangeStart' | translate }}</label>
+        <input id="rangeStart" type="number" step="1" formControlName="rangeStart" required />
+      </div>
+      <div class="control">
+        <label for="rangeEnd">{{ 'objects.rangeEnd' | translate }}</label>
+        <input id="rangeEnd" type="number" step="1" formControlName="rangeEnd" />
       </div>
       <div class="control">
         <label for="status">{{ 'objects.status' | translate }}</label>
         <app-status-select id="status" formControlName="status" />
-        <span class="field-hint">{{ 'objects.sharedStatusHint' | translate }}</span>
       </div>
     </div>
-
-    <section class="range-section" aria-labelledby="house-number-range-heading">
-      <div class="range-header">
-        <h3 id="house-number-range-heading">{{ 'objects.houseNumberRange' | translate }}</h3>
-        <p class="range-intro">{{ 'objects.houseNumberRangeIntro' | translate }}</p>
-      </div>
-
-      <div class="range-fields">
-        <div class="control">
-          <label for="rangeStart">{{ 'objects.rangeStart' | translate }}</label>
-          <input
-            id="rangeStart"
-            type="number"
-            formControlName="rangeStart"
-            [placeholder]="'objects.rangeStartPlaceholder' | translate"
-          />
-        </div>
-        <div class="control">
-          <label for="rangeEnd">{{ 'objects.rangeEnd' | translate }}</label>
-          <input
-            id="rangeEnd"
-            type="number"
-            formControlName="rangeEnd"
-            [placeholder]="'objects.rangeEndPlaceholder' | translate"
-          />
-        </div>
-      </div>
-
-      <label class="range-toggle">
-        <input type="checkbox" formControlName="skipExistingHouseNumbers" />
-        <span>{{ 'objects.skipExistingHouseNumbers' | translate }}</span>
-      </label>
-      <p class="field-hint">{{ 'objects.skipExistingHouseNumbersHint' | translate }}</p>
-
-      @if (form.get('rangeStart')?.value !== '' && form.get('rangeEnd')?.value !== '') {
-        @if (getRangePreview().valid) {
-          <p class="range-preview">
-            @if (getRangePreview().skippedCount > 0) {
-              {{ 'objects.rangePreviewWithSkipped' | translate: {
-                count: getRangePreview().toCreate.length,
-                skipped: getRangePreview().skippedCount
-              } }}
-            } @else {
-              {{ 'objects.rangePreview' | translate: { count: getRangePreview().toCreate.length } }}
-            }
-          </p>
-        } @else if (getRangePreview().errorKey === 'objects.rangeTooLarge') {
-          <p class="range-error">
-            {{ 'objects.rangeTooLarge' | translate: { max: maxRangeSize } }}
-          </p>
-        } @else if (getRangePreview().errorKey === 'objects.rangeAllSkipped') {
-          <p class="range-error">{{ 'objects.rangeAllSkipped' | translate }}</p>
-        } @else if (getRangePreview().errorKey === 'objects.rangeInvalid') {
-          <p class="range-error">{{ 'objects.rangeInvalid' | translate }}</p>
-        }
-      }
-
-      <div class="range-actions">
-        <button
-          type="button"
-          class="btn btn-primary range-create-btn"
-          [disabled]="progressing() || !getRangePreview().valid"
-          (click)="createFromRange()"
-        >
-          @if (progressing()) {
-            {{ 'common.saving' | translate }}
-          } @else if (getRangePreview().valid) {
-            {{ 'objects.createFromRange' | translate: { count: getRangePreview().toCreate.length } }}
-          } @else {
-            {{ 'objects.createFromRangeAction' | translate }}
-          }
-        </button>
-      </div>
-    </section>
-
-    <div class="rows-header">
-      <h3>{{ 'objects.objectRows' | translate }}</h3>
-      <button
-        type="button"
-        class="btn btn-secondary btn-small add-row-btn add-row-btn--header"
-        (click)="addRow()"
-      >
-        {{ 'objects.addRow' | translate }}
-      </button>
-    </div>
-
-    <div class="rows-table" formArrayName="rows">
-      <div class="rows-table-head" aria-hidden="true">
-        <span>{{ 'common.houseNumber' | translate }} *</span>
-        <span>{{ 'common.level' | translate }}</span>
-        <span>{{ 'common.doorNumber' | translate }}</span>
-        <span>{{ 'common.note' | translate }}</span>
-        <span></span>
-      </div>
-
-      @for (row of rowsArray.controls; track $index; let i = $index) {
-        <div class="object-row" [formGroupName]="i">
-          <div class="object-row-field">
-            <label class="mobile-label" [for]="'house_number_' + i">
-              {{ 'common.houseNumber' | translate }} *
-            </label>
-            <input
-              [id]="'house_number_' + i"
-              type="text"
-              formControlName="house_number"
-              [placeholder]="'objects.houseNumberPlaceholder' | translate"
-            />
-          </div>
-          <div class="object-row-field">
-            <label class="mobile-label" [for]="'level_' + i">{{ 'common.level' | translate }}</label>
-            <input
-              [id]="'level_' + i"
-              type="text"
-              formControlName="level"
-              [placeholder]="'objects.levelPlaceholder' | translate"
-            />
-          </div>
-          <div class="object-row-field">
-            <label class="mobile-label" [for]="'door_number_' + i">
-              {{ 'common.doorNumber' | translate }}
-            </label>
-            <input
-              [id]="'door_number_' + i"
-              type="text"
-              formControlName="door_number"
-              [placeholder]="'objects.doorNumberPlaceholder' | translate"
-            />
-          </div>
-          <div class="object-row-field">
-            <label class="mobile-label" [for]="'note_' + i">{{ 'common.note' | translate }}</label>
-            <input
-              [id]="'note_' + i"
-              type="text"
-              formControlName="note"
-              [placeholder]="'objects.notePlaceholder' | translate"
-            />
-          </div>
-          <div class="object-row-actions">
-            <button
-              type="button"
-              class="btn-icon btn-icon-danger"
-              (click)="removeRow(i)"
-              [disabled]="rowsArray.length <= 1"
-              [attr.aria-label]="'objects.removeRow' | translate"
-              [attr.title]="'objects.removeRow' | translate"
-            >
-              <app-trash-icon />
-            </button>
-          </div>
-        </div>
-      }
-    </div>
-
+    <label class="skip-toggle">
+      <input type="checkbox" role="switch" formControlName="skipExistingHouseNumbers" />
+      <span class="toggle-track" aria-hidden="true"></span>
+      <span>{{ 'objects.skipExistingHouseNumbers' | translate }}</span>
+    </label>
+    @let preview = getRangePreview();
+    @if (
+      form.get('rangeStart')?.value !== '' &&
+      form.get('rangeStart')?.value !== null &&
+      preview.errorKey
+    ) {
+      <p class="range-error" role="status">
+        {{ preview.errorKey | translate: preview.errorParams }}
+      </p>
+    }
     <div class="form-actions">
       <button
-        type="button"
-        class="btn btn-secondary btn-add-row-mobile"
-        (click)="addRow()"
-        [attr.aria-label]="'objects.addRow' | translate"
-        [attr.title]="'objects.addRow' | translate"
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="form.invalid || progressing() || !preview.valid"
       >
-        <app-icon [icon]="icons.plus" />
-      </button>
-      <button type="submit" class="btn btn-primary form-actions-submit" [disabled]="form.invalid || progressing()">
         @if (progressing()) {
           {{ 'common.saving' | translate }}
         } @else {
-          {{ 'objects.createObjects' | translate: { count: rowsArray.length } }}
+          {{ 'objects.createObjects' | translate: { count: preview.toCreate.length } }}
         }
       </button>
     </div>
