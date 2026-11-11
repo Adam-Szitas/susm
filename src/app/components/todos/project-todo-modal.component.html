@@ -5,5 +5,11 @@
     [objects]="objects()"
     [embedded]="true"
     (saved)="onAssignmentsSaved()"
-  />
+  >
+    <app-checklist-note-button
+      checklistFooterStart
+      [projectId]="projectId()"
+      (changed)="updatedProject.set($event)"
+    />
+  </app-project-todo-assign-to-checklists-panel>
 </div>

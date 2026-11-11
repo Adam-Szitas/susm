@@ -128,6 +128,7 @@
               <app-icon [icon]="icons.edit" />
               <span class="checklist-edit-label">{{ 'common.edit' | translate }}</span>
             </button>
+
           </li>
         }
         @if (filteredChecklists().length === 0) {
@@ -208,7 +209,9 @@
                         (entriesChange)="onObjectEntriesChange(object, $event)"
                       />
                       <label class="assignment-note">
-                        <span class="assignment-note-label">{{ 'todos.assignmentNote' | translate }}</span>
+                        <span class="assignment-note-label">{{
+                          'todos.assignmentNote' | translate
+                        }}</span>
                         <textarea
                           class="assignment-note-input"
                           rows="5"
@@ -247,6 +250,7 @@
     [class.form-actions--mobile-objects]="mobileStep() === 'objects'"
   >
     <div class="form-actions-start">
+      <ng-content select="[checklistFooterStart]" />
       @if (mobileStep() === 'objects') {
         <button
           type="button"
@@ -275,10 +279,12 @@
           (click)="goToObjectsStep()"
           [disabled]="!hasChecklistSelection()"
           [attr.aria-label]="
-            'todos.mobileContinueToObjectsCount' | translate: { count: selectedChecklistIds().length }
+            'todos.mobileContinueToObjectsCount'
+              | translate: { count: selectedChecklistIds().length }
           "
           [title]="
-            'todos.mobileContinueToObjectsCount' | translate: { count: selectedChecklistIds().length }
+            'todos.mobileContinueToObjectsCount'
+              | translate: { count: selectedChecklistIds().length }
           "
         >
           <span class="todo-action-icon" aria-hidden="true">
@@ -296,7 +302,9 @@
         class="btn btn-primary todo-action-btn form-actions-save"
         (click)="save()"
         [disabled]="saving() || dirtyObjectCount() === 0 || !hasChecklistSelection()"
-        [attr.aria-label]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
+        [attr.aria-label]="
+          saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)
+        "
         [title]="saving() ? ('common.saving' | translate) : ('todos.saveAssignments' | translate)"
       >
         <span class="todo-action-icon" aria-hidden="true">

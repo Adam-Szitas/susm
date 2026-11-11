@@ -83,10 +83,7 @@ export class ObjectTodosSectionComponent {
     effect(() => {
       const external = this.todoEntries();
       const optimistic = this.#optimisticEntries();
-      if (
-        optimistic &&
-        serializeTodoEntries(external) === serializeTodoEntries(optimistic)
-      ) {
+      if (optimistic && serializeTodoEntries(external) === serializeTodoEntries(optimistic)) {
         this.#optimisticEntries.set(null);
       }
     });

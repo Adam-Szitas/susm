@@ -22,6 +22,7 @@ export interface TodoItem {
   _id: { $oid: string };
   title: string;
   note?: string;
+  source_note_line_id?: string;
   sort_order: number;
   sub_items?: TodoSubItem[];
 }
@@ -198,9 +199,7 @@ export function getSelectedSubItemId(
   entries: ObjectTodoEntry[] | undefined,
   parentId: string,
 ): string | null {
-  const entry = entries?.find(
-    (e) => todoEntryItemId(e) === parentId && !!todoEntrySubItemId(e),
-  );
+  const entry = entries?.find((e) => todoEntryItemId(e) === parentId && !!todoEntrySubItemId(e));
   return entry ? todoEntrySubItemId(entry) : null;
 }
 
@@ -367,10 +366,7 @@ export function updateTodoEntryAssignmentNote(
   });
 }
 
-function carriedAssignmentNote(
-  entries: ObjectTodoEntry[],
-  parentId: string,
-): string | undefined {
+function carriedAssignmentNote(entries: ObjectTodoEntry[], parentId: string): string | undefined {
   const note = entries
     .find((entry) => todoEntryItemId(entry) === parentId)
     ?.assignment_note?.trim();
@@ -403,9 +399,7 @@ export function objectsAssignedToTodoItem<T extends { todo_entries?: ObjectTodoE
   objects: T[],
   todoItemIdValue: string,
 ): T[] {
-  return objects.filter((object) =>
-    isParentTodoAssigned(object.todo_entries, todoItemIdValue),
-  );
+  return objects.filter((object) => isParentTodoAssigned(object.todo_entries, todoItemIdValue));
 }
 
 /** Count of objects with a given checklist item assigned. */

@@ -31,7 +31,11 @@
             formControlName="title"
             [placeholder]="'todos.subItemTitle' | translate"
           />
-          <div class="color-picker" role="group" [attr.aria-label]="'todos.subItemColor' | translate">
+          <div
+            class="color-picker"
+            role="group"
+            [attr.aria-label]="'todos.subItemColor' | translate"
+          >
             @for (color of colorOptions; track color) {
               <button
                 type="button"
@@ -46,31 +50,64 @@
           </div>
           <button
             type="button"
-            class="delete-btn delete-btn--compact"
+            class="button button-error action-button sub-item-delete"
             (click)="removeSubItem(subIdx)"
             [attr.aria-label]="'common.delete' | translate"
             [title]="'common.delete' | translate"
           >
-            <app-trash-icon [size]="16" />
+            <app-trash-icon [size]="20" />
           </button>
         </div>
       }
     </div>
-    <button type="button" class="btn btn-secondary add-sub-btn" (click)="addSubItem()">
-      {{ 'todos.addSubItem' | translate }}
+    <button
+      type="button"
+      class="btn btn-secondary add-sub-btn"
+      (click)="addSubItem()"
+      [disabled]="saving || confirmingDelete"
+      [attr.aria-label]="'todos.addSubItem' | translate"
+      [title]="'todos.addSubItem' | translate"
+    >
+      <app-icon [icon]="icons.plus" [size]="20" />
+      <span class="action-label">{{ 'todos.addSubItem' | translate }}</span>
     </button>
   </div>
 
   <div class="form-actions">
-    <button type="button" class="btn btn-secondary" (click)="close()">
-      {{ 'common.cancel' | translate }}
+    @if (todoItem()) {
+      <button
+        type="button"
+        class="button button-error action-button checklist-delete-btn delete-action"
+        [disabled]="saving || confirmingDelete"
+        (click)="deleteChecklist()"
+        [attr.aria-label]="'todos.deleteChecklist' | translate"
+        [title]="'todos.deleteChecklist' | translate"
+      >
+        <app-trash-icon [size]="20" />
+        <span class="action-label">{{ 'todos.deleteChecklist' | translate }}</span>
+      </button>
+    }
+    <button
+      type="button"
+      class="button button-secondary action-button cancel-action"
+      [disabled]="saving || confirmingDelete"
+      (click)="close()"
+      [attr.aria-label]="'common.cancel' | translate"
+      [title]="'common.cancel' | translate"
+    >
+      <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+      <span class="action-label">{{ 'common.cancel' | translate }}</span>
     </button>
-    <button type="submit" class="btn btn-primary" [disabled]="saving">
-      @if (saving) {
-        {{ 'common.saving' | translate }}
-      } @else {
-        {{ 'common.save' | translate }}
-      }
+    <button
+      type="submit"
+      class="button button-primary action-button submit-action"
+      [disabled]="saving || confirmingDelete"
+      [attr.aria-busy]="saving"
+      [attr.aria-label]="(saving ? 'common.saving' : 'common.save') | translate"
+      [title]="(saving ? 'common.saving' : 'common.save') | translate"
+    >
+      <app-icon [icon]="saving ? icons.loader : icons.check" [strokeWidth]="2.5" />
+      <span class="action-label">{{ (saving ? 'common.saving' : 'common.save') | translate }}</span>
     </button>
   </div>
 </form>

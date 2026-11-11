@@ -4,6 +4,7 @@ import { WorkStatus } from './status.model';
 import { Object } from './object.model';
 import { ProtocolRecord } from './protocol.model';
 import { TodoItem } from './todo.model';
+import type { NoteLine } from './note-line.model';
 
 /** Uploaded street plan image — interactive map for object pins. */
 export interface StreetPlan {
@@ -27,6 +28,8 @@ export interface Project {
   protocols?: ProtocolRecord[];
   photo_sub_groups?: ProjectPhotoSubGroup[];
   todo_items?: TodoItem[];
+  checklist_note?: string;
+  checklist_note_lines?: NoteLine[];
   archived_at?: string;
   archive_comment?: string;
   deleted_at?: string;

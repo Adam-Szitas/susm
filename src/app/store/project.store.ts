@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import type { NoteLine } from '../models/note-line.model';
 import { HttpHeaders } from '@angular/common/http';
 import { HttpService } from '../services/http.service';
 import { Observable, tap, throwError } from 'rxjs';
@@ -56,7 +57,7 @@ export class ProjectStore {
     if (!id) {
       const message = 'Project ID is required';
       this._error.set(message);
-      return throwError(() => ({ message } satisfies AppError));
+      return throwError(() => ({ message }) satisfies AppError);
     }
 
     const requestId = ++this.#loadProjectRequestId;
@@ -135,10 +136,10 @@ export class ProjectStore {
       });
     }
 
-    const url = term ? `objects/${projectId}?search=${encodeURIComponent(term)}` : `objects/${projectId}`;
-    return this.#httpService
-      .get<Object[]>(url)
-      .pipe(tap((objects) => this._objects.set(objects)));
+    const url = term
+      ? `objects/${projectId}?search=${encodeURIComponent(term)}`
+      : `objects/${projectId}`;
+    return this.#httpService.get<Object[]>(url).pipe(tap((objects) => this._objects.set(objects)));
   }
 
   createObject(object: Object & { projectId: string }): Observable<Object> {
@@ -289,13 +290,40 @@ export class ProjectStore {
     );
   }
 
+  loadChecklistNote(projectId: string): Observable<Project> {
+    return this.#httpService
+      .get<Project>(`project/${projectId}/checklist-note`)
+      .pipe(tap((project) => this.#applyChecklistProject(project)));
+  }
+
+  saveChecklistNote(
+    projectId: string,
+    previous: Project,
+    note: string,
+    noteLines: NoteLine[],
+  ): Observable<Project> {
+    return this.#httpService
+      .put<Project>(`project/${projectId}/checklist-note`, {
+        note,
+        note_lines: noteLines,
+        previous_note: previous.checklist_note ?? null,
+        previous_note_lines: previous.checklist_note_lines ?? [],
+      })
+      .pipe(tap((project) => this.#applyChecklistProject(project)));
+  }
+
+  #applyChecklistProject(project: Project): void {
+    if (this._project()?._id?.$oid === project._id?.$oid) this._project.set(project);
+    this._projects.update((projects) =>
+      projects.map((current) => (current._id?.$oid === project._id?.$oid ? project : current)),
+    );
+  }
+
   updateObjectTodos(objectId: string, todoEntries: ObjectTodoEntry[]): Observable<Object> {
     const payload = {
       todo_entries: todoEntries.map((entry) => ({
         todo_item_id:
-          typeof entry.todo_item_id === 'string'
-            ? entry.todo_item_id
-            : entry.todo_item_id.$oid,
+          typeof entry.todo_item_id === 'string' ? entry.todo_item_id : entry.todo_item_id.$oid,
         todo_sub_item_id: todoEntrySubItemId(entry) ?? undefined,
         status: normalizeTodoItemStatus(entry.status),
         hidden_from_protocol: entry.hidden_from_protocol === true,
@@ -454,9 +482,9 @@ export class ProjectStore {
 
   updateObjectMapPin(objectId: string, pin: MapPin | null): Observable<Object> {
     const body = pin ? { x: pin.x, y: pin.y } : { clear: true };
-    return this.#httpService.put<Object>(`object/${objectId}/map-pin`, body).pipe(
-      tap((updated) => this.mergeUpdatedObject(updated)),
-    );
+    return this.#httpService
+      .put<Object>(`object/${objectId}/map-pin`, body)
+      .pipe(tap((updated) => this.mergeUpdatedObject(updated)));
   }
 
   uploadStreetPlan(projectId: string, file: globalThis.File): Observable<StreetPlan> {
@@ -491,17 +519,23 @@ export class ProjectStore {
       );
   }
 
-  public toggleArchiveProject(projectId: string, archive: boolean, archive_comment?: string): Observable<Project> {
-    return this.#httpService.put<Project>(`project/${projectId}/archive`, { archive, archive_comment }).pipe(
-      tap({
-        next: (result) => {
-          this._project.set(result);
-        },
-        error: (error) => {
-          this._error.set(error.message || 'Failed to archive project');
-        },
-      }),
-    );
+  public toggleArchiveProject(
+    projectId: string,
+    archive: boolean,
+    archive_comment?: string,
+  ): Observable<Project> {
+    return this.#httpService
+      .put<Project>(`project/${projectId}/archive`, { archive, archive_comment })
+      .pipe(
+        tap({
+          next: (result) => {
+            this._project.set(result);
+          },
+          error: (error) => {
+            this._error.set(error.message || 'Failed to archive project');
+          },
+        }),
+      );
   }
 
   /** Soft-delete project (sets deleted_at). Project will no longer appear in list. */

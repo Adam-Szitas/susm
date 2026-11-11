@@ -1,0 +1,88 @@
+<div class="checklist-note">
+  <p class="checklist-title">{{ current()?.name }}</p>
+  <p class="hint">{{ 'noteChecklist.projectHint' | translate }}</p>
+  @if (loading()) {
+    <p role="status">{{ 'common.loading' | translate }}</p>
+  } @else if (loadFailed()) {
+    <p role="alert">{{ 'noteChecklist.loadFailed' | translate }}</p>
+    <button
+      type="button"
+      class="button button-secondary action-button cancel-action"
+      (click)="load()"
+      [attr.aria-label]="'noteChecklist.retry' | translate"
+      [title]="'noteChecklist.retry' | translate"
+    >
+      <app-icon [icon]="icons.refresh" [size]="20" />
+      <span class="action-label">{{ 'noteChecklist.retry' | translate }}</span>
+    </button>
+  } @else if (editing()) {
+    <app-checklist-note-editor
+      [note]="note()"
+      (noteChange)="note.set($event)"
+      [formats]="formats()"
+      (formatsChange)="formats.set($event)"
+      [disabled]="saving()"
+    />
+  } @else {
+    @if (current()?.checklist_note?.trim()) {
+      <app-checklist-note-content
+        [note]="current()?.checklist_note ?? ''"
+        [formats]="current()?.checklist_note_lines ?? []"
+      />
+    } @else {
+      <p class="hint">{{ 'noteChecklist.empty' | translate }}</p>
+    }
+  }
+  <footer class="actions">
+    @if (editing()) {
+      <button
+        type="button"
+        class="button button-secondary action-button cancel-action"
+        [disabled]="saving()"
+        (click)="close()"
+        [attr.aria-label]="'common.cancel' | translate"
+        [title]="'common.cancel' | translate"
+      >
+        <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+        <span class="action-label">{{ 'common.cancel' | translate }}</span>
+      </button>
+      <button
+        type="button"
+        class="button button-primary action-button submit-action"
+        [disabled]="saving()"
+        (click)="save()"
+        [attr.aria-busy]="saving()"
+        [attr.aria-label]="(saving() ? 'common.saving' : 'noteChecklist.submit') | translate"
+        [title]="(saving() ? 'common.saving' : 'noteChecklist.submit') | translate"
+      >
+        <app-icon [icon]="saving() ? icons.loader : icons.check" [strokeWidth]="2.5" />
+        <span class="action-label">{{
+          (saving() ? 'common.saving' : 'noteChecklist.submit') | translate
+        }}</span>
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="button button-secondary action-button cancel-action"
+        (click)="close()"
+        [attr.aria-label]="'common.close' | translate"
+        [title]="'common.close' | translate"
+      >
+        <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+        <span class="action-label">{{ 'common.close' | translate }}</span>
+      </button>
+      @if (canEdit() && current() && !loading() && !loadFailed()) {
+        <button
+          type="button"
+          class="button button-primary action-button submit-action"
+          (click)="edit()"
+          [attr.aria-label]="'noteChecklist.edit' | translate"
+          [title]="'noteChecklist.edit' | translate"
+        >
+          <app-icon [icon]="icons.edit" [size]="20" />
+          <span class="action-label">{{ 'noteChecklist.edit' | translate }}</span>
+        </button>
+      }
+    }
+  </footer>
+</div>

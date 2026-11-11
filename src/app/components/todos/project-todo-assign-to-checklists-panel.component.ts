@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
+  effect,
   inject,
   Input,
   input,
@@ -11,6 +12,7 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -49,7 +51,13 @@ export type ChecklistFirstMobileStep = 'checklists' | 'objects';
 @Component({
   selector: 'app-project-todo-assign-to-checklists-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TodoItemValueControlComponent, IconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    TodoItemValueControlComponent,
+    IconComponent,
+  ],
   templateUrl: './project-todo-assign-to-checklists-panel.component.html',
   styleUrl: './project-todo-assign-to-checklists-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -82,6 +90,29 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
 
   readonly #initialSnapshots = new Map<string, string>();
   readonly #workingEntries = signal(new Map<string, ObjectTodoEntry[]>());
+  #previousChecklistIds: Set<string> | null = null;
+
+  constructor() {
+    effect(() => {
+      const ids = new Set(this.sortedTodoItems().map(todoItemId));
+      const removed = new Set([...(this.#previousChecklistIds ?? [])].filter((id) => !ids.has(id)));
+      this.#previousChecklistIds = ids;
+      if (!removed.size) return;
+      untracked(() => {
+        const selected = this.selectedChecklistIds().filter((id) => !removed.has(id));
+        this.selectedChecklistIds.set(selected);
+        if (!selected.length) this.mobileStep.set('checklists');
+        const keep = (entry: ObjectTodoEntry) => !removed.has(todoEntryItemId(entry));
+        const working = new Map(this.#workingEntries());
+        for (const [id, entries] of working) {
+          working.set(id, entries.filter(keep));
+          const initial: ObjectTodoEntry[] = JSON.parse(this.#initialSnapshots.get(id) ?? '[]');
+          this.#initialSnapshots.set(id, serializeTodoEntries(initial.filter(keep)));
+        }
+        this.#workingEntries.set(working);
+      });
+    });
+  }
 
   readonly selectedTodoItems = computed(() => {
     const ids = new Set(this.selectedChecklistIds());
@@ -332,10 +363,7 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
 
   #commitSnapshots(): void {
     for (const objectId of this.#initialSnapshots.keys()) {
-      this.#initialSnapshots.set(
-        objectId,
-        serializeTodoEntries(this.entriesForObject(objectId)),
-      );
+      this.#initialSnapshots.set(objectId, serializeTodoEntries(this.entriesForObject(objectId)));
     }
     this.#workingEntries.set(new Map(this.#workingEntries()));
   }

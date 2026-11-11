@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.checklist-note {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.checklist-title {
+  font-weight: 700;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.hint {
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--text-secondary, #5b6575);
+}
+.actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-block: 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+  background: var(--surface-color, #fff);
+  border-top: 1px solid var(--border-color, #d1d5db);
+}
+.action-button {
+  margin: 0;
+  min-inline-size: var(--touch-target-min);
+  min-block-size: var(--touch-target-min);
+  padding: 0.5rem !important;
+  gap: 0.4rem;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+.action-button app-icon {
+  --icon-size: var(--icon-size-compact);
+}
+.action-label {
+  display: none;
+}
+@media (min-width: 769px) {
+  .action-label {
+    display: inline;
+  }
+}

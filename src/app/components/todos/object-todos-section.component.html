@@ -74,7 +74,9 @@
                     class="available-item-add"
                     [disabled]="saving()"
                     (click)="assignItem(item)"
-                    [attr.aria-label]="'todos.assignChecklistItem' | translate: { title: item.title }"
+                    [attr.aria-label]="
+                      'todos.assignChecklistItem' | translate: { title: item.title }
+                    "
                     [title]="'todos.assignChecklistItem' | translate: { title: item.title }"
                   >
                     <app-icon [icon]="icons.plus" />
@@ -85,7 +87,10 @@
           </section>
         }
 
-        <section class="object-todos-assigned" [attr.aria-label]="'todos.assignedChecklistItems' | translate">
+        <section
+          class="object-todos-assigned"
+          [attr.aria-label]="'todos.assignedChecklistItems' | translate"
+        >
           @if (assignedCount() > 0) {
             <div class="object-todos-assign-header">
               <h3 class="object-todos-section-title">
@@ -125,6 +130,7 @@
 
                     <div class="todo-item-controls">
                       <div class="todo-item-actions">
+
                         <button
                           type="button"
                           class="todo-icon-btn"

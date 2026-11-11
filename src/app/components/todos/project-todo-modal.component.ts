@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input } from '@angular/core';
-import { Object as ProjectObject, TodoItem } from '@models';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { Object as ProjectObject, Project, TodoItem } from '@models';
+import { ChecklistNoteButtonComponent } from './checklist-note-button.component';
 import { ProjectStore } from '@store/project.store';
 import { ProjectTodoAssignToChecklistsPanelComponent } from './project-todo-assign-to-checklists-panel.component';
 
@@ -7,7 +15,7 @@ import { ProjectTodoAssignToChecklistsPanelComponent } from './project-todo-assi
 @Component({
   selector: 'app-project-todo-modal',
   standalone: true,
-  imports: [ProjectTodoAssignToChecklistsPanelComponent],
+  imports: [ProjectTodoAssignToChecklistsPanelComponent, ChecklistNoteButtonComponent],
   templateUrl: './project-todo-modal.component.html',
   styleUrl: './project-todo-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,9 +27,13 @@ export class ProjectTodoModalComponent {
   projectId = input.required<string>();
   todoItems = input<TodoItem[]>([]);
   objects = input<ProjectObject[]>([]);
+  updatedProject = signal<Project | null>(null);
 
   savedTodoItems(): TodoItem[] {
-    return this.#projectStore.project()?.todo_items ?? this.todoItems() ?? [];
+    const project = this.#projectStore.project();
+    return project?._id?.$oid === this.projectId()
+      ? (project.todo_items ?? [])
+      : (this.updatedProject()?.todo_items ?? this.todoItems());
   }
 
   onAssignmentsSaved(): void {

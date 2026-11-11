@@ -12,6 +12,12 @@
   flex-wrap: wrap;
 
   .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-inline-size: 44px;
+    min-block-size: 44px;
     min-block-size: var(--touch-target-min);
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
@@ -30,5 +36,13 @@
         background: #c82333;
       }
     }
+  }
+}
+.action-label {
+  display: none;
+}
+@media (min-width: 769px) {
+  .action-label {
+    display: inline;
   }
 }

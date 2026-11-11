@@ -245,6 +245,7 @@
   white-space: normal;
 }
 
+
 .checklist-edit-btn {
   display: inline-flex;
   align-items: center;
@@ -671,8 +672,7 @@
   }
 
   .todo-checklist-first-form .assignment-layout--mobile-step-checklists,
-  .todo-checklist-first-form
-    .assignment-layout:not(.assignment-layout--mobile-step-objects) {
+  .todo-checklist-first-form .assignment-layout:not(.assignment-layout--mobile-step-objects) {
     .object-detail-panel {
       display: none !important;
     }

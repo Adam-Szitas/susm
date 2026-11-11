@@ -3,15 +3,33 @@
     <div class="object-fields">
       <div class="control">
         <label for="prefix">{{ 'objects.prefix' | translate }}</label>
-        <input id="prefix" type="text" formControlName="prefix" />
+        <input
+          id="prefix"
+          type="text"
+          formControlName="prefix"
+          [placeholder]="'objects.prefixPlaceholder' | translate"
+        />
       </div>
       <div class="control">
         <label for="rangeStart">{{ 'objects.rangeStart' | translate }}</label>
-        <input id="rangeStart" type="number" step="1" formControlName="rangeStart" required />
+        <input
+          id="rangeStart"
+          type="number"
+          step="1"
+          formControlName="rangeStart"
+          [placeholder]="'objects.rangeStartPlaceholder' | translate"
+          required
+        />
       </div>
       <div class="control">
         <label for="rangeEnd">{{ 'objects.rangeEnd' | translate }}</label>
-        <input id="rangeEnd" type="number" step="1" formControlName="rangeEnd" />
+        <input
+          id="rangeEnd"
+          type="number"
+          step="1"
+          formControlName="rangeEnd"
+          [placeholder]="'objects.rangeEndPlaceholder' | translate"
+        />
       </div>
       <div class="control">
         <label for="status">{{ 'objects.status' | translate }}</label>

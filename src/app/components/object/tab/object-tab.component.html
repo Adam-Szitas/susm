@@ -202,7 +202,9 @@
       </section>
       <section class="object-control-block object-checklist-controls">
         @if (projectTodoItems().length > 0) {
-          <app-object-todos-section [objectId]="object()!._id!.$oid" [todoItems]="projectTodoItems()" [todoEntries]="object()?.todo_entries ?? []" (entriesChanged)="onTodoEntriesChanged($event)" />
+          <app-object-todos-section [objectId]="object()!._id!.$oid"
+            [todoItems]="projectTodoItems()" [todoEntries]="object()?.todo_entries ?? []"
+            (entriesChanged)="onTodoEntriesChanged($event)" />
         }
       </section>
     </div>

@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
+  OnDestroy,
   afterNextRender,
   inject,
   input,
@@ -24,6 +26,9 @@ import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { ProjectStore } from '@store/project.store';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface TodoItemPayload {
   id: string | null;
@@ -36,12 +41,14 @@ interface TodoItemPayload {
 @Component({
   selector: 'app-project-todo-item-editor-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent],
+  imports: [ReactiveFormsModule, TranslateModule, TrashIconComponent, IconComponent],
   templateUrl: './project-todo-item-editor-modal.component.html',
   styleUrl: './project-todo-item-editor-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectTodoItemEditorModalComponent {
+export class ProjectTodoItemEditorModalComponent implements OnDestroy {
+  protected readonly icons = icons;
+  #destroyRef = inject(DestroyRef);
   #fb = inject(FormBuilder);
   #modalService = inject(ModalService);
   #notificationService = inject(NotificationService);
@@ -58,6 +65,8 @@ export class ProjectTodoItemEditorModalComponent {
   readonly colorOptions = TODO_SUB_ITEM_COLORS;
   readonly form: FormGroup;
   saving = false;
+  confirmingDelete = false;
+  #closeGuard = () => !this.saving && !this.confirmingDelete;
 
   private titleInput = viewChild<ElementRef<HTMLInputElement>>('titleInput');
 
@@ -69,6 +78,7 @@ export class ProjectTodoItemEditorModalComponent {
     });
 
     afterNextRender(() => {
+      this.#modalService.setCloseGuard(this.#closeGuard);
       const item = this.todoItem();
       if (item) {
         this.form.patchValue({
@@ -86,6 +96,58 @@ export class ProjectTodoItemEditorModalComponent {
 
   get subItems(): FormArray {
     return this.form.get('subItems') as FormArray;
+  }
+
+  ngOnDestroy(): void {
+    this.#modalService.clearCloseGuard(this.#closeGuard);
+  }
+
+  async deleteChecklist(): Promise<void> {
+    const item = this.todoItem();
+    const id = this.#editingId();
+    if (!item || !id || this.saving || this.confirmingDelete) return;
+    this.confirmingDelete = true;
+    this.#cdr.markForCheck();
+    const confirmed = await this.#modalService.openConfirm({
+      title: 'todos.deleteChecklist',
+      message: this.#translationService.instant('todos.confirmDeleteChecklist', {
+        title: item.title,
+      }),
+      confirmText: 'common.delete',
+      cancelText: 'common.cancel',
+      confirmKind: 'danger',
+      stack: true,
+    });
+    if (this.#destroyRef.destroyed) return;
+    this.confirmingDelete = false;
+    if (!confirmed) {
+      this.#cdr.markForCheck();
+      return;
+    }
+    this.saving = true;
+    this.#cdr.markForCheck();
+    const remaining = this.#currentItems()
+      .filter((current) => todoItemId(current) !== id)
+      .map((current) => this.#toPayload(current));
+    this.#projectStore
+      .updateProjectTodoItems(this.projectId(), remaining)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.#notificationService.showSuccess(
+            this.#translationService.instant('todos.checklistDeleted'),
+          );
+          this.#modalService.close();
+        },
+        error: (error: Error) => {
+          this.saving = false;
+          this.#notificationService.showError(
+            error.message || this.#translationService.instant('todos.deleteChecklistFailed'),
+          );
+          this.#cdr.markForCheck();
+        },
+      });
   }
 
   addSubItem(): void {
@@ -112,10 +174,13 @@ export class ProjectTodoItemEditorModalComponent {
   }
 
   save(): void {
+    if (this.saving || this.confirmingDelete) return;
     this.form.updateValueAndValidity({ emitEvent: false });
     const draft = this.#draftPayload();
     if (!draft.title) {
-      this.#notificationService.showError(this.#translationService.instant('todos.itemTitleRequired'));
+      this.#notificationService.showError(
+        this.#translationService.instant('todos.itemTitleRequired'),
+      );
       this.titleInput()?.nativeElement.focus();
       this.#cdr.markForCheck();
       return;
@@ -137,8 +202,10 @@ export class ProjectTodoItemEditorModalComponent {
 
     this.saving = true;
     this.#cdr.markForCheck();
-    this.#projectStore.updateProjectTodoItems(this.projectId(), current).subscribe({
+    const request = this.#projectStore.updateProjectTodoItems(this.projectId(), current);
+    request.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe({
       next: () => {
+        this.saving = false;
         this.#notificationService.showSuccess(
           this.#translationService.instant('todos.projectListUpdated'),
         );
@@ -161,7 +228,10 @@ export class ProjectTodoItemEditorModalComponent {
   }
 
   #currentItems(): TodoItem[] {
-    return this.#projectStore.project()?.todo_items ?? this.existingItems();
+    const project = this.#projectStore.project();
+    return project?._id?.$oid === this.projectId()
+      ? (project.todo_items ?? [])
+      : this.existingItems();
   }
 
   #draftPayload(): TodoItemPayload {
@@ -181,7 +251,7 @@ export class ProjectTodoItemEditorModalComponent {
     return {
       id: null,
       title: String(this.form.get('title')?.value ?? '').trim(),
-      note: String(this.form.get('note')?.value ?? '').trim() || null,
+      note: String(this.form.get('note')?.value ?? '') || null,
       sub_items,
     };
   }
@@ -190,7 +260,7 @@ export class ProjectTodoItemEditorModalComponent {
     return {
       id: todoItemId(item) || null,
       title: item.title,
-      note: item.note?.trim() || null,
+      note: item.note || null,
       sub_items: (item.sub_items ?? []).map((sub) => ({
         id: todoSubItemId(sub) || null,
         title: sub.title,

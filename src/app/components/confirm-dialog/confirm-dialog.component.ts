@@ -2,6 +2,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../services/modal.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
 
 /** Delay before accepting button taps so the tap that opened the modal isn't treated as Cancel (e.g. on mobile). */
 const IGNORE_INPUT_MS = 400;
@@ -9,11 +11,12 @@ const IGNORE_INPUT_MS = 400;
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, IconComponent],
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.scss',
 })
 export class ConfirmDialogComponent implements OnInit {
+  protected readonly icons = icons;
   @Input() message = '';
   @Input() confirmText = 'common.delete';
   @Input() cancelText = 'common.cancel';
