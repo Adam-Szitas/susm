@@ -83,7 +83,7 @@
               type="button"
               class="btn btn-secondary btn-small todo-action-btn checklist-feedback-share-btn"
               (click)="shareForFeedback()"
-              [disabled]="!hasChecklistSelection()"
+              [disabled]="!hasChecklistSelection() || saving()"
               [attr.aria-label]="'checklistFeedback.share.cta' | translate"
               [title]="'checklistFeedback.share.cta' | translate"
             >

@@ -243,8 +243,24 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
     });
   }
 
-  /** Opens the feedback-link composer for the selected checklists (copyable URLs, no email). */
-  shareForFeedback(): void {
+  /**
+   * Opens the feedback-link composer for the selected checklists (copyable URLs, no email).
+   * The public page reads the *saved* assignments, so unsaved panel edits are saved first;
+   * otherwise objects unassigned here (but not yet saved) would still show up on the link.
+   */
+  async shareForFeedback(): Promise<void> {
+    if (!this.selectedTodoItems().length || this.saving()) return;
+    if (this.dirtyObjectCount() > 0) {
+      const confirmed = await this.#modalService.openConfirm({
+        title: 'checklistFeedback.share.unsavedTitle',
+        message: 'checklistFeedback.share.unsavedMessage',
+        confirmText: 'checklistFeedback.share.saveAndShare',
+        cancelText: 'common.cancel',
+        confirmKind: 'primary',
+        stack: true,
+      });
+      if (!confirmed || !(await this.#persist())) return;
+    }
     const items = this.selectedTodoItems();
     if (!items.length) return;
     this.#modalService.open({
@@ -332,30 +348,39 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
   }
 
   save(): void {
+    void this.#persist();
+  }
+
+  /** Saves dirty objects; resolves `true` when everything is saved (or nothing was dirty). */
+  #persist(): Promise<boolean> {
     const dirtyIds = [...this.#initialSnapshots.keys()].filter((id) => this.isObjectDirty(id));
-    if (!dirtyIds.length) return;
+    if (!dirtyIds.length) return Promise.resolve(true);
 
     this.saving.set(true);
     const requests = dirtyIds.map((objectId) =>
       this.#projectStore.updateObjectTodos(objectId, this.entriesForObject(objectId)),
     );
 
-    forkJoin(requests)
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this.#notificationService.showSuccess(
-            this.#translationService.instant('todos.assignmentsSaved'),
-          );
-          this.#commitSnapshots();
-          this.saved.emit();
-        },
-        error: (error) => {
-          this.#notificationService.showError(
-            error.message || this.#translationService.instant('todos.assignmentsSaveFailed'),
-          );
-        },
-      });
+    return new Promise<boolean>((resolve) => {
+      forkJoin(requests)
+        .pipe(finalize(() => this.saving.set(false)))
+        .subscribe({
+          next: () => {
+            this.#notificationService.showSuccess(
+              this.#translationService.instant('todos.assignmentsSaved'),
+            );
+            this.#commitSnapshots();
+            this.saved.emit();
+            resolve(true);
+          },
+          error: (error) => {
+            this.#notificationService.showError(
+              error.message || this.#translationService.instant('todos.assignmentsSaveFailed'),
+            );
+            resolve(false);
+          },
+        });
+    });
   }
 
   #resetWorkingState(): void {

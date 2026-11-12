@@ -11,7 +11,25 @@ import { TranslationStore } from './translation.store';
 import { safeInternalReturnUrl } from '../utils/platform';
 import { catchError, EMPTY, finalize, map, Observable, of, switchMap, tap } from 'rxjs';
 import { SessionRenewalService } from '../services/session-renewal.service';
-import { shouldRenewTokenNow } from '../utils/jwt';
+import { getTokenExpiresAtMs, shouldRenewTokenNow } from '../utils/jwt';
+
+const RENEW_RETRY_DELAY_MS = 30_000;
+
+/**
+ * Renewal failures only end the session when the server rejected it (401/403) or the
+ * token has already expired locally. Network errors (status 0) and 5xx keep the user
+ * signed in so waking a device or a backend restart doesn't discard unsaved work.
+ */
+export function shouldLogoutAfterRenewFailure(
+  error: unknown,
+  token: string,
+  nowMs = Date.now(),
+): boolean {
+  const expiresAt = getTokenExpiresAtMs(token);
+  if (expiresAt !== null && expiresAt <= nowMs) return true;
+  const status = (error as { status?: unknown } | null)?.status;
+  return status === 401 || status === 403;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -179,6 +197,10 @@ export class UserStore {
       return;
     }
     this.#invalidatingSession = true;
+    if (this.#renewRetryTimer) {
+      clearTimeout(this.#renewRetryTimer);
+      this.#renewRetryTimer = null;
+    }
 
     try {
       this.#clearSessionState();
@@ -254,8 +276,13 @@ export class UserStore {
       .pipe(
         map((response) => this.#normalizeToken(response)),
         tap((nextToken) => this.#applyToken(nextToken)),
-        catchError(() => {
-          this.logout();
+        catchError((error: unknown) => {
+          if (shouldLogoutAfterRenewFailure(error, token)) {
+            this.logout();
+          } else {
+            // Offline / server hiccup (e.g. device just woke up): keep the session and retry.
+            this.#scheduleRenewRetry();
+          }
           return EMPTY;
         }),
         finalize(() => {
@@ -263,6 +290,16 @@ export class UserStore {
         }),
       )
       .subscribe();
+  }
+
+  #renewRetryTimer: ReturnType<typeof setTimeout> | null = null;
+
+  #scheduleRenewRetry(): void {
+    if (!isPlatformBrowser(this.#platformId) || this.#renewRetryTimer) return;
+    this.#renewRetryTimer = setTimeout(() => {
+      this.#renewRetryTimer = null;
+      this.#renewSessionIfNeeded();
+    }, RENEW_RETRY_DELAY_MS);
   }
 
   #normalizeToken(token: unknown): string {

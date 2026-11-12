@@ -1,0 +1,1496 @@
+<!-- Design foundation for the SUSM web app. Tokens and component styles are copied from src/styles.scss,
+     src/styles/*.scss and the shared component styles named in each section. Icons are synced from
+     src/app/icons/icon.definitions.ts with `node scripts/sync-foundation-icons.mjs`. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#9d0000">
+  <title>SUSM foundation</title>
+  <style>
+    /* ---------------------------------------------------------------------------------------------
+       Tokens: src/styles.scss :root (copied 1:1 — change them there first, then here).
+       --------------------------------------------------------------------------------------------- */
+    :root {
+      --space-tiny: 4px;
+      --space-small: 8px;
+      --space: 16px;
+      --space-large: 24px;
+      --space-xlarge: 32px;
+      --font-1: 21px;
+      --font-2: 18px;
+      --font-3: 16px;
+      --font-4: 14px;
+      --font-5: 11px;
+      --default-color: #9d0000;
+      --default-color-dark: #3d0000;
+      --background-color: #f0f0f0;
+
+      --primary-default: #9d0000;
+      --primary-hover: #b30000;
+      --primary-focus: #c41e3a;
+      --primary-active: #7a0000;
+
+      --secondary-default: #5c6b73;
+      --secondary-hover: #4a5560;
+      --secondary-focus: #3d4752;
+      --secondary-active: #2d3439;
+
+      --button: var(--primary-default);
+      --button-hover: var(--primary-hover);
+
+      --icon-size-2xs: 0.625rem;
+      --icon-size-xs: 0.875rem;
+      --icon-size-sm: 1rem;
+      --icon-size-compact: 1.125rem;
+      --icon-size-md: 1.25rem;
+      --icon-size-lg: 1.375rem;
+      --icon-size-xl: 1.5rem;
+      --icon-size-2xl: 1.75rem;
+      --icon-button-sm: 2.5rem;
+      --touch-target-min: 2.75rem;
+      --touch-target-nav: 3rem;
+      --icon-button-md: 3rem;
+      --floating-action-size: 3.75rem;
+      --floating-action-size-mobile: 3.25rem;
+
+      --input-border-radius: 8px;
+
+      /* Page-only tokens (this document's chrome, not the app). */
+      --doc-text: #1f2937;
+      --doc-muted: #6b7280;
+      --doc-subtle: #9ca3af;
+      --doc-border: #e5e7eb;
+      --doc-surface: #fff;
+      --doc-code-bg: #f6f7f9;
+      --doc-font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      scroll-padding-top: 1rem;
+      color-scheme: light;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+        "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    body {
+      background: var(--background-color);
+      color: var(--doc-text);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+      outline: 2px solid #9d0000;
+      outline-offset: 3px;
+    }
+
+    code, pre { font-family: var(--doc-font-mono); }
+    code { font-size: 0.82em; overflow-wrap: normal; }
+
+    /* ---------------------------------------------------------------------------------------------
+       Page chrome
+       --------------------------------------------------------------------------------------------- */
+    .doc {
+      display: grid;
+      grid-template-columns: 15rem minmax(0, 1fr);
+      max-width: 1200px;
+      margin-inline: auto;
+      min-height: 100dvh;
+    }
+
+    .doc-mast {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-tiny);
+      padding: var(--space-large) var(--space);
+    }
+
+    .doc-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-small);
+      font-weight: 700;
+      color: var(--primary-default);
+    }
+
+    .doc-brand .susm-mark {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--default-color);
+    }
+
+    .doc-brand .susm-mark svg { display: block; height: 18px; width: auto; }
+
+    .doc-mast h1 { margin: var(--space-small) 0 0; font-size: 1.75rem; line-height: 1.2; text-align: left; }
+    .doc-lede { margin: 0; max-width: 60ch; color: var(--doc-muted); }
+
+    .doc-contents {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      max-height: 100dvh;
+      overflow: auto;
+      padding: var(--space) var(--space) var(--space-xlarge);
+    }
+
+    .doc-contents p {
+      margin: var(--space) 0 var(--space-tiny);
+      color: var(--doc-subtle);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .doc-contents p:first-child { margin-top: 0; }
+
+    .doc-contents a {
+      display: flex;
+      align-items: center;
+      min-block-size: 2rem;
+      padding-inline: var(--space-small);
+      border-radius: 6px;
+      color: var(--doc-muted);
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+
+    .doc-contents a:hover { background: rgba(157, 0, 0, 0.06); color: var(--primary-default); }
+
+    .doc-main {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xlarge);
+      min-width: 0;
+      padding: var(--space) var(--space) 4rem;
+    }
+
+    .doc-section { display: flex; flex-direction: column; gap: var(--space-large); }
+
+    .doc-section > h2 {
+      margin: 0;
+      color: var(--doc-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .frame { display: flex; flex-direction: column; gap: var(--space-small); min-width: 0; }
+    .frame > h3 { margin: 0; font-size: 1.05rem; }
+    .frame > .frame-note { margin: 0; color: var(--doc-muted); font-size: 0.875rem; max-width: 70ch; }
+
+    .frame-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space);
+      min-width: 0;
+      padding: var(--space);
+      border: 1px solid var(--doc-border);
+      border-radius: 12px;
+      background: var(--doc-surface);
+    }
+
+    .frame-body--flush { padding: 0; gap: 0; overflow: hidden; }
+    .frame-body--grey { background: var(--background-color); }
+
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-small); }
+    .row-label { min-width: 7rem; color: var(--doc-muted); font-size: 0.8rem; }
+
+    .rules {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--doc-text);
+      font-size: 0.875rem;
+    }
+
+    .rules li { margin: 0.15rem 0; }
+
+    details.code { border-top: 1px solid var(--doc-border); margin: 0 calc(var(--space) * -1) calc(var(--space) * -1); }
+    .frame-body--flush > details.code { margin: 0; }
+
+    details.code > summary {
+      justify-content: flex-start;
+      padding: var(--space-small) var(--space);
+      color: var(--doc-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    details.code pre {
+      margin: 0;
+      padding: var(--space);
+      overflow: auto;
+      background: var(--doc-code-bg);
+      border-top: 1px solid var(--doc-border);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    /* Native details chevron — same as src/styles.scss. */
+    details > summary {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    details > summary::-webkit-details-marker { display: none; }
+
+    details > summary::after {
+      content: '';
+      inline-size: var(--icon-size-2xs);
+      block-size: var(--icon-size-2xs);
+      flex: none;
+      border-inline-end: 2px solid currentColor;
+      border-block-end: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+
+    details[open] > summary::after { transform: rotate(-135deg); }
+
+    @media (max-width: 768px) {
+      .doc { grid-template-columns: minmax(0, 1fr); }
+
+      .doc-contents {
+        z-index: 5;
+        display: flex;
+        gap: var(--space-tiny);
+        max-height: none;
+        overflow-x: auto;
+        padding: var(--space-small) var(--space);
+        background: var(--background-color);
+        border-block: 1px solid var(--doc-border);
+        scrollbar-width: none;
+      }
+
+      .doc-contents p { display: none; }
+      .doc-contents a { flex: none; white-space: nowrap; }
+      html { scroll-padding-top: 4rem; }
+    }
+
+    /* ---------------------------------------------------------------------------------------------
+       Foundations helpers
+       --------------------------------------------------------------------------------------------- */
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: var(--space-small); }
+    .swatch { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .swatch-chip { height: 2.75rem; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 8px; }
+    .swatch code { color: var(--doc-text); }
+    .swatch small { color: var(--doc-muted); font-family: var(--doc-font-mono); font-size: 0.7rem; }
+
+    .token-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .token-table th, .token-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--doc-border); text-align: left; vertical-align: middle; }
+    .token-table th { color: var(--doc-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .token-table tr:last-child td { border-bottom: 0; }
+    .table-scroll { overflow-x: auto; }
+
+    .space-bar { height: 12px; border-radius: 3px; background: var(--primary-default); }
+    .size-box { display: inline-flex; align-items: center; justify-content: center; border: 1px dashed var(--doc-subtle); border-radius: 6px; color: var(--primary-default); }
+
+    .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: var(--space-small); }
+
+    .icon-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.75rem 0.4rem;
+      border: 1px solid var(--doc-border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--secondary-default);
+      cursor: copy;
+      font: inherit;
+    }
+
+    .icon-tile:hover { border-color: var(--primary-default); color: var(--primary-default); }
+    .icon-tile code { font-size: 0.72rem; color: var(--doc-text); }
+    .icon-tile--dark { background: var(--default-color); color: #fff; }
+    .icon-tile--dark code { color: #fff; }
+
+    /* <app-icon> host — src/app/icons/icon.component.scss contract: sized by --icon-size. */
+    .app-icon {
+      display: inline-flex;
+      flex: none;
+      inline-size: var(--icon-size, var(--icon-size-md));
+      block-size: var(--icon-size, var(--icon-size-md));
+      line-height: 0;
+    }
+
+    .app-icon svg { display: block; inline-size: 100%; block-size: 100%; }
+
+    /* ---------------------------------------------------------------------------------------------
+       Components — copied from src/styles/_buttons.scss
+       --------------------------------------------------------------------------------------------- */
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+      margin: 0 var(--space-small);
+    }
+
+    .button-primary { background-color: var(--primary-default); color: white; border: 1px solid var(--primary-default); }
+    .button-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); box-shadow: 0 2px 4px rgba(157, 0, 0, 0.2); }
+    .button-primary:focus { background-color: var(--primary-focus); border-color: var(--primary-focus); outline: 2px solid var(--primary-focus); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.2); }
+    .button-primary:active { background-color: var(--primary-active); border-color: var(--primary-active); box-shadow: 0 1px 2px rgba(122, 0, 0, 0.25); }
+
+    .button-secondary { background-color: transparent; border: 1px solid var(--secondary-default); color: var(--secondary-default); }
+    .button-secondary:hover { background-color: var(--secondary-hover); border-color: var(--secondary-hover); color: white; box-shadow: 0 2px 4px rgba(92, 107, 115, 0.15); }
+    .button-secondary:focus { background-color: var(--secondary-focus); border-color: var(--secondary-focus); color: white; outline: 2px solid var(--secondary-focus); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(61, 71, 82, 0.2); }
+    .button-secondary:active { background-color: var(--secondary-active); border-color: var(--secondary-active); color: white; box-shadow: none; }
+
+    .button-success { background-color: #28a745; color: white; border: 1px solid #28a745; }
+    .button-success:hover { background-color: #218838; border-color: #218838; box-shadow: 0 2px 4px rgba(33, 136, 56, 0.15); }
+
+    .button-error { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
+    .button-error:hover { background-color: #c82333; border-color: #c82333; box-shadow: 0 2px 4px rgba(200, 35, 51, 0.15); }
+    .button-error:focus { background-color: #c82333; border-color: #c82333; outline: 2px solid #c82333; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(200, 35, 51, 0.2); }
+    .button-error:active { background-color: #b21f2d; border-color: #b21f2d; box-shadow: none; }
+
+    .button-outline { background-color: transparent; border: 1px solid var(--primary-default); color: var(--primary-default); }
+    .button-outline:hover { background-color: rgba(157, 0, 0, 0.08); border-color: var(--primary-hover); color: var(--primary-hover); }
+
+    .button-primary:disabled, .button-success:disabled, .button-error:disabled {
+      background-color: #cccccc; border-color: #cccccc; color: #666666; opacity: 0.6; cursor: not-allowed; box-shadow: none;
+    }
+
+    .button-secondary:disabled, .button-outline:disabled {
+      background-color: transparent; border-color: #cccccc; color: #999999; opacity: 0.6; cursor: not-allowed; box-shadow: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5em;
+    }
+
+    /* Action-button contract: components/checklist-feedback/_feedback-actions.scss + _edit-form-actions.scss */
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      min-inline-size: var(--touch-target-min);
+      min-block-size: var(--touch-target-min);
+      padding: 0.5rem !important;
+      gap: 0.4rem;
+      max-inline-size: 100%;
+      white-space: nowrap;
+    }
+
+    .action-button .app-icon { --icon-size: var(--icon-size-compact); }
+    .action-label { display: none; }
+
+    @media (min-width: 769px) {
+      .action-label { display: inline; }
+      .preview-mobile .action-label { display: none; }
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      padding-block: 0.75rem;
+      background: #fff;
+      border-top: 1px solid #d1d5db;
+    }
+
+    /* Toolbar icon buttons: src/styles/_groups.scss (.group-toolbar-icon-btn) */
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--icon-button-sm);
+      height: var(--icon-button-sm);
+      padding: 0;
+      margin: 0;
+      border: 1px solid var(--default-color, #d0d0d0);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--primary-default);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .icon-btn .app-icon { --icon-size: var(--icon-size-lg); }
+    .icon-btn:hover:not(:disabled) { background: rgba(157, 0, 0, 0.06); border-color: var(--primary-default); }
+    .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .icon-btn--filled { color: #fff; background: var(--primary-default); border-color: var(--primary-default); }
+    .icon-btn--filled:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .icon-btn--active { border-color: var(--primary-default); color: var(--primary-default); background: rgba(157, 0, 0, 0.06); }
+    .icon-btn--danger { color: #b22222; border-color: rgba(180, 40, 40, 0.45); }
+    .icon-btn--danger:hover:not(:disabled) { background: rgba(178, 34, 34, 0.08); border-color: #b22222; }
+
+    @media (max-width: 768px) {
+      .icon-btn { width: var(--touch-target-min); height: var(--touch-target-min); }
+    }
+
+    /* Floating action button: src/styles/_floating.scss (shown in place, not fixed) */
+    .floating-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: var(--floating-action-size);
+      block-size: var(--floating-action-size);
+      margin: 0;
+      padding: var(--space);
+      border: none;
+      border-radius: 50%;
+      background-color: var(--default-color);
+      color: #fff;
+      opacity: 0.5;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .floating-icon .app-icon { --icon-size: var(--icon-size-2xl); }
+    .floating-icon:hover, .floating-icon:focus-visible { opacity: 0.85; transform: scale(1.05); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
+
+    @media (max-width: 768px) {
+      .floating-icon { inline-size: var(--floating-action-size-mobile); block-size: var(--floating-action-size-mobile); padding: var(--space-small); }
+      .floating-icon .app-icon { --icon-size: var(--icon-size-xl); }
+    }
+
+    /* Navbar: components/navbar/navbar.component.scss */
+    .app-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space);
+      width: 100%;
+      padding-block: var(--space-small);
+      padding-inline: var(--space);
+      background-color: var(--default-color);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.22);
+      color: white;
+      font-weight: bold;
+    }
+
+    .app-nav .navbar-brand { display: inline-flex; line-height: 0; color: inherit; }
+    .app-nav .navbar-brand svg { height: 26px; width: auto; }
+    .app-nav .nav-links { display: flex; flex: 1; gap: var(--space); margin: 0; padding: 0; list-style: none; }
+    .app-nav .nav-links a { color: inherit; text-decoration: none; font-size: var(--font-3); }
+    .app-nav .nav-links a[aria-current] { text-decoration: underline; text-underline-offset: 6px; }
+
+    .app-nav .nav-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--touch-target-nav);
+      min-block-size: var(--touch-target-nav);
+      padding: var(--space-small);
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .app-nav .nav-toggle { display: none; }
+
+    @media (max-width: 768px) {
+      .app-nav .nav-links { display: none; }
+      .app-nav .nav-toggle { display: inline-flex; }
+      .app-nav .nav-spacer { flex: 1; }
+    }
+
+    @media (min-width: 769px) { .app-nav .nav-spacer { display: none; } }
+
+    /* Form controls: src/styles/_inputs.scss (.form-group) and _form.scss */
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label { font-size: 0.95rem; font-weight: 500; color: #333; }
+
+    .form-group :is(textarea, select, input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="number"]) {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: var(--input-border-radius, 8px);
+      font-size: 1rem;
+      font-family: inherit;
+      background-color: #fff;
+      appearance: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-group :is(textarea, select, input):focus { outline: none; border-color: #111; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05); }
+    .form-group :is(textarea, select, input):disabled { background: #f5f5f5; cursor: not-allowed; opacity: 0.6; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    select:not([multiple]):not([size]) {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m4 7 6 6 6-6' stroke='%235c6b73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.7rem center;
+      background-size: 1rem 1rem;
+      padding-inline-end: 2.35rem;
+      cursor: pointer;
+    }
+
+    .check-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+    input[type='checkbox'], input[type='radio'] { inline-size: var(--icon-size-sm); block-size: var(--icon-size-sm); flex-shrink: 0; accent-color: var(--primary-default); }
+
+    .file-label {
+      display: block;
+      width: 100%;
+      padding: 1.5rem;
+      border: 2px dashed #ccc;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .file-label:hover { border-color: #111; background: #fafafa; }
+    .upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: #666; }
+    .upload-placeholder .app-icon { --icon-size: var(--icon-button-md); }
+    .upload-placeholder span { font-size: 0.95rem; font-weight: 500; }
+    .upload-placeholder .hint-text { font-size: 0.8rem; color: #999; font-weight: normal; }
+
+    .field-error { margin: 0; color: #dc3545; font-size: 0.85rem; }
+    .form-group.is-invalid :is(input, textarea, select) { border-color: #dc3545; }
+
+    @media (max-width: 768px) {
+      .form-group :is(textarea, select, input) { font-size: 16px; }
+    }
+
+    /* Tabs: components/shared/tab-group.component.scss (collapsed/mobile variant) */
+    .tab-group-list {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      border-bottom: 1px solid #e8eaed;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab-group-tab {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      margin: 0;
+      padding: 0.7rem 0.45rem 0.65rem;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      color: #6b7280;
+      font-size: 0.84rem;
+      font-weight: 500;
+      line-height: 1.25;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .tab-group-tab:hover:not(:disabled):not(.tab-group-tab--active) { color: #374151; }
+    .tab-group-tab:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: -2px; }
+    .tab-group-tab--active { color: var(--primary-default); border-bottom-color: var(--primary-default); font-weight: 600; }
+    .tab-group-tab:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .tab-group-badge {
+      min-width: 1.1rem;
+      padding: 0.05rem 0.3rem;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 0.68rem;
+      font-weight: 600;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .tab-group-tab--active .tab-group-badge { background: rgba(157, 0, 0, 0.1); color: var(--primary-default); }
+    .tab-panel-demo { padding: var(--space); color: var(--doc-muted); font-size: 0.9rem; }
+
+    /* Status pill: components/status-pill/app-status-pill.component.scss */
+    .status-pill {
+      padding: 0.2rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: #e2e3e5;
+      color: #383d41;
+    }
+
+    .status-pill[data-status='in_progress'] { background-color: #fff3cd; color: #856404; }
+    .status-pill[data-status='verified'] { background-color: #d4edda; color: #155724; }
+    .status-pill[data-status='rejected'] { background-color: #ffebee; color: #721c24; }
+    .status-pill[data-status='closed'] { background-color: #750000; color: white; }
+
+    .archived-pill {
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    /* Catalog card: src/styles/_mixins.scss @mixin catalog-card-surface (project/object cards) */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--space); }
+
+    .catalog-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 0;
+      padding: 1rem 1.1rem;
+      border: 1px solid #e8eaed;
+      border-radius: 12px;
+      background: #fff;
+      text-align: center;
+      line-height: 1.35;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .catalog-card:hover { border-color: #d0d5dd; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08); }
+    .catalog-card .space-between { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .catalog-card h2 { margin: 0.25rem 0 0; font-size: 1.1rem; }
+    .catalog-card ul { margin: 0; padding: 0; list-style: none; color: #4b5563; font-size: 0.9rem; }
+    .catalog-card .created-at { color: var(--doc-subtle); font-size: 0.8rem; }
+
+    /* Group header: src/styles/_groups.scss */
+    .group-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--default-color);
+    }
+
+    .group-header-row--toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; }
+    .group-header .group-category { color: #666; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+    .group-header .group-description { margin: 0; color: #333; font-size: 1.1rem; font-weight: 600; }
+    .group-header-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .group-header-actions .icon-btn--danger { margin-inline-start: 0.5rem; }
+
+    @media (max-width: 768px) {
+      .group-header-row--toolbar { flex-direction: column; align-items: stretch; }
+      .group-header-actions { justify-content: flex-end; flex-wrap: wrap; }
+    }
+
+    /* Collapse toggle: @mixin data-collapse-toggle + collapse-chevron */
+    .collapse-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 0;
+      padding: 0.4rem 1.25rem;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--primary-default);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .collapse-toggle:hover { background: rgba(157, 0, 0, 0.06); }
+
+    .collapse-chevron {
+      inline-size: var(--icon-size-2xs);
+      block-size: var(--icon-size-2xs);
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+
+    .collapse-chevron.collapsed { transform: rotate(-135deg); }
+
+    .details-footer { display: flex; justify-content: center; margin-top: 0.5rem; padding-top: 0.35rem; border-top: 1px solid #eee; }
+
+    /* Modal: src/styles/_modals.scss (rendered in place, not fixed) */
+    .modal-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-large) var(--space);
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+
+    .close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-inline-size: var(--touch-target-min);
+      min-block-size: var(--touch-target-min);
+      padding: 0.5rem;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      color: #666;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .close-btn:hover { background: #f5f5f5; }
+    .close-btn .app-icon { --icon-size: var(--icon-size-md); }
+
+    .modal-body { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem; }
+    .modal-content .actions { padding-inline: 1.5rem; }
+
+    @media (max-width: 768px) {
+      .modal-header { padding: 1rem 1.25rem; }
+      .modal-body { padding: 1.25rem; gap: 1rem; }
+      .modal-content .actions { padding-inline: 1.25rem; }
+      .modal-stage { padding: 0.75rem; }
+    }
+
+    /* Confirm dialog: components/confirm-dialog/confirm-dialog.component.scss */
+    .confirm-message { margin: 0; font-size: 1rem; line-height: 1.5; color: #333; }
+    .confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap; }
+
+    /* Notification toast: components/notification/notification.component.scss */
+    .notification-stack { display: flex; flex-direction: column; gap: 12px; max-width: 400px; }
+
+    .notification {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-left: 4px solid;
+    }
+
+    .notification--success { border-left-color: #10b981; }
+    .notification--error { border-left-color: #ef4444; }
+    .notification--warning { border-left-color: #f59e0b; }
+    .notification--info { border-left-color: #3b82f6; }
+    .notification--success .notification__icon { color: #10b981; }
+    .notification--error .notification__icon { color: #ef4444; }
+    .notification--warning .notification__icon { color: #f59e0b; }
+    .notification--info .notification__icon { color: #3b82f6; }
+
+    .notification__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: var(--icon-size-xl);
+      block-size: var(--icon-size-xl);
+      flex-shrink: 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .notification__message { flex: 1; margin: 0; color: #1f2937; font-size: 14px; line-height: 1.5; }
+
+    .notification__close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border: none;
+      border-radius: 4px;
+      background: none;
+      color: #6b7280;
+      cursor: pointer;
+    }
+
+    .notification__close:hover { color: #1f2937; background-color: rgba(0, 0, 0, 0.05); }
+    .notification__close .app-icon { --icon-size: var(--icon-size-sm); }
+
+    /* Empty state: components/projects/projects.component.scss */
+    .empty-state { margin: var(--space-small) 0; color: #666; }
+
+    /* Copy feedback */
+    .copied-toast {
+      position: fixed;
+      left: 50%;
+      bottom: var(--space);
+      transform: translateX(-50%);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      background: #1f2937;
+      color: #fff;
+      font-size: 0.85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .copied-toast.show { opacity: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <header class="doc-mast">
+      <div class="doc-brand"><span class="susm-mark" data-icon="susmLogo" data-raw></span> SUSM design foundation</div>
+      <h1>Foundations and components</h1>
+      <p class="doc-lede">
+        The one place to check how a SUSM screen should look. Every token and style here is copied from the app's
+        global SCSS and shared components; each section names its source file. Change the source first, then this page.
+      </p>
+    </header>
+
+    <nav class="doc-contents" aria-label="Contents">
+      <p>Foundations</p>
+      <a href="#colors">Colors</a>
+      <a href="#typography">Typography</a>
+      <a href="#spacing">Spacing</a>
+      <a href="#sizes">Icon sizes &amp; targets</a>
+      <a href="#icons">Icons</a>
+      <p>Components</p>
+      <a href="#navbar">Navbar</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#action-buttons">Action buttons</a>
+      <a href="#icon-buttons">Icon buttons</a>
+      <a href="#fab">Floating action</a>
+      <a href="#forms">Form controls</a>
+      <a href="#tabs">Tabs</a>
+      <a href="#status">Status pill</a>
+      <a href="#cards">Cards</a>
+      <a href="#group-header">Group header</a>
+      <a href="#collapse">Collapse</a>
+      <a href="#modal">Modal</a>
+      <a href="#confirm">Confirm dialog</a>
+      <a href="#toast">Notification</a>
+      <a href="#empty">Empty &amp; loading</a>
+    </nav>
+
+    <main class="doc-main">
+      <!-- ======================================================================================= -->
+      <section class="doc-section" aria-labelledby="foundations-title">
+        <h2 id="foundations-title">Foundations</h2>
+
+        <div class="frame" id="colors">
+          <h3>Colors</h3>
+          <p class="frame-note">Use the CSS variables, never the hex value. Brand red is the only accent; slate grey is for secondary actions.</p>
+          <div class="frame-body">
+            <div class="row-label">Primary (brand)</div>
+            <div class="swatches">
+              <div class="swatch"><span class="swatch-chip" style="background:var(--primary-default)"></span><code>--primary-default</code><small>#9d0000</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--primary-hover)"></span><code>--primary-hover</code><small>#b30000</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--primary-focus)"></span><code>--primary-focus</code><small>#c41e3a</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--primary-active)"></span><code>--primary-active</code><small>#7a0000</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--default-color-dark)"></span><code>--default-color-dark</code><small>#3d0000</small></div>
+            </div>
+            <div class="row-label">Secondary</div>
+            <div class="swatches">
+              <div class="swatch"><span class="swatch-chip" style="background:var(--secondary-default)"></span><code>--secondary-default</code><small>#5c6b73</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--secondary-hover)"></span><code>--secondary-hover</code><small>#4a5560</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--secondary-focus)"></span><code>--secondary-focus</code><small>#3d4752</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:var(--secondary-active)"></span><code>--secondary-active</code><small>#2d3439</small></div>
+            </div>
+            <div class="row-label">Surfaces &amp; feedback</div>
+            <div class="swatches">
+              <div class="swatch"><span class="swatch-chip" style="background:var(--background-color)"></span><code>--background-color</code><small>#f0f0f0</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#fff"></span><code>surface</code><small>#ffffff</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#e8eaed"></span><code>border</code><small>#e8eaed</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#28a745"></span><code>.button-success</code><small>#28a745</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#dc3545"></span><code>.button-error</code><small>#dc3545</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#f59e0b"></span><code>warning</code><small>#f59e0b</small></div>
+              <div class="swatch"><span class="swatch-chip" style="background:#3b82f6"></span><code>info</code><small>#3b82f6</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="typography">
+          <h3>Typography</h3>
+          <p class="frame-note">System font stack. Buttons use Roboto 500. Body copy is 16px; inputs must stay at 16px on mobile so iOS does not zoom.</p>
+          <div class="frame-body">
+            <div class="table-scroll">
+              <table class="token-table">
+                <thead><tr><th>Token</th><th>Size</th><th>Sample</th></tr></thead>
+                <tbody>
+                  <tr><td><code>--font-1</code></td><td>21px</td><td style="font-size:var(--font-1);font-weight:700">Project overview</td></tr>
+                  <tr><td><code>--font-2</code></td><td>18px</td><td style="font-size:var(--font-2);font-weight:600">Modal title</td></tr>
+                  <tr><td><code>--font-3</code></td><td>16px</td><td style="font-size:var(--font-3)">Body text and list items</td></tr>
+                  <tr><td><code>--font-4</code></td><td>14px</td><td style="font-size:var(--font-4)">Labels, messages, hints</td></tr>
+                  <tr><td><code>--font-5</code></td><td>11px</td><td style="font-size:var(--font-5);text-transform:uppercase;letter-spacing:.05em">Meta and badges</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="spacing">
+          <h3>Spacing</h3>
+          <div class="frame-body">
+            <div class="table-scroll">
+              <table class="token-table">
+                <thead><tr><th>Token</th><th>Value</th><th style="width:50%">Scale</th></tr></thead>
+                <tbody>
+                  <tr><td><code>--space-tiny</code></td><td>4px</td><td><div class="space-bar" style="width:4px"></div></td></tr>
+                  <tr><td><code>--space-small</code></td><td>8px</td><td><div class="space-bar" style="width:8px"></div></td></tr>
+                  <tr><td><code>--space</code></td><td>16px</td><td><div class="space-bar" style="width:16px"></div></td></tr>
+                  <tr><td><code>--space-large</code></td><td>24px</td><td><div class="space-bar" style="width:24px"></div></td></tr>
+                  <tr><td><code>--space-xlarge</code></td><td>32px</td><td><div class="space-bar" style="width:32px"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="rules">
+              <li>Breakpoints (SCSS mixins): <code>@include mobile</code> ≤768px, <code>tablet</code> 769–1024px, <code>desktop</code> ≥1025px, <code>mobile-small</code> ≤480px.</li>
+              <li>Radii: 6px buttons, 8px inputs and icon buttons, 12px cards, 16px modals, 999px pills.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="frame" id="sizes">
+          <h3>Icon sizes &amp; touch targets</h3>
+          <p class="frame-note">Size an icon with <code>--icon-size</code> on <code>&lt;app-icon&gt;</code> (or the <code>app-icon-size()</code> mixin). Every tappable control is at least 44px on mobile.</p>
+          <div class="frame-body">
+            <div class="table-scroll">
+              <table class="token-table">
+                <thead><tr><th>Token</th><th>Value</th><th>Use</th><th>Preview</th></tr></thead>
+                <tbody>
+                  <tr><td><code>--icon-size-2xs</code></td><td>10px</td><td>Collapse chevrons</td><td><span class="app-icon" style="--icon-size:var(--icon-size-2xs)" data-icon="chevronRight"></span></td></tr>
+                  <tr><td><code>--icon-size-xs</code></td><td>14px</td><td>Inline meta</td><td><span class="app-icon" style="--icon-size:var(--icon-size-xs)" data-icon="check"></span></td></tr>
+                  <tr><td><code>--icon-size-sm</code></td><td>16px</td><td>Toast close, checkboxes</td><td><span class="app-icon" style="--icon-size:var(--icon-size-sm)" data-icon="close"></span></td></tr>
+                  <tr><td><code>--icon-size-compact</code></td><td>18px</td><td><strong>Action buttons</strong></td><td><span class="app-icon" style="--icon-size:var(--icon-size-compact)" data-icon="share"></span></td></tr>
+                  <tr><td><code>--icon-size-md</code></td><td>20px</td><td>Default, modal close</td><td><span class="app-icon" style="--icon-size:var(--icon-size-md)" data-icon="edit"></span></td></tr>
+                  <tr><td><code>--icon-size-lg</code></td><td>22px</td><td>Toolbar icon buttons</td><td><span class="app-icon" style="--icon-size:var(--icon-size-lg)" data-icon="filter"></span></td></tr>
+                  <tr><td><code>--icon-size-xl</code></td><td>24px</td><td>Mobile FAB, toast glyph</td><td><span class="app-icon" style="--icon-size:var(--icon-size-xl)" data-icon="plus"></span></td></tr>
+                  <tr><td><code>--icon-size-2xl</code></td><td>28px</td><td>Desktop FAB</td><td><span class="app-icon" style="--icon-size:var(--icon-size-2xl)" data-icon="plus"></span></td></tr>
+                  <tr><td><code>--icon-button-sm</code></td><td>40px</td><td>Toolbar icon button (desktop)</td><td><span class="size-box" style="width:var(--icon-button-sm);height:var(--icon-button-sm)">40</span></td></tr>
+                  <tr><td><code>--touch-target-min</code></td><td>44px</td><td>Minimum tap target</td><td><span class="size-box" style="width:var(--touch-target-min);height:var(--touch-target-min)">44</span></td></tr>
+                  <tr><td><code>--touch-target-nav</code></td><td>48px</td><td>Navbar buttons</td><td><span class="size-box" style="width:var(--touch-target-nav);height:var(--touch-target-nav)">48</span></td></tr>
+                  <tr><td><code>--floating-action-size</code></td><td>60px / 52px mobile</td><td>Floating add / upload</td><td><span class="size-box" style="width:var(--floating-action-size);height:var(--floating-action-size)">60</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="icons">
+          <h3>Icons</h3>
+          <p class="frame-note">
+            The full <code>icons</code> registry from <code>src/app/icons/icon.definitions.ts</code>. Use
+            <code>&lt;app-icon [icon]="icons.name" /&gt;</code>; never paste inline SVG into a template. Click a tile to copy its markup.
+            Missing an icon? Add it to the registry, then run <code>node scripts/sync-foundation-icons.mjs</code>.
+          </p>
+          <div class="frame-body">
+            <div class="icon-grid" id="icon-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================================= -->
+      <section class="doc-section" aria-labelledby="components-title">
+        <h2 id="components-title">Components</h2>
+
+        <div class="frame" id="navbar">
+          <h3>Navbar</h3>
+          <p class="frame-note">Source: <code>components/navbar</code>. Brand red bar, white bold links; links collapse into the hamburger menu at ≤768px.</p>
+          <div class="frame-body frame-body--flush">
+            <nav class="app-nav" aria-label="Example navigation">
+              <a class="navbar-brand" href="#navbar" aria-label="SUSM" data-icon="susmLogo" data-raw></a>
+              <button type="button" class="nav-icon nav-toggle" aria-label="Menu"><span class="app-icon" data-icon="hamburger"></span></button>
+              <ul class="nav-links">
+                <li><a href="#navbar" aria-current="page">Dashboard</a></li>
+                <li><a href="#navbar">Projects</a></li>
+                <li><a href="#navbar">Objects</a></li>
+                <li><a href="#navbar">Files</a></li>
+              </ul>
+              <span class="nav-spacer"></span>
+              <button type="button" class="nav-icon" aria-label="Feedback inbox"><span class="app-icon" data-icon="bell"></span></button>
+            </nav>
+          </div>
+        </div>
+
+        <div class="frame" id="buttons">
+          <h3>Buttons</h3>
+          <p class="frame-note">Source: <code>src/styles/_buttons.scss</code>. Always <code>button</code> + one variant class. One primary per view or footer.</p>
+          <div class="frame-body">
+            <div class="row"><span class="row-label">Variants</span>
+              <button type="button" class="button button-primary">Save</button>
+              <button type="button" class="button button-secondary">Cancel</button>
+              <button type="button" class="button button-outline">Show more</button>
+              <button type="button" class="button button-success">Accept</button>
+              <button type="button" class="button button-error">Delete</button>
+            </div>
+            <div class="row"><span class="row-label">Disabled</span>
+              <button type="button" class="button button-primary" disabled>Save</button>
+              <button type="button" class="button button-secondary" disabled>Cancel</button>
+              <button type="button" class="button button-error" disabled>Delete</button>
+            </div>
+            <div class="row"><span class="row-label">Busy</span>
+              <button type="button" class="button button-primary" disabled aria-busy="true"><span class="spinner" aria-hidden="true"></span>Saving…</button>
+            </div>
+            <table class="token-table">
+              <thead><tr><th>Class</th><th>When</th></tr></thead>
+              <tbody>
+                <tr><td><code>button-primary</code></td><td>The main step: save, create, submit, share.</td></tr>
+                <tr><td><code>button-secondary</code></td><td>Cancel, close, back, open another view.</td></tr>
+                <tr><td><code>button-outline</code></td><td>Low-emphasis brand action (load more, optional step).</td></tr>
+                <tr><td><code>button-success</code></td><td>Positive decision on someone else's input (accept feedback).</td></tr>
+                <tr><td><code>button-error</code></td><td>Destructive: delete, revoke, reject. Always behind a confirm dialog.</td></tr>
+              </tbody>
+            </table>
+            <details class="code"><summary>Markup</summary><pre>&lt;button type="button" class="button button-primary" (click)="save()"&gt;
+  {{ 'common.save' | translate }}
+&lt;/button&gt;</pre></details>
+          </div>
+        </div>
+
+        <div class="frame" id="action-buttons">
+          <h3>Action buttons (icon + label)</h3>
+          <p class="frame-note">
+            The standard for modal footers and toolbars. Icon at 18px, label shown from 769px up, icon-only 44px target on
+            mobile. <code>aria-label</code> and <code>title</code> are required because the label hides.
+          </p>
+          <div class="frame-body">
+            <div class="row"><span class="row-label">Desktop</span>
+              <button type="button" class="button button-secondary action-button" title="Close"><span class="app-icon" data-icon="close"></span><span class="action-label">Close</span></button>
+              <button type="button" class="button button-secondary action-button" title="Inbox"><span class="app-icon" data-icon="bell"></span><span class="action-label">Inbox</span></button>
+              <button type="button" class="button button-error action-button" title="Revoke"><span class="app-icon" data-icon="close"></span><span class="action-label">Revoke</span></button>
+              <button type="button" class="button button-primary action-button" title="Share"><span class="app-icon" data-icon="share"></span><span class="action-label">Share</span></button>
+            </div>
+            <div class="row preview-mobile"><span class="row-label">Mobile (≤768px)</span>
+              <button type="button" class="button button-secondary action-button" aria-label="Close"><span class="app-icon" data-icon="close"></span><span class="action-label">Close</span></button>
+              <button type="button" class="button button-secondary action-button" aria-label="Inbox"><span class="app-icon" data-icon="bell"></span><span class="action-label">Inbox</span></button>
+              <button type="button" class="button button-error action-button" aria-label="Revoke"><span class="app-icon" data-icon="close"></span><span class="action-label">Revoke</span></button>
+              <button type="button" class="button button-primary action-button" aria-label="Share"><span class="app-icon" data-icon="share"></span><span class="action-label">Share</span></button>
+            </div>
+            <ul class="rules">
+              <li>Order in a footer: secondary/destructive on the left of the group, primary last (right-most).</li>
+              <li>Icon pairs: save → <code>check</code>, close/cancel → <code>close</code>, delete → <code>trash</code>, share → <code>share</code>, copy → <code>copy</code>, add → <code>plus</code>, edit → <code>edit</code>, archive → <code>archive</code>, download → <code>download</code>, busy → <code>loader</code>.</li>
+              <li>Don't mix plain-text buttons and icon buttons in the same footer.</li>
+            </ul>
+            <details class="code"><summary>Markup</summary><pre>&lt;button
+  type="button"
+  class="button button-primary action-button"
+  [disabled]="!canCreate()"
+  (click)="create()"
+  [attr.aria-label]="'checklistFeedback.share.create' | translate"
+  [title]="'checklistFeedback.share.create' | translate"
+&gt;
+  &lt;app-icon [icon]="creating() ? icons.loader : icons.share" /&gt;
+  &lt;span class="action-label"&gt;{{ 'checklistFeedback.share.create' | translate }}&lt;/span&gt;
+&lt;/button&gt;</pre></details>
+          </div>
+        </div>
+
+        <div class="frame" id="icon-buttons">
+          <h3>Icon buttons (toolbar)</h3>
+          <p class="frame-note">Source: <code>.group-toolbar-icon-btn</code> in <code>src/styles/_groups.scss</code> and <code>@mixin icon-button-40</code>. 40px square on desktop, 44px on mobile, 22px icon.</p>
+          <div class="frame-body">
+            <div class="row">
+              <button type="button" class="icon-btn" aria-label="Edit" title="Edit"><span class="app-icon" data-icon="edit"></span></button>
+              <button type="button" class="icon-btn icon-btn--active" aria-label="Filter (on)" aria-pressed="true" title="Filter"><span class="app-icon" data-icon="filter"></span></button>
+              <button type="button" class="icon-btn icon-btn--filled" aria-label="Upload" title="Upload"><span class="app-icon" data-icon="fileUpload"></span></button>
+              <button type="button" class="icon-btn" aria-label="Download" title="Download" disabled><span class="app-icon" data-icon="download"></span></button>
+              <button type="button" class="icon-btn icon-btn--danger" aria-label="Delete" title="Delete"><span class="app-icon" data-icon="trash"></span></button>
+            </div>
+            <ul class="rules">
+              <li>Default = outlined brand; <code>--active</code> for a toggled state (with <code>aria-pressed</code>); <code>--filled</code> for the one main toolbar action; <code>--danger</code> sits last with extra start margin.</li>
+            </ul>
+            <details class="code"><summary>Markup</summary><pre>&lt;div class="group-header-actions"&gt;
+  &lt;button type="button" class="group-toolbar-icon-btn" [attr.aria-label]="'files.edit' | translate" [title]="'files.edit' | translate"&gt;
+    &lt;app-icon [icon]="icons.edit" /&gt;
+  &lt;/button&gt;
+  &lt;button type="button" class="group-toolbar-icon-btn group-toolbar-icon-btn--danger" …&gt;
+    &lt;app-icon [icon]="icons.trash" /&gt;
+  &lt;/button&gt;
+&lt;/div&gt;</pre></details>
+          </div>
+        </div>
+
+        <div class="frame" id="fab">
+          <h3>Floating action button</h3>
+          <p class="frame-note">Source: <code>src/styles/_floating.scss</code> via <code>&lt;app-floating-add-button&gt;</code>. Fixed bottom-right (add) or bottom-left (upload); 50% opacity until hover/focus; hidden while a modal is open.</p>
+          <div class="frame-body frame-body--grey">
+            <div class="row">
+              <button type="button" class="floating-icon" aria-label="Add project"><span class="app-icon" data-icon="plus"></span></button>
+              <button type="button" class="floating-icon" aria-label="Upload files"><span class="app-icon" data-icon="cloudUpload"></span></button>
+            </div>
+            <ul class="rules">
+              <li>One FAB per corner per page. Lists that sit under a FAB use <code>@include overflow-scroll-y-with-clearance</code> so the last row stays reachable.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="frame" id="forms">
+          <h3>Form controls</h3>
+          <p class="frame-note">Source: <code>.form-group</code> in <code>src/styles/_inputs.scss</code>. Label above the field, full width, 8px radius, dark border on focus.</p>
+          <div class="frame-body">
+            <div class="form-group">
+              <label for="f-name">Project name</label>
+              <input id="f-name" type="text" placeholder="e.g. Hauptstraße 12" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="f-status">Status</label>
+              <select id="f-status">
+                <option>Open</option>
+                <option>In progress</option>
+                <option>Verified</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="f-date">Due date</label>
+              <input id="f-date" type="date">
+            </div>
+            <div class="form-group">
+              <label for="f-note">Note</label>
+              <textarea id="f-note" placeholder="Optional"></textarea>
+            </div>
+            <div class="form-group is-invalid">
+              <label for="f-email">Email</label>
+              <input id="f-email" type="email" value="not-an-email" aria-invalid="true" aria-describedby="f-email-err">
+              <p class="field-error" id="f-email-err">Enter a valid email address.</p>
+            </div>
+            <div class="form-group">
+              <label for="f-disabled">Disabled</label>
+              <input id="f-disabled" type="text" value="Read only value" disabled>
+            </div>
+            <label class="check-row"><input type="checkbox" checked> Notify members</label>
+            <label class="check-row"><input type="radio" name="r" checked> All objects</label>
+            <div class="file-input-wrapper">
+              <label class="file-label" for="f-file">
+                <span class="upload-placeholder">
+                  <span class="app-icon" data-icon="cloudUpload"></span>
+                  <span>Drop files or click to upload</span>
+                  <span class="hint-text">JPEG, PNG, WebP or PDF</span>
+                </span>
+              </label>
+              <input id="f-file" type="file" hidden>
+            </div>
+            <details class="code"><summary>Markup</summary><pre>&lt;div class="form-group"&gt;
+  &lt;label for="project-name"&gt;{{ 'projects.name' | translate }}&lt;/label&gt;
+  &lt;input id="project-name" type="text" formControlName="name" /&gt;
+&lt;/div&gt;</pre></details>
+          </div>
+        </div>
+
+        <div class="frame" id="tabs">
+          <h3>Tabs</h3>
+          <p class="frame-note">Source: <code>&lt;app-tab-group&gt;</code> (<code>components/shared/tab-group</code>). Underlined tab strip on mobile; on tablet-up the panels sit side by side and the strip hides.</p>
+          <div class="frame-body frame-body--flush">
+            <div class="tab-group-list" role="tablist" aria-label="Example tabs">
+              <button type="button" class="tab-group-tab tab-group-tab--active" role="tab" aria-selected="true">Objects <span class="tab-group-badge">12</span></button>
+              <button type="button" class="tab-group-tab" role="tab" aria-selected="false" tabindex="-1">Checklists <span class="tab-group-badge">3</span></button>
+              <button type="button" class="tab-group-tab" role="tab" aria-selected="false" tabindex="-1">Files</button>
+              <button type="button" class="tab-group-tab" role="tab" aria-selected="false" tabindex="-1" disabled>Protocols</button>
+            </div>
+            <div class="tab-panel-demo" role="tabpanel">Panel content</div>
+          </div>
+        </div>
+
+        <div class="frame" id="status">
+          <h3>Status pill</h3>
+          <p class="frame-note">Source: <code>&lt;app-status-pill [status]="…" /&gt;</code>. Colour comes from <code>data-status</code>; text is translated.</p>
+          <div class="frame-body">
+            <div class="row">
+              <span class="status-pill" data-status="open">Open</span>
+              <span class="status-pill" data-status="in_progress">In progress</span>
+              <span class="status-pill" data-status="verified">Verified</span>
+              <span class="status-pill" data-status="rejected">Rejected</span>
+              <span class="status-pill" data-status="closed">Closed</span>
+              <span class="archived-pill">Archived</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="cards">
+          <h3>Cards</h3>
+          <p class="frame-note">Source: <code>@mixin catalog-card-surface</code> used by project and object cards. White, 12px radius, light border, lift on hover; the whole card is the link.</p>
+          <div class="frame-body frame-body--grey">
+            <div class="card-grid">
+              <a class="catalog-card" href="#cards">
+                <span class="space-between"><span class="status-pill" data-status="in_progress">In progress</span></span>
+                <h2>Hauptstraße 12</h2>
+                <ul><li>Hauptstraße 12</li><li>80331 München</li></ul>
+                <span class="created-at">12.11.2026</span>
+              </a>
+              <a class="catalog-card" href="#cards">
+                <span class="space-between"><span class="status-pill" data-status="verified">Verified</span><span class="archived-pill">Archived</span></span>
+                <h2>Bahnhofplatz 3</h2>
+                <ul><li>Bahnhofplatz 3</li><li>4020 Linz</li></ul>
+                <span class="created-at">03.10.2026</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="group-header">
+          <h3>Group header</h3>
+          <p class="frame-note">Source: <code>src/styles/_groups.scss</code>. Section title with a brand underline and the toolbar icon buttons on the right (stacked under the title on mobile).</p>
+          <div class="frame-body">
+            <div class="group-header">
+              <div class="group-header-row group-header-row--toolbar">
+                <div>
+                  <div class="group-category">Facade</div>
+                  <p class="group-description">North side photos</p>
+                </div>
+                <div class="group-header-actions">
+                  <button type="button" class="icon-btn" aria-label="Edit"><span class="app-icon" data-icon="edit"></span></button>
+                  <button type="button" class="icon-btn" aria-label="Download"><span class="app-icon" data-icon="download"></span></button>
+                  <button type="button" class="icon-btn icon-btn--danger" aria-label="Delete"><span class="app-icon" data-icon="trash"></span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="collapse">
+          <h3>Collapse</h3>
+          <p class="frame-note">Native <code>&lt;details&gt;</code> gets the chevron from <code>src/styles.scss</code>; custom toggles use <code>@mixin data-collapse-toggle</code> + <code>collapse-chevron</code>.</p>
+          <div class="frame-body">
+            <details>
+              <summary>Archive comment</summary>
+              <p style="margin:.5rem 0 0;color:#555">Project finished and handed over on 10.11.2026.</p>
+            </details>
+            <div class="details-footer">
+              <button type="button" class="collapse-toggle" aria-expanded="false" id="demo-collapse">Show details <span class="collapse-chevron collapsed"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="modal">
+          <h3>Modal</h3>
+          <p class="frame-note">
+            Source: <code>src/styles/_modals.scss</code>, opened with <code>ModalService</code>. Header with title + close (X),
+            scrollable body, sticky <code>.actions</code> footer with action buttons. Widths: default 500px, <code>wide</code> 800px, <code>wide-xl</code> 1600px.
+          </p>
+          <div class="frame-body frame-body--flush">
+            <div class="modal-stage">
+              <div class="modal-content" role="dialog" aria-modal="false" aria-labelledby="demo-modal-title">
+                <div class="modal-header">
+                  <h2 id="demo-modal-title">Share checklist</h2>
+                  <button type="button" class="close-btn" aria-label="Close"><span class="app-icon" data-icon="close"></span></button>
+                </div>
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="m-name">Recipient name</label>
+                    <input id="m-name" type="text" placeholder="Optional">
+                  </div>
+                  <label class="check-row"><input type="checkbox" checked> Allow photo uploads</label>
+                </div>
+                <div class="actions">
+                  <button type="button" class="button button-secondary action-button" title="Close"><span class="app-icon" data-icon="close"></span><span class="action-label">Close</span></button>
+                  <button type="button" class="button button-primary action-button" title="Create link"><span class="app-icon" data-icon="share"></span><span class="action-label">Create link</span></button>
+                </div>
+              </div>
+            </div>
+            <details class="code"><summary>Markup</summary><pre>&lt;div class="modal-body"&gt;
+  …fields…
+&lt;/div&gt;
+&lt;div class="actions"&gt;
+  &lt;button type="button" class="button button-secondary action-button" (click)="close()" …&gt;
+    &lt;app-icon [icon]="icons.close" /&gt;
+    &lt;span class="action-label"&gt;{{ 'common.close' | translate }}&lt;/span&gt;
+  &lt;/button&gt;
+  &lt;button type="button" class="button button-primary action-button" (click)="save()" …&gt;
+    &lt;app-icon [icon]="icons.check" /&gt;
+    &lt;span class="action-label"&gt;{{ 'common.save' | translate }}&lt;/span&gt;
+  &lt;/button&gt;
+&lt;/div&gt;</pre></details>
+          </div>
+        </div>
+
+        <div class="frame" id="confirm">
+          <h3>Confirm dialog</h3>
+          <p class="frame-note">Source: <code>components/confirm-dialog</code>. Use before every destructive action. Cancel left, confirm right; the danger kind swaps to red + <code>trash</code>.</p>
+          <div class="frame-body frame-body--flush">
+            <div class="modal-stage">
+              <div class="modal-content" role="dialog" aria-modal="false" aria-labelledby="demo-confirm-title">
+                <div class="modal-header">
+                  <h2 id="demo-confirm-title">Delete project?</h2>
+                  <button type="button" class="close-btn" aria-label="Close"><span class="app-icon" data-icon="close"></span></button>
+                </div>
+                <div class="modal-body">
+                  <p class="confirm-message">“Hauptstraße 12” and all its objects will be deleted. This can't be undone.</p>
+                  <div class="confirm-actions">
+                    <button type="button" class="button button-secondary action-button" title="Cancel"><span class="app-icon" data-icon="close"></span><span class="action-label">Cancel</span></button>
+                    <button type="button" class="button button-error action-button" title="Delete"><span class="app-icon" data-icon="trash"></span><span class="action-label">Delete</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="toast">
+          <h3>Notification</h3>
+          <p class="frame-note">Source: <code>components/notification</code> via <code>NotificationService</code>. Fixed top-right (full width on mobile), left colour bar by type.</p>
+          <div class="frame-body frame-body--grey">
+            <div class="notification-stack">
+              <div class="notification notification--success"><div class="notification__icon" aria-hidden="true">✓</div><p class="notification__message">Project saved.</p><button type="button" class="notification__close" aria-label="Dismiss"><span class="app-icon" data-icon="close"></span></button></div>
+              <div class="notification notification--error"><div class="notification__icon" aria-hidden="true">✕</div><p class="notification__message">Upload failed. The file is larger than 150 MB.</p><button type="button" class="notification__close" aria-label="Dismiss"><span class="app-icon" data-icon="close"></span></button></div>
+              <div class="notification notification--warning"><div class="notification__icon" aria-hidden="true">⚠</div><p class="notification__message">The share link expires tomorrow.</p><button type="button" class="notification__close" aria-label="Dismiss"><span class="app-icon" data-icon="close"></span></button></div>
+              <div class="notification notification--info"><div class="notification__icon" aria-hidden="true">ℹ</div><p class="notification__message">3 new feedback entries are waiting.</p><button type="button" class="notification__close" aria-label="Dismiss"><span class="app-icon" data-icon="close"></span></button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="frame" id="empty">
+          <h3>Empty &amp; loading</h3>
+          <p class="frame-note">Empty lists show one muted sentence (translated), not an illustration. Loading uses the <code>loader</code> icon or <code>.spinner</code> inside the button that started it.</p>
+          <div class="frame-body">
+            <p class="empty-state">No projects yet.</p>
+            <div class="row"><span class="app-icon" data-icon="loader" style="color:var(--secondary-default)"></span><span style="color:#666">Loading…</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="copied-toast" id="copied" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      /* icons:start */
+      const ICONS = {"qrCode":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"rect","x":3,"y":3,"width":6,"height":6},{"tag":"rect","x":15,"y":3,"width":6,"height":6},{"tag":"rect","x":3,"y":15,"width":6,"height":6},{"tag":"path","d":"M15 15h2v2h-2zM19 15h2v4h-2M15 19v2h4M21 21h.01"}]},"folderPlus":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"},{"tag":"path","d":"M12 10v6M9 13h6"}]},"folderTree":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M3 5v12a2 2 0 0 0 2 2h3M3 10h5"},{"tag":"path","d":"M8 8h4l1 1h6a2 2 0 0 1 2 2v3H8z"},{"tag":"path","d":"M8 17h4l1 1h6a2 2 0 0 1 2 2v1H8z"}]},"tag":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M20 13l-7 7a2 2 0 0 1-2.83 0L3 12.83V3h9.83L20 10.17a2 2 0 0 1 0 2.83Z"},{"tag":"circle","cx":7.5,"cy":7.5,"r":1}]},"archive":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"rect","x":2,"y":3,"width":20,"height":5,"rx":1},{"tag":"path","d":"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"},{"tag":"path","d":"M10 12h4"}]},"plus":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 5v14M5 12h14"}]},"edit":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 20h9"},{"tag":"path","d":"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"}]},"fileText":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"},{"tag":"polyline","points":"14 2 14 8 20 8"},{"tag":"line","x1":16,"y1":13,"x2":8,"y2":13},{"tag":"line","x1":16,"y1":17,"x2":8,"y2":17}]},"mapPin":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"},{"tag":"circle","cx":12,"cy":10,"r":2.5}]},"list":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M9 6h11M9 12h11M9 18h11"},{"tag":"path","d":"M4 6h.01M4 12h.01M4 18h.01"}]},"filter":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M4 5h16l-6 7v5l-4 2v-7L4 5z"}]},"filterOff":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M4 5h16l-6 7v5l-4 2v-7L4 5z"},{"tag":"line","x1":4,"y1":4,"x2":20,"y2":20}]},"check":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"polyline","points":"20 6 9 17 4 12"}]},"arrowsUpDown":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M8 9l4-4 4 4"},{"tag":"path","d":"M8 15l4 4 4-4"},{"tag":"line","x1":12,"y1":5,"x2":12,"y2":19}]},"fileUpload":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"},{"tag":"polyline","points":"14 2 14 8 20 8"},{"tag":"path","d":"M12 12v6"},{"tag":"path","d":"M9 15l3-3 3 3"}]},"cloudUpload":{"viewBox":"0 0 640 640","fill":"currentColor","elements":[{"tag":"path","d":"M352 173.3L352 384C352 401.7 337.7 416 320 416C302.3 416 288 401.7 288 384L288 173.3L246.6 214.7C234.1 227.2 213.8 227.2 201.3 214.7C188.8 202.2 188.8 181.9 201.3 169.4L297.3 73.4C309.8 60.9 330.1 60.9 342.6 73.4L438.6 169.4C451.1 181.9 451.1 202.2 438.6 214.7C426.1 227.2 405.8 227.2 393.3 214.7L352 173.3zM320 464C364.2 464 400 428.2 400 384L480 384C515.3 384 544 412.7 544 448L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 448C96 412.7 124.7 384 160 384L240 384C240 428.2 275.8 464 320 464zM464 488C477.3 488 488 477.3 488 464C488 450.7 477.3 440 464 440C450.7 440 440 450.7 440 464C440 477.3 450.7 488 464 488z"}]},"pinFilled":{"viewBox":"0 0 24 24","fill":"currentColor","elements":[{"tag":"path","d":"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"}]},"hamburger":{"viewBox":"0 0 100 80","fill":"white","elements":[{"tag":"path","d":"M0 0h100v20H0zM0 30h100v20H0zM0 60h100v20H0z"}]},"closeFilled":{"viewBox":"0 0 24 24","fill":"white","elements":[{"tag":"path","fillRule":"evenodd","clipRule":"evenodd","d":"M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 1 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"}]},"close":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"line","x1":18,"y1":6,"x2":6,"y2":18},{"tag":"line","x1":6,"y1":6,"x2":18,"y2":18}]},"trash":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M3 6h18"},{"tag":"path","d":"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"},{"tag":"path","d":"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"},{"tag":"line","x1":10,"x2":10,"y1":11,"y2":17},{"tag":"line","x1":14,"x2":14,"y1":11,"y2":17}]},"trashBin":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M3 6h18"},{"tag":"path","d":"M8 6V4h8v2"},{"tag":"path","d":"M19 6l-1 14H6L5 6"},{"tag":"path","d":"M10 11v6"},{"tag":"path","d":"M14 11v6"}]},"briefcase":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":1.75,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M4 7h16v12H4z"},{"tag":"path","d":"M4 7l2-3h12l2 3"}]},"cube":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":1.75,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 3l8 4.5v9L12 21l-8-4.5v-9z"},{"tag":"path","d":"M12 12l8-4.5M12 12v9M12 12L4 7.5"}]},"fileSimple":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":1.75,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M14 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8z"},{"tag":"path","d":"M14 2v6h6"}]},"users":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":1.75,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"circle","cx":9,"cy":8,"r":3},{"tag":"circle","cx":17,"cy":9,"r":2.5},{"tag":"path","d":"M3 19c0-2.2 2.7-4 6-4s6 1.8 6 4M14 19c0-1.6 1.8-3 4-3"}]},"gripHorizontal":{"viewBox":"0 0 24 24","fill":"currentColor","stroke":"none","elements":[{"tag":"circle","cx":5,"cy":9,"r":1.5},{"tag":"circle","cx":12,"cy":9,"r":1.5},{"tag":"circle","cx":19,"cy":9,"r":1.5},{"tag":"circle","cx":5,"cy":15,"r":1.5},{"tag":"circle","cx":12,"cy":15,"r":1.5},{"tag":"circle","cx":19,"cy":15,"r":1.5}]},"uploadArrow":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 3v12"},{"tag":"path","d":"M7 8l5-5 5 5"},{"tag":"path","d":"M4 21h16"}]},"menuLines":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M4 6h16"},{"tag":"path","d":"M4 12h16"},{"tag":"path","d":"M4 18h16"}]},"zoomIn":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"circle","cx":11,"cy":11,"r":8},{"tag":"path","d":"m21 21-4.35-4.35"},{"tag":"path","d":"M11 8v6M8 11h6"}]},"chevronRight":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M5 12h14"},{"tag":"path","d":"M13 6l6 6-6 6"}]},"download":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"},{"tag":"polyline","points":"7 10 12 15 17 10"},{"tag":"line","x1":12,"x2":12,"y1":15,"y2":3}]},"uploadCombined":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"}]},"eyeOff":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"},{"tag":"path","d":"M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"},{"tag":"path","d":"M1 1l22 22"},{"tag":"path","d":"M14.12 14.12a3 3 0 1 1-4.24-4.24"}]},"eye":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"},{"tag":"circle","cx":12,"cy":12,"r":3}]},"chevronLeft":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2.5,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M19 12H5M11 18l-6-6 6-6"}]},"loader":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"}]},"refresh":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2.5,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M21 12a9 9 0 1 1-2.64-6.36"},{"tag":"path","d":"M21 3v6h-6"}]},"fileTextDetailed":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2.5,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"},{"tag":"path","d":"M14 2v6h6M16 13H8M16 17H8M10 9H8"}]},"clipboardCheck":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2.5,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M9 11l3 3L22 4"},{"tag":"path","d":"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"}]},"squarePlus":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2.5,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"rect","x":3,"y":3,"width":18,"height":18,"rx":2},{"tag":"path","d":"M9 12h6"},{"tag":"path","d":"M12 9v6"}]},"clipboard":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"}]},"flag":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M4 22V4"},{"tag":"path","d":"M4 4h11l-1.5 3L15 10H4"}]},"clipboardWithCheck":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"},{"tag":"rect","x":9,"y":3,"width":6,"height":4,"rx":1},{"tag":"path","d":"M9 14l2 2 4-4"}]},"share":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"circle","cx":18,"cy":5,"r":3},{"tag":"circle","cx":6,"cy":12,"r":3},{"tag":"circle","cx":18,"cy":19,"r":3},{"tag":"path","d":"M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"}]},"copy":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"rect","x":9,"y":9,"width":13,"height":13,"rx":2},{"tag":"path","d":"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"}]},"bell":{"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","elements":[{"tag":"path","d":"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"},{"tag":"path","d":"M10.3 21a1.94 1.94 0 0 0 3.4 0"}]},"susmLogo":{"viewBox":"0 0 512 305.98","fill":"#fff","fillRule":"evenodd","clipRule":"evenodd","elements":[{"tag":"path","d":"M153.12 122.45h21.82v22.3h-21.82v-22.3zm-15.88 90.06h83.32v79.05h89.77v-136.6c0-.38.04-.74.11-1.1L179.48 58.02 45.77 153.91c.13.47.2.97.2 1.48v136.17h91.27v-79.05zm187.51 87.74c0 3.16-2.56 5.73-5.74 5.73H37.28c-3.17 0-5.74-2.57-5.74-5.73V161.36c-29.41 11.32-40.3-24.88-23.87-37.82L174.57 1.51c2.03-1.86 5.16-2.05 7.4-.3l167.26 121.77c-.01.02.62.56.68.63 19.8 21.32-1.07 49.48-25.16 38.11v138.53zm20.67-87.74h23.08v81.11h104.1V162.93c0-.43.06-.86.16-1.26l-114.6-82.19-16.82 12.31-34.56-25.16 49.24-35.85a4.904 4.904 0 0 1 6.34.26l89.84 65.68V65.21h39.1v60.1l14.13 10.33c14.03 10.9 4.85 42.16-20.46 32.41v133.02c0 2.71-2.21 4.91-4.92 4.91H344.79l.63-5.73v-87.74zm-140.75-60.33h-21.81v22.3h21.81v-22.3zm-51.55 0h21.82v22.3h-21.82v-22.3zm51.55-29.73h-21.81v22.3h21.81v-22.3z"}]}};
+      /* icons:end */
+
+      const NS = 'http://www.w3.org/2000/svg';
+      const ATTRS = {
+        fill: 'fill', stroke: 'stroke', strokeWidth: 'stroke-width', strokeLinecap: 'stroke-linecap',
+        strokeLinejoin: 'stroke-linejoin', fillRule: 'fill-rule', clipRule: 'clip-rule',
+      };
+
+      // Mirrors src/app/icons/icon.component.html.
+      function renderIcon(def) {
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('viewBox', def.viewBox);
+        svg.setAttribute('fill', def.fill ?? 'none');
+        svg.setAttribute('aria-hidden', 'true');
+        for (const [key, attr] of Object.entries(ATTRS)) {
+          if (key !== 'fill' && def[key] != null) svg.setAttribute(attr, String(def[key]));
+        }
+        for (const element of def.elements) {
+          const node = document.createElementNS(NS, element.tag);
+          for (const [key, value] of Object.entries(element)) {
+            if (key === 'tag' || value == null) continue;
+            node.setAttribute(ATTRS[key] ?? key, String(value));
+          }
+          svg.append(node);
+        }
+        return svg;
+      }
+
+      document.querySelectorAll('[data-icon]').forEach((host) => {
+        const def = ICONS[host.dataset.icon];
+        if (!def) return;
+        if (!host.hasAttribute('data-raw')) host.classList.add('app-icon');
+        host.append(renderIcon(def));
+      });
+
+      const toast = document.getElementById('copied');
+      let toastTimer;
+      function flash(text) {
+        toast.textContent = text;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+      }
+
+      const grid = document.getElementById('icon-grid');
+      for (const name of Object.keys(ICONS)) {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'icon-tile' + (name === 'susmLogo' ? ' icon-tile--dark' : '');
+        tile.title = `<app-icon [icon]="icons.${name}" />`;
+        const glyph = document.createElement('span');
+        glyph.className = 'app-icon';
+        glyph.style.setProperty('--icon-size', name === 'susmLogo' ? '2.5rem' : 'var(--icon-size-xl)');
+        glyph.append(renderIcon(ICONS[name]));
+        const label = document.createElement('code');
+        label.textContent = name;
+        tile.append(glyph, label);
+        tile.addEventListener('click', async () => {
+          const markup = `<app-icon [icon]="icons.${name}" />`;
+          try {
+            await navigator.clipboard.writeText(markup);
+            flash(`Copied ${markup}`);
+          } catch {
+            flash(markup);
+          }
+        });
+        grid.append(tile);
+      }
+
+      // Demo-only interactivity.
+      document.querySelectorAll('.tab-group-list').forEach((list) => {
+        list.addEventListener('click', (event) => {
+          const tab = event.target.closest('.tab-group-tab');
+          if (!tab || tab.disabled) return;
+          list.querySelectorAll('.tab-group-tab').forEach((other) => {
+            const active = other === tab;
+            other.classList.toggle('tab-group-tab--active', active);
+            other.setAttribute('aria-selected', String(active));
+            other.tabIndex = active ? 0 : -1;
+          });
+        });
+      });
+
+      const collapse = document.getElementById('demo-collapse');
+      collapse.addEventListener('click', () => {
+        const open = collapse.getAttribute('aria-expanded') !== 'true';
+        collapse.setAttribute('aria-expanded', String(open));
+        collapse.firstChild.textContent = open ? 'Hide details ' : 'Show details ';
+        collapse.querySelector('.collapse-chevron').classList.toggle('collapsed', !open);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -16,36 +16,39 @@
               <app-trash-icon [size]="20" />
             </button>
           }
-          @if (isArchived()) {
-            <button
-              type="button"
-              class="button button-secondary archive-action"
-              (click)="toggleArchive(false)"
-              [disabled]="archiving() || deleting()"
-              [attr.aria-label]="'projects.unarchiveProject' | translate"
-              [title]="'projects.unarchiveProject' | translate"
-            >
-              @if (archiving()) {
-                <span class="spinner"></span>
-              } @else {
-                <app-icon [icon]="icons.refresh" />
-              }
-            </button>
-          } @else {
-            <button
-              type="button"
-              class="button button-secondary archive-action"
-              (click)="toggleArchive(true)"
-              [disabled]="archiving() || deleting()"
-              [attr.aria-label]="'projects.archiveProject' | translate"
-              [title]="'projects.archiveProject' | translate"
-            >
-              @if (archiving()) {
-                <span class="spinner"></span>
-              } @else {
-                <app-icon [icon]="icons.archive" />
-              }
-            </button>
+          <!-- Archive/unarchive and delete are admin-only (enforced by the API too). -->
+          @if (isAdmin()) {
+            @if (isArchived()) {
+              <button
+                type="button"
+                class="button button-secondary archive-action"
+                (click)="toggleArchive(false)"
+                [disabled]="archiving() || deleting()"
+                [attr.aria-label]="'projects.unarchiveProject' | translate"
+                [title]="'projects.unarchiveProject' | translate"
+              >
+                @if (archiving()) {
+                  <span class="spinner"></span>
+                } @else {
+                  <app-icon [icon]="icons.refresh" />
+                }
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="button button-secondary archive-action"
+                (click)="toggleArchive(true)"
+                [disabled]="archiving() || deleting()"
+                [attr.aria-label]="'projects.archiveProject' | translate"
+                [title]="'projects.archiveProject' | translate"
+              >
+                @if (archiving()) {
+                  <span class="spinner"></span>
+                } @else {
+                  <app-icon [icon]="icons.archive" />
+                }
+              </button>
+            }
           }
         </div>
         <div class="form-actions-end">
