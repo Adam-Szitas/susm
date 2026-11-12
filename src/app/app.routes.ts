@@ -66,6 +66,7 @@ export const routes: Routes = [
     // Public checklist feedback (token is the access control; no auth guard so a
     // signed-in app-user opening the link still sees the visitor view).
     path: 'checklist-feedback/:token',
+    data: { standalone: true },
     loadComponent: () =>
       import('./components/checklist-feedback/public/checklist-feedback-public.component').then(
         (c) => c.ChecklistFeedbackPublicComponent,

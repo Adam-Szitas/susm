@@ -114,6 +114,105 @@ describe('public checklist feedback page', () => {
     expect(el.textContent).toContain('my earlier note');
   });
 
+  async function startEditing(): Promise<HTMLElement> {
+    await render();
+    fixture.componentInstance.email.set('visitor@example.com');
+    fixture.componentInstance.identify();
+    return render();
+  }
+
+  it('sets the status with visible radio choices and a note via "Add note", then submits', async () => {
+    let el = await startEditing();
+    const component = fixture.componentInstance;
+    const checklist = component.checklists()[0];
+    const row = checklist.objects[0];
+
+    const radios = Array.from(el.querySelectorAll<HTMLInputElement>('.cfb-choices input[type="radio"]'));
+    expect(radios.map((radio) => radio.value)).toEqual(['under_process', 'finished']);
+    expect(radios[0].checked).toBeTrue();
+    expect(el.querySelector('textarea')).toBeNull();
+
+    radios[1].click();
+    (el.querySelector<HTMLButtonElement>('.cfb-add-note'))!.click();
+    el = await render();
+    const textarea = el.querySelector<HTMLTextAreaElement>('textarea')!;
+    textarea.value = 'window fixed';
+    textarea.dispatchEvent(new Event('input'));
+    el = await render();
+
+    expect(component.dirty(checklist, row)).toEqual({ status: true, note: true });
+    expect(el.querySelectorAll('.cfb-row--dirty').length).toBe(1);
+    expect(el.querySelectorAll('.cfb-flag').length).toBe(1);
+    expect(el.querySelector('.cfb-submit-status')?.textContent).toContain('checklistFeedback.public.pendingSummary');
+    expect(el.querySelector<HTMLButtonElement>('.cfb-send')!.disabled).toBeFalse();
+
+    el.querySelector<HTMLButtonElement>('.cfb-send')!.click();
+    expect(api.publicSubmit).toHaveBeenCalledWith(token, 'sess', [
+      { object_id: 'o1', todo_item_id: 'cl1', status: 'finished', note_text: 'window fixed' },
+    ]);
+    el = await render();
+    expect(component.state()).toBe('submitted');
+    component.continueEditing();
+    el = await render();
+    expect(el.querySelectorAll('.cfb-flag').length).toBe(0);
+    expect(el.querySelector('textarea')).toBeNull();
+  });
+
+  it('undo restores the loaded status and closes the note', async () => {
+    let el = await startEditing();
+    const component = fixture.componentInstance;
+    const checklist = component.checklists()[0];
+    const row = checklist.objects[0];
+    component.setStatus(checklist, row, 'finished');
+    component.openNote(checklist, row);
+    el = await render();
+    el.querySelector<HTMLButtonElement>('.cfb-icon-button')!.click();
+    el = await render();
+    expect(component.changeCount()).toBe(0);
+    expect(el.querySelector('.cfb-row--dirty')).toBeNull();
+    expect(el.querySelector('textarea')).toBeNull();
+    expect(el.querySelector<HTMLButtonElement>('.cfb-send')!.disabled).toBeTrue();
+  });
+
+  it('offers sub-items as radio choices and sends the chosen sub-item', async () => {
+    api.publicView.and.callFake(() => {
+      const data = view();
+      data.checklists[0].sub_items = [
+        { id: 's1', title: 'Montage', color: 'red' },
+        { id: 's2', title: 'Demontage', color: 'blue' },
+      ];
+      data.checklists[0].objects[0].todo_sub_item_id = 's1';
+      return of({ kind: 'ok', data });
+    });
+    let el = await startEditing();
+    const radios = Array.from(el.querySelectorAll<HTMLInputElement>('.cfb-choices input[type="radio"]'));
+    expect(radios.map((radio) => radio.value)).toEqual(['s1', 's2']);
+    expect(radios[0].checked).toBeTrue();
+    radios[1].click();
+    el = await render();
+    fixture.componentInstance.submit();
+    expect(api.publicSubmit).toHaveBeenCalledWith(token, 'sess', [
+      jasmine.objectContaining({ object_id: 'o1', todo_item_id: 'cl1', todo_sub_item_id: 's2' }),
+    ]);
+  });
+
+  it('clamps long checklist descriptions behind "Show more"', async () => {
+    api.publicView.and.callFake(() => {
+      const data = view();
+      data.checklists[0].note = 'Entkopplung '.repeat(40);
+      return of({ kind: 'ok', data });
+    });
+    let el = await startEditing();
+    const text = () => el.querySelector('.cfb-description-text')!;
+    const toggle = () => el.querySelector<HTMLButtonElement>('.cfb-description .cfb-link-button')!;
+    expect(text().classList).toContain('cfb-description-text--clamped');
+    expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    toggle().click();
+    el = await render();
+    expect(text().classList).not.toContain('cfb-description-text--clamped');
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('flags changed fields and clears the flags after a successful submit', async () => {
     await render();
     const component = fixture.componentInstance;
@@ -122,11 +221,11 @@ describe('public checklist feedback page', () => {
     await render();
     const checklist = component.checklists()[0];
     const row = checklist.objects[0];
-    component.onEntriesChange(checklist, row, [{ todo_item_id: 'cl1', status: 'finished' }]);
+    component.setStatus(checklist, row, 'finished');
     component.onNoteInput(checklist, row, 'window fixed');
     let el = await render();
     expect(component.dirty(checklist, row)).toEqual({ status: true, note: true });
-    expect(el.querySelectorAll('.cfb-flag').length).toBe(2);
+    expect(el.querySelectorAll('.cfb-flag').length).toBe(1);
 
     component.submit();
     expect(api.publicSubmit).toHaveBeenCalledWith(token, 'sess', [

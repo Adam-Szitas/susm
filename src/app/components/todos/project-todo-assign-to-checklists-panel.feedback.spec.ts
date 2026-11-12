@@ -66,7 +66,12 @@ describe('checklist panel feedback share entry point', () => {
     expect(modal.open).toHaveBeenCalledWith(
       jasmine.objectContaining({
         component: ChecklistFeedbackShareModalComponent,
-        componentInputs: { projectId: 'project', todoItems: [items[1]], allTodoItems: items },
+        componentInputs: {
+          projectId: 'project',
+          todoItems: [items[1]],
+          allTodoItems: items,
+          assignedObjectCounts: { cl2: 0 },
+        },
       }),
     );
   });
@@ -148,6 +153,32 @@ describe('checklist panel share with unsaved assignment changes', () => {
     expect(panel.dirtyObjectCount()).toBe(0);
     expect(modal.open).toHaveBeenCalledWith(
       jasmine.objectContaining({ component: ChecklistFeedbackShareModalComponent }),
+    );
+  });
+
+  it('passes saved assignment counts to the composer', async () => {
+    const panel = renderWithUnsavedUnassignment();
+    await panel.shareForFeedback();
+    expect(modal.open).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        componentInputs: jasmine.objectContaining({ assignedObjectCounts: { cl1: 0 } }),
+      }),
+    );
+  });
+
+  it('counts saved assignments when nothing is dirty', async () => {
+    const fixture = TestBed.createComponent(ProjectTodoAssignToChecklistsPanelComponent);
+    fixture.componentRef.setInput('projectId', 'project');
+    fixture.componentRef.setInput('todoItems', [item]);
+    fixture.componentRef.setInput('objects', [object]);
+    fixture.detectChanges();
+    fixture.componentInstance.toggleChecklist(item);
+    await fixture.componentInstance.shareForFeedback();
+    expect(modal.openConfirm).not.toHaveBeenCalled();
+    expect(modal.open).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        componentInputs: jasmine.objectContaining({ assignedObjectCounts: { cl1: 1 } }),
+      }),
     );
   });
 

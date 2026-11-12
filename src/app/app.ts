@@ -1,7 +1,9 @@
 import { SeoService } from './services/seo.service';
 import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TranslationService } from './services/translation.service';
@@ -20,10 +22,19 @@ export class App implements OnInit {
   #platformId = inject(PLATFORM_ID);
   #destroyRef = inject(DestroyRef);
 
+  /** Routes with `data: { standalone: true }` (public visitor pages) render without the app navbar. */
+  protected readonly standalonePage = signal(false);
+
   ngOnInit(): void {
     this.#translationService.initialize();
     this.seo.update(this.router.url);
     this.#setupIosScrollRecovery();
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.#destroyRef),
+      )
+      .subscribe(() => this.standalonePage.set(isStandaloneRoute(this.router.routerState.snapshot.root)));
   }
 
   /**
@@ -62,4 +73,13 @@ export class App implements OnInit {
       window.visualViewport?.removeEventListener('scroll', resetIfStuck);
     });
   }
+}
+
+function isStandaloneRoute(route: ActivatedRouteSnapshot): boolean {
+  let current: ActivatedRouteSnapshot | null = route;
+  while (current) {
+    if (current.data['standalone'] === true) return true;
+    current = current.firstChild;
+  }
+  return false;
 }

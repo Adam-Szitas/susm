@@ -272,8 +272,25 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
         projectId: this.projectId,
         todoItems: items,
         allTodoItems: this.sortedTodoItems(),
+        assignedObjectCounts: this.#savedAssignmentCounts(items),
       },
     });
+  }
+
+  /** Objects assigned per checklist — saved state (dirty edits were persisted just before). */
+  #savedAssignmentCounts(items: TodoItem[]): Record<string, number> {
+    const counts: Record<string, number> = {};
+    for (const item of items) counts[todoItemId(item)] = 0;
+    for (const object of this.sortedObjects()) {
+      const objectId = object._id?.$oid;
+      if (!objectId || object.deleted_at) continue;
+      const saved: ObjectTodoEntry[] = JSON.parse(this.#initialSnapshots.get(objectId) ?? '[]');
+      const assigned = new Set(saved.map(todoEntryItemId));
+      for (const id of assigned) {
+        if (id in counts) counts[id] += 1;
+      }
+    }
+    return counts;
   }
 
   selectAllChecklists(): void {

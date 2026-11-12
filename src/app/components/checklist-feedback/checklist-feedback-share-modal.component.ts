@@ -58,7 +58,26 @@ export class ChecklistFeedbackShareModalComponent implements OnInit, OnDestroy {
   readonly copiedId = signal<string | null>(null);
   readonly now = signal(Date.now());
 
-  readonly canCreate = computed(() => this.todoItems().length > 0 && !this.creating());
+  /**
+   * Saved object assignments per selected checklist id. The public page shows only checklists
+   * with assigned objects, so a link where every count is 0 would be unusable. `null` = unknown.
+   */
+  readonly assignedObjectCounts = input<Record<string, number> | null>(null);
+
+  readonly objectCountFor = (item: TodoItem): number | null => {
+    const counts = this.assignedObjectCounts();
+    return counts ? (counts[todoItemId(item)] ?? 0) : null;
+  };
+  readonly hasNoAssignedObjects = computed(
+    () => this.assignedObjectCounts() !== null && this.todoItems().every((item) => !this.objectCountFor(item)),
+  );
+  readonly hasEmptyChecklist = computed(
+    () => this.assignedObjectCounts() !== null && this.todoItems().some((item) => !this.objectCountFor(item)),
+  );
+
+  readonly canCreate = computed(
+    () => this.todoItems().length > 0 && !this.hasNoAssignedObjects() && !this.creating(),
+  );
   readonly titlesById = computed(() => {
     const map = new Map<string, string>();
     for (const item of [...this.allTodoItems(), ...this.todoItems()]) map.set(todoItemId(item), item.title);

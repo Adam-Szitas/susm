@@ -67,6 +67,34 @@ describe('checklist feedback share composer', () => {
     expect(el.querySelector('input[type="email"]')).toBeNull();
   });
 
+  it('blocks creating a link when no selected checklist has assigned objects', () => {
+    const fixture = TestBed.createComponent(ChecklistFeedbackShareModalComponent);
+    fixture.componentRef.setInput('projectId', 'p1');
+    fixture.componentRef.setInput('todoItems', items);
+    fixture.componentRef.setInput('assignedObjectCounts', { cl1: 0, cl2: 0 });
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(fixture.componentInstance.canCreate()).toBeFalse();
+    expect(el.querySelector<HTMLButtonElement>('.cfs-create-btn')!.disabled).toBeTrue();
+    expect(el.querySelector('.cfs-warning')?.textContent).toContain('checklistFeedback.share.noAssignedObjects');
+    fixture.componentInstance.create();
+    expect(api.createShares).not.toHaveBeenCalled();
+  });
+
+  it('allows a link when at least one checklist has objects and flags the empty ones', () => {
+    const fixture = TestBed.createComponent(ChecklistFeedbackShareModalComponent);
+    fixture.componentRef.setInput('projectId', 'p1');
+    fixture.componentRef.setInput('todoItems', items);
+    fixture.componentRef.setInput('assignedObjectCounts', { cl1: 3, cl2: 0 });
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(fixture.componentInstance.canCreate()).toBeTrue();
+    expect(el.querySelectorAll('.cfs-chip--empty').length).toBe(1);
+    expect(el.querySelector('.cfs-warning')?.textContent).toContain('checklistFeedback.share.emptyHidden');
+  });
+
   it('clamps the link count to 1..20', () => {
     const fixture = TestBed.createComponent(ChecklistFeedbackShareModalComponent);
     const component = fixture.componentInstance;

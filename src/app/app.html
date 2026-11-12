@@ -1,5 +1,7 @@
 <a class="skip-link" href="#main-content">Skip to content</a>
-<app-navbar></app-navbar>
+@if (!standalonePage()) {
+  <app-navbar></app-navbar>
+}
 <main id="main-content" tabindex="-1">
   <router-outlet></router-outlet>
 </main>

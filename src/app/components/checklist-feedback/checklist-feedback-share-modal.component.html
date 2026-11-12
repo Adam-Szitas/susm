@@ -3,9 +3,20 @@
     <h3 class="cfs-heading">{{ 'checklistFeedback.share.selected' | translate: { count: todoItems().length } }}</h3>
     <ul class="cfs-chips">
       @for (item of todoItems(); track item._id.$oid) {
-        <li class="cfs-chip">{{ item.title }}</li>
+        @let objectCount = objectCountFor(item);
+        <li class="cfs-chip" [class.cfs-chip--empty]="objectCount === 0">
+          {{ item.title }}
+          @if (objectCount !== null) {
+            <span class="cfs-chip-count">{{ 'checklistFeedback.share.objectCount' | translate: { count: objectCount } }}</span>
+          }
+        </li>
       }
     </ul>
+    @if (hasNoAssignedObjects()) {
+      <p class="cfs-warning" role="alert">{{ 'checklistFeedback.share.noAssignedObjects' | translate }}</p>
+    } @else if (hasEmptyChecklist()) {
+      <p class="cfs-warning">{{ 'checklistFeedback.share.emptyHidden' | translate }}</p>
+    }
     <p class="cfs-hint">{{ 'checklistFeedback.share.explainer' | translate }}</p>
   </section>
 

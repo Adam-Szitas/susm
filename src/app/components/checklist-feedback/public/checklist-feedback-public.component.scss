@@ -1,88 +1,271 @@
+// Public checklist feedback page — standalone (no app navbar), mobile first.
+// Brand tokens come from src/styles.scss; see design/foundation.html.
+
 :host {
+  --cfb-surface: #fff;
+  --cfb-canvas: #f4f5f7;
+  --cfb-border: #e4e7ec;
+  --cfb-text: #1d2939;
+  --cfb-muted: #667085;
+  --cfb-changed: #dc6803;
+  --cfb-changed-bg: #fffaeb;
+  --cfb-ok: #039855;
+  --cfb-ok-bg: #ecfdf3;
+  --cfb-progress: #b54708;
+  --cfb-progress-bg: #fffaeb;
+  --cfb-radius: 14px;
+  --cfb-max: 44rem;
+  --cfb-gutter: 1rem;
+
   display: block;
-  background: #f5f6f8;
   min-height: 100dvh;
+  background: var(--cfb-canvas);
+  color: var(--cfb-text);
 }
 
-.cfb-page {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 16px 16px 0;
-  box-sizing: border-box;
+h1,
+h2 {
+  text-wrap: balance;
 }
 
-.cfb-header {
-  padding: 8px 0 16px;
+p {
+  text-wrap: pretty;
 }
 
-.cfb-eyebrow {
-  margin: 0;
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #667085;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.cfb-title {
-  margin: 4px 0;
-  font-size: 1.4rem;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
+// --- Brand bar ---------------------------------------------------------------
+
+.cfb-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: max(0.6rem, env(safe-area-inset-top)) max(var(--cfb-gutter), env(safe-area-inset-right)) 0.6rem
+    max(var(--cfb-gutter), env(safe-area-inset-left));
+  background: var(--primary-default, #9d0000);
+  color: #fff;
 }
 
-.cfb-expiry,
-.cfb-muted,
-.cfb-help {
-  color: #667085;
-  font-size: 0.9rem;
-  margin: 4px 0;
-}
+.cfb-brand-logo {
+  display: inline-flex;
+  line-height: 0;
 
-.cfb-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px 16px;
-  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.06);
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 1.15rem;
+  app-icon {
+    --icon-size: 2.25rem;
+    inline-size: auto;
   }
 }
 
-.cfb-locked {
-  border-left: 4px solid #b42318;
+.cfb-brand-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 
-.cfb-success {
-  border-left: 4px solid #12b76a;
+// --- Page --------------------------------------------------------------------
+
+.cfb-page {
+  max-width: var(--cfb-max);
+  margin: 0 auto;
+  padding: 1.25rem var(--cfb-gutter) 0;
+  padding-inline: max(var(--cfb-gutter), env(safe-area-inset-left)) max(var(--cfb-gutter), env(safe-area-inset-right));
 }
+
+.cfb-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.cfb-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.9rem);
+  line-height: 1.2;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.cfb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cfb-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--cfb-border);
+  border-radius: 999px;
+  background: var(--cfb-surface);
+  color: var(--cfb-muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+
+  app-icon {
+    --icon-size: var(--icon-size-sm);
+  }
+
+  strong {
+    color: var(--cfb-text);
+    font-weight: 600;
+  }
+}
+
+.cfb-link-button {
+  min-block-size: 2rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--primary-default, #9d0000);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-hover, #b30000);
+  }
+}
+
+// --- Cards & messages --------------------------------------------------------
+
+.cfb-card {
+  padding: 1.5rem 1.25rem;
+  border: 1px solid var(--cfb-border);
+  border-radius: var(--cfb-radius);
+  background: var(--cfb-surface);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+  h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.cfb-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--cfb-muted);
+}
+
+.cfb-spin {
+  animation: cfb-spin 1s linear infinite;
+}
+
+@keyframes cfb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cfb-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  color: var(--cfb-muted);
+
+  h2 {
+    color: var(--cfb-text);
+  }
+}
+
+.cfb-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.cfb-message-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: 50%;
+  background: #f2f4f7;
+  color: var(--cfb-muted);
+
+  app-icon {
+    --icon-size: var(--icon-size-lg);
+  }
+
+  &--brand {
+    background: rgba(157, 0, 0, 0.08);
+    color: var(--primary-default, #9d0000);
+  }
+}
+
+.cfb-message--error .cfb-message-icon {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.cfb-message--success .cfb-message-icon {
+  background: var(--cfb-ok-bg);
+  color: var(--cfb-ok);
+}
+
+// --- Identify ----------------------------------------------------------------
 
 .cfb-identify {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.75rem;
+}
+
+.cfb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .cfb-label {
   font-weight: 600;
-  margin-top: 8px;
 }
 
 .cfb-input {
   width: 100%;
-  box-sizing: border-box;
   min-height: 48px;
-  padding: 10px 12px;
-  font: inherit;
-  font-size: 16px; // avoids iOS zoom-on-focus
-  border: 1px solid #d0d5dd;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #98a2b3;
   border-radius: var(--input-border-radius, 8px);
   background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: max(1rem, 1em); // ≥16px avoids iOS zoom-on-focus
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus-visible {
-    outline: 2px solid var(--primary-focus, #2e90fa);
-    outline-offset: 1px;
+    outline: none;
+    border-color: var(--primary-default, #9d0000);
+    box-shadow: 0 0 0 3px rgba(157, 0, 0, 0.15);
   }
 
   &[aria-invalid='true'] {
@@ -91,196 +274,538 @@
 }
 
 .cfb-textarea {
-  min-height: 64px;
+  min-height: 4.5rem;
   resize: vertical;
 }
 
-.cfb-error {
-  color: #b42318;
+.cfb-muted,
+.cfb-help {
+  margin: 0;
+  color: var(--cfb-muted);
   font-size: 0.9rem;
-  margin: 4px 0;
 }
 
-// Full-width page CTAs (same .button variants as the rest of the app).
-.cfb-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.cfb-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.9rem;
+}
+
+// Full-width CTA; `.button` adds a side margin that would misalign it with inputs.
+.cfb-cta {
   gap: 0.5rem;
   width: 100%;
   min-height: 48px;
-  margin: 8px 0 0; // .button adds a side margin; CTAs align with the inputs
+  margin: 0.25rem 0 0;
 
   app-icon {
     --icon-size: var(--icon-size-compact);
   }
 }
 
-// Compact secondary actions (change email, undo row).
-.cfb-small {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: var(--touch-target-min, 44px);
-  padding: 0.35rem 0.75rem;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-  margin: 0;
-}
+// --- Editor ------------------------------------------------------------------
 
-.cfb-identity {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-  overflow-wrap: anywhere;
-}
-
-.cfb-checklist {
-  margin-bottom: 20px;
-}
-
-.cfb-checklist-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.1rem;
-  margin: 0 0 4px;
-  overflow-wrap: anywhere;
-}
-
-.cfb-count {
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: #eaecf0;
-  border-radius: 999px;
-  padding: 2px 8px;
-}
-
-.cfb-checklist-note {
-  margin: 0 0 8px;
-  color: #475467;
-  font-size: 0.9rem;
-}
-
-.cfb-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.cfb-editor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
+}
+
+.cfb-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #475467;
+
+  p {
+    margin: 0;
+  }
+}
+
+.cfb-summary {
+  color: var(--cfb-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+// Checklist section (native <details> keeps find-in-page and keyboard support).
+.cfb-section {
+  border: 1px solid var(--cfb-border);
+  border-radius: var(--cfb-radius);
+  background: var(--cfb-surface);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.cfb-section > summary.cfb-section-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  justify-content: stretch;
+  gap: 0.35rem 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--cfb-radius);
+  text-align: start;
+
+  &::after {
+    grid-column: 2;
+    grid-row: 1;
+    color: var(--cfb-muted);
+  }
+
+  &:hover {
+    background: #fafafa;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-focus, #c41e3a);
+    outline-offset: -2px;
+  }
+}
+
+.cfb-section[open] > summary.cfb-section-summary {
+  border-bottom: 1px solid var(--cfb-border);
+  border-radius: var(--cfb-radius) var(--cfb-radius) 0 0;
+}
+
+.cfb-section-title {
+  grid-column: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.cfb-section-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cfb-pill {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #475467;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--changed {
+    background: var(--cfb-changed-bg);
+    color: var(--cfb-progress);
+  }
+}
+
+.cfb-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem;
+}
+
+.cfb-description {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #475467;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.cfb-description-text {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+
+  &--clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// --- Object rows -------------------------------------------------------------
+
+.cfb-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .cfb-row {
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #eaecf0;
   display: flex;
   flex-direction: column;
-  align-items: stretch; // global list styles center items
+  align-items: stretch; // global `li` styles center items
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--cfb-border);
+  border-radius: 12px;
+  background: var(--cfb-surface);
   text-align: start;
-  gap: 8px;
+  white-space: normal;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &--dirty {
-    border-color: #f79009;
-    box-shadow: inset 4px 0 0 #f79009;
+    border-color: #fec84b;
+    box-shadow: inset 4px 0 0 var(--cfb-changed);
+    background: linear-gradient(90deg, var(--cfb-changed-bg), #fff 40%);
   }
 }
 
 .cfb-row-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 0.5rem;
+  min-height: 2rem;
 }
 
 .cfb-object {
-  font-weight: 600;
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-weight: 650;
   overflow-wrap: anywhere;
-}
 
-.cfb-field {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  app-todo-item-value-control {
-    display: block;
-    width: 100%;
-  }
-
-  ::ng-deep select.status-select {
-    width: 100%;
-    max-width: none;
-    min-height: 44px;
-    font-size: 16px;
-  }
-
-  &--dirty ::ng-deep select,
-  &--dirty .cfb-input {
-    outline: 2px solid #f79009;
-    outline-offset: 1px;
+  app-icon {
+    --icon-size: var(--icon-size-sm);
+    color: var(--cfb-muted);
   }
 }
 
 .cfb-flag {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #93370d;
-  background: #fef0c7;
+  padding: 0.1rem 0.55rem;
   border-radius: 999px;
-  padding: 2px 8px;
+  background: var(--cfb-changed-bg);
+  color: var(--cfb-progress);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cfb-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--touch-target-min, 2.75rem);
+  block-size: var(--touch-target-min, 2.75rem);
+  margin: -0.4rem -0.4rem -0.4rem 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cfb-muted);
+  cursor: pointer;
+
+  app-icon {
+    --icon-size: var(--icon-size-md);
+  }
+
+  &:hover {
+    background: #f2f4f7;
+    color: var(--cfb-text);
+  }
+}
+
+// Status choices: visible radios styled as a segmented control (2–5 options).
+.cfb-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cfb-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: 0.5rem 0.8rem;
+  border: 1.5px solid var(--cfb-border);
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  &:hover {
+    border-color: #98a2b3;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--primary-focus, #c41e3a);
+    outline-offset: 2px;
+  }
+
+  &:has(input:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.cfb-choice-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+// Radio indicator: empty ring, filled with a check when selected.
+.cfb-choice-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  border: 2px solid #98a2b3;
+  border-radius: 50%;
+  color: transparent;
+
+  app-icon {
+    --icon-size: 0.8rem;
+  }
+}
+
+.cfb-choice[data-tone='under_process']:has(input:checked) {
+  border-color: #f79009;
+  background: var(--cfb-progress-bg);
+  color: var(--cfb-progress);
+
+  .cfb-choice-mark {
+    border-color: #f79009;
+    background: #f79009;
+    color: #fff;
+  }
+}
+
+.cfb-choice[data-tone='finished']:has(input:checked) {
+  border-color: var(--cfb-ok);
+  background: var(--cfb-ok-bg);
+  color: #05603a;
+
+  .cfb-choice-mark {
+    border-color: var(--cfb-ok);
+    background: var(--cfb-ok);
+    color: #fff;
+  }
+}
+
+.cfb-choice[data-tone='sub']:has(input:checked) {
+  border-color: var(--primary-default, #9d0000);
+  background: rgba(157, 0, 0, 0.05);
+  font-weight: 650;
+
+  .cfb-dot {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 5px currentColor;
+  }
+}
+
+.cfb-dot {
+  flex: none;
+  inline-size: 0.85rem;
+  block-size: 0.85rem;
+  border-radius: 50%;
+  background: currentColor;
+
+  &--red {
+    color: #d92d20;
+  }
+
+  &--blue {
+    color: #1570ef;
+  }
+
+  &--green {
+    color: #079455;
+  }
+
+  &--orange {
+    color: #ef6820;
+  }
+}
+
+.cfb-add-note {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  margin: -0.35rem 0;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--secondary-default, #5c6b73);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  app-icon {
+    --icon-size: var(--icon-size-sm);
+  }
+
+  &:hover:not(:disabled) {
+    background: #f2f4f7;
+    color: var(--cfb-text);
+  }
 }
 
 .cfb-my-notes {
-  list-style: none;
-  margin: 0;
-  padding: 8px 10px;
-  background: #f9fafb;
-  border-radius: 8px;
-  font-size: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   li {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #d0d5dd;
+    border-radius: 0 8px 8px 0;
+    background: #f9fafb;
+    font-size: 0.9rem;
     overflow-wrap: anywhere;
   }
 }
 
 .cfb-note-date {
+  color: var(--cfb-muted);
   font-size: 0.75rem;
-  color: #667085;
 }
+
+// --- Sticky submit bar ---------------------------------------------------------
 
 .cfb-submit-bar {
   position: sticky;
   bottom: 0;
-  margin: 0 -16px;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.97);
-  border-top: 1px solid #eaecf0;
-  box-shadow: 0 -4px 12px rgba(16, 24, 40, 0.06);
+  z-index: 2;
+  margin: 0.5rem calc(var(--cfb-gutter) * -1) 0;
+  padding: 0.75rem var(--cfb-gutter) max(0.75rem, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--cfb-border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -6px 16px rgba(16, 24, 40, 0.06);
+}
 
-  .cfb-primary {
-    margin-top: 0;
+.cfb-submit-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cfb-submit-text {
+  flex: 1;
+  min-width: 0;
+
+  p {
+    margin: 0;
   }
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+.cfb-submit-status {
+  font-size: 0.95rem;
+  color: var(--cfb-muted);
+
+  strong {
+    color: var(--cfb-text);
+  }
+}
+
+.cfb-submit-hint {
+  display: none;
+  color: var(--cfb-muted);
+  font-size: 0.8rem;
+}
+
+.cfb-send {
+  flex: none;
+  gap: 0.45rem;
+  min-height: 48px;
+  margin: 0;
+  padding-inline: 1.25rem;
+
+  app-icon {
+    --icon-size: var(--icon-size-compact);
+  }
+}
+
+@media (min-width: 640px) {
+  :host {
+    --cfb-gutter: 1.5rem;
+  }
+
+  .cfb-page {
+    padding-top: 2rem;
+  }
+
+  .cfb-section > summary.cfb-section-summary {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .cfb-section > summary.cfb-section-summary::after {
+    grid-column: 3;
+  }
+
+  .cfb-section-meta {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .cfb-section-body {
+    padding: 1rem 1.1rem 1.1rem;
+  }
+
+  .cfb-submit-bar {
+    margin-inline: 0;
+    border: 1px solid var(--cfb-border);
+    border-bottom: 0;
+    border-radius: var(--cfb-radius) var(--cfb-radius) 0 0;
+  }
+
+  .cfb-submit-hint {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfb-spin {
+    animation: none;
+  }
+
+  .cfb-row,
+  .cfb-choice,
+  .cfb-input {
+    transition: none;
+  }
 }
