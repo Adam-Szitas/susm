@@ -14,6 +14,8 @@ import {
   ObjectTodoEntry,
   TodoItem,
   assignmentNoteFor,
+  ExternalTodoNote,
+  todoEntryItemId,
   entriesForAssignedParent,
   entriesForUnassignedParent,
   isHiddenFromProtocol,
@@ -91,6 +93,14 @@ export class ObjectTodosSectionComponent {
 
   isHiddenInProtocol(item: TodoItem): boolean {
     return isHiddenFromProtocol(this.#activeEntries(), todoItemId(item));
+  }
+
+  /** Accepted visitor feedback notes (claimed email, unverified). Never used in protocols. */
+  externalNotes(item: TodoItem): ExternalTodoNote[] {
+    const id = todoItemId(item);
+    return this.activeEntries()
+      .filter((entry) => todoEntryItemId(entry) === id)
+      .flatMap((entry) => entry.external_notes ?? []);
   }
 
   assignmentNote(item: TodoItem): string {

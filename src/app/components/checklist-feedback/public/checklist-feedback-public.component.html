@@ -1,0 +1,191 @@
+<main class="cfb-page">
+  <header class="cfb-header">
+    <p class="cfb-eyebrow">{{ 'checklistFeedback.public.eyebrow' | translate }}</p>
+    @if (projectName()) {
+      <h1 class="cfb-title">{{ projectName() }}</h1>
+    } @else {
+      <h1 class="cfb-title">{{ 'checklistFeedback.public.title' | translate }}</h1>
+    }
+    @if (expiresAt() && state() !== 'gone' && state() !== 'invalid') {
+      <p class="cfb-expiry">
+        {{ 'checklistFeedback.public.expiresAt' | translate: { date: (expiresAt() | localeDate: 'datetime') } }}
+      </p>
+    }
+  </header>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="cfb-muted" role="status">{{ 'common.loading' | translate }}</p>
+    }
+
+    @case ('invalid') {
+      <section class="cfb-card cfb-locked" role="alert">
+        <h2>{{ 'checklistFeedback.public.invalidTitle' | translate }}</h2>
+        <p>{{ (errorKey() ?? 'checklistFeedback.public.invalidLink') | translate }}</p>
+      </section>
+    }
+
+    @case ('gone') {
+      <section class="cfb-card cfb-locked" role="alert">
+        <h2>
+          {{
+            (goneStatus() === 'revoked'
+              ? 'checklistFeedback.public.revokedTitle'
+              : 'checklistFeedback.public.expiredTitle'
+            ) | translate
+          }}
+        </h2>
+        <p>{{ 'checklistFeedback.public.lockedBody' | translate }}</p>
+      </section>
+    }
+
+    @case ('identify') {
+      <form class="cfb-card cfb-identify" (ngSubmit)="identify()" novalidate>
+        <h2>{{ 'checklistFeedback.public.identifyTitle' | translate }}</h2>
+        <p class="cfb-muted">{{ 'checklistFeedback.public.identifyHint' | translate }}</p>
+        <label class="cfb-label" for="cfbEmail">{{ 'checklistFeedback.public.emailLabel' | translate }}</label>
+        <input
+          id="cfbEmail"
+          name="email"
+          class="cfb-input"
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+          (blur)="emailTouched.set(true)"
+          [attr.aria-invalid]="emailTouched() && !emailValid()"
+          aria-describedby="cfbEmailHelp"
+        />
+        <p id="cfbEmailHelp" class="cfb-help">
+          @if (emailTouched() && !emailValid()) {
+            <span class="cfb-error">{{ 'checklistFeedback.public.emailInvalid' | translate }}</span>
+          } @else {
+            {{ 'checklistFeedback.public.emailNotVerified' | translate }}
+          }
+        </p>
+        @if (errorKey()) {
+          <p class="cfb-error" role="alert">{{ errorKey()! | translate }}</p>
+        }
+        <button type="submit" class="button button-primary cfb-primary" [disabled]="busy()">
+          <span>{{ 'checklistFeedback.public.continue' | translate }}</span>
+          <app-icon [icon]="busy() ? icons.loader : icons.chevronRight" [strokeWidth]="2.5" />
+        </button>
+      </form>
+    }
+
+    @case ('submitted') {
+      <section class="cfb-card cfb-success" role="status">
+        <h2>{{ 'checklistFeedback.public.submittedTitle' | translate }}</h2>
+        <p>{{ 'checklistFeedback.public.submittedBody' | translate: { count: lastSubmittedCount() } }}</p>
+        <button type="button" class="button button-secondary cfb-primary" (click)="continueEditing()">
+          <app-icon [icon]="icons.edit" [size]="20" />
+          <span>{{ 'checklistFeedback.public.moreChanges' | translate }}</span>
+        </button>
+      </section>
+    }
+
+    @case ('editing') {
+      <div class="cfb-identity">
+        <span>
+          {{ 'checklistFeedback.public.respondingAs' | translate }}
+          <strong>{{ email() }}</strong>
+        </span>
+        <button type="button" class="button button-secondary cfb-small" (click)="changeEmail()">
+          <app-icon [icon]="icons.edit" [size]="18" />
+          <span>{{ 'checklistFeedback.public.changeEmail' | translate }}</span>
+        </button>
+      </div>
+
+      @if (!checklists().length) {
+        <p class="cfb-muted">{{ 'checklistFeedback.public.noChecklists' | translate }}</p>
+      }
+
+      @for (checklist of checklists(); track checklist.id) {
+        <section class="cfb-checklist" [attr.aria-labelledby]="'cfb-cl-' + checklist.id">
+          <h2 class="cfb-checklist-title" [id]="'cfb-cl-' + checklist.id">
+            {{ checklist.title }}
+            <span class="cfb-count">{{ checklist.objects.length }}</span>
+          </h2>
+          @if (checklist.note) {
+            <p class="cfb-checklist-note">{{ checklist.note }}</p>
+          }
+          @if (!checklist.objects.length) {
+            <p class="cfb-muted">{{ 'checklistFeedback.public.noObjects' | translate }}</p>
+          }
+          <ul class="cfb-rows">
+            @for (row of checklist.objects; track row.object_id) {
+              @let flags = dirty(checklist, row);
+              <li class="cfb-row" [class.cfb-row--dirty]="flags.status || flags.note">
+                <div class="cfb-row-head">
+                  <span class="cfb-object">{{ objectLabel(row) }}</span>
+                  @if (flags.status || flags.note) {
+                    <button type="button" class="button button-secondary cfb-small" (click)="resetRow(checklist, row)">
+                      <app-icon [icon]="icons.refresh" [size]="18" />
+                      <span>{{ 'checklistFeedback.public.undo' | translate }}</span>
+                    </button>
+                  }
+                </div>
+                <div class="cfb-field" [class.cfb-field--dirty]="flags.status">
+                  <app-todo-item-value-control
+                    [item]="todoItem(checklist)"
+                    [entries]="entries(checklist, row)"
+                    [disabled]="busy()"
+                    (entriesChange)="onEntriesChange(checklist, row, $event)"
+                  />
+                  @if (flags.status) {
+                    <span class="cfb-flag">{{ 'checklistFeedback.public.changed' | translate }}</span>
+                  }
+                </div>
+                @if (row.my_notes.length) {
+                  <ul class="cfb-my-notes" [attr.aria-label]="'checklistFeedback.public.yourNotes' | translate">
+                    @for (note of row.my_notes; track note.id) {
+                      <li>
+                        <span class="cfb-note-date">{{ note.created_at | localeDate: 'datetime' }}</span>
+                        <span>{{ note.body }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+                <label class="cfb-field cfb-note" [class.cfb-field--dirty]="flags.note">
+                  <span class="visually-hidden">{{ 'checklistFeedback.public.addNote' | translate }}</span>
+                  <textarea
+                    class="cfb-input cfb-textarea"
+                    rows="2"
+                    maxlength="1000"
+                    [placeholder]="'checklistFeedback.public.addNote' | translate"
+                    [value]="draft(checklist, row).note"
+                    [disabled]="busy()"
+                    (input)="onNoteInput(checklist, row, $any($event.target).value)"
+                  ></textarea>
+                  @if (flags.note) {
+                    <span class="cfb-flag">{{ 'checklistFeedback.public.changed' | translate }}</span>
+                  }
+                </label>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <div class="cfb-submit-bar">
+        @if (errorKey()) {
+          <p class="cfb-error" role="alert">{{ errorKey()! | translate }}</p>
+        }
+        <button
+          type="button"
+          class="button button-primary cfb-primary"
+          [disabled]="!changeCount() || busy()"
+          (click)="submit()"
+        >
+          <app-icon [icon]="busy() ? icons.loader : icons.check" [strokeWidth]="2.5" />
+          <span>{{ 'checklistFeedback.public.submit' | translate: { count: changeCount() } }}</span>
+        </button>
+        <p class="cfb-help">{{ 'checklistFeedback.public.submitHint' | translate }}</p>
+      </div>
+    }
+  }
+</main>

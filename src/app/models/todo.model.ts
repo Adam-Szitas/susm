@@ -35,6 +35,15 @@ export interface ObjectTodoEntry {
   hidden_from_protocol?: boolean;
   /** UI-only note for this object assignment. Never included in protocol output. */
   assignment_note?: string;
+  /** Visitor notes from accepted checklist feedback (claimed, unverified email). Read-only. */
+  external_notes?: ExternalTodoNote[];
+}
+
+export interface ExternalTodoNote {
+  id: { $oid: string } | string;
+  author_email: string;
+  body: string;
+  created_at: { $date: unknown } | string;
 }
 
 export function safeTodoItemId(item: Pick<TodoItem, '_id'> | null | undefined): string {

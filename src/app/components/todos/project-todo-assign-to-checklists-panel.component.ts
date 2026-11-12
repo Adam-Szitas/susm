@@ -45,6 +45,8 @@ import { ProjectTodoItemEditorModalComponent } from './project-todo-item-editor-
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TodoItemValueControlComponent } from './todo-item-value-control.component';
+import { ChecklistFeedbackShareModalComponent } from '../checklist-feedback/checklist-feedback-share-modal.component';
+import { UserStore } from '@store/user.store';
 
 export type ChecklistFirstMobileStep = 'checklists' | 'objects';
 
@@ -68,6 +70,7 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
   #translationService = inject(TranslationService);
   #projectStore = inject(ProjectStore);
   #modalService = inject(ModalService);
+  #userStore = inject(UserStore);
   #cdr = inject(ChangeDetectorRef);
   #closeGuard = (): boolean | Promise<boolean> => this.#confirmDiscardOnClose();
 
@@ -120,6 +123,8 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
   });
 
   readonly hasChecklistSelection = computed(() => this.selectedChecklistIds().length > 0);
+  /** Public feedback links reuse the company's `externalSharing` entitlement. */
+  readonly feedbackSharingEnabled = this.#userStore.externalSharingEnabled;
 
   readonly filteredChecklists = computed(() => {
     const query = this.checklistSearchQuery().trim().toLowerCase();
@@ -234,6 +239,23 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
         projectId: this.projectId,
         todoItem: item,
         existingItems: this.sortedTodoItems(),
+      },
+    });
+  }
+
+  /** Opens the feedback-link composer for the selected checklists (copyable URLs, no email). */
+  shareForFeedback(): void {
+    const items = this.selectedTodoItems();
+    if (!items.length) return;
+    this.#modalService.open({
+      title: 'checklistFeedback.share.title',
+      stack: true,
+      wide: true,
+      component: ChecklistFeedbackShareModalComponent,
+      componentInputs: {
+        projectId: this.projectId,
+        todoItems: items,
+        allTodoItems: this.sortedTodoItems(),
       },
     });
   }

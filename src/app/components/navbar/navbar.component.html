@@ -54,6 +54,22 @@
       </ul>
     </div>
     <ul class="logout-menu">
+      @if (feedbackEnabled()) {
+        <li>
+          <button
+            type="button"
+            class="nav-link nav-link--button nav-feedback"
+            (click)="openFeedbackInbox()"
+            [attr.aria-label]="'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }"
+            [title]="'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }"
+          >
+            <app-icon [icon]="icons.bell" />
+            @if (feedbackPendingCount() > 0) {
+              <span class="nav-feedback-badge">{{ feedbackPendingCount() }}</span>
+            }
+          </button>
+        </li>
+      }
       <li>
         <button type="button" class="nav-link nav-link--button" (click)="logout()">
           {{ 'navbar.logout' | translate }}
@@ -120,6 +136,16 @@
           <a class="nav-link" routerLink="/admin" (click)="hideMobileMenu()">
             {{ 'admin.title' | translate }}
           </a>
+        </li>
+      }
+      @if (feedbackEnabled()) {
+        <li>
+          <button type="button" class="nav-link nav-link--button" (click)="openFeedbackInbox()">
+            {{ 'checklistFeedback.inbox.title' | translate }}
+            @if (feedbackPendingCount() > 0) {
+              <span class="nav-feedback-badge">{{ feedbackPendingCount() }}</span>
+            }
+          </button>
         </li>
       }
       <li class="logout-item">

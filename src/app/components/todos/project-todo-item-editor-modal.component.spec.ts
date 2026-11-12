@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { of, Subject, throwError } from 'rxjs';
 import { Project, TodoItem } from '@models';
 import { ProjectStore } from '@store/project.store';
+import { UserStore } from '@store/user.store';
 import { ModalService } from '@services/modal.service';
 import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
@@ -50,6 +51,7 @@ describe('checklist editing and deletion', () => {
         { provide: ModalService, useValue: modal },
         { provide: NotificationService, useValue: notifications },
         { provide: TranslationService, useValue: { instant: (key: string) => key } },
+        { provide: UserStore, useValue: { externalSharingEnabled: () => false } },
       ],
     });
   });

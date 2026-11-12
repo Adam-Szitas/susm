@@ -1,0 +1,161 @@
+<div class="cfs">
+  <section class="cfs-section">
+    <h3 class="cfs-heading">{{ 'checklistFeedback.share.selected' | translate: { count: todoItems().length } }}</h3>
+    <ul class="cfs-chips">
+      @for (item of todoItems(); track item._id.$oid) {
+        <li class="cfs-chip">{{ item.title }}</li>
+      }
+    </ul>
+    <p class="cfs-hint">{{ 'checklistFeedback.share.explainer' | translate }}</p>
+  </section>
+
+  <section class="cfs-section cfs-create">
+    <div class="cfs-fields">
+      <label class="cfs-field cfs-field--grow">
+        <span>{{ 'checklistFeedback.share.labelField' | translate }}</span>
+        <input
+          type="text"
+          maxlength="120"
+          [placeholder]="'checklistFeedback.share.labelPlaceholder' | translate"
+          [ngModel]="label()"
+          (ngModelChange)="label.set($event)"
+        />
+      </label>
+      <label class="cfs-field cfs-field--count">
+        <span>{{ 'checklistFeedback.share.countField' | translate }}</span>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          inputmode="numeric"
+          [ngModel]="count()"
+          (ngModelChange)="setCount($event)"
+        />
+      </label>
+      <button
+        type="button"
+        class="button button-primary action-button submit-action cfs-create-btn"
+        [disabled]="!canCreate()"
+        (click)="create()"
+        [attr.aria-label]="'checklistFeedback.share.create' | translate: { count: count() }"
+        [title]="'checklistFeedback.share.create' | translate: { count: count() }"
+      >
+        <app-icon [icon]="creating() ? icons.loader : icons.share" [strokeWidth]="2.5" />
+        <span class="action-label">{{
+          (creating() ? 'checklistFeedback.share.creating' : 'checklistFeedback.share.create')
+            | translate: { count: count() }
+        }}</span>
+      </button>
+    </div>
+  </section>
+
+  @if (justCreated().length) {
+    <section class="cfs-section cfs-created" aria-live="polite">
+      <h3 class="cfs-heading">{{ 'checklistFeedback.share.createdHeading' | translate }}</h3>
+      <ul class="cfs-links">
+        @for (share of justCreated(); track share.id) {
+          <li class="cfs-link-row">
+            <input class="cfs-url" type="text" readonly [value]="share.url" (focus)="$any($event.target).select()" />
+            <ng-container [ngTemplateOutlet]="copyButton" [ngTemplateOutletContext]="{ $implicit: share }" />
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="cfs-section">
+    <div class="cfs-row-between">
+      <h3 class="cfs-heading">{{ 'checklistFeedback.share.yourLinks' | translate }}</h3>
+      <button
+        type="button"
+        class="button button-secondary action-button"
+        (click)="openInbox()"
+        [attr.aria-label]="'checklistFeedback.inbox.open' | translate"
+        [title]="'checklistFeedback.inbox.open' | translate"
+      >
+        <app-icon [icon]="icons.bell" />
+        <span class="action-label">{{ 'checklistFeedback.inbox.open' | translate }}</span>
+      </button>
+    </div>
+    @if (loadingShares() && !shares().length) {
+      <p class="cfs-hint">{{ 'common.loading' | translate }}</p>
+    } @else if (!shares().length) {
+      <p class="cfs-hint">{{ 'checklistFeedback.share.noLinks' | translate }}</p>
+    }
+    <ul class="cfs-share-list">
+      @for (share of shares(); track share.id) {
+        @let status = effectiveStatus(share);
+        @let left = remaining(share);
+        <li class="cfs-share" [class.cfs-share--inactive]="status !== 'open'">
+          <div class="cfs-share-main">
+            <div class="cfs-share-title">
+              <span class="cfs-status cfs-status--{{ status }}">
+                {{ 'checklistFeedback.share.status.' + status | translate }}
+              </span>
+              <strong>{{ share.label || ('checklistFeedback.share.unlabeled' | translate) }}</strong>
+              @if (share.pending_count > 0) {
+                <span class="cfs-pending">
+                  {{ 'checklistFeedback.share.pendingCount' | translate: { count: share.pending_count } }}
+                </span>
+              }
+            </div>
+            <div class="cfs-share-meta">
+              <span>{{ checklistTitles(share) }}</span>
+              <span>
+                @if (left) {
+                  {{ 'checklistFeedback.share.expiresIn' | translate: { h: left.h, m: left.m } }}
+                } @else if (status === 'expired') {
+                  {{ 'checklistFeedback.share.expiredAt' | translate: { date: (share.expires_at | localeDate: 'datetime') } }}
+                }
+              </span>
+            </div>
+          </div>
+          @if (status === 'open') {
+            <div class="cfs-share-actions">
+              <ng-container [ngTemplateOutlet]="copyButton" [ngTemplateOutletContext]="{ $implicit: share }" />
+              <button
+                type="button"
+                class="button button-error action-button delete-action"
+                (click)="revoke(share)"
+                [attr.aria-label]="'checklistFeedback.share.revoke' | translate"
+                [title]="'checklistFeedback.share.revoke' | translate"
+              >
+                <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+                <span class="action-label">{{ 'checklistFeedback.share.revoke' | translate }}</span>
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  </section>
+
+  <footer class="actions">
+    <button
+      type="button"
+      class="button button-secondary action-button cancel-action"
+      (click)="close()"
+      [attr.aria-label]="'common.close' | translate"
+      [title]="'common.close' | translate"
+    >
+      <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+      <span class="action-label">{{ 'common.close' | translate }}</span>
+    </button>
+  </footer>
+</div>
+
+<ng-template #copyButton let-share>
+  @let copied = copiedId() === share.id;
+  <button
+    type="button"
+    class="button button-secondary action-button"
+    (click)="copy(share)"
+    [attr.aria-label]="(copied ? 'checklistFeedback.share.copied' : 'checklistFeedback.share.copy') | translate"
+    [title]="(copied ? 'checklistFeedback.share.copied' : 'checklistFeedback.share.copy') | translate"
+  >
+    <app-icon [icon]="copied ? icons.check : icons.copy" />
+    <span class="action-label">{{
+      (copied ? 'checklistFeedback.share.copied' : 'checklistFeedback.share.copy') | translate
+    }}</span>
+  </button>
+</ng-template>

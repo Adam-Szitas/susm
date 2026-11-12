@@ -37,6 +37,7 @@ export class SeoService {
       dashboard: 'Dashboard',
       admin: 'Administration',
       share: 'Shared object',
+      'checklist-feedback': 'Checklist feedback',
     };
     const title = home
       ? siteConfig.title

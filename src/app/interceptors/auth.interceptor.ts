@@ -20,7 +20,8 @@ export class AuthInterceptor implements HttpInterceptor {
     const isAuthFree =
       req.url.includes('/login') ||
       req.url.includes('/register') ||
-      req.url.includes('/public/registration-invite');
+      req.url.includes('/public/registration-invite') ||
+      req.url.includes('/public/checklist-feedback/');
 
     const outgoing: HttpRequest<unknown> =
       token && !isAuthFree

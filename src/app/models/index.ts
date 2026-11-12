@@ -11,3 +11,4 @@ export * from './dashboard.model';
 export * from './protocol.model';
 export * from './todo.model';
 
+export * from './checklist-feedback.model';

@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { effect, inject, Injectable } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { UserStore } from '../store/user.store';
@@ -15,6 +15,8 @@ type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export class TranslationService {
   #translateService = inject(TranslateService);
   #userStore = inject(UserStore);
+  /** Forces a language regardless of the signed-in user (public share pages). */
+  readonly #override = signal<SupportedLanguage | null>(null);
 
   constructor() {
     const document = inject(DOCUMENT);
@@ -23,7 +25,7 @@ export class TranslationService {
       .subscribe((event) => (document.documentElement.lang = this.normalizeLanguage(event.lang)));
     this.#translateService.setDefaultLang('en');
     effect(() => {
-      const language = this.resolveLanguage(this.#userStore.user());
+      const language = this.#override() ?? this.resolveLanguage(this.#userStore.user());
       if (this.#translateService.currentLang !== language) {
         this.#translateService.use(language);
       }
@@ -36,6 +38,16 @@ export class TranslationService {
   initialize(): void {
     const language = this.resolveLanguage(this.#userStore.user());
     this.#translateService.use(language);
+  }
+
+  /**
+   * Pin the UI language (e.g. a public checklist-feedback page uses the share creator's
+   * locale, never the visitor's browser). Pass `null` to return to the user's language.
+   */
+  setLanguageOverride(language: string | null): void {
+    const next = language ? this.normalizeLanguage(language) : null;
+    this.#override.set(next);
+    this.#translateService.use(next ?? this.resolveLanguage(this.#userStore.user()));
   }
 
   /**

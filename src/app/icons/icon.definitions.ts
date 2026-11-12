@@ -333,6 +333,23 @@ export const folderTreeIcon = stroke24([
   { tag: 'path', d: 'M8 17h4l1 1h6a2 2 0 0 1 2 2v1H8z' },
 ]);
 
+export const shareIcon = stroke24([
+  { tag: 'circle', cx: 18, cy: 5, r: 3 },
+  { tag: 'circle', cx: 6, cy: 12, r: 3 },
+  { tag: 'circle', cx: 18, cy: 19, r: 3 },
+  { tag: 'path', d: 'M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98' },
+]);
+
+export const copyIcon = stroke24([
+  { tag: 'rect', x: 9, y: 9, width: 13, height: 13, rx: 2 },
+  { tag: 'path', d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' },
+]);
+
+export const bellIcon = stroke24([
+  { tag: 'path', d: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9' },
+  { tag: 'path', d: 'M10.3 21a1.94 1.94 0 0 0 3.4 0' },
+]);
+
 export const icons = {
   qrCode: qrCodeIcon,
   folderPlus: folderPlusIcon,
@@ -378,5 +395,8 @@ export const icons = {
   clipboard: clipboardIcon,
   flag: flagIcon,
   clipboardWithCheck: clipboardWithCheckIcon,
+  share: shareIcon,
+  copy: copyIcon,
+  bell: bellIcon,
   susmLogo: susmLogoIcon,
 } as const;

@@ -5,7 +5,8 @@ export function isAuthFreeRequestUrl(url: string): boolean {
   return (
     url.includes('/login') ||
     url.includes('/register') ||
-    url.includes('/public/registration-invite')
+    url.includes('/public/registration-invite') ||
+    url.includes('/public/checklist-feedback/')
   );
 }
 

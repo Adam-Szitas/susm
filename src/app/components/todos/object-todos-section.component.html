@@ -126,6 +126,15 @@
                       @if (assignmentNote(item)) {
                         <span class="todo-label-assignment-note">{{ assignmentNote(item) }}</span>
                       }
+                      @for (note of externalNotes(item); track $index) {
+                        <span
+                          class="todo-label-external-note"
+                          [title]="('checklistFeedback.externalNoteBy' | translate: { email: note.author_email }) + ': ' + note.body"
+                        >
+                          <span class="todo-label-external-author">{{ note.author_email }}:</span>
+                          {{ note.body }}
+                        </span>
+                      }
                     </span>
 
                     <div class="todo-item-controls">

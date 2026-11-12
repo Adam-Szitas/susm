@@ -78,6 +78,21 @@
             </span>
             <span class="todo-action-label">{{ 'todos.clearChecklistSelection' | translate }}</span>
           </button>
+          @if (feedbackSharingEnabled()) {
+            <button
+              type="button"
+              class="btn btn-secondary btn-small todo-action-btn checklist-feedback-share-btn"
+              (click)="shareForFeedback()"
+              [disabled]="!hasChecklistSelection()"
+              [attr.aria-label]="'checklistFeedback.share.cta' | translate"
+              [title]="'checklistFeedback.share.cta' | translate"
+            >
+              <span class="todo-action-icon" aria-hidden="true">
+                <app-icon [icon]="icons.share" />
+              </span>
+              <span class="todo-action-label">{{ 'checklistFeedback.share.cta' | translate }}</span>
+            </button>
+          }
         </div>
       </div>
 

@@ -1,0 +1,159 @@
+<div class="cfi">
+  <div class="cfi-toolbar">
+    <div class="cfi-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="cfi-tab"
+        [class.cfi-tab--active]="filter() === 'pending'"
+        [attr.aria-selected]="filter() === 'pending'"
+        (click)="setFilter('pending')"
+      >
+        {{ 'checklistFeedback.inbox.pending' | translate }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="cfi-tab"
+        [class.cfi-tab--active]="filter() === 'all'"
+        [attr.aria-selected]="filter() === 'all'"
+        (click)="setFilter('all')"
+      >
+        {{ 'checklistFeedback.inbox.history' | translate }}
+      </button>
+    </div>
+    <button
+      type="button"
+      class="button button-secondary action-button"
+      (click)="load()"
+      [disabled]="loading()"
+      [attr.aria-label]="'checklistFeedback.inbox.refresh' | translate"
+      [title]="'checklistFeedback.inbox.refresh' | translate"
+    >
+      <app-icon [icon]="loading() ? icons.loader : icons.refresh" />
+      <span class="action-label">{{ 'checklistFeedback.inbox.refresh' | translate }}</span>
+    </button>
+  </div>
+
+  <p class="cfi-hint">{{ 'checklistFeedback.inbox.unverifiedHint' | translate }}</p>
+
+  @if (loading() && !submissions().length) {
+    <p class="cfi-hint">{{ 'common.loading' | translate }}</p>
+  } @else if (!submissions().length) {
+    <p class="cfi-empty">{{ 'checklistFeedback.inbox.empty' | translate }}</p>
+  }
+
+  @for (submission of submissions(); track submission.id) {
+    <article class="cfi-card cfi-card--{{ submission.status }}">
+      <header class="cfi-card-head">
+        <div class="cfi-who">
+          <span class="cfi-email">{{ submission.submitter_email }}</span>
+          <span class="cfi-badge">{{ 'checklistFeedback.inbox.claimed' | translate }}</span>
+        </div>
+        <div class="cfi-meta">
+          <span>{{ submission.project_name }}</span>
+          @if (submission.share_label) {
+            <span>· {{ submission.share_label }}</span>
+          }
+          <span>· {{ submission.submitted_at | localeDate: 'datetime' }}</span>
+          @if (submission.status !== 'pending') {
+            <span class="cfi-state cfi-state--{{ submission.status }}">
+              {{ 'checklistFeedback.inbox.status.' + submission.status | translate }}
+            </span>
+          }
+        </div>
+      </header>
+
+      <div class="cfi-table-wrap">
+        <table class="cfi-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'checklistFeedback.inbox.object' | translate }}</th>
+              <th scope="col">{{ 'checklistFeedback.inbox.checklist' | translate }}</th>
+              <th scope="col">{{ 'checklistFeedback.inbox.current' | translate }}</th>
+              <th scope="col">{{ 'checklistFeedback.inbox.proposed' | translate }}</th>
+              <th scope="col">{{ 'checklistFeedback.inbox.note' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of submission.rows; track row.object_id + row.todo_item_id) {
+              <tr [class.cfi-row--skipped]="!row.still_assigned">
+                <td [attr.data-label]="'checklistFeedback.inbox.object' | translate">{{ objectLabel(row) }}</td>
+                <td [attr.data-label]="'checklistFeedback.inbox.checklist' | translate">{{ row.checklist_title }}</td>
+                <td [attr.data-label]="'checklistFeedback.inbox.current' | translate">
+                  @if (row.still_assigned) {
+                    {{ valueLabel(row.current_sub_item_title, row.current_status) }}
+                    @if (submission.status === 'pending' && changedSinceSubmit(row)) {
+                      <span class="cfi-warn">{{ 'checklistFeedback.inbox.changedSince' | translate }}</span>
+                    }
+                  } @else {
+                    <span class="cfi-warn">{{ 'checklistFeedback.inbox.notAssigned' | translate }}</span>
+                  }
+                </td>
+                <td [attr.data-label]="'checklistFeedback.inbox.proposed' | translate">
+                  @if (proposedLabel(row); as proposed) {
+                    <span [class.cfi-overwrite]="overwrites(row)">{{ proposed }}</span>
+                  } @else {
+                    <span class="cfi-muted">—</span>
+                  }
+                </td>
+                <td [attr.data-label]="'checklistFeedback.inbox.note' | translate" class="cfi-note">
+                  {{ row.note_text || '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (submission.status === 'pending') {
+        <div class="cfi-actions">
+          <button
+            type="button"
+            class="button button-error action-button delete-action"
+            [disabled]="busyId() !== null"
+            (click)="reject(submission)"
+            [attr.aria-label]="'checklistFeedback.inbox.reject' | translate"
+            [title]="'checklistFeedback.inbox.reject' | translate"
+          >
+            <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+            <span class="action-label">{{ 'checklistFeedback.inbox.reject' | translate }}</span>
+          </button>
+          <button
+            type="button"
+            class="button button-primary action-button submit-action"
+            [disabled]="busyId() !== null"
+            (click)="accept(submission)"
+            [attr.aria-label]="'checklistFeedback.inbox.accept' | translate"
+            [title]="'checklistFeedback.inbox.accept' | translate"
+          >
+            <app-icon [icon]="busyId() === submission.id ? icons.loader : icons.check" [strokeWidth]="2.5" />
+            <span class="action-label">{{
+              (busyId() === submission.id ? 'common.saving' : 'checklistFeedback.inbox.accept') | translate
+            }}</span>
+          </button>
+        </div>
+      } @else if (submission.reviewed_by_email) {
+        <p class="cfi-hint">
+          {{
+            'checklistFeedback.inbox.reviewedBy'
+              | translate: { email: submission.reviewed_by_email, date: (submission.reviewed_at | localeDate: 'datetime') }
+          }}
+        </p>
+      }
+    </article>
+  }
+
+  <footer class="actions">
+    <button
+      type="button"
+      class="button button-secondary action-button cancel-action"
+      (click)="close()"
+      [attr.aria-label]="'common.close' | translate"
+      [title]="'common.close' | translate"
+    >
+      <app-icon [icon]="icons.close" [strokeWidth]="2.5" />
+      <span class="action-label">{{ 'common.close' | translate }}</span>
+    </button>
+  </footer>
+</div>

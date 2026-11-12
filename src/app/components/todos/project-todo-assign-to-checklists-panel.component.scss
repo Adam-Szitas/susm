@@ -176,6 +176,20 @@
   max-width: 100%;
 }
 
+// The checklist toolbar has four actions; wrap them under the heading instead of
+// squeezing (and clipping) the heading on narrow panels.
+.checklist-select-panel .panel-toolbar {
+  flex-wrap: wrap;
+
+  .panel-heading {
+    flex: 1 0 auto;
+  }
+
+  .panel-toolbar-actions {
+    margin-inline-start: auto;
+  }
+}
+
 .search-label {
   font-size: 0.78rem;
   font-weight: 600;

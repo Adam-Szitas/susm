@@ -46,7 +46,10 @@ describe('shared project checklist note flow', () => {
         { provide: ProjectStore, useValue: store },
         { provide: NotificationService, useValue: notification },
         { provide: TranslationService, useValue: { instant: (key: string) => key } },
-        { provide: UserStore, useValue: { isAdmin: () => true, isSuperuser: () => false } },
+        {
+          provide: UserStore,
+          useValue: { isAdmin: () => true, isSuperuser: () => false, externalSharingEnabled: () => false },
+        },
       ],
     });
     modal = TestBed.inject(ModalService);

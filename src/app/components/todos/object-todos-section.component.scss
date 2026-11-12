@@ -444,3 +444,16 @@
     transition: none;
   }
 }
+
+.todo-label-external-note {
+  font-size: 0.78rem;
+  color: #475467;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-label-external-author {
+  font-weight: 600;
+}

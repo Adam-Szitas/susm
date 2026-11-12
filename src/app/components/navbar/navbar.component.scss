@@ -288,3 +288,26 @@ li {
 }
 
 button.mobile-menu-backdrop { border: 0; padding: 0; }
+
+.nav-feedback {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border-radius: 999px;
+  background: #fff;
+  color: #b42318;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
