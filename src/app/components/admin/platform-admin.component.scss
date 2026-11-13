@@ -955,3 +955,10 @@
   line-height: 1.5;
   white-space: normal;
 }
+
+.feature-setting__copy .feature-example-copy {
+  margin-top: 0.4rem;
+  padding-inline-start: 0.6rem;
+  border-inline-start: 2px solid rgba(157, 0, 0, 0.18);
+  font-size: 0.8rem;
+}

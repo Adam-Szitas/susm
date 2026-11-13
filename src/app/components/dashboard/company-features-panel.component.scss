@@ -1,0 +1,245 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.company-features {
+  padding: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+}
+.features-heading h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  color: #333;
+}
+.features-heading p {
+  margin: 0;
+  color: #667085;
+  font-size: 0.95rem;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.1rem;
+  border: 1px solid #e7e4e4;
+  border-radius: 12px;
+}
+.feature-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.feature-icon {
+  display: inline-flex;
+  color: var(--primary-default, #9d0000);
+}
+h3 {
+  flex: 1 1 10rem;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.feature-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #606875;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.feature-status app-icon {
+  --icon-size: 14px;
+}
+.feature-status--enabled {
+  background: #edf5ef;
+  color: #27603d;
+  border-color: #cee3d3;
+}
+.feature-description {
+  margin: 0.8rem 0;
+  color: #667085;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.feature-example {
+  flex: 1;
+  margin: 0;
+  padding: 0.85rem;
+  border-radius: 8px;
+  background: #faf8f7;
+}
+figcaption {
+  margin-bottom: 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #7b6d6d;
+}
+.feature-example p {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: #565c65;
+  line-height: 1.5;
+}
+.preview-paper {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e6e0dc;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px #00000005;
+}
+.preview-paper-title,
+.preview-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+.preview-paper-title {
+  font-weight: 600;
+}
+.preview-check app-icon {
+  color: #27603d;
+  --icon-size: 16px;
+}
+.preview-lines {
+  display: grid;
+  gap: 0.35rem;
+}
+.preview-lines span {
+  display: block;
+  height: 4px;
+  width: 80%;
+  background: #ede9e7;
+  border-radius: 2px;
+}
+.preview-lines span:last-child {
+  width: 55%;
+}
+.preview-share {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 86px;
+  padding: 0.6rem;
+  border: 1px solid #e6e0dc;
+  border-radius: 7px;
+  background: white;
+}
+.preview-share > app-icon {
+  color: var(--primary-default, #9d0000);
+}
+.preview-share strong,
+.preview-share span {
+  display: block;
+  font-size: 0.8rem;
+}
+.preview-share span {
+  margin-top: 0.3rem;
+  color: #667085;
+}
+.preview-recovery {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 86px;
+  font-size: 0.78rem;
+}
+.preview-recovery > app-icon {
+  color: #8a7b7b;
+}
+.preview-restored {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #27603d;
+}
+.preview-restored app-icon {
+  --icon-size: 16px;
+}
+.preview-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  height: 86px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f0eee8;
+  padding: 12px;
+}
+.map-block {
+  background: #e0e5d8;
+  border: 1px solid #d0d8c9;
+  border-radius: 4px;
+}
+.map-road {
+  position: absolute;
+  inset: 0 45%;
+  background: white;
+}
+.map-pin {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--primary-default, #9d0000);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.map-pin--first {
+  left: 20%;
+}
+.map-pin--second {
+  right: 20%;
+}
+.feature-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 44px;
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: #667085;
+}
+.feature-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.5rem;
+}
+.feature-open:focus-visible {
+  outline: 2px solid var(--primary-default, #9d0000);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .company-features {
+    padding: 1rem;
+  }
+}

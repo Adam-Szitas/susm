@@ -514,6 +514,10 @@
                             >{{ 'admin.features.protocols.name' | translate }}</span
                           >
                           <p>{{ 'admin.features.protocols.description' | translate }}</p>
+                          <p class="feature-example-copy">
+                            {{ 'featureOverview.example' | translate }}:
+                            {{ 'featureOverview.protocols.example' | translate }}
+                          </p>
                         </div>
                         <span
                           class="feature-setting__state"
@@ -544,6 +548,10 @@
                               >{{ feature.label | translate }}</span
                             >
                             <p>{{ feature.description | translate }}</p>
+                            <p class="feature-example-copy">
+                              {{ 'featureOverview.example' | translate }}:
+                              {{ 'featureOverview.' + feature.key + '.example' | translate }}
+                            </p>
                           </div>
                           <span
                             class="feature-setting__state"

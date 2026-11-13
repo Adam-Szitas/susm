@@ -26,7 +26,9 @@
     </div>
 
     <div class="language-selector">
-      <label class="visually-hidden" for="language-select">{{ 'dashboard.language' | translate }}</label>
+      <label class="visually-hidden" for="language-select">{{
+        'dashboard.language' | translate
+      }}</label>
       <select
         id="language-select"
         class="language-select"
@@ -99,7 +101,9 @@
       <section class="dashboard-projects">
         <div class="dashboard-projects-header">
           <h2>{{ 'dashboard.topProjects' | translate }}</h2>
-          <a class="dashboard-projects-link" routerLink="/projects">{{ 'navbar.projects' | translate }}</a>
+          <a class="dashboard-projects-link" routerLink="/projects">{{
+            'navbar.projects' | translate
+          }}</a>
         </div>
         <ol class="dashboard-projects-list">
           @for (project of topProjects(); track project.name; let i = $index) {
@@ -119,8 +123,11 @@
 
   @if (isAdmin() || isSuperuser()) {
     <div class="dashboard-admin">
+      <app-company-features-panel />
       @if (isSuperuser()) {
-        <a class="dashboard-admin-link" routerLink="/admin">{{ 'admin.openConsole' | translate }}</a>
+        <a class="dashboard-admin-link" routerLink="/admin">{{
+          'admin.openConsole' | translate
+        }}</a>
         <app-superuser-operations-panel />
       }
       @if (isAdmin()) {

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpService } from '../../services/http.service';
 import { DashboardStats, ProjectStats } from '../../models';
@@ -12,6 +20,7 @@ import { icons } from '@icons/icon.definitions';
 import { TeamUsersPanelComponent } from './team-users-panel.component';
 import { RegistrationInvitePanelComponent } from './registration-invite-panel.component';
 import { SuperuserOperationsPanelComponent } from './superuser-operations-panel.component';
+import { CompanyFeaturesPanelComponent } from './company-features-panel.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +36,7 @@ import { SuperuserOperationsPanelComponent } from './superuser-operations-panel.
     TeamUsersPanelComponent,
     RegistrationInvitePanelComponent,
     SuperuserOperationsPanelComponent,
+    CompanyFeaturesPanelComponent,
     IconComponent,
   ],
 })

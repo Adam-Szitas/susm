@@ -1,0 +1,113 @@
+@if (canView()) {
+  <section class="company-features" aria-labelledby="company-features-title">
+    <header class="features-heading">
+      <h2 id="company-features-title">{{ 'featureOverview.title' | translate }}</h2>
+      <p>{{ 'featureOverview.intro' | translate }}</p>
+    </header>
+    <div class="features-grid">
+      @for (feature of features(); track feature.key) {
+        <article
+          class="feature-card"
+          [attr.data-feature]="feature.key"
+          [attr.data-state]="feature.status"
+        >
+          <header class="feature-card-heading">
+            <span class="feature-icon" aria-hidden="true"><app-icon [icon]="feature.icon" /></span>
+            <h3>{{ 'admin.features.' + feature.key + '.name' | translate }}</h3>
+            <span
+              class="feature-status"
+              [class.feature-status--enabled]="feature.status === 'enabled'"
+            >
+              <app-icon
+                [icon]="
+                  feature.status === 'enabled'
+                    ? icons.check
+                    : feature.status === 'disabled'
+                      ? icons.close
+                      : icons.clock
+                "
+              />
+              {{ 'featureOverview.' + feature.status | translate }}
+            </span>
+          </header>
+          <p class="feature-description">
+            {{ 'admin.features.' + feature.key + '.description' | translate }}
+          </p>
+          <figure class="feature-example">
+            <figcaption>{{ 'featureOverview.example' | translate }}</figcaption>
+            @switch (feature.key) {
+              @case ('protocols') {
+                <div class="preview-paper">
+                  <span class="preview-paper-title"
+                    ><app-icon [icon]="icons.fileTextDetailed" />
+                    {{ 'featureOverview.sampleProtocol' | translate }}</span
+                  >
+                  <span class="preview-check"
+                    ><app-icon [icon]="icons.check" />
+                    {{ 'featureOverview.sampleCheck' | translate }}</span
+                  >
+                  <div class="preview-lines" aria-hidden="true"><span></span><span></span></div>
+                </div>
+              }
+              @case ('externalSharing') {
+                <div class="preview-share">
+                  <app-icon [icon]="icons.qrCode" [size]="44" />
+                  <div>
+                    <strong>{{ 'featureOverview.sampleObject' | translate }}</strong
+                    ><span>{{ 'featureOverview.sampleLink' | translate }}</span>
+                  </div>
+                </div>
+              }
+              @case ('trash') {
+                <div class="preview-recovery">
+                  <app-icon [icon]="icons.fileSimple" />
+                  <span>Facade.jpg</span>
+                  <app-icon [icon]="icons.chevronRight" />
+                  <span class="preview-restored"
+                    ><app-icon [icon]="icons.check" />
+                    {{ 'featureOverview.sampleRestored' | translate }}</span
+                  >
+                </div>
+              }
+              @case ('streetPlan') {
+                <div class="preview-map" aria-hidden="true">
+                  <span class="map-block"></span><span class="map-block"></span>
+                  <span class="map-road"></span>
+                  <span class="map-pin map-pin--first"><app-icon [icon]="icons.mapPin" />12</span>
+                  <span class="map-pin map-pin--second"><app-icon [icon]="icons.mapPin" />14</span>
+                </div>
+              }
+            }
+            <p>{{ 'featureOverview.' + feature.key + '.example' | translate }}</p>
+          </figure>
+          <footer class="feature-card-footer">
+            @if (feature.status === 'enabled') {
+              <span>{{ 'featureOverview.ready' | translate }}</span>
+              <a
+                class="button button-outline feature-open"
+                [routerLink]="feature.route"
+                [attr.aria-label]="
+                  'featureOverview.open'
+                    | translate: { name: ('admin.features.' + feature.key + '.name' | translate) }
+                "
+                [title]="
+                  'featureOverview.open'
+                    | translate: { name: ('admin.features.' + feature.key + '.name' | translate) }
+                "
+              >
+                <app-icon [icon]="icons.chevronRight" />
+              </a>
+            } @else {
+              <span>{{
+                (feature.status === 'disabled'
+                  ? 'featureOverview.notEnabled'
+                  : 'featureOverview.unverified'
+                ) | translate
+              }}</span>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  </section>
+}
