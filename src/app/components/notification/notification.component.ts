@@ -2,6 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  afterNextRender,
+  DestroyRef,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '@icons/icon.component';
@@ -20,8 +23,17 @@ export class NotificationComponent {
   protected readonly icons = icons;
 
   #notificationService = inject(NotificationService);
-  
+
   readonly notifications = this.#notificationService.notifications;
+
+  constructor() {
+    const host = inject(ElementRef<HTMLElement>).nativeElement;
+    const destroyRef = inject(DestroyRef);
+    // Browser-only: native popovers and DOM relocation are skipped during SSR.
+    afterNextRender(() => {
+      destroyRef.onDestroy(this.#notificationService.registerHost(host));
+    });
+  }
 
   removeNotification(id: string): void {
     this.#notificationService.removeNotification(id);
@@ -42,4 +54,3 @@ export class NotificationComponent {
     }
   }
 }
-

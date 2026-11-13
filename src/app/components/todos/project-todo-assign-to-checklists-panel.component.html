@@ -53,31 +53,6 @@
             </span>
             <span class="checklist-add-label">{{ 'todos.addChecklist' | translate }}</span>
           </button>
-          <button
-            type="button"
-            class="btn btn-secondary btn-small todo-action-btn"
-            (click)="selectAllChecklists()"
-            [attr.aria-label]="'todos.selectAllChecklists' | translate"
-            [title]="'todos.selectAllChecklists' | translate"
-          >
-            <span class="todo-action-icon" aria-hidden="true">
-              <app-icon [icon]="icons.clipboardCheck" />
-            </span>
-            <span class="todo-action-label">{{ 'todos.selectAllChecklists' | translate }}</span>
-          </button>
-          <button
-            type="button"
-            class="btn btn-secondary btn-small todo-action-btn"
-            (click)="clearChecklistSelection()"
-            [disabled]="!hasChecklistSelection()"
-            [attr.aria-label]="'todos.clearChecklistSelection' | translate"
-            [title]="'todos.clearChecklistSelection' | translate"
-          >
-            <span class="todo-action-icon" aria-hidden="true">
-              <app-icon [icon]="icons.clipboard" />
-            </span>
-            <span class="todo-action-label">{{ 'todos.clearChecklistSelection' | translate }}</span>
-          </button>
           @if (feedbackSharingEnabled()) {
             <button
               type="button"
@@ -93,6 +68,37 @@
               <span class="todo-action-label">{{ 'checklistFeedback.share.cta' | translate }}</span>
             </button>
           }
+          <button
+            type="button"
+            class="btn btn-secondary btn-small todo-action-btn checklist-selection-toggle"
+            (click)="toggleAllChecklists()"
+            [class.checklist-selection-toggle--active]="hasChecklistSelection()"
+            [attr.aria-pressed]="hasChecklistSelection()"
+            [disabled]="sortedTodoItems().length === 0"
+            [attr.aria-label]="
+              (hasChecklistSelection()
+                ? 'todos.clearChecklistSelection'
+                : 'todos.selectAllChecklists'
+              ) | translate
+            "
+            [title]="
+              (hasChecklistSelection()
+                ? 'todos.clearChecklistSelection'
+                : 'todos.selectAllChecklists'
+              ) | translate
+            "
+          >
+            <span class="todo-action-icon" aria-hidden="true">
+              <app-icon [icon]="icons.clipboardCheck" />
+            </span>
+            <span class="todo-action-label">{{
+              (hasChecklistSelection()
+                ? 'todos.clearChecklistSelection'
+                : 'todos.selectAllChecklists'
+              ) | translate
+            }}</span>
+          </button>
+          <ng-content select="[checklistToolbarAction]" />
         </div>
       </div>
 
@@ -143,7 +149,6 @@
               <app-icon [icon]="icons.edit" />
               <span class="checklist-edit-label">{{ 'common.edit' | translate }}</span>
             </button>
-
           </li>
         }
         @if (filteredChecklists().length === 0) {
@@ -265,7 +270,6 @@
     [class.form-actions--mobile-objects]="mobileStep() === 'objects'"
   >
     <div class="form-actions-start">
-      <ng-content select="[checklistFooterStart]" />
       @if (mobileStep() === 'objects') {
         <button
           type="button"

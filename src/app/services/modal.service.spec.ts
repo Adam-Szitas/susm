@@ -5,6 +5,8 @@ import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectTodoModalComponent } from '../components/todos/project-todo-modal.component';
 import { ModalService } from './modal.service';
+import { NotificationService } from './notification.service';
+import { NotificationComponent } from '../components/notification/notification.component';
 
 @Component({
   selector: 'app-modal-body-probe',
@@ -98,6 +100,12 @@ describe('ModalService', () => {
     };
 
     expect(form).withContext(JSON.stringify(metrics)).not.toBeNull();
+    expect(
+      host.querySelector(
+        '.checklist-select-panel .panel-toolbar-actions app-checklist-note-button',
+      ),
+    ).not.toBeNull();
+    expect(host.querySelector('.form-actions app-checklist-note-button')).toBeNull();
     expect(metrics.formH).withContext(JSON.stringify(metrics)).toBeGreaterThan(80);
 
     TestBed.inject(ApplicationRef).tick();
@@ -106,7 +114,9 @@ describe('ModalService', () => {
     const formAfter = document.querySelector('.project-todo-form');
     const textAfter = (bodyAfter?.textContent ?? '').replace(/\s+/g, ' ').trim();
     expect(formAfter)
-      .withContext(`after tick: ${textAfter.slice(0, 180)} html=${bodyAfter?.innerHTML.slice(0, 200)}`)
+      .withContext(
+        `after tick: ${textAfter.slice(0, 180)} html=${bodyAfter?.innerHTML.slice(0, 200)}`,
+      )
       .not.toBeNull();
     expect(textAfter.length).withContext(textAfter).toBeGreaterThan(10);
   });
@@ -133,5 +143,54 @@ describe('ModalService', () => {
     const remaining = document.querySelectorAll('.modal-host');
     expect(remaining.length).toBe(1);
     expect(remaining[0].textContent).toContain('probe:base');
+  });
+
+  it('keeps one interactive notification view above stacked dialogs and restores it before a dialog is destroyed', async () => {
+    const notifications = TestBed.inject(NotificationService);
+    const fixture = TestBed.createComponent(NotificationComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement as HTMLElement;
+    const home = host.parentElement;
+    const surface = host.querySelector<HTMLElement>('[popover]')!;
+    try {
+      notifications.showSuccess('Still visible', 0);
+      fixture.detectChanges();
+      service.open({ title: 'Base', component: ModalBodyProbeComponent });
+      const base = document.querySelector<HTMLDialogElement>('dialog.modal-content')!;
+      expect(host.parentElement).toBe(base);
+      expect(surface.matches(':popover-open')).toBeTrue();
+      service.open({ title: 'Top', stack: true, component: ModalBodyProbeComponent });
+      const top = document.querySelectorAll<HTMLDialogElement>('dialog.modal-content')[1];
+      expect(host.parentElement).toBe(top);
+      expect(surface.matches(':popover-open')).toBeTrue();
+      expect(document.querySelectorAll('.notification-container').length).toBe(1);
+      const toast = host.querySelector<HTMLElement>('.notification')!;
+      toast.getAnimations().forEach((animation) => animation.finish());
+      const rect = toast.getBoundingClientRect();
+      // Check actual hit testing, including outside the dialog and above its backdrop.
+      expect(
+        document
+          .elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+          ?.closest('.notification'),
+      ).toBe(toast);
+      const dismiss = host.querySelector<HTMLButtonElement>('.notification__close')!;
+      dismiss.focus();
+      expect(document.activeElement).toBe(dismiss);
+      service.close();
+      expect(host.parentElement).toBe(base);
+      expect(surface.matches(':popover-open')).toBeTrue();
+      service.close();
+      expect(host.parentElement).toBe(home);
+      expect(surface.matches(':popover-open')).toBeTrue();
+      expect(notifications.notifications()[0].message).toBe('Still visible');
+      dismiss.click();
+      fixture.detectChanges();
+      expect(notifications.notifications().length).toBe(0);
+      expect(host.querySelector('.notification')).toBeNull();
+    } finally {
+      service.closeAll();
+      fixture.destroy();
+    }
   });
 });

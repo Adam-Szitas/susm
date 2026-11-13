@@ -104,7 +104,7 @@ export class ChecklistNoteModalComponent implements OnDestroy {
   }
 
   edit(): void {
-    if (!this.current()) return;
+    if (!this.current() || !this.canEdit()) return;
     this.note.set(this.current()?.checklist_note ?? '');
     this.formats.set((this.current()?.checklist_note_lines ?? []).map((format) => ({ ...format })));
     this.editing.set(true);
@@ -112,7 +112,7 @@ export class ChecklistNoteModalComponent implements OnDestroy {
 
   save(): void {
     const project = this.current();
-    if (this.saving() || !project) return;
+    if (this.saving() || !project || !this.canEdit() || !this.editing()) return;
     this.saving.set(true);
     this.#store
       .saveChecklistNote(this.projectId(), project, this.note(), this.formats())

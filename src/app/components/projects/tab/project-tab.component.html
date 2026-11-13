@@ -197,70 +197,121 @@
   >
     <app-tab-panel id="objects" class="project-tab-panel--internal-scroll">
       <section class="objects-section">
-        <header class="column-header">
-          <h3>{{ 'navbar.objects' | translate }}</h3>
-          <div class="column-header-actions">
-            @if (!project()?.archived_at) {
-              <button
-                type="button"
-                class="button button-primary object-header-action"
-                (click)="addObject()"
-                [attr.aria-label]="'objects.add' | translate"
-                [title]="'objects.add' | translate"
-              >
-                <app-icon [icon]="icons.plus" />
-              </button>
-              @if (objects().length > 0) {
-                <button
-                  type="button"
-                  class="button button-outline object-header-action"
-                  [class.active]="objectReorderMode()"
-                  [attr.aria-pressed]="objectReorderMode()"
-                  (click)="toggleObjectReorderMode()"
-                  [disabled]="objectReorderSaving()"
-                  [attr.aria-label]="
-                    (objectReorderMode()
-                      ? 'projects.doneReorderObjects'
-                      : 'projects.reorderObjects'
-                    ) | translate
-                  "
-                  [title]="
-                    (objectReorderMode()
-                      ? 'projects.doneReorderObjects'
-                      : 'projects.reorderObjects'
-                    ) | translate
-                  "
-                >
-                  <app-icon [icon]="objectReorderMode() ? icons.check : icons.gripHorizontal" />
-                </button>
-              }
-            }
+        <header class="column-header" [attr.aria-label]="'navbar.objects' | translate">
+          @if (objectSelection.active()) {
             <button
               type="button"
-              class="button button-outline object-header-action"
-              [class.active]="hasActiveFilter()"
-              (click)="objectFilterDialog.showModal()"
-              aria-haspopup="dialog"
-              aria-controls="objectFilterDialog"
-              [attr.aria-label]="'filter.show' | translate"
-              [title]="'filter.show' | translate"
+              class="button button-outline object-header-action object-selection-exit"
+              (click)="objectSelection.exit()"
+              [attr.aria-label]="'objects.stopSelection' | translate"
+              [title]="'objects.stopSelection' | translate"
             >
-              <app-icon [icon]="icons.filter" />
+              <app-icon [icon]="icons.close" />
             </button>
-            @if (hasActiveFilter()) {
+            <button
+              type="button"
+              class="button button-primary object-header-action object-bulk-prefix"
+              (click)="openBulkObjectPrefix()"
+              [disabled]="objectSelection.count() === 0"
+              [attr.aria-label]="'objects.bulkPrefixTitle' | translate"
+              [title]="'objects.bulkPrefixTitle' | translate"
+            >
+              <app-icon [icon]="icons.tag" />
+            </button>
+          } @else {
+            <h3>{{ 'navbar.objects' | translate }}</h3>
+            <div class="column-header-actions">
+              @if (!project()?.archived_at) {
+                <button
+                  type="button"
+                  class="button button-outline object-header-action object-select-toggle"
+                  (click)="enterObjectSelection()"
+                  [disabled]="objectReorderSaving() || filteredObjects().length === 0"
+                  [attr.aria-label]="'objects.startSelection' | translate"
+                  [title]="'objects.startSelection' | translate"
+                >
+                  <app-icon [icon]="icons.clipboardCheck" />
+                </button>
+
+                <button
+                  type="button"
+                  class="button button-primary object-header-action"
+                  (click)="addObject()"
+                  [attr.aria-label]="'objects.add' | translate"
+                  [title]="'objects.add' | translate"
+                >
+                  <app-icon [icon]="icons.plus" />
+                </button>
+                @if (objects().length > 0) {
+                  <button
+                    type="button"
+                    class="button button-outline object-header-action"
+                    [class.active]="objectReorderMode()"
+                    [attr.aria-pressed]="objectReorderMode()"
+                    (click)="toggleObjectReorderMode()"
+                    [disabled]="objectReorderSaving()"
+                    [attr.aria-label]="
+                      (objectReorderMode()
+                        ? 'projects.doneReorderObjects'
+                        : 'projects.reorderObjects'
+                      ) | translate
+                    "
+                    [title]="
+                      (objectReorderMode()
+                        ? 'projects.doneReorderObjects'
+                        : 'projects.reorderObjects'
+                      ) | translate
+                    "
+                  >
+                    <app-icon [icon]="objectReorderMode() ? icons.check : icons.gripHorizontal" />
+                  </button>
+                }
+              }
               <button
                 type="button"
                 class="button button-outline object-header-action"
-                (click)="projectFilter()?.clearFilters()"
-                [attr.aria-label]="'filter.clear' | translate"
-                [title]="'filter.clear' | translate"
+                [class.active]="hasActiveFilter()"
+                (click)="objectFilterDialog.showModal()"
+                aria-haspopup="dialog"
+                aria-controls="objectFilterDialog"
+                [attr.aria-label]="'filter.show' | translate"
+                [title]="'filter.show' | translate"
               >
-                <app-icon [icon]="icons.filterOff" />
+                <app-icon [icon]="icons.filter" />
               </button>
-            }
-          </div>
+              @if (hasActiveFilter()) {
+                <button
+                  type="button"
+                  class="button button-outline object-header-action"
+                  (click)="projectFilter()?.clearFilters()"
+                  [attr.aria-label]="'filter.clear' | translate"
+                  [title]="'filter.clear' | translate"
+                >
+                  <app-icon [icon]="icons.filterOff" />
+                </button>
+              }
+            </div>
+          }
         </header>
         <div class="column-content objects-section-content">
+          @if (objectSelection.active()) {
+            <div class="object-selection-summary">
+              <label class="object-select-all">
+                <input
+                  type="checkbox"
+                  [checked]="objectSelection.allSelected()"
+                  [indeterminate]="objectSelection.indeterminate()"
+                  [disabled]="objectSelection.availableIds().length === 0"
+                  (change)="objectSelection.toggleAll()"
+                />
+                <span>{{ 'objects.selectAllFiltered' | translate }}</span>
+              </label>
+              <span role="status">{{
+                'objects.selectionCount' | translate: { count: objectSelection.count() }
+              }}</span>
+            </div>
+          }
+
           @if (objectPrefixes().length) {
             <div
               class="prefix-filters"
@@ -283,7 +334,12 @@
               }
             </div>
           }
-          @if (hasSortDirection() && !objectReorderMode() && !project()?.archived_at) {
+          @if (
+            hasSortDirection() &&
+            !objectReorderMode() &&
+            !objectSelection.active() &&
+            !project()?.archived_at
+          ) {
             <button
               type="button"
               class="button button-primary apply-sort-order-btn"
@@ -372,15 +428,43 @@
               [maxHeight]="objectListMaxHeight()"
             >
               <ng-template let-object let-index="index">
-                <app-object-card
-                  layout="list"
-                  [object]="object"
-                  [compact]="toolbarIconOnly()"
-                  [routerLink]="['/objects/tab', object._id?.$oid]"
-                  [queryParams]="objectTabLinkQueryParams()"
-                  [cardClasses]="objectCardSurfaceClasses(object)"
-                  [fallbackLabel]="objectCardFallbackLabel"
-                />
+                @if (objectSelection.active()) {
+                  <label
+                    class="object-selection-row"
+                    [class.object-selection-row--selected]="
+                      objectSelection.has(object._id?.$oid ?? '')
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="objectSelection.has(object._id?.$oid ?? '')"
+                      (change)="objectSelection.toggle(object._id?.$oid ?? '')"
+                      [attr.aria-label]="
+                        'objects.selectObject' | translate: { name: objectCardDisplayLabel(object) }
+                      "
+                    />
+                    <app-object-card
+                      class="object-card-selection"
+                      layout="list"
+                      [object]="object"
+                      [compact]="toolbarIconOnly()"
+                      [routerLink]="null"
+                      [queryParams]="objectTabLinkQueryParams()"
+                      [cardClasses]="objectCardSurfaceClasses(object)"
+                      [fallbackLabel]="objectCardFallbackLabel"
+                    />
+                  </label>
+                } @else {
+                  <app-object-card
+                    layout="list"
+                    [object]="object"
+                    [compact]="toolbarIconOnly()"
+                    [routerLink]="['/objects/tab', object._id?.$oid]"
+                    [queryParams]="objectTabLinkQueryParams()"
+                    [cardClasses]="objectCardSurfaceClasses(object)"
+                    [fallbackLabel]="objectCardFallbackLabel"
+                  />
+                }
               </ng-template>
             </app-virtual-scroll-viewport>
           } @else {

@@ -129,7 +129,12 @@
                       @for (note of externalNotes(item); track $index) {
                         <span
                           class="todo-label-external-note"
-                          [title]="('checklistFeedback.externalNoteBy' | translate: { email: note.author_email }) + ': ' + note.body"
+                          [title]="
+                            ('checklistFeedback.externalNoteBy'
+                              | translate: { email: note.author_email }) +
+                            ': ' +
+                            note.body
+                          "
                         >
                           <span class="todo-label-external-author">{{ note.author_email }}:</span>
                           {{ note.body }}
@@ -139,6 +144,20 @@
 
                     <div class="todo-item-controls">
                       <div class="todo-item-actions">
+                        @if (canEditAssignmentNote()) {
+                          <button
+                            type="button"
+                            class="todo-icon-btn todo-assignment-note-edit"
+                            [disabled]="saving()"
+                            [attr.aria-label]="
+                              'todos.editAssignmentNoteFor' | translate: { title: item.title }
+                            "
+                            [title]="'todos.editAssignmentNote' | translate"
+                            (click)="editAssignmentNote(item)"
+                          >
+                            <app-icon [icon]="icons.edit" />
+                          </button>
+                        }
 
                         <button
                           type="button"

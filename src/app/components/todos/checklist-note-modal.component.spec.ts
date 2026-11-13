@@ -9,6 +9,7 @@ import { NotificationService } from '@services/notification.service';
 import { ProjectStore } from '@store/project.store';
 import { UserStore } from '@store/user.store';
 import { ChecklistNoteModalComponent } from './checklist-note-modal.component';
+import { editableText, restoreEditableSelection } from '../../utils/checklist-editable';
 import { ProjectTodoModalComponent } from './project-todo-modal.component';
 
 describe('shared project checklist note flow', () => {
@@ -20,7 +21,11 @@ describe('shared project checklist note flow', () => {
     saveChecklistNote: jasmine.Spy;
     updateProjectTodoItems: jasmine.Spy;
   };
-  let notification: { showError: jasmine.Spy; showSuccess: jasmine.Spy };
+  let notification: {
+    showError: jasmine.Spy;
+    showSuccess: jasmine.Spy;
+    setModalOutlet: jasmine.Spy;
+  };
 
   beforeEach(() => {
     source = {
@@ -37,7 +42,11 @@ describe('shared project checklist note flow', () => {
       saveChecklistNote: jasmine.createSpy(),
       updateProjectTodoItems: jasmine.createSpy(),
     };
-    notification = { showError: jasmine.createSpy(), showSuccess: jasmine.createSpy() };
+    notification = {
+      showError: jasmine.createSpy(),
+      showSuccess: jasmine.createSpy(),
+      setModalOutlet: jasmine.createSpy(),
+    };
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       providers: [
@@ -48,7 +57,11 @@ describe('shared project checklist note flow', () => {
         { provide: TranslationService, useValue: { instant: (key: string) => key } },
         {
           provide: UserStore,
-          useValue: { isAdmin: () => true, isSuperuser: () => false, externalSharingEnabled: () => false },
+          useValue: {
+            isAdmin: () => true,
+            isSuperuser: () => false,
+            externalSharingEnabled: () => false,
+          },
         },
       ],
     });
@@ -124,6 +137,60 @@ describe('shared project checklist note flow', () => {
     expect(notification.showError).toHaveBeenCalledWith('Note changed');
   });
 
+  it('submits a paired title and shared note and shows the saved checklist note in the parent list', async () => {
+    source.checklist_note = 'Door\nCheck the lock';
+    source.checklist_note_lines = [];
+    const child: TodoItem = {
+      _id: { $oid: 'pair' },
+      title: 'Door',
+      note: 'Check the lock',
+      sort_order: 0,
+    };
+    store.saveChecklistNote.and.callFake((_id, _previous, text, formats) =>
+      of({
+        ...source,
+        checklist_note: text,
+        checklist_note_lines: formats,
+        todo_items: [child],
+      }),
+    );
+    modal.open({
+      component: ProjectTodoModalComponent,
+      componentInputs: { projectId: 'project', todoItems: [], objects: [] },
+    });
+    const app = TestBed.inject(ApplicationRef);
+    app.tick();
+    (document.querySelector('app-checklist-note-button button') as HTMLButtonElement).click();
+    app.tick();
+    await app.whenStable();
+    const textarea = document.querySelector(
+      'app-checklist-note-editor [role=textbox]',
+    ) as HTMLDivElement;
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.format-buttons button');
+    textarea.focus();
+    restoreEditableSelection(textarea, { start: 0, end: 4 });
+    buttons[0].click();
+    app.tick();
+    restoreEditableSelection(textarea, { start: 5, end: editableText(textarea).length });
+    textarea.dispatchEvent(new Event('keyup'));
+    app.tick();
+    buttons[1].click();
+    app.tick();
+    (
+      document.querySelector('app-checklist-note-modal .submit-action') as HTMLButtonElement
+    ).click();
+    app.tick();
+    const sent = store.saveChecklistNote.calls.mostRecent().args;
+    expect(sent[1]).toBe(source);
+    expect(sent[3].length).toBe(2);
+    expect(sent[3][0].group_id).toBe(sent[3][1].group_id);
+    expect(sent[3][1].checklist_note).toBeTrue();
+    expect(document.querySelector('app-checklist-note-modal')).toBeNull();
+    expect(document.querySelector('.checklist-select-note')?.textContent).toContain(
+      'Check the lock',
+    );
+  });
+
   it('keeps long note paragraphs within a narrow panel and provides touch-sized actions', () => {
     source.checklist_note = 'Repair '.repeat(80);
     source.checklist_note_lines = [
@@ -165,6 +232,9 @@ describe('shared project checklist note flow', () => {
         .length,
     ).toBe(0);
     expect(document.querySelectorAll('.modal-host').length).toBe(1);
+    note.edit();
+    note.save();
+    expect(store.saveChecklistNote).not.toHaveBeenCalled();
   });
   it('has exactly one shared note button in the project modal regardless of the number of checklists', async () => {
     const checklists: TodoItem[] = [
@@ -188,7 +258,9 @@ describe('shared project checklist note flow', () => {
     await TestBed.inject(ApplicationRef).whenStable();
     expect(store.loadChecklistNote).toHaveBeenCalledOnceWith('project');
     expect(
-      (document.querySelector('app-checklist-note-editor textarea') as HTMLTextAreaElement)?.value,
+      editableText(
+        document.querySelector('app-checklist-note-editor [role=textbox]') as HTMLElement,
+      ),
     ).toContain('Repair door');
   });
 
@@ -233,14 +305,9 @@ describe('shared project checklist note flow', () => {
       dialog.style.width = '336px';
       const button = host.querySelector('app-checklist-note-button button') as HTMLButtonElement;
       expect(button.getAttribute('title')).toBe(label);
-      const footer = button.closest('footer.form-actions')!;
-      expect(footer).not.toBeNull();
-      expect(footer.querySelector('.form-actions-start')?.firstElementChild?.tagName).toBe(
-        'APP-CHECKLIST-NOTE-BUTTON',
-      );
-      expect(
-        Math.abs(button.getBoundingClientRect().left - footer.getBoundingClientRect().left),
-      ).toBeLessThanOrEqual(1);
+      const toolbar = button.closest('.panel-toolbar-actions');
+      expect(toolbar).not.toBeNull();
+      expect(button.closest('footer.form-actions')).toBeNull();
       expect(button.querySelector('app-icon svg')).not.toBeNull();
       expect(button.getAttribute('aria-label')).toBeTruthy();
       expect(button.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);

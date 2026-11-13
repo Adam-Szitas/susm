@@ -75,6 +75,8 @@ import { ObjectCardComponent } from '../../shared/object-card.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
 import { matchesPrefixFilter, objectBasePrefix } from '../../../utils/object-prefix';
+import { FilteredObjectSelection } from '../../../utils/filtered-object-selection';
+import { BulkObjectPrefixModalComponent } from './bulk-object-prefix-modal.component';
 
 @Component({
   selector: 'app-project-tab',
@@ -134,14 +136,20 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   loadingTemplates = signal(false);
   uploadingProtocolPdf = signal(false);
   filteredObjects = signal<Object[]>([]);
+  readonly objectSelection = new FilteredObjectSelection(() => this.filteredObjects());
+  #selectionProjectId: string | undefined;
   #currentFilter = signal<FilterResult>({});
   readonly selectedPrefix = computed(() => this.#currentFilter().prefix ?? '');
   readonly excludePrefix = computed(() => this.#currentFilter().excludePrefix === true);
   readonly objectPrefixes = computed(() => {
     const prefixes = new Set(
-      this.objects().map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number)).filter(Boolean),
+      this.objects()
+        .map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number))
+        .filter(Boolean),
     );
-    return [...prefixes].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+    return [...prefixes].sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }),
+    );
   });
   readonly hasActiveFilter = computed(() => {
     const filter = this.#currentFilter();
@@ -343,6 +351,20 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(() => {
+      const project = this.project();
+      const id = project?._id?.$oid;
+      if (
+        id !== this.#selectionProjectId ||
+        !project ||
+        project.archived_at ||
+        project.deleted_at
+      ) {
+        this.objectSelection.exit();
+      }
+      this.#selectionProjectId = id;
+      this.objectSelection.reconcile();
+    });
+    effect(() => {
       const objects = this.objects() || [];
       const appliedFilter = this.#currentFilter();
       this.filteredObjects.set(this.#applyFilters(objects, appliedFilter));
@@ -376,6 +398,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
         filter((id): id is string => id !== null),
         distinctUntilChanged(),
         switchMap((projectId) => {
+          this.objectSelection.exit();
           if (this.toolbarIconOnly()) {
             this.projectDataExpanded.set(false);
           }
@@ -463,6 +486,39 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
       component: ObjectModalComponent,
       wide: true,
     });
+  }
+
+  enterObjectSelection(): void {
+    const project = this.project();
+    if (
+      !project?._id?.$oid ||
+      project.archived_at ||
+      project.deleted_at ||
+      this.objectReorderSaving()
+    )
+      return;
+    if (this.objectReorderMode()) this.toggleObjectReorderMode();
+    this.objectSelection.enter();
+  }
+
+  openBulkObjectPrefix(): void {
+    const project = this.project();
+    const ids = this.objectSelection.ids();
+    if (
+      !this.objectSelection.active() ||
+      !project?._id?.$oid ||
+      project.archived_at ||
+      project.deleted_at ||
+      !ids.length
+    )
+      return;
+    const result = this.#modalService.open({
+      title: 'objects.bulkPrefixTitle',
+      stack: true,
+      component: BulkObjectPrefixModalComponent,
+      componentInputs: { projectId: project._id.$oid, objectIds: [...ids] },
+    });
+    result.childRef?.instance.saved.subscribe(() => this.objectSelection.exit());
   }
 
   openCategoryModal(): void {
@@ -722,6 +778,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   toggleObjectReorderMode(): void {
+    if (this.objectSelection.active()) return;
     const turningOn = !this.objectReorderMode();
     this.objectReorderMode.update((v) => !v);
     if (turningOn) {
@@ -746,7 +803,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   }
 
   applySortOrder(): void {
-    if (!this.hasSortDirection() || this.objectReorderMode() || this.objectReorderSaving()) {
+    if (
+      !this.hasSortDirection() ||
+      this.objectReorderMode() ||
+      this.objectReorderSaving() ||
+      this.objectSelection.active()
+    ) {
       return;
     }
 

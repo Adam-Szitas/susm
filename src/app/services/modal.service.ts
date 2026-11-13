@@ -10,6 +10,7 @@ import {
 import { ModalComponent } from '../components/modal/modal.component';
 import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
 import { TranslationService } from './translation.service';
+import { NotificationService } from './notification.service';
 import { lockDocumentScroll, unlockDocumentScroll } from './document-scroll-lock';
 
 export interface ModalConfig {
@@ -58,6 +59,7 @@ export class ModalService {
   #injector = inject(Injector);
   #appRef = inject(ApplicationRef);
   #translationService = inject(TranslationService);
+  #notifications = inject(NotificationService);
 
   private createContainer(): HTMLElement {
     const container = document.createElement('div');
@@ -119,7 +121,9 @@ export class ModalService {
       setTimeout(remountIfEmpty, 0);
     }
 
-    container.querySelector<HTMLDialogElement>('dialog.modal-content')?.showModal();
+    const dialog = container.querySelector<HTMLDialogElement>('dialog.modal-content');
+    dialog?.showModal();
+    this.#notifications.setModalOutlet(dialog);
     return { modalRef: componentRef, childRef: layer.childRef ?? undefined };
   }
 
@@ -244,8 +248,12 @@ export class ModalService {
       if (!result) return;
     }
 
-    layer.container.querySelector<HTMLDialogElement>('dialog.modal-content')?.close();
     this.#layers.pop();
+    this.#notifications.setModalOutlet(
+      this.#layers.at(-1)?.container.querySelector<HTMLDialogElement>('dialog.modal-content') ??
+        null,
+    );
+    layer.container.querySelector<HTMLDialogElement>('dialog.modal-content')?.close();
 
     if (this.pendingConfirmResolve) {
       this.pendingConfirmResolve(false);

@@ -31,16 +31,14 @@ import { TranslationService } from '@services/translation.service';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TodoItemValueControlComponent } from './todo-item-value-control.component';
+import { UserStore } from '@store/user.store';
+import { ModalService } from '@services/modal.service';
+import { AssignmentNoteEditorModalComponent } from './assignment-note-editor-modal.component';
 
 @Component({
   selector: 'app-object-todos-section',
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    IconComponent,
-    TodoItemValueControlComponent,
-  ],
+  imports: [CommonModule, TranslateModule, IconComponent, TodoItemValueControlComponent],
   templateUrl: './object-todos-section.component.html',
   styleUrl: './object-todos-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +48,11 @@ export class ObjectTodosSectionComponent {
   #projectStore = inject(ProjectStore);
   #notificationService = inject(NotificationService);
   #translationService = inject(TranslationService);
+  #userStore = inject(UserStore);
+  #modalService = inject(ModalService);
+  readonly canEditAssignmentNote = computed(
+    () => this.#userStore.isAdmin() || this.#userStore.isSuperuser(),
+  );
 
   objectId = input.required<string>();
   todoItems = input<TodoItem[]>([]);
@@ -105,6 +108,25 @@ export class ObjectTodosSectionComponent {
 
   assignmentNote(item: TodoItem): string {
     return assignmentNoteFor(this.activeEntries(), todoItemId(item)).trim();
+  }
+
+  editAssignmentNote(item: TodoItem): void {
+    if (!this.canEditAssignmentNote() || this.saving()) return;
+    const result = this.#modalService.open({
+      title: 'todos.editAssignmentNote',
+      stack: true,
+      component: AssignmentNoteEditorModalComponent,
+      componentInputs: {
+        objectId: this.objectId(),
+        todoItem: item,
+        initialNote: assignmentNoteFor(this.activeEntries(), todoItemId(item)),
+        getEntries: () => this.activeEntries(),
+      },
+    });
+    result.childRef?.instance.saved.subscribe((entries: ObjectTodoEntry[]) => {
+      this.#optimisticEntries.set(entries);
+      this.entriesChanged.emit(entries);
+    });
   }
 
   itemDisplayLabel(item: TodoItem): string {

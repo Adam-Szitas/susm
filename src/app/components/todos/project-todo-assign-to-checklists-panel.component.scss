@@ -176,6 +176,16 @@
   max-width: 100%;
 }
 
+.checklist-selection-toggle--active {
+  background: rgba(157, 0, 0, 0.1);
+  border-color: var(--primary-default, #9d0000);
+  color: var(--primary-default, #9d0000);
+
+  &:hover:not(:disabled) {
+    background: rgba(157, 0, 0, 0.16);
+  }
+}
+
 // The checklist toolbar has four actions; wrap them under the heading instead of
 // squeezing (and clipping) the heading on narrow panels.
 .checklist-select-panel .panel-toolbar {
@@ -258,7 +268,6 @@
   min-width: 0;
   white-space: normal;
 }
-
 
 .checklist-edit-btn {
   display: inline-flex;

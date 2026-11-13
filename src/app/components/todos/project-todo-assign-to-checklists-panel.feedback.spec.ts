@@ -46,7 +46,9 @@ describe('checklist panel feedback share entry point', () => {
     fixture.componentRef.setInput('objects', []);
     fixture.detectChanges();
     const button = () =>
-      (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.checklist-feedback-share-btn');
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        '.checklist-feedback-share-btn',
+      );
     return { fixture, button };
   }
 
@@ -56,6 +58,34 @@ describe('checklist panel feedback share entry point', () => {
     fixture.componentInstance.toggleChecklist(items[1]);
     fixture.detectChanges();
     expect(button()?.disabled).toBeFalse();
+  });
+
+  it('toggles all checklists and clears partial selections without changing object assignments', () => {
+    const { fixture } = render();
+    const panel = fixture.componentInstance;
+    const toggle = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.panel-toolbar-actions .checklist-selection-toggle',
+    )!;
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    toggle.click();
+    fixture.detectChanges();
+    expect(panel.selectedChecklistIds()).toEqual(['cl1', 'cl2']);
+    expect(toggle.classList.contains('checklist-selection-toggle--active')).toBeTrue();
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    toggle.click();
+    fixture.detectChanges();
+    expect(panel.selectedChecklistIds()).toEqual([]);
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    panel.toggleChecklist(items[0]);
+    panel.goToObjectsStep();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    toggle.click();
+    fixture.detectChanges();
+    expect(panel.selectedChecklistIds()).toEqual([]);
+    expect(panel.mobileStep()).toBe('checklists');
+    expect(panel.dirtyObjectCount()).toBe(0);
+    expect(toggle.classList.contains('checklist-selection-toggle--active')).toBeFalse();
   });
 
   it('opens the composer with only the selected checklists', () => {
@@ -108,7 +138,10 @@ describe('checklist panel share with unsaved assignment changes', () => {
       clearCloseGuard: jasmine.createSpy('clearCloseGuard'),
     };
     store = { updateObjectTodos: jasmine.createSpy('updateObjectTodos').and.returnValue(of({})) };
-    notifications = { showSuccess: jasmine.createSpy('showSuccess'), showError: jasmine.createSpy('showError') };
+    notifications = {
+      showSuccess: jasmine.createSpy('showSuccess'),
+      showError: jasmine.createSpy('showError'),
+    };
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       providers: [

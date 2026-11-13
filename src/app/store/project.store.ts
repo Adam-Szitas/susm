@@ -4,6 +4,11 @@ import { HttpHeaders } from '@angular/common/http';
 import { HttpService } from '../services/http.service';
 import { Observable, tap, throwError } from 'rxjs';
 import type { AppError } from '../services/error-handler.service';
+
+export interface BulkObjectPrefixResult {
+  object_ids: string[];
+  prefix: string;
+}
 import {
   Project,
   Object,
@@ -42,6 +47,38 @@ export class ProjectStore {
 
   public setProject(project: Project): void {
     this._project.set(project);
+  }
+
+  updateObjectPrefixes(
+    projectId: string,
+    objectIds: string[],
+    prefix: string,
+  ): Observable<BulkObjectPrefixResult> {
+    return this.#httpService
+      .put<BulkObjectPrefixResult>(`project/${projectId}/objects/prefix`, {
+        object_ids: objectIds,
+        prefix,
+      })
+      .pipe(
+        tap((result) => {
+          const ids = new Set(result.object_ids);
+          const patch = (object: Object) =>
+            object._id?.$oid && ids.has(object._id.$oid)
+              ? { ...object, prefix: result.prefix }
+              : object;
+          const patchProject = (project: Project) =>
+            project._id?.$oid === projectId
+              ? { ...project, objects: project.objects?.map(patch) }
+              : project;
+          this._project.update((project) => (project ? patchProject(project) : project));
+          this._projects.update((projects) => projects.map(patchProject));
+          // Object IDs are globally unique; patch the latest cache rather than a request-time snapshot.
+          this._objects.update((objects) => objects.map(patch));
+          this._objectsWithProjects.update((rows) =>
+            rows.map((row) => ({ ...row, object: patch(row.object) })),
+          );
+        }),
+      );
   }
 
   /** Remove a protocol from the in-memory project after a successful delete (list + reload stay in sync). */

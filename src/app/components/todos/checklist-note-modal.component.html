@@ -1,6 +1,5 @@
 <div class="checklist-note">
   <p class="checklist-title">{{ current()?.name }}</p>
-  <p class="hint">{{ 'noteChecklist.projectHint' | translate }}</p>
   @if (loading()) {
     <p role="status">{{ 'common.loading' | translate }}</p>
   } @else if (loadFailed()) {
@@ -29,8 +28,6 @@
         [note]="current()?.checklist_note ?? ''"
         [formats]="current()?.checklist_note_lines ?? []"
       />
-    } @else {
-      <p class="hint">{{ 'noteChecklist.empty' | translate }}</p>
     }
   }
   <footer class="actions">

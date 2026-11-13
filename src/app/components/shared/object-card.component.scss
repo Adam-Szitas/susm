@@ -160,3 +160,14 @@
     font-size: 1rem;
   }
 }
+
+// In selection mode the label supplies the card surface, border and focus ring.
+:host(.object-card-selection) .card,
+:host(.object-card-selection) .card:hover {
+  padding: 0.85rem 1rem 0.85rem 0.35rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}

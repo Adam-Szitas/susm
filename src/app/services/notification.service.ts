@@ -12,6 +12,35 @@ export interface Notification {
   providedIn: 'root',
 })
 export class NotificationService {
+  #host: HTMLElement | null = null;
+  #home: Node | null = null;
+  #modalOutlet: HTMLElement | null = null;
+
+  /** Keep one live notification view, inside the active dialog's non-inert subtree. */
+  registerHost(host: HTMLElement): () => void {
+    this.#host = host;
+    this.#home = host.parentNode;
+    this.setModalOutlet(this.#modalOutlet);
+    return () => {
+      host.querySelector<HTMLElement>('[popover]')?.hidePopover?.();
+      if (this.#home && host.parentNode !== this.#home) this.#home.appendChild(host);
+      this.#host = null;
+      this.#home = null;
+    };
+  }
+
+  /** Called after opening a native dialog and before destroying a closing dialog. */
+  setModalOutlet(outlet: HTMLElement | null): void {
+    this.#modalOutlet = outlet;
+    const host = this.#host;
+    if (!host) return;
+    const surface = host.querySelector<HTMLElement>('[popover]');
+    // Re-enter the top layer after the new dialog so its backdrop cannot cover toasts.
+    surface?.hidePopover?.();
+    (outlet ?? this.#home)?.appendChild(host);
+    if (surface?.isConnected) surface.showPopover?.();
+  }
+
   private _notifications = signal<Notification[]>([]);
   readonly notifications = this._notifications.asReadonly();
 

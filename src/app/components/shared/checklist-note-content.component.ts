@@ -6,10 +6,10 @@ import { NoteLine, noteRows } from '../../models/note-line.model';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `@for (row of rows(); track $index) {
-    <div class="note-row" [class.bullet]="row.format?.bullet">
+    <div class="note-row" [class.note-row--note]="row.hasNote">
       @for (part of row.parts; track $index) {
         @if (part.marked) {
-          <mark>{{ part.text }}</mark>
+          <mark [class.title-mark]="!part.note" [class.note-mark]="part.note">{{ part.text }}</mark>
         } @else {
           <span>{{ part.text }}</span>
         }
@@ -32,14 +32,27 @@ import { NoteLine, noteRows } from '../../models/note-line.model';
       border-radius: 0.2em;
       box-shadow: inset 0 -1px 0 #dfbc52;
     }
-    .bullet {
-      position: relative;
-      padding-inline-start: 1.25em;
+    mark.note-mark {
+      background: #f8eeee;
+      box-shadow: none;
     }
-    .bullet::before {
-      content: '•';
+    mark.title-mark {
+      font-size: 1.2em;
+      font-weight: 700;
+      line-height: 1.4;
+      background: #fff3cf;
+      box-shadow: none;
+    }
+    .note-row--note {
+      position: relative;
+      padding-inline-start: 1.4em;
+      border-inline-start: 2px solid #e7d1d1;
+    }
+    .note-row--note::before {
+      content: '–';
       position: absolute;
-      inset-inline-start: 0.25em;
+      inset-inline-start: 0.35em;
+      color: var(--primary-default, #9d0000);
     }
   `,
 })

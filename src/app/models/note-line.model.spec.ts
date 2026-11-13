@@ -50,4 +50,33 @@ describe('checklist note paragraph identities', () => {
       ['window', 23, 29],
     ]);
   });
+
+  it('keeps paired identities for contained edits and drops notes when their title is deleted', () => {
+    const text = 'Door\nCheck lock';
+    const formats: NoteLine[] = [
+      { id: 'title', group_id: 'pair', line: 0, text: 'Door', start: 0, end: 4, checklist: true },
+      {
+        id: 'note',
+        group_id: 'pair',
+        line: 1,
+        text: 'Check lock',
+        start: 0,
+        end: 10,
+        checklist: true,
+        checklist_note: true,
+      },
+    ];
+    const updated = rebaseNoteLines(text, 'Doors\nCheck lock', formats);
+    // Text inserted at the end of the selection stays outside it; contained edits stay linked.
+    expect(updated[0].group_id).toBe('pair');
+    const replaced = rebaseNoteLines(text, 'Gate\nCheck lock', formats);
+    expect(replaced[0]).toEqual({ ...formats[0], text: 'Gate' });
+    expect(replaced[1]).toEqual(formats[1]);
+    expect(rebaseNoteLines(text, 'Check lock', formats)).toEqual([]);
+    expect(noteRows(text, formats)[1].parts[0]).toEqual({
+      text: 'Check lock',
+      marked: true,
+      note: true,
+    });
+  });
 });

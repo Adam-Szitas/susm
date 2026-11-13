@@ -293,13 +293,13 @@ export class ProjectTodoAssignToChecklistsPanelComponent implements OnInit, OnDe
     return counts;
   }
 
-  selectAllChecklists(): void {
-    this.selectedChecklistIds.set(this.sortedTodoItems().map((item) => todoItemId(item)));
-  }
-
-  clearChecklistSelection(): void {
-    this.selectedChecklistIds.set([]);
-    this.mobileStep.set('checklists');
+  toggleAllChecklists(): void {
+    if (this.hasChecklistSelection()) {
+      this.selectedChecklistIds.set([]);
+      this.mobileStep.set('checklists');
+    } else {
+      this.selectedChecklistIds.set(this.sortedTodoItems().map((item) => todoItemId(item)));
+    }
   }
 
   goToChecklistsStep(): void {
