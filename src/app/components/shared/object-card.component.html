@@ -20,7 +20,7 @@
   </h2>
   @if (showMeta() && !compact()) {
     <div class="created-at">
-      <span>{{ obj.created_at | localeDate: dateFormat() }}</span>
+      <span>{{ metaTimestamp() | localeDate: dateFormat() }}</span>
       <span>{{ obj.category || '' }}</span>
     </div>
   }

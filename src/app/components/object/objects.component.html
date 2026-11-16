@@ -20,6 +20,21 @@
 </app-page-header>
 
 <div class="objects-wrapper">
+  <label class="deleted-toggle">
+    <input
+      type="checkbox"
+      role="switch"
+      [checked]="showDeleted()"
+      [attr.aria-describedby]="showDeleted() ? 'deleted-objects-hint' : null"
+      (change)="onShowDeletedChange($any($event.target).checked)"
+    />
+    <span class="toggle-track" aria-hidden="true"></span>
+    <span>{{ 'objects.showDeleted' | translate }}</span>
+  </label>
+  @if (showDeleted()) {
+    <p id="deleted-objects-hint" class="deleted-hint">{{ 'objects.deletedHint' | translate }}</p>
+  }
+
   <app-filter
     [filter]="filterData()"
     [initialState]="restoredFilterState()"
@@ -28,30 +43,54 @@
     (filtersVisibleChange)="onFiltersVisibleChange($event)"
   ></app-filter>
 
-  @if (filteredObjects().length > 0) {
+  @if (loading()) {
+    <p class="objects-status">{{ 'common.loading' | translate }}</p>
+  } @else if (loadError(); as message) {
+    <p class="objects-error">{{ message }}</p>
+    <button type="button" class="button button-secondary objects-retry" (click)="reload()">
+      {{ 'objects.retry' | translate }}
+    </button>
+  } @else if (filteredObjects().length > 0) {
     <app-virtual-scroll-viewport
       class="objects-list-viewport"
       [items]="filteredObjects()"
       [threshold]="virtualScrollThreshold"
       [trackBy]="trackObjectItemById"
-      [ariaLabel]="'objects.title' | translate"
+      [ariaLabel]="(showDeleted() ? 'objects.showDeleted' : 'objects.title') | translate"
       [gridLayout]="true"
     >
       <ng-template let-item>
         @if (item.object; as objectItem) {
           @let objectId = objectItem._id?.$oid;
-          <app-object-card
-            [object]="objectItem"
-            [projectName]="item.project_name"
-            [routerLink]="objectId ? '/objects/tab/' + objectId : null"
-            [showStatus]="true"
-            [includePostalCode]="true"
-            dateFormat="datetime"
-          />
+          <div class="object-list-item" [class.object-list-item--with-action]="showDeleted()">
+            <app-object-card
+              [object]="objectItem"
+              [projectName]="item.project_name"
+              [routerLink]="showDeleted() ? null : objectId ? '/objects/tab/' + objectId : null"
+              [showStatus]="true"
+              [includePostalCode]="true"
+              [showRemovedAt]="showDeleted()"
+              dateFormat="datetime"
+            />
+            @if (showDeleted() && objectId) {
+              <button
+                type="button"
+                class="button button-secondary restore-button"
+                (click)="restoreObject(item)"
+                [disabled]="restoringIds().has(objectId)"
+              >
+                {{ 'objects.restore' | translate }}
+              </button>
+            }
+          </div>
         }
       </ng-template>
     </app-virtual-scroll-viewport>
   } @else {
-    <p class="empty-state">{{ 'protocols.noObjectsAvailable' | translate }}</p>
+    <p class="empty-state">
+      {{
+        (showDeleted() ? 'objects.noDeletedObjects' : 'protocols.noObjectsAvailable') | translate
+      }}
+    </p>
   }
 </div>

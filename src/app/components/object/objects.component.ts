@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Filter, FilterResult, ObjectWithProject, objectAddressSearchText, parseDateValue } from '@models';
 import { ProjectStore } from '@store/project.store';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FilterComponent } from '../filter/filter.component';
 import { FilterPersistenceService, PersistedFilterState } from '@services/filter-persistence.service';
+import { NotificationService } from '@services/notification.service';
 import { PageHeaderComponent } from '../shared/page-header.component';
 import { ObjectCardComponent } from '../shared/object-card.component';
 import {
@@ -12,6 +13,7 @@ import {
 } from '../shared/virtual-scroll-viewport.component';
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
+import { finalize } from 'rxjs';
 
 const FILTER_KEY = 'objects';
 
@@ -34,14 +36,22 @@ export class ObjectComponent implements OnInit {
 
   #projectStore = inject(ProjectStore);
   #filterPersistence = inject(FilterPersistenceService);
+  #notificationService = inject(NotificationService);
+  #translate = inject(TranslateService);
   readonly objectsFilter = viewChild(FilterComponent);
   public objects = this.#projectStore.objectsWithProjects;
-  public filteredObjects = signal<ObjectWithProject[]>([]);
+  readonly loading = this.#projectStore.allObjectsLoading;
+  readonly loadError = this.#projectStore.allObjectsError;
   #currentFilter = signal<FilterResult>({});
   #filtersVisible = false;
   filtersVisible = signal(false);
+  showDeleted = signal(false);
+  restoringIds = signal<Set<string>>(new Set());
   restoredFilterState = signal<PersistedFilterState | null>(null);
   readonly virtualScrollThreshold = VIRTUAL_SCROLL_DEFAULT_THRESHOLD;
+  readonly filteredObjects = computed(() =>
+    this.#applyFilters(this.objects() ?? [], this.#currentFilter()),
+  );
 
   readonly allCategories = computed(() => {
     const objects = this.objects() || [];
@@ -53,14 +63,6 @@ export class ObjectComponent implements OnInit {
     });
     return Array.from(categories).sort();
   });
-
-  constructor() {
-    effect(() => {
-      const objects = this.objects() || [];
-      const appliedFilter = this.#currentFilter();
-      this.filteredObjects.set(this.#applyFilters(objects, appliedFilter));
-    });
-  }
 
   trackObjectItemById = (_index: number, item: ObjectWithProject): string =>
     item.object?._id?.$oid ?? item.project_name;
@@ -77,7 +79,7 @@ export class ObjectComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.#projectStore.loadAllObjects();
+    this.reload();
     const restored = this.#filterPersistence.restore(FILTER_KEY);
     if (restored) {
       this.restoredFilterState.set(restored);
@@ -102,6 +104,46 @@ export class ObjectComponent implements OnInit {
     this.#filtersVisible = visible;
     this.filtersVisible.set(visible);
     this.#filterPersistence.save(FILTER_KEY, { filter: this.#currentFilter(), filtersVisible: visible });
+  }
+
+  onShowDeletedChange(checked: boolean): void {
+    this.showDeleted.set(checked);
+    this.#projectStore.loadAllObjects(checked);
+  }
+
+  reload(): void {
+    this.#projectStore.loadAllObjects(this.showDeleted());
+  }
+
+  restoreObject(item: ObjectWithProject): void {
+    const objectId = item.object?._id?.$oid;
+    if (!objectId || this.restoringIds().has(objectId)) return;
+
+    this.restoringIds.update((ids) => new Set(ids).add(objectId));
+    this.#projectStore
+      .restoreObject(objectId)
+      .pipe(
+        finalize(() => {
+          this.restoringIds.update((ids) => {
+            const next = new Set(ids);
+            next.delete(objectId);
+            return next;
+          });
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.#notificationService.showSuccess(this.#translate.instant('objects.restoreSuccess'));
+          if (!this.showDeleted()) {
+            this.#projectStore.loadAllObjects(false);
+          }
+        },
+        error: (error) => {
+          this.#notificationService.showError(
+            error?.message || this.#translate.instant('objects.restoreFailed'),
+          );
+        },
+      });
   }
 
   #applyFilters(objects: ObjectWithProject[], filter: FilterResult): ObjectWithProject[] {

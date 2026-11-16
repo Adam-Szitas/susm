@@ -31,6 +31,8 @@ export class ObjectCardComponent {
   readonly includePostalCode = input(false);
   readonly dateFormat = input<'date' | 'datetime'>('date');
   readonly fallbackLabel = input('');
+  /** Show `deleted_at` in the meta row (removed-objects list). */
+  readonly showRemovedAt = input(false);
 
   readonly displayLabel = computed(() => {
     const object = this.object();
@@ -41,5 +43,10 @@ export class ObjectCardComponent {
       fallback: this.fallbackLabel(),
     });
     return [prefix, address].filter(Boolean).join(' ');
+  });
+
+  readonly metaTimestamp = computed(() => {
+    const object = this.object();
+    return this.showRemovedAt() ? object.deleted_at : object.created_at;
   });
 }

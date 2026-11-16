@@ -32,9 +32,13 @@ export class ProjectStore {
   private _objectsWithProjects = signal<ObjectWithProject[]>([]);
   private _loading = signal(false);
   private _error = signal<string | null>(null);
+  private _allObjectsLoading = signal(false);
+  private _allObjectsError = signal<string | null>(null);
+  private _allObjectsDeleted = signal(false);
   private _files = signal<ProjectFile[]>([]);
   #loadProjectRequestId = 0;
   #loadObjectsRequestId = 0;
+  #loadAllObjectsRequestId = 0;
 
   // Public readonly signals
   readonly projects = computed(() => this._projects());
@@ -43,6 +47,9 @@ export class ProjectStore {
   readonly objectsWithProjects = computed(() => this._objectsWithProjects());
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
+  readonly allObjectsLoading = computed(() => this._allObjectsLoading());
+  readonly allObjectsError = computed(() => this._allObjectsError());
+  readonly allObjectsDeleted = computed(() => this._allObjectsDeleted());
   readonly files = computed(() => this._files());
 
   public setProject(project: Project): void {
@@ -269,19 +276,37 @@ export class ProjectStore {
       );
   }
 
-  loadAllObjects(): void {
+  loadAllObjects(deleted = false): void {
+    const requestId = ++this.#loadAllObjectsRequestId;
+    this._allObjectsLoading.set(true);
+    this._allObjectsError.set(null);
     this._loading.set(true);
     this._error.set(null);
-    this.#httpService.get<ObjectWithProject[] | any>(`objects`).subscribe({
-      next: (result) => {
-        this._objectsWithProjects.set(result);
-        this._loading.set(false);
-      },
-      error: (error) => {
-        this._error.set(error.message || 'Failed to load objects');
-        this._loading.set(false);
-      },
-    });
+    this.#httpService
+      .get<ObjectWithProject[]>(`objects`, deleted ? { deleted: 'true' } : undefined)
+      .subscribe({
+        next: (result) => {
+          if (requestId !== this.#loadAllObjectsRequestId) {
+            return;
+          }
+          this._objectsWithProjects.set(result ?? []);
+          this._allObjectsDeleted.set(deleted);
+          this._allObjectsLoading.set(false);
+          this._loading.set(false);
+        },
+        error: (error) => {
+          if (requestId !== this.#loadAllObjectsRequestId) {
+            return;
+          }
+          const message = error.message || 'Failed to load objects';
+          this._objectsWithProjects.set([]);
+          this._allObjectsDeleted.set(deleted);
+          this._allObjectsError.set(message);
+          this._error.set(message);
+          this._allObjectsLoading.set(false);
+          this._loading.set(false);
+        },
+      });
   }
 
   loadObject(objectId: string): Observable<Object> {
@@ -590,6 +615,23 @@ export class ProjectStore {
     );
   }
 
+  restoreObject(objectId: string): Observable<{ message: string }> {
+    return this.#httpService
+      .post<{ message: string }>(`object/${objectId}/restore`, {}, undefined, {
+        suppressErrorNotification: true,
+      })
+      .pipe(
+        tap(() => {
+          if (!this._allObjectsDeleted()) {
+            return;
+          }
+          this._objectsWithProjects.update((rows) =>
+            rows.filter((item) => item.object._id?.$oid !== objectId),
+          );
+        }),
+      );
+  }
+
   deleteObject(objectId: string): Observable<{ message: string }> {
     return this.#httpService.delete<{ message: string }>(`object/${objectId}`).pipe(
       tap({
@@ -623,6 +665,7 @@ export class ProjectStore {
   reset(): void {
     this.#loadProjectRequestId = 0;
     this.#loadObjectsRequestId = 0;
+    this.#loadAllObjectsRequestId = 0;
     this._projects.set([]);
     this._project.set(null);
     this._objects.set([]);
@@ -630,5 +673,8 @@ export class ProjectStore {
     this._files.set([]);
     this._loading.set(false);
     this._error.set(null);
+    this._allObjectsLoading.set(false);
+    this._allObjectsError.set(null);
+    this._allObjectsDeleted.set(false);
   }
 }

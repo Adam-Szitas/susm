@@ -37,3 +37,91 @@
   height: 1rem;
   flex-shrink: 0;
 }
+
+.deleted-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.75rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+  }
+
+  input:checked + .toggle-track {
+    background: var(--primary-default, #9d0000);
+
+    &::after {
+      transform: translateX(1.125rem);
+    }
+  }
+
+  input:focus-visible + .toggle-track {
+    outline: 2px solid var(--primary-default, #9d0000);
+    outline-offset: 3px;
+  }
+}
+
+.toggle-track {
+  box-sizing: border-box;
+  flex: 0 0 2.75rem;
+  height: 1.625rem;
+  padding: 0.1875rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #6b7280;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: #fff;
+  }
+}
+
+.deleted-hint,
+.objects-status {
+  margin: 0 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.objects-error {
+  margin: 0 0 0.75rem;
+  color: #b42318;
+}
+
+.objects-retry,
+.restore-button {
+  margin: 0;
+}
+
+.object-list-item {
+  display: contents;
+}
+
+.object-list-item--with-action {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.restore-button {
+  width: 100%;
+}

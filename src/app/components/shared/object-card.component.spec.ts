@@ -63,6 +63,18 @@ describe('ObjectCardComponent', () => {
     );
   });
 
+  it('shows the removal time when showRemovedAt is set', () => {
+    fixture.componentRef.setInput('object', {
+      ...mockObject,
+      deleted_at: '2020-05-04T00:00:00.000Z',
+    });
+    fixture.componentRef.setInput('showRemovedAt', true);
+    fixture.detectChanges();
+
+    const date = fixture.nativeElement.querySelector('.created-at') as HTMLElement;
+    expect(date.textContent).toContain('2020');
+  });
+
   it('hides note in compact mode', () => {
     fixture.componentRef.setInput('compact', true);
     fixture.detectChanges();
