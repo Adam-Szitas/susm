@@ -74,7 +74,7 @@ import { reorderTargetIdFromTouch } from '../../../utils/touch-reorder';
 import { ObjectCardComponent } from '../../shared/object-card.component';
 import type { AppError } from '@services/error-handler.service';
 import { isMissingResource404 } from '../../../utils/auth-http-error';
-import { matchesPrefixFilter, objectBasePrefix } from '../../../utils/object-prefix';
+import { matchesPrefixFilter } from '../../../utils/object-prefix';
 import { FilteredObjectSelection } from '../../../utils/filtered-object-selection';
 import { BulkObjectPrefixModalComponent } from './bulk-object-prefix-modal.component';
 
@@ -141,11 +141,12 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
   #currentFilter = signal<FilterResult>({});
   readonly selectedPrefix = computed(() => this.#currentFilter().prefix ?? '');
   readonly excludePrefix = computed(() => this.#currentFilter().excludePrefix === true);
+  /** Distinct stored object prefixes, exactly as saved (no trimming, no house-number stripping). */
   readonly objectPrefixes = computed(() => {
     const prefixes = new Set(
       this.objects()
-        .map((obj) => objectBasePrefix(obj.prefix, obj.address?.house_number))
-        .filter(Boolean),
+        .map((obj) => obj.prefix)
+        .filter((prefix): prefix is string => !!prefix?.trim()),
     );
     return [...prefixes].sort((a, b) =>
       a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }),
@@ -1000,12 +1001,7 @@ export class ProjectTabComponent implements OnInit, OnDestroy {
 
     if (filter.prefix) {
       filtered = filtered.filter((obj) => {
-        return matchesPrefixFilter(
-          obj.prefix,
-          obj.address?.house_number,
-          filter.prefix,
-          !!filter.excludePrefix,
-        );
+        return matchesPrefixFilter(obj.prefix, filter.prefix, !!filter.excludePrefix);
       });
     }
 

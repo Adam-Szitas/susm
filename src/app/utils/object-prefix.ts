@@ -11,13 +11,13 @@ export function objectBasePrefix(prefix?: string | null, houseNumber?: string | 
   return house && value.endsWith(suffix) ? value.slice(0, -suffix.length).trim() : value;
 }
 
+/** Prefix filter: the object's stored prefix must equal the selected chip exactly. */
 export function matchesPrefixFilter(
   prefix: string | null | undefined,
-  houseNumber: string | null | undefined,
   selected: string | null | undefined,
   exclude: boolean,
 ): boolean {
   if (!selected) return true;
-  const matches = objectBasePrefix(prefix, houseNumber) === selected;
+  const matches = prefix === selected;
   return exclude ? !matches : matches;
 }

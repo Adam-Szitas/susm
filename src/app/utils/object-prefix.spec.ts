@@ -21,12 +21,9 @@ describe('objectBasePrefix', () => {
     expect(objectBasePrefix('Building A 100', '100')).toBe('Building A');
   });
 
-  it('groups RH objects whether the house number was stored on the prefix or only on the address', () => {
+  it('strips the house number the prefix ends with (card label)', () => {
     expect(objectBasePrefix('RH 110', '110')).toBe('RH');
     expect(objectBasePrefix('RH', '110')).toBe('RH');
-    expect(matchesPrefixFilter('RH 110', '110', 'RH', false)).toBeTrue();
-    expect(matchesPrefixFilter('RH', '110', 'RH', false)).toBeTrue();
-    expect(matchesPrefixFilter('RH 111', '111', 'RH', false)).toBeTrue();
   });
 
   it('keeps standalone prefixes and does not remove a partial number', () => {
@@ -37,11 +34,18 @@ describe('objectBasePrefix', () => {
 });
 
 describe('matchesPrefixFilter', () => {
-  it('includes or excludes a group and retains objects without prefixes when excluding', () => {
-    expect(matchesPrefixFilter('A 1', '1', 'A', false)).toBeTrue();
-    expect(matchesPrefixFilter('A 1', '1', 'A', true)).toBeFalse();
-    expect(matchesPrefixFilter('B 2', '2', 'A', true)).toBeTrue();
-    expect(matchesPrefixFilter(null, '3', 'A', true)).toBeTrue();
-    expect(matchesPrefixFilter('A 1', '1', '', true)).toBeTrue();
+  it('matches the stored prefix exactly, without cutting the house number or trimming', () => {
+    expect(matchesPrefixFilter('WH 3', 'WH 3', false)).toBeTrue();
+    expect(matchesPrefixFilter('WH 3', 'WH', false)).toBeFalse();
+    expect(matchesPrefixFilter('WH', 'WH 3', false)).toBeFalse();
+    expect(matchesPrefixFilter('WH ', 'WH', false)).toBeFalse();
+  });
+
+  it('includes or excludes a prefix and retains objects without prefixes when excluding', () => {
+    expect(matchesPrefixFilter('A', 'A', false)).toBeTrue();
+    expect(matchesPrefixFilter('A', 'A', true)).toBeFalse();
+    expect(matchesPrefixFilter('B', 'A', true)).toBeTrue();
+    expect(matchesPrefixFilter(null, 'A', true)).toBeTrue();
+    expect(matchesPrefixFilter('A', '', true)).toBeTrue();
   });
 });
