@@ -53,13 +53,22 @@ describe('ObjectCardComponent', () => {
     expect(headline.nextElementSibling).toBe(date);
   });
 
-  it('shows the prefix in compact mode without repeating a legacy house number suffix', () => {
+  it('shows the stored prefix as-is, even when it ends with the house number', () => {
+    fixture.componentRef.setInput('object', {
+      ...mockObject,
+      prefix: 'WH 3',
+      address: { house_number: '3' },
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.headline-text')?.textContent?.trim()).toBe(
+      'WH 3 3',
+    );
+
     fixture.componentRef.setInput('object', { ...mockObject, prefix: 'Block A 12' });
     fixture.componentRef.setInput('compact', true);
     fixture.detectChanges();
-
     expect(fixture.nativeElement.querySelector('.headline-text')?.textContent?.trim()).toBe(
-      'Block A 12',
+      'Block A 12 12',
     );
   });
 

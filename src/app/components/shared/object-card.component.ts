@@ -4,7 +4,6 @@ import { Params, RouterLink } from '@angular/router';
 import { Object, formatObjectDisplayLabel } from '@models';
 import { StatusPillComponent } from '../status-pill/app-status-pill.component';
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
-import { objectBasePrefix } from '../../utils/object-prefix';
 
 @Component({
   selector: 'app-object-card',
@@ -36,7 +35,8 @@ export class ObjectCardComponent {
 
   readonly displayLabel = computed(() => {
     const object = this.object();
-    const prefix = objectBasePrefix(object.prefix, object.address?.house_number);
+    // The stored prefix exactly as saved (same value as the project's prefix filter chips).
+    const prefix = object.prefix?.trim() ? object.prefix : '';
     const address = formatObjectDisplayLabel(object, {
       compact: this.compact(),
       includePostalCode: this.includePostalCode(),

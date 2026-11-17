@@ -3,14 +3,6 @@ export function normalizeObjectPrefix(prefix: string | null | undefined): string
   return prefix?.trim() || null;
 }
 
-/** Recover the shared prefix from the stored prefix and the object's house number. */
-export function objectBasePrefix(prefix?: string | null, houseNumber?: string | null): string {
-  const value = prefix?.trim() ?? '';
-  const house = houseNumber?.trim() ?? '';
-  const suffix = ` ${house}`;
-  return house && value.endsWith(suffix) ? value.slice(0, -suffix.length).trim() : value;
-}
-
 /** Prefix filter: the object's stored prefix must equal the selected chip exactly. */
 export function matchesPrefixFilter(
   prefix: string | null | undefined,

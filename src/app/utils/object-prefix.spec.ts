@@ -1,4 +1,4 @@
-import { matchesPrefixFilter, normalizeObjectPrefix, objectBasePrefix } from './object-prefix';
+import { matchesPrefixFilter, normalizeObjectPrefix } from './object-prefix';
 
 describe('normalizeObjectPrefix', () => {
   it('saves exactly the prefix the user typed, never the house number', () => {
@@ -12,24 +12,6 @@ describe('normalizeObjectPrefix', () => {
     expect(normalizeObjectPrefix('   ')).toBeNull();
     expect(normalizeObjectPrefix(null)).toBeNull();
     expect(normalizeObjectPrefix(undefined)).toBeNull();
-  });
-});
-
-describe('objectBasePrefix', () => {
-  it('groups legacy stored prefixes with different house numbers under the shared prefix', () => {
-    expect(objectBasePrefix('Building A 1', '1')).toBe('Building A');
-    expect(objectBasePrefix('Building A 100', '100')).toBe('Building A');
-  });
-
-  it('strips the house number the prefix ends with (card label)', () => {
-    expect(objectBasePrefix('RH 110', '110')).toBe('RH');
-    expect(objectBasePrefix('RH', '110')).toBe('RH');
-  });
-
-  it('keeps standalone prefixes and does not remove a partial number', () => {
-    expect(objectBasePrefix('Unit 12', '2')).toBe('Unit 12');
-    expect(objectBasePrefix('Unit', '2')).toBe('Unit');
-    expect(objectBasePrefix(null, '2')).toBe('');
   });
 });
 
