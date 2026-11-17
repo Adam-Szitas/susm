@@ -35,6 +35,8 @@ export class EditObjectComponent implements OnInit {
   protected readonly icons = icons;
 
   @Input() objectData!: Object;
+  /** Project the object belongs to; after deleting the object the user lands on its project tab. */
+  @Input() projectId?: string | null;
   objectUpdated = output<Object>();
   #fb = inject(FormBuilder);
   #httpService = inject(HttpService);
@@ -142,7 +144,8 @@ export class EditObjectComponent implements OnInit {
           this.#translationService.instant('objects.objectDeleted'),
         );
         this.deleting.set(false);
-        this.#router.navigate(['/objects']);
+        const projectId = this.projectId?.trim();
+        void this.#router.navigate(projectId ? ['/projects/tab', projectId] : ['/objects']);
       },
       error: (error) => {
         this.#notificationService.showError(

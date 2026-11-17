@@ -161,6 +161,18 @@ export class ObjectTabComponent implements OnInit {
     });
   }
 
+  /**
+   * Project of the open object: the server-resolved context first, else the store's current
+   * project only when it actually contains this object (it can be stale after other navigation).
+   */
+  #projectIdOfObject(objectId: string): string | null {
+    const contextId = this.objectProjectContext()?.id;
+    if (contextId) return contextId;
+    const storeProject = this.#projectStore.project();
+    const containsObject = storeProject?.objects?.some((o) => o._id?.$oid === objectId);
+    return containsObject ? (storeProject?._id?.$oid ?? null) : null;
+  }
+
   /** Short display name for the object (e.g. address parts or "Object"). */
   #objectDisplayName(obj: Object | null): string {
     if (!obj) return '';
@@ -543,6 +555,7 @@ export class ObjectTabComponent implements OnInit {
       component: EditObjectComponent,
       componentInputs: {
         objectData: currentObject,
+        projectId: this.#projectIdOfObject(objectId),
       },
     });
 
