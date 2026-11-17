@@ -234,8 +234,8 @@
                 <button
                   type="button"
                   class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
-                  (click)="openSubGroupUploadModal(group)"
-                  [disabled]="subGroupUploadUploading()"
+                  (click)="openGroupPhotoPicker(group)"
+                  [disabled]="groupPhotoUploading()"
                   [attr.aria-label]="'subGroups.createTitle' | translate"
                   [attr.title]="'subGroups.createTitle' | translate"
                 >
@@ -244,8 +244,8 @@
                 <button
                   type="button"
                   class="group-toolbar-icon-btn"
-                  (click)="openGroupPhotoPicker(group)"
-                  [disabled]="groupPhotoUploading()"
+                  (click)="openSubGroupUploadModal(group)"
+                  [disabled]="subGroupUploadUploading()"
                   [attr.aria-label]="'fileList.uploadToGroup' | translate"
                   title="{{ 'fileList.uploadToGroup' | translate }}"
                 >
