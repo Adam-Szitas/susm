@@ -193,15 +193,29 @@
               </div>
             </div>
             <div class="file-edit-footer">
-              <button type="button" class="button button-secondary" (click)="cancelEditGroup()">
-                {{ 'common.cancel' | translate }}</button
-              ><button
-                type="button"
-                class="button button-primary"
-                (click)="saveGroupMetadata(group)"
-              >
-                {{ 'common.save' | translate }}
-              </button>
+              @if (canDeleteFileGroups()) {
+                <button
+                  type="button"
+                  class="button group-edit-delete-btn"
+                  (click)="deleteFileGroupFromEdit(group)"
+                  [attr.aria-label]="'fileList.deleteFileGroup' | translate"
+                  title="{{ 'fileList.deleteFileGroup' | translate }}"
+                >
+                  <app-trash-icon [size]="16" />
+                  <span>{{ 'common.delete' | translate }}</span>
+                </button>
+              }
+              <div class="file-edit-footer-actions">
+                <button type="button" class="button button-secondary" (click)="cancelEditGroup()">
+                  {{ 'common.cancel' | translate }}</button
+                ><button
+                  type="button"
+                  class="button button-primary"
+                  (click)="saveGroupMetadata(group)"
+                >
+                  {{ 'common.save' | translate }}
+                </button>
+              </div>
             </div>
           </dialog>
           @if (group.description) {
@@ -333,17 +347,6 @@
               >
                 <app-icon [icon]="icons.edit" />
               </button>
-              @if (objectId()) {
-                <button
-                  type="button"
-                  class="group-toolbar-icon-btn group-toolbar-icon-btn--danger"
-                  (click)="deleteFileGroup(group)"
-                  [attr.aria-label]="'fileList.deleteFileGroup' | translate"
-                  title="{{ 'fileList.deleteFileGroup' | translate }}"
-                >
-                  <app-trash-icon [size]="18" />
-                </button>
-              }
             </div>
           </div>
           @if (group.note?.trim()) {

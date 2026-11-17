@@ -24,14 +24,18 @@
           }
           <span class="removed-object">{{ item.object_name }}</span>
           <span class="removed-filename">{{ item.filename }}</span>
-          <button
-            type="button"
-            class="restore-button"
-            (click)="restore(item)"
-            [disabled]="restoringIds().has(item.kind + ':' + item.id)"
-          >
-            {{ 'files.restore' | translate }}
-          </button>
+          @if (canRestore(item)) {
+            <button
+              type="button"
+              class="restore-button"
+              (click)="restore(item)"
+              [disabled]="restoringIds().has(item.kind + ':' + item.id)"
+            >
+              {{ 'files.restore' | translate }}
+            </button>
+          } @else {
+            <span class="removed-filename">{{ 'files.adminOnlyGroupRestore' | translate }}</span>
+          }
         </div>
       } @empty {
         <p class="empty-state">{{ 'files.noRemovedFiles' | translate }}</p>

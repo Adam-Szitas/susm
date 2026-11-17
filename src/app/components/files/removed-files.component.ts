@@ -6,6 +6,7 @@ import { FileService, type RemovedFileItem } from '../../services/file.service';
 import { buildUploadImageUrl } from '../../utils/upload-image-url';
 import { NotificationService } from '../../services/notification.service';
 import { finalize } from 'rxjs';
+import { UserStore } from '../../store/user.store';
 
 @Component({
   selector: 'app-removed-files',
@@ -19,6 +20,12 @@ export class RemovedFilesComponent implements OnInit {
   #fileService = inject(FileService);
   #notificationService = inject(NotificationService);
   #translate = inject(TranslateService);
+  #userStore = inject(UserStore);
+
+  /** Whole file groups can only be restored by company admins (enforced by the backend too). */
+  canRestore(item: RemovedFileItem): boolean {
+    return item.kind !== 'group' || this.#userStore.isAdmin();
+  }
   #failedImageKeys = new Set<string>();
   #failedImageKeysVersion = signal(0);
 

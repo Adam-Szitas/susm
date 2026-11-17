@@ -12,6 +12,7 @@ import { NotificationService } from '@services/notification.service';
 import { TranslationService } from '@services/translation.service';
 import { DateFormatService } from '@services/date-format.service';
 import { ImageCompressionService } from '@services/image-compression.service';
+import { UserStore } from '../../store/user.store';
 import { ProjectFile } from '@models';
 
 const photo = (id: string, group_id?: string): ProjectFile => ({
@@ -40,6 +41,7 @@ describe('Project sub-group gallery', () => {
         { provide: TranslationService, useValue: { instant: (key: string) => key } },
         { provide: DateFormatService, useValue: { formatUtcDate: () => '2026-01-01' } },
         { provide: ImageCompressionService, useValue: {} },
+        { provide: UserStore, useValue: { isAdmin: () => false } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(FileListComponent);

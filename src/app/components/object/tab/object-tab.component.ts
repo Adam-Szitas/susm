@@ -30,6 +30,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { FileListComponent } from '../../file-list/file-list.component';
+import { DeletedFileGroupsComponent } from './deleted-file-groups.component';
 import { HttpService } from '@services/http.service';
 import { environment } from '../../../environment';
 import { FileUploadModalComponent } from '../../file-upload-modal/file-upload-modal.component';
@@ -58,6 +59,7 @@ import { EMPTY } from 'rxjs';
     ObjectTodosSectionComponent,
     StatusSelectComponent,
     IconComponent,
+    DeletedFileGroupsComponent,
   ],
   templateUrl: './object-tab.component.html',
   styleUrl: './object-tab.component.scss',
@@ -88,6 +90,8 @@ export class ObjectTabComponent implements OnInit {
   objectProjectContext = signal<{ id: string; name: string } | null>(null);
   projectTodoItems = signal<TodoItem[]>([]);
   fileGroups = signal<FileGroup[]>([]);
+  /** Bumped whenever the object's groups are reloaded, so the removed-groups list refreshes too. */
+  fileGroupsVersion = signal(0);
   /** Category labels from `?categories=` (repeat or comma-separated); filters visible file groups. */
   urlFileGroupCategories = signal<string[]>([]);
   imagePreviewUrl = signal<string | null>(null);
@@ -315,6 +319,7 @@ export class ObjectTabComponent implements OnInit {
           };
         });
         this.fileGroups.set(refactoredFileGroups);
+        this.fileGroupsVersion.update((version) => version + 1);
       },
       error: (error) => {
         console.error('Failed to load file groups:', error);

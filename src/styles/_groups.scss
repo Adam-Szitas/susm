@@ -153,6 +153,27 @@ button.file-description-edit {
   min-width: 0;
 }
 
+// Edit-group dialog footer: delete on the left, cancel/save on the right.
+.file-edit-footer-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-inline-start: auto;
+}
+
+.button.group-edit-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: transparent;
+  color: #b22222;
+  border: 1px solid rgba(180, 40, 40, 0.45);
+
+  &:hover:not(:disabled) {
+    background: rgba(178, 34, 34, 0.08);
+    border-color: #b22222;
+  }
+}
+
 // File-list group toolbar icon buttons (global — keeps file-list component under style budget).
 .group-header-actions {
   > button {

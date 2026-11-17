@@ -211,6 +211,18 @@ export class FileService {
     return this.#httpService.delete<{ message: string }>(endpoint);
   }
 
+  /** Admin + trash flag: removed file groups of one object (only their active photos in `files`). */
+  getRemovedFileGroupsForObject(objectId: string): Observable<FileGroup[]> {
+    return this.#httpService.get<FileGroup[]>(`file/object/${objectId}/removed-groups`);
+  }
+
+  /** Admin + trash flag: puts a removed object file group back at its previous position. */
+  restoreFileGroup(groupId: string): Observable<{ message: string }> {
+    return this.#httpService.post<{ message: string }>(`file/group/${groupId}/restore`, {}, undefined, {
+      suppressErrorNotification: true,
+    });
+  }
+
   /**
    * Gets all file groups for a specific object
    * @param objectId - The ID of the object

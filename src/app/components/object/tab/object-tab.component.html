@@ -232,6 +232,11 @@
       </div>
     }
 
+    <app-deleted-file-groups
+      [objectId]="object()?._id?.$oid"
+      [reloadKey]="fileGroupsVersion()"
+      (restored)="onFileDeleted()"
+    />
     @if (fileGroups().length > 0) {
       @if (hasUrlFileGroupCategoryFilter()) {
         <p class="url-file-group-filter-hint">

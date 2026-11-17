@@ -58,6 +58,7 @@ import {
 import { IconComponent } from '@icons/icon.component';
 import { icons } from '@icons/icon.definitions';
 import { TrashIconComponent } from '../shared/trash-icon.component';
+import { UserStore } from '../../store/user.store';
 import { CategoryCheckboxListComponent } from '../shared/category-checkbox-list.component';
 
 @Component({
@@ -86,6 +87,10 @@ export class FileListComponent implements OnDestroy {
   #translationService = inject(TranslationService);
   #dateFormat = inject(DateFormatService);
   #imageCompression = inject(ImageCompressionService);
+  #userStore = inject(UserStore);
+
+  /** Only company admins may remove object file groups (the backend enforces this too). */
+  readonly canDeleteFileGroups = computed(() => !!this.objectId() && this.#userStore.isAdmin());
 
   /** Parent object id — required for uploading into an existing file group. */
   public objectId = input<string | undefined>(undefined);
@@ -1357,13 +1362,30 @@ export class FileListComponent implements OnDestroy {
     document.body.removeChild(link);
   }
 
-  public async deleteFileGroup(group: FileGroup): Promise<void> {
+  /**
+   * Delete is only offered inside the edit-group dialog (not the group toolbar) so it
+   * can't be hit by accident. The native dialog sits in the top layer, so close it before
+   * showing the confirm modal; reopen it with the unsaved draft if the user cancels.
+   */
+  public async deleteFileGroupFromEdit(group: FileGroup): Promise<void> {
+    const id = group._id?.$oid;
+    const dialog = id ? document.getElementById(`group-edit-dialog-${id}`) : null;
+    if (dialog instanceof HTMLDialogElement && dialog.open) dialog.close();
+    const confirmed = await this.deleteFileGroup(group);
+    if (!confirmed && id && dialog instanceof HTMLDialogElement && !dialog.open) {
+      this.editingGroupId.set(id);
+      dialog.showModal();
+    }
+  }
+
+  /** Returns whether the user confirmed the deletion. */
+  public async deleteFileGroup(group: FileGroup): Promise<boolean> {
     const groupId = group._id?.$oid;
     if (!groupId || !this.objectId()) {
       this.#notificationService.showError(
         this.#translationService.instant('fileList.deleteFileGroupFailed') || 'Invalid group',
       );
-      return;
+      return false;
     }
 
     const groupLabel = this.getGroupDisplayName(group);
@@ -1384,7 +1406,7 @@ export class FileListComponent implements OnDestroy {
       confirmKind: 'danger',
     });
     if (!confirmed) {
-      return;
+      return false;
     }
 
     this.#fileService.deleteFileGroup(groupId).subscribe({
@@ -1403,6 +1425,7 @@ export class FileListComponent implements OnDestroy {
         );
       },
     });
+    return true;
   }
 
   public async deleteFile(file: FileGroupItem | ProjectFile): Promise<void> {
