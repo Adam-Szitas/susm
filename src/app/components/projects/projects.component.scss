@@ -2,7 +2,11 @@
 
 :host {
   display: block;
-  padding: var(--space) var(--space) 0;
+  padding: var(--space) var(--space);
+
+  @include mobile {
+    padding: var(--space-small);
+  }
 }
 
 .projects-wrapper {

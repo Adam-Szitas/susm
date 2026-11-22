@@ -236,16 +236,6 @@
                   class="group-toolbar-icon-btn group-toolbar-icon-btn--filled"
                   (click)="openGroupPhotoPicker(group)"
                   [disabled]="groupPhotoUploading()"
-                  [attr.aria-label]="'subGroups.createTitle' | translate"
-                  [attr.title]="'subGroups.createTitle' | translate"
-                >
-                  <app-icon [icon]="icons.folderPlus" />
-                </button>
-                <button
-                  type="button"
-                  class="group-toolbar-icon-btn"
-                  (click)="openSubGroupUploadModal(group)"
-                  [disabled]="subGroupUploadUploading()"
                   [attr.aria-label]="'fileList.uploadToGroup' | translate"
                   title="{{ 'fileList.uploadToGroup' | translate }}"
                 >
@@ -289,6 +279,16 @@
                       <path d="M128 111 V145 M111 128 H145" stroke-width="9" />
                     </g>
                   </svg>
+                </button>
+                <button
+                  type="button"
+                  class="group-toolbar-icon-btn"
+                  (click)="openSubGroupUploadModal(group)"
+                  [disabled]="subGroupUploadUploading()"
+                  [attr.aria-label]="'subGroups.createTitle' | translate"
+                  [attr.title]="'subGroups.createTitle' | translate"
+                >
+                  <app-icon [icon]="icons.folderPlus" />
                 </button>
                 <button
                   type="button"

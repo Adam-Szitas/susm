@@ -102,7 +102,7 @@
 .dashboard-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space);
+  gap: var(--space-small);
   margin-bottom: var(--space-large);
 
   @include mobile {
@@ -301,11 +301,11 @@
 
 @include mobile {
   .wrapper {
-    padding: var(--space) var(--space);
+    padding: var(--space-small);
   }
 
   .dashboard-header {
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
   }
 

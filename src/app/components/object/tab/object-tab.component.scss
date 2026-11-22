@@ -7,6 +7,9 @@
 .wrapper {
   padding: 0 var(--space) var(--space);
   width: 100%;
+  @include mobile {
+    padding: 0 var(--space-small) var(--space-small);
+  }
 }
 
 .content-wrapper {
@@ -31,7 +34,8 @@
 
 .object-control-blocks {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  // Group actions + category filter, then the checklist.
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   gap: var(--space);
   margin-block: var(--space);
@@ -65,12 +69,6 @@
   width: 2.75rem;
   min-width: 2.75rem;
   padding: 0;
-}
-
-.object-category-controls {
-  display: flex;
-  inline-size: 100%;
-  min-inline-size: 0;
 }
 
 .object-checklist-controls {
@@ -122,7 +120,10 @@
 }
 
 @media (max-width: 767px) {
-  .object-control-blocks { grid-template-columns: minmax(0, 1fr); }
+  .object-control-blocks {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-small);
+  }
 }
 
 .object-file-group-category-filter {
@@ -329,10 +330,16 @@
   color: #111827;
   cursor: pointer;
 
-  &:hover { background: #e5e7eb; }
-  &:focus-visible { @include focus-state; }
+  &:hover {
+    background: #e5e7eb;
+  }
+  &:focus-visible {
+    @include focus-state;
+  }
 
-  app-icon { --icon-size: var(--icon-size-lg); }
+  app-icon {
+    --icon-size: var(--icon-size-lg);
+  }
 }
 
 .share-error {
@@ -575,5 +582,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .object-details-expand-toggle .chevron { transition: none; }
+  .object-details-expand-toggle .chevron {
+    transition: none;
+  }
 }
