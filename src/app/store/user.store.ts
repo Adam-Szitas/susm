@@ -1,3 +1,4 @@
+import { forgetChecklistDrafts } from '../utils/checklist-drafts';
 import { computed, inject, PLATFORM_ID, signal } from '@angular/core';
 import { Injectable } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -193,6 +194,7 @@ export class UserStore {
   }
 
   logout(): void {
+    if (isPlatformBrowser(this.#platformId)) forgetChecklistDrafts();
     if (this.#invalidatingSession) {
       return;
     }

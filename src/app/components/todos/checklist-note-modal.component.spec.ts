@@ -1,7 +1,7 @@
 import { ApplicationRef, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { Project, TodoItem } from '@models';
 import { ModalService } from '@services/modal.service';
 import { TranslationService } from '@services/translation.service';
@@ -79,6 +79,36 @@ describe('shared project checklist note flow', () => {
     TestBed.inject(ApplicationRef).tick();
     return result.childRef!.instance as ChecklistNoteModalComponent;
   }
+
+  it('debounces autosave and preserves edits made during a pending request', () => {
+    const modalNote = open();
+    const first = new Subject<Project>();
+    store.saveChecklistNote.and.returnValues(first, of({ ...source, checklist_note: 'Third' }));
+    jasmine.clock().install();
+    try {
+      modalNote.note.set('First');
+      modalNote.edited();
+      jasmine.clock().tick(4000);
+      modalNote.note.set('Second');
+      modalNote.edited();
+      jasmine.clock().tick(4999);
+      expect(store.saveChecklistNote).not.toHaveBeenCalled();
+      jasmine.clock().tick(1);
+      expect(store.saveChecklistNote.calls.first().args[2]).toBe('Second');
+      modalNote.note.set('Third');
+      modalNote.edited();
+      jasmine.clock().tick(5000);
+      expect(store.saveChecklistNote).toHaveBeenCalledTimes(1);
+      const saved = { ...source, checklist_note: 'Second' };
+      first.next(saved);
+      expect(store.saveChecklistNote.calls.mostRecent().args.slice(1, 3)).toEqual([saved, 'Third']);
+      expect(modalNote.editing()).toBeTrue();
+      expect(modalNote.note()).toBe('Third');
+      expect(notification.showSuccess).not.toHaveBeenCalled();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
 
   it('creates actual project checklists on submit and returns to the project checklist list', () => {
     const child: TodoItem = {

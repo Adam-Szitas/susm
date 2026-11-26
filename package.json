@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node scripts/build-pwa.mjs",
+    "preview:pwa": "node scripts/preview-pwa.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:susm": "node dist/susm/server/server.mjs",
@@ -68,6 +69,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "jasmine-core": "~5.13.0",
+    "esbuild": "0.28.1",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",

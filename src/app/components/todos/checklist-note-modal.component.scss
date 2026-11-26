@@ -45,6 +45,12 @@
 .action-label {
   display: none;
 }
+@media (max-width: 768px), (pointer: coarse) {
+  .actions {
+    position: static;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
 @media (min-width: 769px) {
   .action-label {
     display: inline;

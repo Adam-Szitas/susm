@@ -61,7 +61,6 @@ import {
         <app-icon [icon]="icons.fileText" [size]="20" />
       </button>
     </div>
-    <p class="hint" [id]="editorId() + '-hint'">{{ 'noteChecklist.hint' | translate }}</p>
     <div class="editor-surface">
       <div
         #editor
@@ -73,7 +72,6 @@ import {
         [attr.aria-disabled]="disabled()"
         [attr.tabindex]="disabled() ? -1 : 0"
         [attr.aria-label]="'noteChecklist.note' | translate"
-        [attr.aria-describedby]="editorId() + '-hint'"
         (beforeinput)="beforeInput($event, editor)"
         (input)="onInput($event, editor)"
         (click)="captureSelection(editor)"
@@ -160,17 +158,21 @@ import {
       border-radius: 0.4rem;
       cursor: text;
     }
+    @media (max-width: 768px), (pointer: coarse) {
+      .editable {
+        min-height: 0;
+        height: 12rem;
+        height: min(12rem, 50svh);
+        max-height: none;
+        font-size: max(16px, 1rem);
+      }
+    }
     .editable[aria-disabled='true'] {
       opacity: 0.65;
       cursor: default;
     }
     button[aria-pressed='true'] {
       box-shadow: inset 0 0 0 2px var(--primary-default, #9d0000);
-    }
-    .hint {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--text-secondary, #5b6575);
     }
   `,
 })

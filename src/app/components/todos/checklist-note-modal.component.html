@@ -1,4 +1,4 @@
-<div class="checklist-note">
+﻿<div class="checklist-note">
   <p class="checklist-title">{{ current()?.name }}</p>
   @if (loading()) {
     <p role="status">{{ 'common.loading' | translate }}</p>
@@ -17,9 +17,9 @@
   } @else if (editing()) {
     <app-checklist-note-editor
       [note]="note()"
-      (noteChange)="note.set($event)"
+      (noteChange)="note.set($event); edited()"
       [formats]="formats()"
-      (formatsChange)="formats.set($event)"
+      (formatsChange)="formats.set($event); edited()"
       [disabled]="saving()"
     />
   } @else {
@@ -34,6 +34,28 @@
     @if (editing()) {
       <button
         type="button"
+        class="button button-secondary action-button"
+        (click)="keepDraft()"
+        [disabled]="deviceBusy() || saving()"
+      >
+        Save draft on this device
+      </button>
+      <span role="status">{{ deviceStatus() }}</span>
+      @if (conflict()) {
+        <section>
+          <strong>The server note has changed. Review it before submitting your draft.</strong>
+          <app-checklist-note-content
+            [note]="current()?.checklist_note ?? ''"
+            [formats]="current()?.checklist_note_lines ?? []"
+          />
+          <button type="button" class="button action-button" (click)="conflict.set(false)">
+            Use my draft after review
+          </button>
+        </section>
+      }
+
+      <button
+        type="button"
         class="button button-secondary action-button cancel-action"
         [disabled]="saving()"
         (click)="close()"
@@ -46,7 +68,7 @@
       <button
         type="button"
         class="button button-primary action-button submit-action"
-        [disabled]="saving()"
+        [disabled]="saving() || deviceBusy() || autoInFlight() || conflict()"
         (click)="save()"
         [attr.aria-busy]="saving()"
         [attr.aria-label]="(saving() ? 'common.saving' : 'noteChecklist.submit') | translate"
