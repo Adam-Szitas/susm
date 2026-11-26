@@ -115,7 +115,7 @@ export class ChecklistNoteModalComponent implements OnDestroy {
 
   private deviceWrite?: Promise<void>;
 
-  keepDraft(): Promise<void> {
+  private keepDraft(): Promise<void> {
     if (this.deviceWrite) return this.deviceWrite;
     this.deviceWrite = this.persistDraft().finally(() => {
       this.deviceWrite = undefined;
@@ -138,7 +138,7 @@ export class ChecklistNoteModalComponent implements OnDestroy {
     try {
       const revision = await writeDraft(snapshot);
       this.draft.set({ ...snapshot, revision });
-      this.deviceStatus.set('Saved on this device.');
+      this.deviceStatus.set('');
     } catch (error) {
       this.deviceStatus.set(String(error));
     } finally {

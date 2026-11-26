@@ -32,15 +32,9 @@
   }
   <footer class="actions">
     @if (editing()) {
-      <button
-        type="button"
-        class="button button-secondary action-button"
-        (click)="keepDraft()"
-        [disabled]="deviceBusy() || saving()"
-      >
-        Save draft on this device
-      </button>
-      <span role="status">{{ deviceStatus() }}</span>
+      @if (deviceStatus()) {
+        <span role="status">{{ deviceStatus() }}</span>
+      }
       @if (conflict()) {
         <section>
           <strong>The server note has changed. Review it before submitting your draft.</strong>
