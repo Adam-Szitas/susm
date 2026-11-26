@@ -1,0 +1,93 @@
+@if (install.available() && (!invitation() || !install.dismissed())) {
+  @if (invitation()) {
+    <div class="invitation">
+      <span class="invitation-copy">{{ 'install.invitation' | translate }}</span>
+      <div class="invitation-actions">
+        <button
+          type="button"
+          class="button button-primary invitation-add"
+          aria-haspopup="dialog"
+          (click)="open(help)"
+        >
+          <app-icon [icon]="icons.download" />
+          {{ 'install.add' | translate }}
+        </button>
+        <button type="button" class="install-dismiss" (click)="install.dismiss()">
+          {{ 'install.dismiss' | translate }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <button type="button" class="install-trigger" aria-haspopup="dialog" (click)="open(help)">
+      <span class="install-mark" aria-hidden="true">
+        <app-icon [icon]="icons.download" />
+      </span>
+      <span class="install-label">{{ 'install.add' | translate }}</span>
+    </button>
+  }
+}
+
+<dialog
+  #help
+  class="modal-content install-dialog"
+  closedby="any"
+  [attr.aria-labelledby]="titleId"
+  (pointerdown)="armDismiss($event, help)"
+  (pointerup)="finishDismiss($event, help)"
+>
+  <div class="modal-header">
+    <h2 [id]="titleId">{{ 'install.add' | translate }}</h2>
+    <button
+      type="button"
+      class="close-btn"
+      (click)="help.close()"
+      [attr.aria-label]="'common.close' | translate"
+    >
+      <app-icon [icon]="icons.close" />
+    </button>
+  </div>
+  <div class="modal-body">
+    <ul class="install-points">
+      <li>
+        <span class="install-point-icon" aria-hidden="true">
+          <app-icon [icon]="icons.download" />
+        </span>
+        <p>{{ 'install.launch' | translate }}</p>
+      </li>
+      <li>
+        <span class="install-point-icon" aria-hidden="true">
+          <app-icon [icon]="icons.clipboardCheck" />
+        </span>
+        <p>{{ 'install.offline' | translate }}</p>
+      </li>
+    </ul>
+    @if (!install.canPrompt()) {
+      <p class="install-note">
+        <app-icon [icon]="icons.share" />
+        <span>{{ 'install.safari' | translate }}</span>
+      </p>
+    }
+  </div>
+  <div class="install-footer">
+    <form method="dialog">
+      <button
+        class="button button-secondary install-footer-btn"
+        [attr.autofocus]="install.canPrompt() ? null : ''"
+      >
+        <app-icon [icon]="icons.close" />
+        <span>{{ 'common.close' | translate }}</span>
+      </button>
+    </form>
+    @if (install.canPrompt()) {
+      <button
+        type="button"
+        class="button button-primary install-footer-btn"
+        autofocus
+        (click)="confirmInstall(help)"
+      >
+        <app-icon [icon]="icons.download" />
+        <span>{{ 'install.continue' | translate }}</span>
+      </button>
+    }
+  </div>
+</dialog>

@@ -1,92 +1,69 @@
-﻿import { Component, inject, input } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, DestroyRef, inject, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppInstallService } from '@services/app-install.service';
+import { IconComponent } from '@icons/icon.component';
+import { icons } from '@icons/icon.definitions';
+
+let nextInstallDialogId = 0;
 
 @Component({
   selector: 'app-install-action',
-  imports: [TranslateModule],
-  template: `
-    @if (install.available() && (!invitation() || !install.dismissed())) {
-      <div [class.invitation]="invitation()">
-        @if (invitation()) {
-          <span>{{ 'install.invitation' | translate }}</span>
-        }
-        <button type="button" aria-haspopup="dialog" (click)="help.showModal()">
-          {{ 'install.add' | translate }}
-        </button>
-        @if (invitation()) {
-          <button type="button" (click)="install.dismiss()">
-            {{ 'install.dismiss' | translate }}
-          </button>
-        }
-      </div>
-    }
-    <dialog #help [attr.aria-label]="'install.add' | translate">
-      <h2>{{ 'install.add' | translate }}</h2>
-      <p>{{ 'install.launch' | translate }}</p>
-      <p>{{ 'install.offline' | translate }}</p>
-      @if (!install.canPrompt()) {
-        <p>{{ 'install.safari' | translate }}</p>
-      }
-      <form method="dialog">
-        <button>{{ 'common.close' | translate }}</button>
-        @if (install.canPrompt()) {
-          <button type="button" class="button button-primary" (click)="help.close(); install.install()">
-            {{ 'install.continue' | translate }}
-          </button>
-        }
-      </form>
-    </dialog>
-  `,
-  styles: `
-    .invitation {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: white;
-      border-radius: 0.5rem;
-    }
-    .invitation span {
-      margin-right: auto;
-    }
-    button {
-      font: inherit;
-      color: inherit;
-      background: transparent;
-      border: 0;
-      padding: 0.65rem;
-      margin: 0;
-      cursor: pointer;
-    }
-    .invitation button,
-    dialog button {
-      color: var(--primary-default);
-      font-weight: 600;
-    }
-    dialog {
-      max-width: min(28rem, 85vw);
-      border: 0;
-      border-radius: 0.75rem;
-      padding: 1.25rem;
-    }
-    dialog {
-      color: var(--text-primary, #252525);
-      font-weight: normal;
-      line-height: 1.5;
-      max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 2rem);
-      overflow: auto;
-    }
-    dialog h2 { font-size: 1.25rem; margin: 0; }
-    dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; }
-    dialog .button-primary { background: var(--primary-default); color: white; }
-    dialog::backdrop {
-      background: rgb(0 0 0 / 0.6);
-    }
-  `,
+  imports: [TranslateModule, IconComponent],
+  templateUrl: './install-action.component.html',
+  styleUrl: './install-action.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstallActionComponent {
   readonly install = inject(AppInstallService);
+  /** Projects-page banner. Navbar uses host classes `install-action--bar` and `install-action--menu`. */
   readonly invitation = input(false);
+  protected readonly icons = icons;
+  protected readonly titleId = `install-dialog-title-${++nextInstallDialogId}`;
+
+  /** Press started outside the dialog box. Used only where `closedby` is missing (Safari). */
+  #pressedOutside = false;
+  #dialog: HTMLDialogElement | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      if (this.#dialog?.open) this.#dialog.close();
+    });
+  }
+
+  /**
+   * The navbar drawer is transformed, contained, and scrolling, and the bar sets
+   * `color: white`. A dialog left in that tree inherits the bar color and can be
+   * clipped. Move it to `document.body` before `showModal()` puts it in the top layer.
+   */
+  protected open(dialog: HTMLDialogElement): void {
+    this.#dialog = dialog;
+    if (dialog.parentElement !== document.body) document.body.appendChild(dialog);
+    if (!dialog.open) dialog.showModal();
+  }
+
+  protected confirmInstall(dialog: HTMLDialogElement): void {
+    dialog.close();
+    void this.install.install();
+  }
+
+  protected armDismiss(event: PointerEvent, dialog: HTMLDialogElement): void {
+    if ('closedBy' in HTMLDialogElement.prototype) return;
+    this.#pressedOutside = this.#outside(event, dialog);
+  }
+
+  protected finishDismiss(event: PointerEvent, dialog: HTMLDialogElement): void {
+    if ('closedBy' in HTMLDialogElement.prototype) return;
+    if (this.#pressedOutside && this.#outside(event, dialog)) dialog.close();
+    this.#pressedOutside = false;
+  }
+
+  #outside(event: PointerEvent, dialog: HTMLDialogElement): boolean {
+    const rect = dialog.getBoundingClientRect();
+    return (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    );
+  }
 }

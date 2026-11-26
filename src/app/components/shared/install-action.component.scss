@@ -1,0 +1,301 @@
+:host {
+  display: block;
+}
+
+:host(.install-action--bar) {
+  display: inline-flex;
+}
+
+:host(.install-action--menu) {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.invitation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 var(--space);
+  padding: 0.875rem 1rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  color: #1f2937;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.invitation-copy {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.invitation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.invitation-add {
+  margin: 0;
+  gap: 0.4rem;
+
+  app-icon {
+    --icon-size: var(--icon-size-compact);
+  }
+}
+
+.install-dismiss {
+  min-block-size: var(--touch-target-min);
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--secondary-default);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(157, 0, 0, 0.06);
+    color: var(--primary-default);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-focus);
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .invitation-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .invitation-add {
+    flex: 1 1 auto;
+  }
+}
+
+.install-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+  }
+}
+
+.install-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+
+  app-icon {
+    --icon-size: var(--icon-size-sm);
+  }
+}
+
+.install-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host(.install-action--bar) .install-trigger {
+  min-block-size: var(--touch-target-nav);
+  padding: var(--space-small) var(--space);
+  border-radius: 4px;
+
+  &:hover,
+  &:active {
+    background-color: var(--button-hover);
+  }
+}
+
+:host(.install-action--menu) .install-trigger {
+  justify-content: flex-start;
+  width: 100%;
+  min-block-size: var(--touch-target-nav);
+  padding: var(--space-large);
+  border-radius: 0;
+  text-align: start;
+
+  &:hover,
+  &:active {
+    background-color: var(--button-hover);
+  }
+}
+
+:host(.install-action--menu) .install-mark {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--primary-default);
+
+  app-icon {
+    --icon-size: var(--icon-size-md);
+  }
+}
+
+// Centered on the viewport. `height: fit-content` keeps the short dialog from
+// stretching between the safe-area insets that `dialog.modal-content` sets.
+.install-dialog {
+  top: calc(var(--safe-top) + (100dvh - var(--safe-top) - var(--safe-bottom)) / 2);
+  right: auto;
+  bottom: auto;
+  left: calc(var(--safe-left) + (100% - var(--safe-left) - var(--safe-right)) / 2);
+  width: min(500px, calc(100% - var(--safe-left) - var(--safe-right) - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem);
+  margin: 0;
+  color: #1f2937;
+  font-weight: 400;
+  line-height: 1.5;
+  transform: translate(-50%, -50%);
+  animation: install-fade 0.2s ease-out;
+}
+
+.install-dialog .close-btn {
+  min-inline-size: var(--touch-target-min);
+  min-block-size: var(--touch-target-min);
+}
+
+.install-points {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.install-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.install-points p {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.install-point-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 8px;
+  background: rgba(157, 0, 0, 0.08);
+  color: var(--primary-default);
+
+  app-icon {
+    --icon-size: var(--icon-size-md);
+  }
+}
+
+.install-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  background: rgba(157, 0, 0, 0.06);
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+
+  app-icon {
+    --icon-size: var(--icon-size-md);
+    margin-top: 0.125rem;
+    color: var(--primary-default);
+  }
+}
+
+.install-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid #d1d5db;
+  background: #fff;
+
+  form {
+    display: flex;
+    margin: 0;
+  }
+}
+
+.install-footer-btn {
+  margin: 0;
+  gap: 0.4rem;
+
+  app-icon {
+    --icon-size: var(--icon-size-compact);
+  }
+}
+
+@media (max-width: 768px) {
+  .install-dialog .modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .install-footer {
+    flex-direction: column-reverse;
+    padding: 1rem 1.25rem;
+
+    form,
+    .install-footer-btn {
+      width: 100%;
+    }
+
+    .install-footer-btn {
+      padding: 0.875rem 1.5rem;
+    }
+  }
+}
+
+@keyframes install-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-dialog {
+    animation: none;
+  }
+}

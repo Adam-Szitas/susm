@@ -54,15 +54,21 @@
       </ul>
     </div>
     <ul class="logout-menu">
-      @if (install.available()) { <li class="desktop-install"><app-install-action /></li> }
+      @if (install.available()) {
+        <li class="desktop-install"><app-install-action class="install-action--bar" /></li>
+      }
       @if (feedbackEnabled()) {
         <li>
           <button
             type="button"
             class="nav-link nav-link--button nav-feedback"
             (click)="openFeedbackInbox()"
-            [attr.aria-label]="'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }"
-            [title]="'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }"
+            [attr.aria-label]="
+              'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }
+            "
+            [title]="
+              'checklistFeedback.inbox.navLabel' | translate: { count: feedbackPendingCount() }
+            "
           >
             <app-icon [icon]="icons.bell" />
             @if (feedbackPendingCount() > 0) {
@@ -78,7 +84,15 @@
       </li>
     </ul>
   </nav>
-  <button type="button" class="mobile-menu-backdrop" tabindex="-1" [attr.aria-label]="'common.close' | translate" [attr.inert]="!toggledMenu() ? '' : null" [class.open]="toggledMenu()" (click)="hideMobileMenu()"></button>
+  <button
+    type="button"
+    class="mobile-menu-backdrop"
+    tabindex="-1"
+    [attr.aria-label]="'common.close' | translate"
+    [attr.inert]="!toggledMenu() ? '' : null"
+    [class.open]="toggledMenu()"
+    (click)="hideMobileMenu()"
+  ></button>
   <div
     class="mobile-menu"
     id="mobileNavigation"
@@ -149,7 +163,9 @@
           </button>
         </li>
       }
-      @if (install.available()) { <li class="menu-install"><app-install-action /></li> }
+      @if (install.available()) {
+        <li class="menu-install"><app-install-action class="install-action--menu" /></li>
+      }
       <li class="logout-item">
         <button
           type="button"

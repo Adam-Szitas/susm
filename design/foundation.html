@@ -526,6 +526,102 @@
 
     @media (min-width: 769px) { .app-nav .nav-spacer { display: none; } }
 
+    /* Add SUSM in the bar and the mobile drawer: components/shared/install-action */
+    .nav-install {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-block-size: var(--touch-target-nav);
+      margin: 0;
+      padding: var(--space-small) var(--space);
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: inherit;
+      cursor: pointer;
+    }
+
+    .nav-install:hover { background: var(--button-hover); }
+    .nav-install .app-icon { --icon-size: var(--icon-size-sm); }
+
+    .nav-drawer {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      max-width: 100%;
+      min-height: 36rem;
+      margin-top: 1.5rem;
+      background: var(--button);
+      color: #fff;
+      font-weight: bold;
+      font-size: var(--font-2);
+    }
+
+    .nav-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--default-color);
+    }
+
+    .nav-drawer-items {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-drawer-items li { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+
+    .nav-drawer-items a,
+    .nav-drawer-items button {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-block-size: var(--touch-target-nav);
+      margin: 0;
+      padding: var(--space-large);
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: inherit;
+      text-align: start;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-drawer-install { margin-top: auto; border-bottom: none; }
+    .nav-drawer-install + .nav-drawer-logout { margin-top: 0; border-top: 2px solid rgba(255, 255, 255, 0.2); border-bottom: none; }
+    .nav-drawer-logout { margin-top: auto; border-top: 2px solid rgba(255, 255, 255, 0.2); border-bottom: none; }
+
+    .nav-drawer-install button { gap: 0.75rem; }
+    .nav-drawer .install-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      inline-size: 2.25rem;
+      block-size: 2.25rem;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--primary-default);
+    }
+
+    .nav-drawer .install-mark .app-icon { --icon-size: var(--icon-size-md); }
+
+    @media (max-width: 768px) {
+      .nav-install { display: none; }
+    }
+
+    .frame-body--flush > .rules { padding: var(--space); }
+
     /* Form controls: src/styles/_inputs.scss (.form-group) and _form.scss */
     .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
     .form-group label { font-size: 0.95rem; font-weight: 500; color: #333; }
@@ -800,6 +896,57 @@
       .modal-stage { padding: 0.75rem; }
     }
 
+    /* Add SUSM dialog body: components/shared/install-action */
+    .install-points { display: flex; flex-direction: column; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+    .install-points li { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .install-points p { margin: 0; color: #333; font-size: 1rem; font-weight: 400; line-height: 1.5; }
+
+    .install-point-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border-radius: 8px;
+      background: rgba(157, 0, 0, 0.08);
+      color: var(--primary-default);
+    }
+
+    .install-point-icon .app-icon { --icon-size: var(--icon-size-md); }
+
+    .install-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      background: rgba(157, 0, 0, 0.06);
+      color: #333;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .install-note .app-icon { --icon-size: var(--icon-size-md); color: var(--primary-default); }
+
+    .install-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      border-top: 1px solid #d1d5db;
+      background: #fff;
+    }
+
+    .install-footer .button { margin: 0; gap: 0.4rem; }
+    .install-footer .app-icon { --icon-size: var(--icon-size-compact); }
+
+    @media (max-width: 768px) {
+      .install-footer { flex-direction: column-reverse; padding: 1rem 1.25rem; }
+      .install-footer .button { width: 100%; padding: 0.875rem 1.5rem; }
+    }
+
     /* Confirm dialog: components/confirm-dialog/confirm-dialog.component.scss */
     .confirm-message { margin: 0; font-size: 1rem; line-height: 1.5; color: #333; }
     .confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap; }
@@ -913,6 +1060,7 @@
       <a href="#collapse">Collapse</a>
       <a href="#modal">Modal</a>
       <a href="#confirm">Confirm dialog</a>
+      <a href="#install">Add SUSM</a>
       <a href="#toast">Notification</a>
       <a href="#empty">Empty &amp; loading</a>
     </nav>
@@ -1040,7 +1188,7 @@
 
         <div class="frame" id="navbar">
           <h3>Navbar</h3>
-          <p class="frame-note">Source: <code>components/navbar</code>. Brand red bar, white bold links; links collapse into the hamburger menu at ≤768px.</p>
+          <p class="frame-note">Source: <code>components/navbar</code> and <code>components/shared/install-action</code>. Brand red bar, white bold links; links collapse into the hamburger menu at ≤768px. Add SUSM sits with the bar actions on desktop. In the drawer it is a full-width row pinned above Log out: white 8px tile, download icon in brand red, label in the same type as the other rows.</p>
           <div class="frame-body frame-body--flush">
             <nav class="app-nav" aria-label="Example navigation">
               <a class="navbar-brand" href="#navbar" aria-label="SUSM" data-icon="susmLogo" data-raw></a>
@@ -1052,8 +1200,28 @@
                 <li><a href="#navbar">Files</a></li>
               </ul>
               <span class="nav-spacer"></span>
+              <button type="button" class="nav-install" aria-haspopup="dialog"><span class="app-icon" data-icon="download"></span>Add SUSM</button>
               <button type="button" class="nav-icon" aria-label="Feedback inbox"><span class="app-icon" data-icon="bell"></span></button>
             </nav>
+            <div class="nav-drawer" aria-label="Mobile menu">
+              <div class="nav-drawer-header">
+                <a class="navbar-brand" href="#navbar" aria-label="SUSM" data-icon="susmLogo" data-raw></a>
+                <button type="button" class="nav-icon" aria-label="Close"><span class="app-icon" data-icon="closeFilled"></span></button>
+              </div>
+              <ul class="nav-drawer-items">
+                <li><a href="#navbar">Dashboard</a></li>
+                <li><a href="#navbar">Projects</a></li>
+                <li><a href="#navbar">Objects</a></li>
+                <li><a href="#navbar">Files</a></li>
+                <li class="nav-drawer-install">
+                  <button type="button">
+                    <span class="install-mark" aria-hidden="true"><span class="app-icon" data-icon="download"></span></span>
+                    Add SUSM
+                  </button>
+                </li>
+                <li class="nav-drawer-logout"><button type="button">Log out</button></li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -1366,6 +1534,45 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="frame" id="install">
+          <h3>Add SUSM</h3>
+          <p class="frame-note">
+            Source: <code>components/shared/install-action</code>. Same modal shell as the other dialogs: 16px radius, header with title and close, scrollable body, footer with Close then the primary step.
+            Labels stay visible at every width because this is a one-time install choice. When the browser cannot prompt (Safari), the tinted note replaces the primary button and only Close remains.
+          </p>
+          <div class="frame-body frame-body--flush">
+            <div class="modal-stage">
+              <div class="modal-content" role="dialog" aria-modal="false" aria-labelledby="demo-install-title">
+                <div class="modal-header">
+                  <h2 id="demo-install-title">Add SUSM</h2>
+                  <button type="button" class="close-btn" aria-label="Close"><span class="app-icon" data-icon="close"></span></button>
+                </div>
+                <div class="modal-body">
+                  <ul class="install-points">
+                    <li>
+                      <span class="install-point-icon" aria-hidden="true"><span class="app-icon" data-icon="download"></span></span>
+                      <p>The SUSM icon opens Projects in its own window. Sign in if asked.</p>
+                    </li>
+                    <li>
+                      <span class="install-point-icon" aria-hidden="true"><span class="app-icon" data-icon="clipboardCheck"></span></span>
+                      <p>Offline, you can edit checklist drafts already saved on this device. Reconnect to open live projects and submit your changes.</p>
+                    </li>
+                  </ul>
+                </div>
+                <div class="install-footer">
+                  <button type="button" class="button button-secondary"><span class="app-icon" data-icon="close"></span>Close</button>
+                  <button type="button" class="button button-primary"><span class="app-icon" data-icon="download"></span>Continue to install</button>
+                </div>
+              </div>
+            </div>
+            <ul class="rules">
+              <li>One primary action. Close is secondary and sits before it. The header close uses the same dismiss.</li>
+              <li>Benefit rows use an 8px brand-tint tile. The Safari steps use the same tint as a note, with the share icon.</li>
+              <li>The mobile drawer row is specified under Navbar. It is not a second red button on the red drawer.</li>
+            </ul>
           </div>
         </div>
 

@@ -180,6 +180,16 @@
           background-color: rgba(255, 107, 107, 0.1);
         }
       }
+
+      &.menu-install {
+        margin-top: auto;
+        padding: 0;
+        border-bottom: none;
+      }
+
+      &.menu-install + .logout-item {
+        margin-top: 0;
+      }
     }
   }
 }
@@ -291,7 +301,10 @@ li {
   }
 }
 
-button.mobile-menu-backdrop { border: 0; padding: 0; }
+button.mobile-menu-backdrop {
+  border: 0;
+  padding: 0;
+}
 
 .nav-feedback {
   position: relative;
@@ -315,5 +328,3 @@ button.mobile-menu-backdrop { border: 0; padding: 0; }
   font-weight: 700;
   line-height: 1;
 }
-
-.mobile-menu-items .menu-install { padding-inline: var(--space); }
