@@ -10,6 +10,7 @@ export class AppInstallService {
   private readonly pending = signal<InstallPrompt | null>(null);
   private readonly standalone = signal(false);
   private readonly safari = signal(false);
+  readonly canPrompt = computed(() => !!this.pending());
   readonly dismissed = signal(false);
   readonly available = computed(() => !this.standalone() && (this.safari() || !!this.pending()));
 
@@ -59,7 +60,7 @@ export class AppInstallService {
     }
   }
 
-  async install(help: HTMLDialogElement): Promise<void> {
+  async install(): Promise<void> {
     const event = this.pending();
     if (event) {
       this.pending.set(null);
@@ -68,8 +69,6 @@ export class AppInstallService {
       } catch {
         /* A browser can revoke the pending prompt. */
       }
-    } else if (this.safari()) {
-      help.showModal();
     }
   }
 }

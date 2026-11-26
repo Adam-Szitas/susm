@@ -11,7 +11,7 @@ import { AppInstallService } from '@services/app-install.service';
         @if (invitation()) {
           <span>{{ 'install.invitation' | translate }}</span>
         }
-        <button type="button" (click)="install.install(help)">
+        <button type="button" aria-haspopup="dialog" (click)="help.showModal()">
           {{ 'install.add' | translate }}
         </button>
         @if (invitation()) {
@@ -22,9 +22,19 @@ import { AppInstallService } from '@services/app-install.service';
       </div>
     }
     <dialog #help [attr.aria-label]="'install.add' | translate">
-      <p>{{ 'install.safari' | translate }}</p>
+      <h2>{{ 'install.add' | translate }}</h2>
+      <p>{{ 'install.launch' | translate }}</p>
+      <p>{{ 'install.offline' | translate }}</p>
+      @if (!install.canPrompt()) {
+        <p>{{ 'install.safari' | translate }}</p>
+      }
       <form method="dialog">
         <button>{{ 'common.close' | translate }}</button>
+        @if (install.canPrompt()) {
+          <button type="button" class="button button-primary" (click)="help.close(); install.install()">
+            {{ 'install.continue' | translate }}
+          </button>
+        }
       </form>
     </dialog>
   `,
@@ -61,6 +71,16 @@ import { AppInstallService } from '@services/app-install.service';
       border-radius: 0.75rem;
       padding: 1.25rem;
     }
+    dialog {
+      color: var(--text-primary, #252525);
+      font-weight: normal;
+      line-height: 1.5;
+      max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 2rem);
+      overflow: auto;
+    }
+    dialog h2 { font-size: 1.25rem; margin: 0; }
+    dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; }
+    dialog .button-primary { background: var(--primary-default); color: white; }
     dialog::backdrop {
       background: rgb(0 0 0 / 0.6);
     }

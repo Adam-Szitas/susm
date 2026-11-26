@@ -24,7 +24,7 @@ describe('AppInstallService', () => {
     expect(event.defaultPrevented).toBeTrue();
     expect(install.available()).toBeTrue();
     expect(localStorage.getItem(key)).toBe('1');
-    await install.install(document.createElement('dialog'));
+    await install.install();
     expect(prompt).toHaveBeenCalledTimes(1);
     window.dispatchEvent(new Event('appinstalled'));
     expect(install.available()).toBeFalse();
