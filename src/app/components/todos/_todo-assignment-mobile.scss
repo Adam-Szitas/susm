@@ -182,7 +182,7 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 0.85rem;
-    padding-bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+    padding-bottom: max(1.25rem, calc(1rem + var(--safe-bottom)));
     margin-bottom: 0;
   }
 

@@ -39,7 +39,7 @@
     overflow: visible;
     padding-bottom: max(
       var(--app-floating-action-clearance, 5rem),
-      calc(var(--app-floating-action-clearance, 5rem) + env(safe-area-inset-bottom, 0px))
+      calc(var(--app-floating-action-clearance, 5rem) + var(--safe-bottom))
     );
   }
 

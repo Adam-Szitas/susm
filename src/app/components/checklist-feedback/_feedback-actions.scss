@@ -33,7 +33,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  padding-block: 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+  padding-block: 0.75rem max(0.75rem, var(--safe-bottom));
   background: var(--surface-color, #fff);
   border-top: 1px solid var(--border-color, #d1d5db);
 }

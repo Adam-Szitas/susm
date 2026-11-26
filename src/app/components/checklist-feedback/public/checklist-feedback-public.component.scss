@@ -50,8 +50,8 @@ p {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: max(0.6rem, env(safe-area-inset-top)) max(var(--cfb-gutter), env(safe-area-inset-right)) 0.6rem
-    max(var(--cfb-gutter), env(safe-area-inset-left));
+  padding: max(0.6rem, var(--safe-top)) max(var(--cfb-gutter), var(--safe-right)) 0.6rem
+    max(var(--cfb-gutter), var(--safe-left));
   background: var(--primary-default, #9d0000);
   color: #fff;
 }
@@ -80,7 +80,7 @@ p {
   max-width: var(--cfb-max);
   margin: 0 auto;
   padding: 1.25rem var(--cfb-gutter) 0;
-  padding-inline: max(var(--cfb-gutter), env(safe-area-inset-left)) max(var(--cfb-gutter), env(safe-area-inset-right));
+  padding-inline: max(var(--cfb-gutter), var(--safe-left)) max(var(--cfb-gutter), var(--safe-right));
 }
 
 .cfb-header {
@@ -711,7 +711,7 @@ p {
   bottom: 0;
   z-index: 2;
   margin: 0.5rem calc(var(--cfb-gutter) * -1) 0;
-  padding: 0.75rem var(--cfb-gutter) max(0.75rem, env(safe-area-inset-bottom));
+  padding: 0.75rem var(--cfb-gutter) max(0.75rem, var(--safe-bottom));
   border-top: 1px solid var(--cfb-border);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);

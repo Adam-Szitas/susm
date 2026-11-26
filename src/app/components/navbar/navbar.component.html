@@ -54,6 +54,7 @@
       </ul>
     </div>
     <ul class="logout-menu">
+      @if (install.available()) { <li class="desktop-install"><app-install-action /></li> }
       @if (feedbackEnabled()) {
         <li>
           <button
@@ -148,6 +149,7 @@
           </button>
         </li>
       }
+      @if (install.available()) { <li class="menu-install"><app-install-action /></li> }
       <li class="logout-item">
         <button
           type="button"

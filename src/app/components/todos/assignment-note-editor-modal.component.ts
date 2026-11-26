@@ -1,3 +1,4 @@
+import { NoteViewportDirective } from './note-viewport.directive';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -33,6 +34,7 @@ import { icons } from '@icons/icon.definitions';
 @Component({
   selector: 'app-assignment-note-editor-modal',
   standalone: true,
+  hostDirectives: [NoteViewportDirective],
   imports: [FormsModule, TranslateModule, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

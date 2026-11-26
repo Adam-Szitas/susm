@@ -1,3 +1,5 @@
+import { AppInstallService } from '@services/app-install.service';
+import { InstallActionComponent } from '../shared/install-action.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -27,9 +29,10 @@ const FEEDBACK_POLL_MS = 60_000;
   styleUrl: './navbar.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslateModule, SusmLogoComponent, IconComponent],
+  imports: [InstallActionComponent, RouterLink, TranslateModule, SusmLogoComponent, IconComponent],
 })
 export class NavbarComponent implements OnInit {
+  protected readonly install = inject(AppInstallService);
   protected readonly icons = icons;
 
   #router = inject(Router);

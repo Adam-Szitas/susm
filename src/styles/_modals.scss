@@ -43,7 +43,7 @@ body.modal-open .floating-icon {
 
   @include mobile {
     padding: 0.75rem;
-    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    padding-top: max(0.75rem, var(--safe-top));
     align-items: flex-start;
     justify-content: center;
     overflow-y: auto;
@@ -71,7 +71,7 @@ body.modal-open .floating-icon {
   @include mobile {
     max-width: 100%;
     max-height: min(
-      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+      calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
       92dvh
     );
     margin: auto 0;
@@ -89,13 +89,13 @@ body.modal-open .floating-icon {
 
     @include mobile {
       max-height: min(
-        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
         92dvh
       );
 
       &:has(.project-todo-form--assign) {
         height: min(
-          calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+          calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
           92dvh
         );
       }
@@ -115,7 +115,7 @@ body.modal-open .floating-icon {
     @include mobile {
       max-width: 100%;
       max-height: min(
-        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
         92dvh
       );
     }
@@ -130,11 +130,11 @@ body.modal-open .floating-icon {
 
     @include mobile {
       height: min(
-        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
         92dvh
       );
       max-height: min(
-        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem),
+        calc(100dvh - var(--safe-top) - var(--safe-bottom) - 1.5rem),
         92dvh
       );
     }
@@ -217,7 +217,7 @@ body.modal-open .floating-icon {
     gap: 0;
 
     @include mobile {
-      padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+      padding-bottom: max(1rem, var(--safe-bottom));
     }
   }
 
@@ -302,3 +302,22 @@ dialog.modal-content:not([open]) { display: none; }
 dialog.modal-content::backdrop { background: rgba(0, 0, 0, 0.6); overflow: hidden; overscroll-behavior: contain; }
 
 .modal-overlay:has(dialog.modal-content) { background: transparent; }
+
+dialog.modal-content {
+  top: var(--safe-top);
+  bottom: var(--safe-bottom);
+  left: var(--safe-left);
+  right: var(--safe-right);
+  width: calc(100% - var(--safe-left) - var(--safe-right) - 2rem);
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  dialog.modal-content.note-keyboard-open {
+    animation: none;
+    inset-block: auto calc(100% - var(--note-visible-bottom, 100dvh));
+    margin-block: 0;
+    max-height: calc(var(--note-visible-height, 100dvh) - var(--safe-top));
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+}

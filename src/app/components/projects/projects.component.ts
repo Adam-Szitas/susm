@@ -1,3 +1,4 @@
+import { InstallActionComponent } from '../shared/install-action.component';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ProjectStore } from '../../store/project.store';
 import { ModalService } from '../../services/modal.service';
@@ -21,6 +22,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    InstallActionComponent,
     TranslateModule,
     PageHeaderComponent,
     ProjectCardComponent,

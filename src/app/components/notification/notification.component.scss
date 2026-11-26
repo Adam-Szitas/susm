@@ -8,8 +8,8 @@
   border: 0;
   background: transparent;
   overflow: visible;
-  top: 60px;
-  right: 20px;
+  top: calc(60px + var(--safe-top));
+  right: calc(20px + var(--safe-right));
   z-index: var(--z-notification);
   display: flex;
   flex-direction: column;
@@ -129,9 +129,9 @@
 // Responsive design for mobile
 @include mobile {
   .notification-container {
-    top: 10px;
-    right: 10px;
-    left: 10px;
+    top: calc(10px + var(--safe-top));
+    right: calc(10px + var(--safe-right));
+    left: calc(10px + var(--safe-left));
     max-width: none;
     width: auto;
   }

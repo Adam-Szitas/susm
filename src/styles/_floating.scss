@@ -2,8 +2,8 @@
 
 .floating-icon {
   position: fixed;
-  bottom: var(--space);
-  right: var(--space);
+  bottom: calc(var(--space) + var(--safe-bottom));
+  right: calc(var(--space) + var(--safe-right));
   z-index: var(--z-floating);
   border-radius: 50%;
   background-color: var(--default-color);
@@ -39,14 +39,14 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
 .upload-icon {
-  bottom: var(--space);
-  left: var(--space);
+  bottom: calc(var(--space) + var(--safe-bottom));
+  left: calc(var(--space) + var(--safe-left));
   right: auto;
 }
 
 .add-icon {
-  bottom: var(--space);
-  right: var(--space);
+  bottom: calc(var(--space) + var(--safe-bottom));
+  right: calc(var(--space) + var(--safe-right));
   left: auto;
 
   .add {
@@ -74,8 +74,8 @@
     inline-size: var(--floating-action-size-mobile);
     block-size: var(--floating-action-size-mobile);
     padding: var(--space-small, 8px);
-    bottom: var(--space-small, 8px);
-    right: var(--space-small, 8px);
+    bottom: calc(var(--space-small, 8px) + var(--safe-bottom));
+    right: calc(var(--space-small, 8px) + var(--safe-right));
 
     app-icon {
       --icon-size: var(--icon-size-xl);
@@ -83,6 +83,6 @@
   }
 
   .upload-icon {
-    left: var(--space-small, 8px);
+    left: calc(var(--space-small, 8px) + var(--safe-left));
   }
 }

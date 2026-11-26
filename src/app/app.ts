@@ -1,3 +1,4 @@
+import { AppInstallService } from './services/app-install.service';
 import { SeoService } from './services/seo.service';
 import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -24,6 +25,8 @@ export class App implements OnInit {
 
   /** Routes with `data: { standalone: true }` (public visitor pages) render without the app navbar. */
   protected readonly standalonePage = signal(false);
+
+  constructor() { inject(AppInstallService); }
 
   ngOnInit(): void {
     this.#translationService.initialize();

@@ -241,7 +241,7 @@
 @mixin overflow-scroll-y-with-clearance($clearance: var(--app-floating-action-clearance, 5rem)) {
   padding-bottom: max(
     #{$clearance},
-    calc(#{$clearance} + env(safe-area-inset-bottom, 0px))
+    calc(#{$clearance} + var(--safe-bottom))
   );
   scroll-padding-bottom: $clearance;
   @include overflow-scroll-y;

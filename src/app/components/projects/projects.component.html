@@ -22,6 +22,7 @@
 </app-page-header>
 
 <div class="projects-wrapper">
+  <app-install-action [invitation]="true" />
   @if (projects().length) {
     <app-virtual-scroll-viewport
       class="projects-list-viewport"

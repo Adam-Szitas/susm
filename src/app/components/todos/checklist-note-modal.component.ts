@@ -1,3 +1,4 @@
+import { NoteViewportDirective } from './note-viewport.directive';
 import {
   ChecklistDraft,
   checklistDrafts,
@@ -34,6 +35,7 @@ import { icons } from '@icons/icon.definitions';
 @Component({
   selector: 'app-checklist-note-modal',
   standalone: true,
+  hostDirectives: [NoteViewportDirective],
   imports: [
     TranslateModule,
     ChecklistNoteContentComponent,
